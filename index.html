@@ -440,7 +440,7 @@
                 name: 'Content Map',
                 width: 8192,
                 height: 6144,
-                imageUrl: 'maps/Fair-Content.webp', // <-- Changed to webp
+                imageUrl: 'maps/Fair-Content.webp',
                 blurb: "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
                 pointsOfInterest: [
                      { coords: [1120 * 0.75, 1680 * 0.5], name: "Capital City", description: "The bustling heart of the kingdom.", wikiLink: "https://your-wiki.com/Capital_City" },
@@ -502,8 +502,8 @@
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -2,
-            maxZoom: 3,
+            minZoom: -3,
+            maxZoom: 4,
             attributionControl: false,
             // zoomControl: true, // Default is true, so this line can be removed or kept
         });
