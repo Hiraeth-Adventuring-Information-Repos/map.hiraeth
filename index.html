@@ -954,6 +954,10 @@
             if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
                 markersVisible = true; // Default to visible
                 loadMap(mapIdToLoad, false); // Load map without pushing history initially
+                posthog.capture('map_loaded', {
+                    map_id: mapIdToLoad,
+                    map_name: mapToLoadData.name
+                })
             } else {
                 console.error("No loadable map data found for initialization.");
                 sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>';
@@ -982,7 +986,7 @@
     <!-- Work in Progress Popup -->
     <div id="wip-popup">
         <p>This is a Work in Progress</p>
-        <p>Markers & Names Not Acurate</p>
+        <p>Some Maps, Names, and Markers May Not Be Acurate</p>
     </div>
 
 </body>
