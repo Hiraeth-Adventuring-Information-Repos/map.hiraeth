@@ -90,26 +90,6 @@
             to { background-position-x: 1000px; } /* Adjust value based on image width & desired speed */
         }
 
-        #map-blurb a,
-        #map-blurb a:link,
-        #map-blurb a:visited {
-            color: inherit; /* Inherit color from blurb text */
-            text-decoration: underline; /* Standard link underline */
-            transition: color 0.2s ease;
-        }
-
-        #map-blurb a:hover,
-        #map-blurb a:active {
-            color: var(--text-secondary); /* Use secondary color on hover */
-            text-decoration: none; /* Optional: remove underline on hover */
-        }
-
-        /* Ensure dark theme hover looks okay (it should inherit fine, but explicit rule is safe) */
-        body.dark-theme #map-blurb a:hover,
-        body.dark-theme #map-blurb a:active {
-             color: var(--text-secondary);
-        }
-
 
         /* Apply Variables & Base Styles */
         html, body {
@@ -273,7 +253,6 @@
         }
         #map-blurb.visible {
             opacity: 1;
-            pointer-events: auto;
         }
         body.dark-theme #map-blurb {
             background-color: var(--glass-bg-dark);
@@ -464,17 +443,12 @@
                 imageUrl: 'maps/Fair-Content.webp',
                 blurb: "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
                 pointsOfInterest: [
-                { coords: [4066, 1082], name: "Cardiff", description: "..." },
-                    { coords: [3606, 590], name: "Hardoldford", description: "..." },
-                    { coords: [2584, 5272], name: "Delphi", description: "..." },
-                    { coords: [2344, 868], name: "Rockdrift", description: "..." },
-                    { coords: [2068, 612], name: "Attergo", description: "..." },
-                    { coords: [2124, 496], name: "Crystal Cove", description: "..." },
-                    { coords: [2496, 1224], name: "Xenithia", description: "..." },
-                    { coords: [2584, 1372], name: "Fook & Took", description: "..." },
-                    { coords: [3668, 2436], name: "Knoll", description: "..." },
-                    { coords: [2232, 6608], name: "Vermonbend", description: "..." },
-                    { coords: [5252, 2912], name: "Castgate", description: "..." }
+                     { coords: [1120 * 0.75, 1680 * 0.5], name: "Capital City", description: "The bustling heart of the kingdom.", wikiLink: "https://your-wiki.com/Capital_City" },
+                     { coords: [1120 * 0.3, 1680 * 0.2], name: "Ancient Ruins", description: "Mysterious remnants of a bygone era." },
+                     { coords: [1120 * 0.5, 1680 * 0.8], name: "Whispering Woods", description: "An old forest where secrets linger.", wikiLink: "https://your-wiki.com/Whispering_Woods" },
+                     { coords: [1120 * 0.8, 1680 * 0.3], name: "Frozen Peak", description: "The highest, coldest mountain.", wikiLink: "https://your-wiki.com/Frozen_Peak" },
+                     { coords: [1120 * 0.4, 1680 * 0.7], name: "Coastal Village", description: "A small fishing settlement." },
+                     { coords: [1120 * 0.2, 1680 * 0.15], name: "Icebeach Region", description: "Link to the detailed map.", wikiLink: "https://your-wiki.com/Icebeach" }
                 ],
                 children: [
                     {
@@ -483,7 +457,8 @@
                         width: 7016,
                         height: 4960,
                         imageUrl: 'maps/IceBeach.webp', // <-- Changed to webp
-                        blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",                        pointsOfInterest: [
+                        blurb: "A detailed view of the Icebeach region, known for its harsh climate and resilient settlements.",
+                        pointsOfInterest: [
                             { coords: [3516, 3698], name: "Castgate", description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate" },
                             { coords: [4002, 3488], name: "Winrich Fortress", description: "The Ancient fortress of a long dead and powerful Lich", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress" },
                             { coords: [4266, 3192], name: "Whitedrift", description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift" },
@@ -733,14 +708,17 @@
             map.fitBounds(currentBounds);
 
             // Update Map Blurb
-                        // Update Map Blurb
-                        if (selectedMap.blurb) {
-                mapBlurbElement.innerHTML = selectedMap.blurb; // <-- CHANGE HERE
+            if (selectedMap.blurb) {
+                mapBlurbElement.textContent = selectedMap.blurb;
                 mapBlurbElement.classList.add('visible');
             } else {
-                mapBlurbElement.innerHTML = ''; // <-- CHANGE HERE for consistency
+                mapBlurbElement.textContent = '';
                 mapBlurbElement.classList.remove('visible');
             }
+
+            // --- REMOVED: Minimap Creation ---
+
+            // --- REMOVED: Update Zoom Level Display Call ---
 
             // --- Update Sidebar Active State ---
             document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
