@@ -548,148 +548,6 @@
 
     <!-- Main Application JS -->
     <script>
-        // --- Map Data Configuration ---
-        // IMPORTANT: Ensure you have created .webp versions of your map images!
-        // Simplified mapData with only ONE POI as a template
-        const mapData = [
-            {
-                type: 'folder',
-                id: 'main_continent',
-                name: 'Content Map',
-                width: 8192,
-                height: 6144,
-                imageUrl: 'maps/Fair-Content.webp',
-                blurb: "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
-                pointsOfInterest: [
-                    // No POIs here in this example, add if needed
-                ],
-                children: [
-                    {
-                        id: 'icebeach_detail',
-                        name: 'Icebeach',
-                        width: 7016,
-                        height: 4960,
-                        imageUrl: 'maps/IceBeach.webp',
-                        blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
-                        pointsOfInterest: [
-                            {
-                                coords: [3516, 3698],
-                                name: "Castgate",
-                                type: "City",
-                                description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate" 
-                            },
-                            {
-                                coords: [4002, 3488],
-                                name: "Winrich Fortress",
-                                type: "Fortress",
-                                description: "The Ancient fortress of a long dead and powerful Lich",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress"
-                            },
-                            {
-                                coords: [4266, 3192],
-                                name: "Whitedrift",
-                                type: "Settlement",
-                                description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift"
-                            },
-                            {
-                                coords: [3876, 2990],
-                                name: "Icemoor",
-                                type: "Settlement",
-                                description: "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor"
-                            },
-                            {
-                                coords: [4358, 2976],
-                                name: "Little Rock Mentle Asylam",
-                                type: "Asylum",
-                                description: "This small institution holds some of the most hardened crimnals of the Gilded Nations.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum"
-                            },
-                            {
-                                coords: [1664, 3372],
-                                name: "Ottiker",
-                                type: "Town",
-                                description: "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror"
-                            },
-                            {
-                                coords: [2310, 2722],
-                                name: "Fractured Point",
-                                type: "Capital",
-                                description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
-                            },
-                            {
-                                coords: [2036, 3074],
-                                name: "The Hope Tree",
-                                type: "Natural Landmark",
-                                description: "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree"
-                            },
-                            {
-                                coords: [1210, 3924],
-                                name: "Quilt",
-                                type: "Hamlet",
-                                description: "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt"
-                            },
-                            {
-                                coords: [2154, 3588],
-                                name: "Sleetmond",
-                                type: "Settlement",
-                                description: "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.", 
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond"
-                            },
-                            {
-                                coords: [1116, 4038],
-                                name: "The Foaming Burrow",
-                                type: "Cavern",
-                                description: "The origin of the river, how water bubbles forth outo of this cave.",
-                                wikiLink:"TBD",
-                            },
-                            {
-                                coords: [2862, 4840],
-                                name: "Thrawbreak",
-                                type: "Hamlet",
-                                description: "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak"
-                            },
-                            {
-                                coords: [3422, 4370],
-                                name: "Gernerum",
-                                type: "",
-                                description: "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
-                            { coords: [2938, 4182], name: "Morana's Fang", description: "The tallest point in the world.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang" },
-                            { coords: [1356, 1620], name: "Shiverwallow", description: "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow" },
-                            { coords: [604, 2416], name: "Mt. Solaria", description: "A large mountian said to be inhabited by a dragon.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria" },
-                            { coords: [780, 1080], name: "Houlen Top", description: "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop" },
-                            { coords: [716, 1508], name: "Wynwood Peak", description: "This smaller mountian is said to be a place were the...", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak" },
-                            { coords: [2736, 4098], name: "Flamore", description: "This now ruined Wizard's college was a blacksite training ground.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry" },
-                           
-                        ]
-                    },
-                    {
-                        id: 'Old-Lin',
-                        name: 'Old-Lin',
-                        status: 'coming-soon' // Mark as unavailable
-                    },
-                    {
-                        id: 'southern-thalassia',
-                        name: 'Southern Thalassia',
-                        status: 'coming-soon'
-                    }
-                ]
-            },
-            {
-                 id: 'system',
-                 name: 'Solar System',
-                 status: 'coming-soon'
-            }
-        ];
-
-
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
             crs: L.CRS.Simple,
@@ -698,7 +556,6 @@
             attributionControl: false,
         });
         const poiTypeGroups = {
-
             "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
             "Structures": ["Castle", "Fortress", "Fort", "Tower", "Ruin", "Temple", "Shrine", "Mine", "Lighthouse", "Bridge", "Dungeon", "Lair", "Camp", "Asylum", "Landmark"],
             "Natural Features": ["Mountain", "Peak", "Forest", "Wood", "River", "Lake", "Cave", "Cavern", "Coast", "Bay", "Cove", "Swamp", "Marsh", "Desert", "Natural Landmark"],
@@ -714,10 +571,6 @@
             });
         }
         // --- END: POI Type Grouping Configuration ---
-
-        // --- Initialize Leaflet Map ---
-        // ... (rest of the script starts here) ...
-
 
         // --- Global variables ---
         let currentImageLayer = null;
@@ -830,20 +683,119 @@
             }
         }
 
-        // --- NEW: Function to Update Visible Markers based on Search and Filters ---
-                // --- MODIFIED: Function to Update Visible Markers based on Search and Group Filters ---
-                function updateVisibleMarkers() {
+        // --- NEW: Helper Function to Update the "Toggle All" Checkbox State ---
+        function updateToggleAllCheckboxState() {
+            const allSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all)');
+            const checkedSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all):checked');
+
+            if (allSpecificFilters.length === 0) {
+                // If there are no specific filters, keep 'Toggle All' checked (or hide it)
+                filterToggleAllCheckbox.checked = true;
+                filterToggleAllCheckbox.indeterminate = false; // Not in a mixed state
+            } else if (checkedSpecificFilters.length === 0) {
+                // None checked
+                filterToggleAllCheckbox.checked = false;
+                filterToggleAllCheckbox.indeterminate = false;
+            } else if (checkedSpecificFilters.length === allSpecificFilters.length) {
+                // All checked
+                filterToggleAllCheckbox.checked = true;
+                filterToggleAllCheckbox.indeterminate = false;
+            } else {
+                // Some checked, some not (optional: use indeterminate state)
+                filterToggleAllCheckbox.checked = false; // Or keep it unchecked
+                filterToggleAllCheckbox.indeterminate = true; // Visually indicates a mixed state
+            }
+        }
+
+        // --- Map Data Configuration ---
+        // IMPORTANT: Ensure you have created .webp versions of your map images!
+        // IMPORTANT: Add scalePixels and scaleKilometers for maps needing measurement.
+        const mapData = [
+            {
+                type: 'folder',
+                id: 'main_continent',
+                name: 'Content Map',
+                width: 8192,
+                height: 6144,
+                imageUrl: 'maps/Fair-Content.webp',
+                // --- ADD SCALE IF KNOWN ---
+                // scalePixels: 1000, // Example: 1000 pixels...
+                // scaleKilometers: 50, // Example: ...represents 50 km
+                blurb: "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
+                pointsOfInterest: [
+                    // No POIs here in this example, add if needed
+                ],
+                children: [
+                    {
+                        id: 'icebeach_detail',
+                        name: 'Icebeach',
+                        width: 7016,
+                        height: 4960,
+                        imageUrl: 'maps/IceBeach.webp',
+                        scalePixels: 3,
+                        scaleKilometers: 1,
+                        blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
+                        pointsOfInterest: [
+                            // ... (rest of pointsOfInterest remains the same)
+                             { coords: [3516, 3698], name: "Castgate", type: "City", description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate" },
+                             { coords: [2736, 4098], name: "Flamore", type: "Ruin", description: "This now ruined Wizard's college was a blacksite training ground.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry" },
+                             { coords: [2310, 2722], name: "Fractured Point", type: "Capital", description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point" },
+                             { coords: [3422, 4370], name: "Gernerum", type: "Village", description: "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
+                             { coords: [780, 1080], name: "Houlen Top", type: "Town", description: "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop" },
+                             { coords: [3876, 2990], name: "Icemoor", type: "Settlement", description: "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor" },
+                             { coords: [4358, 2976], name: "Little Rock Mentle Asylam", type: "Asylum", description: "This small institution holds some of the most hardened crimnals of the Gilded Nations.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum" },
+                             { coords: [2938, 4182], name: "Morana's Fang", type: "Mountain", description: "The tallest point in the world.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang" },
+                             { coords: [604, 2416], name: "Mt. Solaria", type: "Mountain", description: "A large mountian said to be inhabited by a dragon.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria" },
+                             { coords: [1664, 3372], name: "Ottiker", type: "Town", description: "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror" },
+                             { coords: [1210, 3924], name: "Quilt", type: "Hamlet", description: "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt" },
+                             { coords: [1356, 1620], name: "Shiverwallow", type: "Village", description: "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow" },
+                             { coords: [2154, 3588], name: "Sleetmond", type: "Settlement", description: "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond" },
+                             { coords: [1116, 4038], name: "The Foaming Burrow", type: "Cavern", description: "The origin of the river, how water bubbles forth outo of this cave.", wikiLink: "TBD" },
+                             { coords: [2036, 3074], name: "The Hope Tree", type: "Natural Landmark", description: "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree" },
+                             { coords: [2862, 4840], name: "Thrawbreak", type: "Hamlet", description: "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak" },
+                             { coords: [4266, 3192], name: "Whitedrift", type: "Settlement", description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift" },
+                             { coords: [4002, 3488], name: "Winrich Fortress", type: "Fortress", description: "The Ancient fortress of a long dead and powerful Lich", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress" },
+                             { coords: [716, 1508], name: "Wynwood Peak", type: "Mountain", description: "This smaller mountian is said to be a place were the...", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak" }
+                        ]
+                    },
+                    {
+                        id: 'Old-Lin',
+                        name: 'Old-Lin',
+                        status: 'coming-soon' // Mark as unavailable
+                    },
+                    {
+                        id: 'southern-thalassia',
+                        name: 'Southern Thalassia',
+                        status: 'coming-soon'
+                    }
+                ]
+            },
+            {
+                 id: 'system',
+                 name: 'Solar System',
+                 status: 'coming-soon'
+                 // No scale needed for this type of map perhaps
+            }
+        ];
+
+        // --- CORRECTED: Function to Update Visible Markers based on Search and Group Filters ---
+        function updateVisibleMarkers() {
             if (!currentMarkerGroup || allMapMarkers.length === 0) {
+                searchFilterContainer.style.display = 'none'; // Hide filters if no markers exist for map
                 return; // No markers to filter
+            } else {
+                 searchFilterContainer.style.display = 'block'; // Ensure filters are visible if markers exist
             }
 
             const searchTerm = poiSearchInput.value.toLowerCase().trim();
-            const activeGroupFilters = new Set(); // This set now holds GROUP names
-            poiFilterContainer.querySelectorAll('.poi-filter-checkbox:checked').forEach(checkbox => {
-                activeGroupFilters.add(checkbox.value); // Add the group name from the checkbox value
+
+            // Get the set of *specifically* checked group filters (EXCLUDING the 'Show All' toggle itself)
+            const activeSpecificGroupFilters = new Set();
+            poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all):checked').forEach(checkbox => {
+                 activeSpecificGroupFilters.add(checkbox.value);
             });
 
-            // console.log("Updating markers. Search:", searchTerm, "Active Groups:", activeGroupFilters);
+            // console.log("Updating markers. Search:", searchTerm, "Active Specific Filters:", activeSpecificGroupFilters);
 
             allMapMarkers.forEach(marker => {
                 const poi = marker.poiData;
@@ -851,17 +803,23 @@
 
                 const nameMatch = !searchTerm || poi.name.toLowerCase().includes(searchTerm);
 
-                // --- Group Filtering Logic ---
+                // --- CORRECTED Group Filtering Logic ---
                 const specificType = poi.type || 'Unknown';
-                const poiGroup = typeToGroupMap[specificType] || 'Other'; // Find the group this POI belongs to
-                const groupMatch = activeGroupFilters.size === 0 || activeGroupFilters.has(poiGroup); // Check if the POI's group is in the active filter set
-                // --- End Group Filtering Logic ---
+                const poiGroup = typeToGroupMap[specificType] || 'Other';
+                let groupMatch = false; // Default to false
+
+                // A marker's group matches ONLY if its group is in the set of specifically checked filters.
+                // If the set is empty (no specific filters checked), groupMatch will remain false.
+                if (activeSpecificGroupFilters.size > 0) {
+                    groupMatch = activeSpecificGroupFilters.has(poiGroup);
+                }
+                // --- End CORRECTED Group Filtering Logic ---
 
                 // Marker should be visible if:
-                // 1. Overall marker visibility is ON
+                // 1. Overall marker visibility is ON (toggle-markers-btn)
                 // 2. It matches the search term (or search is empty)
-                // 3. Its GROUP matches one of the active group filters (or no filters are active)
-                if (markersVisible && nameMatch && groupMatch) { // Use groupMatch here
+                // 3. Its group matches based on the *specific* checked filters.
+                if (markersVisible && nameMatch && groupMatch) {
                     if (!currentMarkerGroup.hasLayer(marker)) {
                         currentMarkerGroup.addLayer(marker);
                     }
@@ -873,15 +831,16 @@
             });
         }
 
-        // --- NEW: Function to Populate Filter Checkboxes ---
-                // --- MODIFIED: Function to Populate Filter Checkboxes (by Group) ---
-                function populateFilters(pointsOfInterest) {
+        // --- MODIFIED: Function to Populate Filter Checkboxes (by Group) ---
+        function populateFilters(pointsOfInterest) {
             // Clear existing filters (except the 'Toggle All' template)
             const existingFilters = poiFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
             existingFilters.forEach(el => el.remove());
 
             if (!pointsOfInterest || pointsOfInterest.length === 0) {
                 searchFilterContainer.style.display = 'none'; // Hide if no POIs
+                filterToggleAllCheckbox.checked = true; // Reset toggle all state
+                filterToggleAllCheckbox.indeterminate = false;
                 return;
             }
 
@@ -913,7 +872,13 @@
                 checkbox.value = groupName; // Value is the GROUP name
                 checkbox.checked = true; // Default to checked
                 checkbox.className = 'poi-filter-checkbox'; // Keep class for 'Toggle All'
-                checkbox.addEventListener('change', updateVisibleMarkers); // Add listener
+
+                // --- MODIFIED Event Listener ---
+                checkbox.addEventListener('change', () => {
+                    updateVisibleMarkers(); // Update the markers first
+                    updateToggleAllCheckboxState(); // Then update the master toggle's appearance
+                });
+                // --- END MODIFIED Event Listener ---
 
                 const label = document.createElement('label');
                 label.htmlFor = filterId;
@@ -925,6 +890,7 @@
             });
 
             filterToggleAllCheckbox.checked = true; // Ensure 'Toggle All' is checked initially
+            filterToggleAllCheckbox.indeterminate = false; // Reset indeterminate state
             searchFilterContainer.style.display = 'block'; // Show the filter section
         }
 
@@ -1030,11 +996,17 @@
 
             // Perform initial filtering/search (show all by default)
             updateVisibleMarkers();
+            updateToggleAllCheckboxState(); // Ensure toggle all is correct on load
 
-            // Show/hide marker toggle and measure buttons based on POIs existing
+            // Show/hide marker toggle based on POIs existing
             const hasPOIs = allMapMarkers.length > 0;
             toggleMarkersBtn.style.display = hasPOIs ? '' : 'none';
-            measureToolBtn.style.display = ''; // Always show measure button for now
+
+            // --- MODIFIED: Show/hide measure button based on scale info ---
+            const hasValidScale = typeof selectedMap.scalePixels === 'number' && selectedMap.scalePixels > 0 &&
+                                  typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
+            measureToolBtn.style.display = hasValidScale ? '' : 'none';
+            // --- END MODIFIED ---
 
             toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible); // Set initial state
 
@@ -1250,20 +1222,31 @@
         // --- NEW: Search Input Logic ---
         poiSearchInput.addEventListener('input', updateVisibleMarkers);
 
-        // --- NEW: Filter "Toggle All" Logic ---
+        // --- CORRECTED: Filter "Toggle All" Logic ---
         filterToggleAllCheckbox.addEventListener('change', () => {
             const isChecked = filterToggleAllCheckbox.checked;
-            poiFilterContainer.querySelectorAll('.poi-filter-checkbox').forEach(checkbox => {
+            // Set the state of all *other* checkboxes based on the master toggle
+            poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all)').forEach(checkbox => {
                 checkbox.checked = isChecked;
             });
+            // --- Reset indeterminate state when explicitly clicking Toggle All ---
+            filterToggleAllCheckbox.indeterminate = false;
+            // --- Crucially, trigger the update after changing the checkboxes ---
             updateVisibleMarkers();
         });
 
-        // --- NEW: Measurement Tool Logic ---
+        // --- MODIFIED: Measurement Tool Logic ---
         function handleMeasurementClick(e) {
-            if (!isMeasuring) return;
+            if (!isMeasuring || !currentlyLoadedMapId) return; // Exit if not measuring or no map loaded
 
             const clickPoint = e.latlng;
+            const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
+
+            // Check if the current map has valid scale information
+            const scalePx = currentMapInfo?.scalePixels;
+            const scaleKm = currentMapInfo?.scaleKilometers;
+            const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
+                                  typeof scaleKm === 'number' && scaleKm > 0;
 
             // Clear previous line/end marker if starting a new measurement pair
             measurementLayerGroup.eachLayer(layer => {
@@ -1289,7 +1272,17 @@
             } else {
                 // Second click: Calculate distance and draw line
                 const endPoint = clickPoint;
-                const distance = map.distance(measurementStartPoint, endPoint);
+                const pixelDistance = map.distance(measurementStartPoint, endPoint);
+                let distanceString = `${pixelDistance.toFixed(0)} pixels`; // Default to pixels
+
+                // Calculate KM if scale is valid
+                if (hasValidScale) {
+                    const kmDistance = (pixelDistance / scalePx) * scaleKm;
+                    distanceString = `${kmDistance.toFixed(2)} km`; // Use km with 2 decimal places
+                } else {
+                    console.warn(`Measurement: Scale information missing or invalid for map ${currentlyLoadedMapId}. Displaying pixels.`);
+                    distanceString += " (Scale unknown)"; // Indicate scale issue
+                }
 
                 // Add end marker
                  L.circleMarker(endPoint, {
@@ -1308,7 +1301,7 @@
                     dashArray: '5, 5',
                     interactive: false
                 }).addTo(measurementLayerGroup)
-                  .bindTooltip(`Distance: ${distance.toFixed(0)} pixels`, { permanent: true, direction: 'center', className: 'measure-tooltip' })
+                  .bindTooltip(`Distance: ${distanceString}`, { permanent: true, direction: 'center', className: 'measure-tooltip' }) // Use the calculated string
                   .openTooltip();
 
 
@@ -1359,14 +1352,14 @@
 
             if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
                 markersVisible = true; // Default to visible
-                loadMap(mapIdToLoad, false);
+                loadMap(mapIdToLoad, false); // loadMap now handles measure button visibility
             } else {
                 console.error("No loadable map data found for initialization.");
                 sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>'; // Keep sidebar basics
                 searchFilterContainer.style.display = 'none'; // Hide search/filter
                 mapBlurbElement.classList.remove('visible');
                 toggleMarkersBtn.style.display = 'none';
-                measureToolBtn.style.display = 'none';
+                measureToolBtn.style.display = 'none'; // Hide measure button if no map loads
                 history.replaceState(null, '', generateHash('', initialSidebarState));
                 return;
             }
