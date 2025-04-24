@@ -13,8 +13,6 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin=""/>
 
-    <!-- REMOVED: Leaflet-MiniMap CSS Link -->
-
     <!-- Google Font: EB Garamond -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -136,6 +134,55 @@
         }
         body.dark-theme #sidebar h2 { border-bottom-color: var(--glass-border-dark); }
 
+        /* --- NEW: Search and Filter Container --- */
+        #search-filter-container {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--glass-border-light);
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            display: none; /* Hidden by default, shown when map with POIs loads */
+        }
+        body.dark-theme #search-filter-container {
+            border-bottom-color: var(--glass-border-dark);
+        }
+        #poi-search-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        #poi-filter-container h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .filter-item {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .filter-item input[type="checkbox"] {
+            margin-right: 8px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        .filter-item label {
+            vertical-align: middle;
+            cursor: pointer;
+        }
+        /* --- END: Search and Filter Container --- */
+
+
         /* Sidebar List Styling */
         #map-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
         #map-list li { border-radius: 4px; margin-bottom: 3px; overflow: hidden; }
@@ -195,6 +242,10 @@
             transition: background-color 0.3s ease;
             position: relative; /* Needed for pseudo-elements */
             overflow: hidden; /* Needed for pseudo-elements */
+        }
+        /* --- NEW: Cursor style for measurement tool --- */
+        #map.measuring-cursor {
+            cursor: crosshair;
         }
         body.dark-theme #map {
             background-image: url('images/night-sky.png'); /* Base static stars */
@@ -326,10 +377,9 @@
         body.dark-theme .leaflet-control-zoom-out { border: 1px solid var(--glass-border-dark); border-top: none; }
         body.dark-theme .leaflet-control-zoom a:hover { background-color: rgba(70, 70, 70, 0.75); color: #fff; }
 
-        /* Marker Toggle Button */
-        #toggle-markers-btn {
+        /* --- Map Control Buttons Common Style --- */
+        .map-control-button {
             position: absolute;
-            top: 78px; /* Position below zoom controls */
             left: 12px; /* Adjusted slightly for default zoom control */
             z-index: 1000;
             background-color: var(--glass-bg-light);
@@ -346,8 +396,25 @@
             line-height: 30px; /* Center icon vertically */
             text-align: center;
             box-shadow: 0 1px 5px var(--shadow-color);
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-            content: ''; /* Required for pseudo */
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.2s ease;
+        }
+        .map-control-button:hover {
+            background-color: rgba(255, 255, 255, 0.75);
+        }
+        body.dark-theme .map-control-button {
+            background-color: var(--glass-bg-dark);
+            border-color: var(--glass-border-dark);
+            color: var(--text-primary);
+        }
+        body.dark-theme .map-control-button:hover {
+            background-color: rgba(70, 70, 70, 0.75);
+        }
+        /* --- END: Map Control Buttons Common Style --- */
+
+        /* Marker Toggle Button */
+        #toggle-markers-btn {
+            top: 78px; /* Position below zoom controls */
+            /* Inherits from .map-control-button */
         }
         #toggle-markers-btn::before {
             content: '📍';
@@ -358,17 +425,26 @@
             opacity: 0.5; /* Dimmed when hidden */
         }
 
-        #toggle-markers-btn:hover {
-            background-color: rgba(255, 255, 255, 0.75);
+        /* --- NEW: Measure Tool Button --- */
+        #measure-tool-btn {
+            top: 115px; /* Position below marker toggle */
+            /* Inherits from .map-control-button */
         }
-        body.dark-theme #toggle-markers-btn {
-            background-color: var(--glass-bg-dark);
-            border-color: var(--glass-border-dark);
-            color: var(--text-primary);
+        #measure-tool-btn::before {
+            content: '📏'; /* Ruler emoji */
+            opacity: 0.6; /* Default: slightly dimmed */
         }
-        body.dark-theme #toggle-markers-btn:hover {
-            background-color: rgba(70, 70, 70, 0.75);
+        #measure-tool-btn.active::before {
+            opacity: 1; /* Full opacity when active */
         }
+        #measure-tool-btn.active {
+             background-color: var(--active-bg); /* Use active color */
+        }
+        body.dark-theme #measure-tool-btn.active {
+             background-color: var(--active-bg); /* Use active color */
+        }
+        /* --- END: Measure Tool Button --- */
+
 
         /* Theme Toggle */
         .theme-switch-wrapper { display: flex; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--glass-border-light); flex-shrink: 0; white-space: nowrap; overflow: hidden; }
@@ -399,9 +475,15 @@
         body.dark-theme #wip-popup { border-color: var(--glass-border-dark); }
         body.dark-theme #wip-popup p { text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.6); }
 
-        /* --- REMOVED: Zoom Level Indicator CSS --- */
-
-        /* --- REMOVED: Minimap Styling CSS --- */
+        /* --- Measurement Tooltip --- */
+        .leaflet-tooltip.measure-tooltip {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            box-shadow: none;
+            font-size: 0.9rem;
+            padding: 3px 6px;
+        }
 
     </style>
 </head>
@@ -410,6 +492,21 @@
     <div class="container">
         <div id="sidebar">
             <h2>Select Map</h2>
+
+            <!-- NEW: Search and Filter Section -->
+            <div id="search-filter-container">
+                <input type="search" id="poi-search-input" placeholder="Search locations...">
+                <div id="poi-filter-container">
+                    <h3>Filter by Type:</h3>
+                    <!-- Checkboxes will be populated by JS -->
+                    <div class="filter-item">
+                        <input type="checkbox" id="filter-toggle-all" checked>
+                        <label for="filter-toggle-all">Show All / Hide All</label>
+                    </div>
+                </div>
+            </div>
+            <!-- END: Search and Filter Section -->
+
             <ul id="map-list">
                 <!-- Populated by JS -->
             </ul>
@@ -428,10 +525,11 @@
             <!-- Map Blurb Display -->
             <div id="map-blurb"></div>
 
-            <!-- Marker Toggle Button -->
-            <button id="toggle-markers-btn" title="Toggle Markers" class="leaflet-control"></button>
+            <!-- Map Control Buttons -->
+            <button id="toggle-markers-btn" title="Toggle Markers" class="map-control-button leaflet-control"></button>
+            <button id="measure-tool-btn" title="Measure Distance" class="map-control-button leaflet-control"></button>
+            <!-- END: Map Control Buttons -->
 
-            <!-- REMOVED: Zoom Level Indicator Div -->
 
             <!-- Bottom Link Bar -->
             <div id="bottom-link-bar">
@@ -439,7 +537,7 @@
                 <a href="https://jsnj.link/maps-blog-post" target="_blank">Blog</a> |
                 <a href="about.html" class="back-link">About </a> |
                 <a href="https://jsnj.link/map-hiraeth-source" target="_blank">Source </a>
-            </div>            
+            </div>
         </div>
     </div>
 
@@ -448,12 +546,11 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
 
-    <!-- REMOVED: Leaflet-MiniMap JS Script -->
-
     <!-- Main Application JS -->
     <script>
         // --- Map Data Configuration ---
         // IMPORTANT: Ensure you have created .webp versions of your map images!
+        // Simplified mapData with only ONE POI as a template
         const mapData = [
             {
                 type: 'folder',
@@ -464,17 +561,7 @@
                 imageUrl: 'maps/Fair-Content.webp',
                 blurb: "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
                 pointsOfInterest: [
-                { coords: [4066, 1082], name: "Cardiff", description: "..." },
-                    { coords: [3606, 590], name: "Hardoldford", description: "..." },
-                    { coords: [2584, 5272], name: "Delphi", description: "..." },
-                    { coords: [2344, 868], name: "Rockdrift", description: "..." },
-                    { coords: [2068, 612], name: "Attergo", description: "..." },
-                    { coords: [2124, 496], name: "Crystal Cove", description: "..." },
-                    { coords: [2496, 1224], name: "Xenithia", description: "..." },
-                    { coords: [2584, 1372], name: "Fook & Took", description: "..." },
-                    { coords: [3668, 2436], name: "Knoll", description: "..." },
-                    { coords: [2232, 6608], name: "Vermonbend", description: "..." },
-                    { coords: [5252, 2912], name: "Castgate", description: "..." }
+                    // No POIs here in this example, add if needed
                 ],
                 children: [
                     {
@@ -482,33 +569,111 @@
                         name: 'Icebeach',
                         width: 7016,
                         height: 4960,
-                        imageUrl: 'maps/IceBeach.webp', // <-- Changed to webp
-                        blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",                        pointsOfInterest: [
-                            { coords: [3516, 3698], name: "Castgate", description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate" },
-                            { coords: [4002, 3488], name: "Winrich Fortress", description: "The Ancient fortress of a long dead and powerful Lich", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress" },
-                            { coords: [4266, 3192], name: "Whitedrift", description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift" },
-                            { coords: [3876, 2990], name: "Icemoor", description: "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor" },
-                            { coords: [4358, 2976], name: "Little Rock Mentle Asylam", description: "This small institution holds some of the most hardened crimnals of the Gilded Nations.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum" },
-                            { coords: [1664, 3372], name: "Ottiker", description: "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror" },
-                            { coords: [2310, 2722], name: "Fractured Point", description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point" },
-                            { coords: [2036, 3074], name: "The Hope Tree", description: "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree" },
-                            { coords: [1210, 3924], name: "Quilt", description: "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt" },
-                            { coords: [2154, 3588], name: "Sleetmond", description: "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond" },
-                            { coords: [1116, 4038], name: "The Foaming Burrow", description: "The origin of the river, how water bubbles forth outo of this cave." },
-                            { coords: [2862, 4840], name: "Thrawbreak", description: "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak" },
-                            { coords: [3422, 4370], name: "Gernerum", description: "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
+                        imageUrl: 'maps/IceBeach.webp',
+                        blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
+                        pointsOfInterest: [
+                            {
+                                coords: [3516, 3698],
+                                name: "Castgate",
+                                type: "City",
+                                description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate" 
+                            },
+                            {
+                                coords: [4002, 3488],
+                                name: "Winrich Fortress",
+                                type: "Fortress",
+                                description: "The Ancient fortress of a long dead and powerful Lich",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress"
+                            },
+                            {
+                                coords: [4266, 3192],
+                                name: "Whitedrift",
+                                type: "Settlement",
+                                description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift"
+                            },
+                            {
+                                coords: [3876, 2990],
+                                name: "Icemoor",
+                                type: "Settlement",
+                                description: "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor"
+                            },
+                            {
+                                coords: [4358, 2976],
+                                name: "Little Rock Mentle Asylam",
+                                type: "Asylum",
+                                description: "This small institution holds some of the most hardened crimnals of the Gilded Nations.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum"
+                            },
+                            {
+                                coords: [1664, 3372],
+                                name: "Ottiker",
+                                type: "Town",
+                                description: "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror"
+                            },
+                            {
+                                coords: [2310, 2722],
+                                name: "Fractured Point",
+                                type: "Capital",
+                                description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
+                            },
+                            {
+                                coords: [2036, 3074],
+                                name: "The Hope Tree",
+                                type: "Natural Landmark",
+                                description: "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree"
+                            },
+                            {
+                                coords: [1210, 3924],
+                                name: "Quilt",
+                                type: "Hamlet",
+                                description: "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt"
+                            },
+                            {
+                                coords: [2154, 3588],
+                                name: "Sleetmond",
+                                type: "Settlement",
+                                description: "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.", 
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond"
+                            },
+                            {
+                                coords: [1116, 4038],
+                                name: "The Foaming Burrow",
+                                type: "Cavern",
+                                description: "The origin of the river, how water bubbles forth outo of this cave.",
+                                wikiLink:"TBD",
+                            },
+                            {
+                                coords: [2862, 4840],
+                                name: "Thrawbreak",
+                                type: "Hamlet",
+                                description: "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak"
+                            },
+                            {
+                                coords: [3422, 4370],
+                                name: "Gernerum",
+                                type: "",
+                                description: "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
                             { coords: [2938, 4182], name: "Morana's Fang", description: "The tallest point in the world.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang" },
                             { coords: [1356, 1620], name: "Shiverwallow", description: "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow" },
                             { coords: [604, 2416], name: "Mt. Solaria", description: "A large mountian said to be inhabited by a dragon.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria" },
                             { coords: [780, 1080], name: "Houlen Top", description: "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop" },
                             { coords: [716, 1508], name: "Wynwood Peak", description: "This smaller mountian is said to be a place were the...", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak" },
                             { coords: [2736, 4098], name: "Flamore", description: "This now ruined Wizard's college was a blacksite training ground.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry" },
+                           
                         ]
                     },
                     {
                         id: 'Old-Lin',
                         name: 'Old-Lin',
-                        status: 'coming-soon'
+                        status: 'coming-soon' // Mark as unavailable
                     },
                     {
                         id: 'southern-thalassia',
@@ -524,26 +689,50 @@
             }
         ];
 
+
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -3,
             maxZoom: 4,
             attributionControl: false,
-            // zoomControl: true, // Default is true, so this line can be removed or kept
         });
-        // REMOVED: Manual zoom control addition
+        const poiTypeGroups = {
+
+            "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
+            "Structures": ["Castle", "Fortress", "Fort", "Tower", "Ruin", "Temple", "Shrine", "Mine", "Lighthouse", "Bridge", "Dungeon", "Lair", "Camp", "Asylum", "Landmark"],
+            "Natural Features": ["Mountain", "Peak", "Forest", "Wood", "River", "Lake", "Cave", "Cavern", "Coast", "Bay", "Cove", "Swamp", "Marsh", "Desert", "Natural Landmark"],
+            "Other": ["Point of Interest", "Region", "Portal"],
+            "Unknown": ["Unknown"]
+        };
+
+        // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
+        const typeToGroupMap = {};
+        for (const groupName in poiTypeGroups) {
+            poiTypeGroups[groupName].forEach(type => {
+                typeToGroupMap[type] = groupName;
+            });
+        }
+        // --- END: POI Type Grouping Configuration ---
+
+        // --- Initialize Leaflet Map ---
+        // ... (rest of the script starts here) ...
 
 
         // --- Global variables ---
         let currentImageLayer = null;
-        let currentMarkerGroup = null;
+        let currentMarkerGroup = null; // Holds currently *visible* markers
+        let allMapMarkers = []; // Holds *all* markers for the loaded map
         let currentBounds = null;
         let currentlyLoadedMapId = null;
         let currentSidebarState = 'o';
-        let markersVisible = true;
-        // REMOVED: currentMinimapControl variable
+        let markersVisible = true; // Overall visibility toggle state
         const transitionDuration = 300; // ms for sidebar animation
+
+        // --- NEW: Measurement Tool State ---
+        let isMeasuring = false;
+        let measurementStartPoint = null;
+        let measurementLayerGroup = L.layerGroup().addTo(map); // For temp markers/lines
 
         // --- DOM Elements ---
         const container = document.querySelector('.container');
@@ -552,9 +741,16 @@
         const toggleBtn = document.getElementById('toggle-sidebar-btn');
         const themeToggle = document.getElementById('theme-checkbox');
         const bodyElement = document.body;
+        const mapElement = document.getElementById('map'); // Get map div
         const mapBlurbElement = document.getElementById('map-blurb');
         const toggleMarkersBtn = document.getElementById('toggle-markers-btn');
-        // REMOVED: zoomLevelIndicator DOM element reference
+        // --- NEW: Search/Filter/Measure Elements ---
+        const searchFilterContainer = document.getElementById('search-filter-container');
+        const poiSearchInput = document.getElementById('poi-search-input');
+        const poiFilterContainer = document.getElementById('poi-filter-container');
+        const filterToggleAllCheckbox = document.getElementById('filter-toggle-all');
+        const measureToolBtn = document.getElementById('measure-tool-btn');
+
 
         // --- Helper Functions ---
         function findMapRecursive(items, id) {
@@ -609,8 +805,6 @@
             return `#${mapId || ''}-s=${sidebarState}`;
         }
 
-        // --- REMOVED: Function to Update Zoom Level Display ---
-
         // --- Function to Set Sidebar State ---
         function setSidebarState(state, updateHash = true) {
             const shouldBeCollapsed = (state === 'c');
@@ -636,34 +830,136 @@
             }
         }
 
-        // --- Function to Load/Switch Map ---
-        function loadMap(mapId, updateHash = true) {
-            const selectedMap = findMapRecursive(mapData, mapId);
+        // --- NEW: Function to Update Visible Markers based on Search and Filters ---
+                // --- MODIFIED: Function to Update Visible Markers based on Search and Group Filters ---
+                function updateVisibleMarkers() {
+            if (!currentMarkerGroup || allMapMarkers.length === 0) {
+                return; // No markers to filter
+            }
 
-            if (!selectedMap || selectedMap.status === 'coming-soon') {
-                console.warn("Attempted to load map data not found or coming soon:", mapId);
-                if (selectedMap) {
-                     alert(`The map "${selectedMap.name}" is coming soon!`);
+            const searchTerm = poiSearchInput.value.toLowerCase().trim();
+            const activeGroupFilters = new Set(); // This set now holds GROUP names
+            poiFilterContainer.querySelectorAll('.poi-filter-checkbox:checked').forEach(checkbox => {
+                activeGroupFilters.add(checkbox.value); // Add the group name from the checkbox value
+            });
+
+            // console.log("Updating markers. Search:", searchTerm, "Active Groups:", activeGroupFilters);
+
+            allMapMarkers.forEach(marker => {
+                const poi = marker.poiData;
+                if (!poi) return;
+
+                const nameMatch = !searchTerm || poi.name.toLowerCase().includes(searchTerm);
+
+                // --- Group Filtering Logic ---
+                const specificType = poi.type || 'Unknown';
+                const poiGroup = typeToGroupMap[specificType] || 'Other'; // Find the group this POI belongs to
+                const groupMatch = activeGroupFilters.size === 0 || activeGroupFilters.has(poiGroup); // Check if the POI's group is in the active filter set
+                // --- End Group Filtering Logic ---
+
+                // Marker should be visible if:
+                // 1. Overall marker visibility is ON
+                // 2. It matches the search term (or search is empty)
+                // 3. Its GROUP matches one of the active group filters (or no filters are active)
+                if (markersVisible && nameMatch && groupMatch) { // Use groupMatch here
+                    if (!currentMarkerGroup.hasLayer(marker)) {
+                        currentMarkerGroup.addLayer(marker);
+                    }
+                } else {
+                    if (currentMarkerGroup.hasLayer(marker)) {
+                        currentMarkerGroup.removeLayer(marker);
+                    }
                 }
-                // Clear map elements if loading fails or is 'coming soon'
-                if (currentImageLayer) map.removeLayer(currentImageLayer);
-                if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-                // REMOVED: Minimap removal
-                currentImageLayer = null;
-                currentMarkerGroup = null;
-                // REMOVED: Minimap variable reset
-                currentlyLoadedMapId = null; // Reset loaded ID
-                mapBlurbElement.classList.remove('visible');
-                toggleMarkersBtn.style.display = 'none'; // Hide marker toggle
-                // REMOVED: Zoom display reset
-                // Update hash to reflect no map loaded
-                if (updateHash) {
-                    history.pushState(null, '', generateHash('', currentSidebarState));
-                }
+            });
+        }
+
+        // --- NEW: Function to Populate Filter Checkboxes ---
+                // --- MODIFIED: Function to Populate Filter Checkboxes (by Group) ---
+                function populateFilters(pointsOfInterest) {
+            // Clear existing filters (except the 'Toggle All' template)
+            const existingFilters = poiFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
+            existingFilters.forEach(el => el.remove());
+
+            if (!pointsOfInterest || pointsOfInterest.length === 0) {
+                searchFilterContainer.style.display = 'none'; // Hide if no POIs
                 return;
             }
 
-            // Prevent reload only if map ID is the same
+            // Determine which groups are relevant for *this specific map*
+            const relevantGroups = new Set();
+            pointsOfInterest.forEach(poi => {
+                const specificType = poi.type || 'Unknown';
+                const group = typeToGroupMap[specificType] || 'Other'; // Find group, default to 'Other'
+                relevantGroups.add(group);
+            });
+
+            // Sort group names alphabetically for consistent order
+            const sortedGroups = Array.from(relevantGroups).sort();
+
+            // Create checkboxes for relevant groups
+            sortedGroups.forEach(groupName => {
+                // Don't create a checkbox if the group is empty or shouldn't be shown
+                if (!groupName || (poiTypeGroups[groupName] && poiTypeGroups[groupName].length === 0)) {
+                    return;
+                }
+
+                const filterId = `filter-group-${groupName.replace(/\s+/g, '-')}`; // Create safe ID
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = filterId;
+                checkbox.value = groupName; // Value is the GROUP name
+                checkbox.checked = true; // Default to checked
+                checkbox.className = 'poi-filter-checkbox'; // Keep class for 'Toggle All'
+                checkbox.addEventListener('change', updateVisibleMarkers); // Add listener
+
+                const label = document.createElement('label');
+                label.htmlFor = filterId;
+                label.textContent = groupName; // Label is the GROUP name
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                poiFilterContainer.appendChild(div);
+            });
+
+            filterToggleAllCheckbox.checked = true; // Ensure 'Toggle All' is checked initially
+            searchFilterContainer.style.display = 'block'; // Show the filter section
+        }
+
+
+        // --- Function to Load/Switch Map ---
+        function loadMap(mapId, updateHash = true) {
+            // --- Deactivate measurement tool if active ---
+            if (isMeasuring) {
+                toggleMeasurementTool(); // Turn it off
+            }
+            // --- Clear previous measurement graphics ---
+            measurementLayerGroup.clearLayers();
+
+            const selectedMap = findMapRecursive(mapData, mapId);
+
+            // --- Clear Search/Filter UI ---
+            poiSearchInput.value = '';
+            populateFilters([]); // Clear and hide filters initially
+
+            if (!selectedMap || selectedMap.status === 'coming-soon') {
+                console.warn("Attempted to load map data not found or coming soon:", mapId);
+                if (selectedMap) { alert(`The map "${selectedMap.name}" is coming soon!`); }
+                if (currentImageLayer) map.removeLayer(currentImageLayer);
+                if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
+                currentImageLayer = null;
+                currentMarkerGroup = null;
+                allMapMarkers = []; // Clear marker cache
+                currentlyLoadedMapId = null;
+                mapBlurbElement.classList.remove('visible');
+                toggleMarkersBtn.style.display = 'none';
+                measureToolBtn.style.display = 'none'; // Hide measure button too
+                if (updateHash) { history.pushState(null, '', generateHash('', currentSidebarState)); }
+                return;
+            }
+
             if (mapId === currentlyLoadedMapId) {
                  console.log(`Map ${mapId} is already loaded.`);
                  if (updateHash) {
@@ -678,26 +974,23 @@
 
             console.log(`Loading map: ${selectedMap.name} (ID: ${mapId})`);
 
-            // --- Map Loading Logic ---
-            // Remove previous layers/controls
+            // Remove previous layers
             if (currentImageLayer) map.removeLayer(currentImageLayer);
-            if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-            // REMOVED: Minimap removal
+            if (currentMarkerGroup) map.removeLayer(currentMarkerGroup); // Remove old visible group
 
-            currentMarkerGroup = L.layerGroup(); // Create new marker group
+            // --- Reset marker state ---
+            currentMarkerGroup = L.layerGroup(); // Create new group for *visible* markers
+            allMapMarkers = []; // Reset the cache of all markers for this map
 
             const mapHeight = selectedMap.height;
             const mapWidth = selectedMap.width;
             if (isNaN(mapHeight) || isNaN(mapWidth) || !selectedMap.imageUrl) {
                 console.error(`Invalid dimensions or missing imageUrl for map ID ${mapId}`);
-                // Handle error state similar to 'coming soon'
                 mapBlurbElement.classList.remove('visible');
                 toggleMarkersBtn.style.display = 'none';
-                // REMOVED: Zoom display reset
+                measureToolBtn.style.display = 'none';
                 currentlyLoadedMapId = null;
-                if (updateHash) {
-                    history.pushState(null, '', generateHash('', currentSidebarState));
-                }
+                if (updateHash) { history.pushState(null, '', generateHash('', currentSidebarState)); }
                 return;
             }
             currentBounds = [[0, 0], [mapHeight, mapWidth]];
@@ -706,39 +999,53 @@
             currentImageLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds).addTo(map);
 
             // Add Points of Interest
-            (selectedMap.pointsOfInterest || []).forEach(point => {
+            const points = selectedMap.pointsOfInterest || [];
+            populateFilters(points); // Populate filters based on *this* map's POIs
+
+            points.forEach(point => {
                 if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
                     if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
                          const marker = L.marker(point.coords);
+                         // --- Store POI data directly on the marker ---
+                         marker.poiData = point;
+                         // --- Build Popup ---
                          let popupContent = '';
                          if (point.wikiLink) {
                              popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`;
                          } else {
                              popupContent += `<h3>${point.name}</h3>`;
                          }
+                         popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`; // Display type
                          popupContent += `<p>${point.description || ''}</p>`;
                          marker.bindPopup(popupContent);
-                         marker.addTo(currentMarkerGroup);
+
+                         // Add to the list of all markers for this map
+                         allMapMarkers.push(marker);
                     } else { console.warn(`POI coordinates out of bounds for map ${selectedMap.name}: ${point.name}`, point.coords); }
                 } else { console.warn(`Invalid coordinates for POI: ${point.name}`, point.coords); }
             });
 
-            // Add marker group if visible
-            if (markersVisible) {
-                currentMarkerGroup.addTo(map);
-            }
-            toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
-            toggleMarkersBtn.style.display = ''; // Ensure button is visible
+            // Add marker group to map (it's initially empty, updateVisibleMarkers will populate)
+            currentMarkerGroup.addTo(map);
+
+            // Perform initial filtering/search (show all by default)
+            updateVisibleMarkers();
+
+            // Show/hide marker toggle and measure buttons based on POIs existing
+            const hasPOIs = allMapMarkers.length > 0;
+            toggleMarkersBtn.style.display = hasPOIs ? '' : 'none';
+            measureToolBtn.style.display = ''; // Always show measure button for now
+
+            toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible); // Set initial state
 
             map.fitBounds(currentBounds);
 
             // Update Map Blurb
-                        // Update Map Blurb
-                        if (selectedMap.blurb) {
-                mapBlurbElement.innerHTML = selectedMap.blurb; // <-- CHANGE HERE
+            if (selectedMap.blurb) {
+                mapBlurbElement.innerHTML = selectedMap.blurb;
                 mapBlurbElement.classList.add('visible');
             } else {
-                mapBlurbElement.innerHTML = ''; // <-- CHANGE HERE for consistency
+                mapBlurbElement.innerHTML = '';
                 mapBlurbElement.classList.remove('visible');
             }
 
@@ -850,7 +1157,6 @@
         function applyTheme(theme) {
             if (theme === 'dark') { bodyElement.classList.add('dark-theme'); themeToggle.checked = true; }
             else { bodyElement.classList.remove('dark-theme'); themeToggle.checked = false; }
-            // REMOVED: Minimap redraw hack
         }
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
@@ -859,17 +1165,26 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         applyTheme(savedTheme);
 
-        // --- Helper: Log Coordinates on Click ---
+        // --- Helper: Log Coordinates on Click (Modified) ---
         map.on('click', function(e) {
-            if (currentBounds) { console.log(`Map clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}] (Y, X from bottom-left)`); }
+            // --- Only log if not in measurement mode ---
+            if (!isMeasuring && currentBounds) {
+                console.log(`Map clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}] (Y, X from bottom-left)`);
+            }
+            // --- Measurement logic is handled in its own listener now ---
         });
 
-        // --- REMOVED: Update Zoom Level on Zoom End Listener ---
 
         // --- Handle Hash Changes / Back/Forward Navigation ---
         window.addEventListener('popstate', (event) => {
             console.log("Popstate event. State:", event.state, "New hash:", window.location.hash);
             const { mapId: mapIdFromHash, sidebarState: stateFromHash } = parseHash();
+
+            // --- Deactivate measurement tool if active ---
+            if (isMeasuring) {
+                toggleMeasurementTool(); // Turn it off
+            }
+            measurementLayerGroup.clearLayers(); // Clear any leftover graphics
 
             // Check if map needs changing
             if (mapIdFromHash && mapIdFromHash !== currentlyLoadedMapId) {
@@ -879,35 +1194,37 @@
                     loadMap(mapIdFromHash, false); // Don't update history again
                 } else {
                     console.log("Popstate: Map is coming soon, not loading.", mapIdFromHash);
-                    // Potentially clear the map if navigating back to a 'coming soon' state
                      if (currentImageLayer) map.removeLayer(currentImageLayer);
                      if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-                     // REMOVED: Minimap removal
                      currentImageLayer = null;
                      currentMarkerGroup = null;
-                     // REMOVED: Minimap variable reset
+                     allMapMarkers = []; // Clear marker cache
                      currentlyLoadedMapId = null;
                      mapBlurbElement.classList.remove('visible');
                      toggleMarkersBtn.style.display = 'none';
-                     // REMOVED: Zoom display reset
+                     measureToolBtn.style.display = 'none';
+                     // --- Clear Search/Filter UI ---
+                     poiSearchInput.value = '';
+                     populateFilters([]);
                      // Update sidebar active state
                      document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
                      const comingSoonItem = document.querySelector(`#map-list [data-map-id="${mapIdFromHash}"]`);
-                     if (comingSoonItem) comingSoonItem.classList.add('active'); // Highlight coming soon item
+                     if (comingSoonItem) comingSoonItem.classList.add('active');
                 }
             } else if (!mapIdFromHash && currentlyLoadedMapId) {
-                 // Handle case where hash becomes empty (e.g., back to initial state before map load)
                  console.log("Popstate: Hash cleared, unloading map.");
                  if (currentImageLayer) map.removeLayer(currentImageLayer);
                  if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-                 // REMOVED: Minimap removal
                  currentImageLayer = null;
                  currentMarkerGroup = null;
-                 // REMOVED: Minimap variable reset
+                 allMapMarkers = []; // Clear marker cache
                  currentlyLoadedMapId = null;
                  mapBlurbElement.classList.remove('visible');
                  toggleMarkersBtn.style.display = 'none';
-                 // REMOVED: Zoom display reset
+                 measureToolBtn.style.display = 'none';
+                 // --- Clear Search/Filter UI ---
+                 poiSearchInput.value = '';
+                 populateFilters([]);
                  document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
             }
 
@@ -921,18 +1238,108 @@
         // --- Marker Toggle Button Logic ---
         toggleMarkersBtn.addEventListener('click', () => {
             markersVisible = !markersVisible;
-            if (currentMarkerGroup) {
-                if (markersVisible) {
-                    map.addLayer(currentMarkerGroup);
-                    toggleMarkersBtn.title = "Hide Markers";
-                } else {
-                    map.removeLayer(currentMarkerGroup);
-                    toggleMarkersBtn.title = "Show Markers";
-                }
-                toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
-            }
+            toggleMarkersBtn.title = markersVisible ? "Hide Markers" : "Show Markers";
+            toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
+
+            // Re-run the filter logic to add/remove markers based on the new overall visibility
+            updateVisibleMarkers();
+
             console.log(`Markers toggled. Visible: ${markersVisible}`);
         });
+
+        // --- NEW: Search Input Logic ---
+        poiSearchInput.addEventListener('input', updateVisibleMarkers);
+
+        // --- NEW: Filter "Toggle All" Logic ---
+        filterToggleAllCheckbox.addEventListener('change', () => {
+            const isChecked = filterToggleAllCheckbox.checked;
+            poiFilterContainer.querySelectorAll('.poi-filter-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateVisibleMarkers();
+        });
+
+        // --- NEW: Measurement Tool Logic ---
+        function handleMeasurementClick(e) {
+            if (!isMeasuring) return;
+
+            const clickPoint = e.latlng;
+
+            // Clear previous line/end marker if starting a new measurement pair
+            measurementLayerGroup.eachLayer(layer => {
+                if (layer instanceof L.Polyline || (layer.options && layer.options.isEndPoint)) {
+                    measurementLayerGroup.removeLayer(layer);
+                }
+            });
+
+            if (!measurementStartPoint) {
+                // First click: Set start point
+                measurementStartPoint = clickPoint;
+                // Add a visual marker for the start point
+                L.circleMarker(measurementStartPoint, {
+                    radius: 5,
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.8,
+                    interactive: false // Don't capture clicks
+                }).addTo(measurementLayerGroup)
+                  .bindTooltip("Start point. Click second point.", { permanent: false, direction: 'top', className: 'measure-tooltip' })
+                  .openTooltip();
+
+            } else {
+                // Second click: Calculate distance and draw line
+                const endPoint = clickPoint;
+                const distance = map.distance(measurementStartPoint, endPoint);
+
+                // Add end marker
+                 L.circleMarker(endPoint, {
+                    radius: 5,
+                    color: 'blue',
+                    fillColor: '#30f',
+                    fillOpacity: 0.8,
+                    interactive: false,
+                    isEndPoint: true // Custom option to identify for clearing
+                }).addTo(measurementLayerGroup);
+
+                // Draw the line
+                L.polyline([measurementStartPoint, endPoint], {
+                    color: 'yellow',
+                    weight: 2,
+                    dashArray: '5, 5',
+                    interactive: false
+                }).addTo(measurementLayerGroup)
+                  .bindTooltip(`Distance: ${distance.toFixed(0)} pixels`, { permanent: true, direction: 'center', className: 'measure-tooltip' })
+                  .openTooltip();
+
+
+                // Reset for the next measurement
+                measurementStartPoint = null;
+                // Keep the start marker of the *completed* measurement until the next click
+            }
+        }
+
+        function toggleMeasurementTool() {
+            isMeasuring = !isMeasuring;
+            measureToolBtn.classList.toggle('active', isMeasuring);
+            mapElement.classList.toggle('measuring-cursor', isMeasuring);
+
+            if (isMeasuring) {
+                measureToolBtn.title = "Deactivate Measure Tool (Click map)";
+                map.on('click', handleMeasurementClick);
+                // Clear any previous points when activating
+                measurementLayerGroup.clearLayers();
+                measurementStartPoint = null;
+            } else {
+                measureToolBtn.title = "Measure Distance";
+                map.off('click', handleMeasurementClick);
+                // Optionally clear graphics when deactivating, or leave the last one
+                // measurementLayerGroup.clearLayers(); // Uncomment to clear on deactivate
+                measurementStartPoint = null; // Always reset start point
+            }
+        }
+
+        measureToolBtn.addEventListener('click', toggleMeasurementTool);
+
 
         // --- Initial Page Load Logic ---
         function initializeApp() {
@@ -940,7 +1347,6 @@
             let mapToLoadData = findMapRecursive(mapData, initialMapId);
             let mapIdToLoad = initialMapId;
 
-            // If hash points to 'coming soon' or invalid, find the first available default
             if (!mapToLoadData || mapToLoadData.status === 'coming-soon') {
                 console.log("Initial hash map not loadable, finding default.");
                 mapIdToLoad = findFirstLoadableIdRecursive(mapData);
@@ -949,23 +1355,22 @@
 
             console.log("Initializing App. Map to Load:", mapIdToLoad, "Initial Sidebar State:", initialSidebarState);
 
-            setSidebarState(initialSidebarState, false); // Set sidebar first
+            setSidebarState(initialSidebarState, false);
 
             if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
                 markersVisible = true; // Default to visible
-                loadMap(mapIdToLoad, false); // Load map without pushing history initially
+                loadMap(mapIdToLoad, false);
             } else {
                 console.error("No loadable map data found for initialization.");
-                sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>';
+                sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>'; // Keep sidebar basics
+                searchFilterContainer.style.display = 'none'; // Hide search/filter
                 mapBlurbElement.classList.remove('visible');
                 toggleMarkersBtn.style.display = 'none';
-                // REMOVED: Zoom display reset
-                // Ensure URL reflects the initial state (no map loaded)
+                measureToolBtn.style.display = 'none';
                 history.replaceState(null, '', generateHash('', initialSidebarState));
-                return; // Stop initialization here
+                return;
             }
 
-            // Correct the initial history entry to reflect the loaded state
             const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState);
             console.log("Replacing initial history state with:", correctInitialHash);
             history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', correctInitialHash);
