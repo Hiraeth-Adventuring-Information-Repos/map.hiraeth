@@ -134,8 +134,53 @@
         }
         body.dark-theme #sidebar h2 { border-bottom-color: var(--glass-border-dark); }
 
-        /* --- REMOVED: Search and Filter Container from Sidebar --- */
-        /* #search-filter-container { ... } */
+        /* Region Toggle Button */
+        #toggle-regions-btn {
+            top: 189px; /* Position below measure tool */
+        }
+        #toggle-regions-btn svg {
+            margin-top: 7px; /* Center the SVG icon */
+            opacity: 0.6; /* Default: slightly dimmed */
+        }
+        #toggle-regions-btn.active svg {
+            opacity: 1; /* Full opacity when active */
+        }
+        #toggle-regions-btn.active {
+            background-color: var(--active-bg); /* Use active color */
+        }
+
+        /* Region Filter Panel */
+        #region-filter-container {
+            position: absolute;
+            top: 185px; /* Align near the region button */
+            left: 50px; /* Position to the right of the button */
+            z-index: 999;
+            background-color: var(--glass-bg-light);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border-light);
+            color: var(--text-primary);
+            border-radius: 6px;
+            padding: 10px 15px;
+            width: 180px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            box-shadow: 0 1px 5px var(--shadow-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transform: scale(0.95);
+            transform-origin: top left;
+            pointer-events: none; /* Hidden by default */
+        }
+        #region-filter-container.visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        body.dark-theme #region-filter-container {
+            background-color: var(--glass-bg-dark);
+            border-color: var(--glass-border-dark);
+        }
 
         /* Sidebar List Styling */
         #map-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
@@ -694,6 +739,21 @@
             <button id="toggle-markers-btn" title="Toggle Markers" class="map-control-button leaflet-control" style="display: none;"></button>
             <button id="toggle-filters-btn" title="Toggle Filters" class="map-control-button leaflet-control" style="display: none;"></button> <!-- NEW Filter Button -->
             <button id="measure-tool-btn" title="Measure Distance" class="map-control-button leaflet-control" style="display: none;"></button>
+            <button id="toggle-regions-btn" title="Toggle Regions" class="map-control-button leaflet-control" style="display: none;">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M15,19L9,16.89V5L15,7.11V19M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"/>
+                </svg>
+            </button>
+            
+            <!-- Region Filter Panel -->
+            <div id="region-filter-container" class="leaflet-control">
+                <h3>Region Types:</h3>
+                <div class="filter-item">
+                    <input type="checkbox" id="region-toggle-all" checked>
+                    <label for="region-toggle-all">Show All / Hide All</label>
+                </div>
+                <!-- Region type filters will be added here -->
+            </div>
             <!-- END: Map Control Buttons -->
 
             <!-- NEW: Filter Panel (moved from sidebar) -->
@@ -739,6 +799,107 @@
     <script>
         let loadingProgressInterval = null;
         let loadingProgress = 0;
+        // Add to your global variables
+        let currentRegionGroup = null;
+        let regionsVisible = false;
+        let regionFiltersPanelVisible = false;
+
+        // Function to add regions to map (modified to use mapData structure)
+        function addRegionsToMap(mapId) {
+            // Clear previous regions
+            if (!currentRegionGroup) {
+                currentRegionGroup = L.layerGroup().addTo(map);
+            } else {
+                currentRegionGroup.clearLayers();
+            }
+            
+            // Find the map data
+            const selectedMap = findMapRecursive(mapData, mapId);
+            if (!selectedMap || !selectedMap.regions || !Array.isArray(selectedMap.regions)) {
+                console.log(`No regions found for map: ${mapId}`);
+                return;
+            }
+            
+            // Add each region as a polygon
+            selectedMap.regions.forEach(region => {
+                if (!region.coordinates || region.coordinates.length < 3) {
+                    console.warn(`Invalid coordinates for region: ${region.name}`);
+                    return;
+                }
+                
+                const polygon = L.polygon(region.coordinates, {
+                    color: region.color || '#3388ff',
+                    fillColor: region.fillColor || '#3388ff',
+                    fillOpacity: regionsVisible ? (region.fillOpacity || 0.2) : 0,
+                    weight: 2,
+                    opacity: regionsVisible ? 1 : 0
+                });
+                
+                // Add popup with region info
+                let popupContent = `<h3>${region.name}</h3>`;
+                if (region.description) {
+                    popupContent += `<p>${region.description}</p>`;
+                }
+                if (region.wikiLink) {
+                    popupContent += `<p><a href="${region.wikiLink}" target="_blank" rel="noopener noreferrer">Learn more</a></p>`;
+                }
+                polygon.bindPopup(popupContent);
+                
+                // Store region data with the polygon for filtering
+                polygon.regionData = region;
+                
+                // Add to the region group
+                currentRegionGroup.addLayer(polygon);
+                
+                // Ensure regions are behind markers
+                polygon.bringToBack();
+            });
+        }
+
+        // Populate region filters based on the loaded map
+        function populateRegionFilters(mapId) {
+            // Clear existing filters except toggle-all
+            const existingFilters = regionFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
+            existingFilters.forEach(el => el.remove());
+            
+            const selectedMap = findMapRecursive(mapData, mapId);
+            if (!selectedMap || !selectedMap.regions || !Array.isArray(selectedMap.regions) || selectedMap.regions.length === 0) {
+                toggleRegionsBtn.style.display = 'none';
+                regionFilterContainer.classList.remove('visible');
+                return;
+            }
+            
+            // Get unique region types
+            const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))];
+            
+            // Add filter for each type
+            regionTypes.forEach(type => {
+                const filterId = `filter-region-${type.replace(/\s+/g, '-')}`;
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = filterId;
+                checkbox.value = type;
+                checkbox.className = 'region-type-filter';
+                checkbox.checked = true;
+                
+                checkbox.addEventListener('change', updateVisibleRegions);
+                
+                const label = document.createElement('label');
+                label.htmlFor = filterId;
+                label.textContent = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                regionFilterContainer.appendChild(div);
+            });
+            
+            // Show regions button if there are regions
+            toggleRegionsBtn.style.display = regionTypes.length > 0 ? 'block' : 'none';
+        }
+
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
             crs: L.CRS.Simple,
@@ -932,10 +1093,27 @@
                         scaleKilometers: 1,
                         blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
                         pointsOfInterest: [
-                            // ... (rest of pointsOfInterest remains the same)
-                             { coords: [3516, 3698], name: "Castgate", type: "City", description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate" },
-                             { coords: [2736, 4098], name: "Flamore", type: "Ruin", description: "This now ruined Wizard's college was a blacksite training ground.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry" },
-                             { coords: [2310, 2722], name: "Fractured Point", type: "Capital", description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point" },
+                             {
+                                coords: [3516, 3698],
+                                name: "Castgate",
+                                type: "City",
+                                description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate"
+                             },
+                             {
+                                coords: [2736, 4098],
+                                name: "Flamore",
+                                type: "Ruin",
+                                description: "This now ruined Wizard's college was a blacksite training ground.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry"
+                             },
+                             {
+                                coords: [2310, 2722],
+                                name: "Fractured Point",
+                                type: "Capital",
+                                description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
+                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
+                             },
                              { coords: [3422, 4370], name: "Gernerum", type: "Village", description: "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
                              { coords: [780, 1080], name: "Houlen Top", type: "Town", description: "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop" },
                              { coords: [3876, 2990], name: "Icemoor", type: "Settlement", description: "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor" },
@@ -952,7 +1130,128 @@
                              { coords: [4266, 3192], name: "Whitedrift", type: "Settlement", description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift" },
                              { coords: [4002, 3488], name: "Winrich Fortress", type: "Fortress", description: "The Ancient fortress of a long dead and powerful Lich", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress" },
                              { coords: [716, 1508], name: "Wynwood Peak", type: "Mountain", description: "This smaller mountian is said to be a place were the...", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak" }
-                        ]
+                        ],
+                        regions: [
+                                {
+                                    id: "region-kingdom-of-icebeach",
+                                    name: "Kingdom of Icebeach",
+                                    description: "The northern kingdom known for its harsh climate",
+                                    type: "political",
+                                    color: "#3388ff",
+                                    fillColor: "#3388ff",
+                                    fillOpacity: 0.2,
+                                    wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach",
+                                    coordinates: [
+                                        [3000,2000],
+                                        [3680,2176],
+                                        [4000,2500],
+                                        [3800,3500],
+                                        [2900,3000],
+                                        [3000,2000]]
+                                    },
+                                    {
+                                    id: "region-winrich-glacier",
+                                    name: "Winrich Glacier",
+                                    description: "",
+                                    type: "terrain",
+                                    color: "#33aa33",
+                                    fillColor: "#33aa33",
+                                    fillOpacity: 0.2,
+                                    wikiLink: "",
+                                    coordinates: [
+                                        [3694,3695],
+                                        [3738,3777],
+                                        [3752,3818],
+                                        [3730,3841],
+                                        [3733,3887],
+                                        [3758,3910],
+                                        [3748,3942],
+                                        [3708,3935],
+                                        [3680,3940],
+                                        [3654,3919],
+                                        [3639,3936],
+                                        [3626,3944],
+                                        [3611,3944],
+                                        [3587,3955],
+                                        [3567,3965],
+                                        [3561,3972],
+                                        [3547,3991],
+                                        [3532,4006],
+                                        [3504,4030],
+                                        [3491,4035],
+                                        [3483,4041],
+                                        [3474,4046],
+                                        [3462,4065],
+                                        [3452,4074],
+                                        [3451,4087],
+                                        [3451,4095],
+                                        [3440,4095],
+                                        [3440,4123],
+                                        [3436,4138],
+                                        [3435,4143],
+                                        [3435,4158],
+                                        [3436,4173],
+                                        [3436,4179],
+                                        [3429,4183],
+                                        [3425,4185],
+                                        [3425,4205],
+                                        [3421,4228],
+                                        [3411,4242],
+                                        [3409,4261],
+                                        [3408,4285],
+                                        [3409,4304],
+                                        [3390,4292],
+                                        [3374,4273],
+                                        [3363,4265],
+                                        [3352,4241],
+                                        [3338,4232],
+                                        [3325,4236],
+                                        [3325,4256],
+                                        [3319,4261],
+                                        [3312,4264],
+                                        [3307,4269],
+                                        [3301,4285],
+                                        [3290,4284],
+                                        [3286,4291],
+                                        [3286,4291],
+                                        [3276,4281],
+                                        [3253,4246],
+                                        [3225,4234],
+                                        [3210,4244],
+                                        [3198,4256],
+                                        [3196,4273],
+                                        [3187,4298],
+                                        [3172,4311],
+                                        [3152,4286],
+                                        [3132,4244],
+                                        [3111,4285],
+                                        [3098,4273],
+                                        [3091,4285],
+                                        [3074,4267],
+                                        [3047,4217],
+                                        [3018,4265],
+                                        [2988,4222],
+                                        [3025,4190],
+                                        [2984,4145],
+                                        [3010,4111],
+                                        [3000,4094],
+                                        [3078,3988],
+                                        [3106,3985],
+                                        [3109,4036],
+                                        [3175,3917],
+                                        [3203,3923],
+                                        [3203,3950],
+                                        [3235,3877],
+                                        [3266,3844],
+                                        [3296,3859],
+                                        [3296,3878],
+                                        [3299,3862],
+                                        [3308,3899],
+                                        [3342,3835],
+                                        [3694,3695]
+                                ]
+                                }
+                            ]
                     },
                     {
                         id: 'Old-Lin',
@@ -1129,8 +1428,7 @@
         }
 
 
-        // --- Function to Load/Switch Map ---
-// --- Function to Load/Switch Map ---
+// --- Function to Load/Switch Map (Updated with Regions) ---
 function loadMap(mapId, updateHash = true) {
     // --- NEW: Reset and show loading indicator with progress bar ---
     if (loadingIndicator) {
@@ -1170,7 +1468,7 @@ function loadMap(mapId, updateHash = true) {
     }
     measurementLayerGroup.clearLayers();
 
-    // --- Hide Search/Filter UI during load ---
+    // --- Hide Search/Filter/Region UI during load ---
     searchControlContainer.style.display = 'none';
     searchResultsContainer.style.display = 'none';
     poiFilterContainer.classList.remove('visible');
@@ -1178,6 +1476,12 @@ function loadMap(mapId, updateHash = true) {
     filtersPanelVisible = false;
     toggleFiltersBtn.classList.remove('active');
     poiSearchInput.value = ''; // Clear search input
+    // --- NEW: Hide Region UI ---
+    toggleRegionsBtn.style.display = 'none';
+    regionFilterContainer.classList.remove('visible');
+    regionFiltersPanelVisible = false;
+    toggleRegionsBtn.classList.remove('active');
+    // --- END: Hide Region UI ---
 
     const selectedMap = findMapRecursive(mapData, mapId);
 
@@ -1187,14 +1491,21 @@ function loadMap(mapId, updateHash = true) {
     filterToggleAllCheckbox.checked = true;
     filterToggleAllCheckbox.indeterminate = false;
 
+    // --- NEW: Clear Region Filter Checkboxes ---
+    const existingRegionFilters = regionFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
+    existingRegionFilters.forEach(el => el.remove());
+    if (regionToggleAllCheckbox) regionToggleAllCheckbox.checked = true; // Check if exists
+    // --- END: Clear Region Filter Checkboxes ---
 
     if (!selectedMap || selectedMap.status === 'coming-soon') {
         console.warn("Attempted to load map data not found or coming soon:", mapId);
         if (selectedMap) { alert(`The map "${selectedMap.name}" is coming soon!`); }
         if (currentImageLayer) map.removeLayer(currentImageLayer);
         if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
+        if (currentRegionGroup) map.removeLayer(currentRegionGroup); // NEW: Remove regions
         currentImageLayer = null;
         currentMarkerGroup = null;
+        currentRegionGroup = null; // NEW: Reset region group
         allMapMarkers = [];
         currentlyLoadedMapId = null;
         mapBlurbElement.classList.remove('visible');
@@ -1202,6 +1513,7 @@ function loadMap(mapId, updateHash = true) {
         measureToolBtn.style.display = 'none';
         toggleFiltersBtn.style.display = 'none'; // Hide filter button
         searchControlContainer.style.display = 'none'; // Hide search
+        toggleRegionsBtn.style.display = 'none'; // NEW: Hide region button
         if (updateHash) { history.pushState(null, '', generateHash('', currentSidebarState)); }
 
         // --- NEW: Hide loading indicator on failure/coming soon ---
@@ -1234,10 +1546,15 @@ function loadMap(mapId, updateHash = true) {
     // Remove previous layers
     if (currentImageLayer) map.removeLayer(currentImageLayer);
     if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
+    if (currentRegionGroup) map.removeLayer(currentRegionGroup); // NEW: Remove regions
 
     // Reset marker state
     currentMarkerGroup = L.layerGroup();
     allMapMarkers = [];
+    // NEW: Reset region state
+    currentRegionGroup = L.layerGroup().addTo(map); // Add immediately so it's under markers
+    regionsVisible = false; // Reset visibility state
+    regionFiltersPanelVisible = false; // Reset panel state
 
     const mapHeight = selectedMap.height;
     const mapWidth = selectedMap.width;
@@ -1248,6 +1565,7 @@ function loadMap(mapId, updateHash = true) {
         measureToolBtn.style.display = 'none';
         toggleFiltersBtn.style.display = 'none';
         searchControlContainer.style.display = 'none';
+        toggleRegionsBtn.style.display = 'none'; // NEW: Hide region button
         currentlyLoadedMapId = null;
         if (updateHash) { history.pushState(null, '', generateHash('', currentSidebarState)); }
 
@@ -1351,6 +1669,7 @@ function loadMap(mapId, updateHash = true) {
          measureToolBtn.style.display = 'none';
          toggleFiltersBtn.style.display = 'none';
          searchControlContainer.style.display = 'none';
+         toggleRegionsBtn.style.display = 'none'; // NEW: Hide region button
     });
 
     // --- ADDED: Fallback timer to ensure loading completes ---
@@ -1366,16 +1685,13 @@ function loadMap(mapId, updateHash = true) {
     currentImageLayer.addTo(map);
     // --- END: Preload and Handler Fix ---
 
-
     // Add Points of Interest
     const points = selectedMap.pointsOfInterest || [];
-    populateFilters(points); // Populate filters (this now also handles showing/hiding the filter button)
+    populateFilters(points); // Populate POI filters
 
     points.forEach(point => {
         if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
             // Check bounds carefully: Lat (Y) is coord[0], Lng (X) is coord[1]
-            // Leaflet's CRS.Simple uses [y, x] but bounds are [[minY, minX], [maxY, maxX]]
-            // Our bounds are [[0, 0], [mapHeight, mapWidth]] -> minY=0, minX=0, maxY=mapHeight, maxX=mapWidth
             if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
                  const marker = L.marker(point.coords);
                  marker.poiData = point; // Store POI data
@@ -1398,7 +1714,12 @@ function loadMap(mapId, updateHash = true) {
 
     // Perform initial filtering/search (shows all markers by default, hides search results)
     updateVisibleMarkersAndSearch();
-    updateToggleAllCheckboxState(); // Ensure toggle all is correct
+    updateToggleAllCheckboxState(); // Ensure POI toggle all is correct
+
+    // --- NEW: Add Regions ---
+    addRegionsToMap(mapId);
+    populateRegionFilters(mapId); // Populate region filters
+    // --- END: Add Regions ---
 
     // Show/hide marker toggle and search based on POIs existing
     const hasPOIs = allMapMarkers.length > 0;
@@ -1410,7 +1731,12 @@ function loadMap(mapId, updateHash = true) {
                           typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
     measureToolBtn.style.display = hasValidScale ? 'block' : 'none';
 
-    toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible); // Set initial state
+    // --- NEW: Show/hide regions button based on regions existing ---
+    const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
+    toggleRegionsBtn.style.display = hasRegions ? 'block' : 'none';
+    // --- END: Show/hide regions button ---
+
+    toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible); // Set initial state for marker toggle
 
     // map.fitBounds(currentBounds); // Moved to finishLoading function
 
@@ -1449,6 +1775,212 @@ function loadMap(mapId, updateHash = true) {
         history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
     }
     console.log(`Finished setting up map load for: ${selectedMap.name}`); // Note: Actual finish is async
+}
+
+
+// --- Additional JavaScript for Region Toggle Logic ---
+
+// --- Region variables ---
+// let currentRegionGroup = null; // Defined globally earlier
+// let regionsVisible = false; // Defined globally earlier
+// let regionFiltersPanelVisible = false; // Defined globally earlier
+
+// --- Region DOM Elements ---
+const toggleRegionsBtn = document.getElementById('toggle-regions-btn');
+const regionFilterContainer = document.getElementById('region-filter-container');
+const regionToggleAllCheckbox = document.getElementById('region-toggle-all');
+
+// --- Toggle regions button click handler ---
+if (toggleRegionsBtn) {
+    toggleRegionsBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent map click
+        regionsVisible = !regionsVisible;
+        toggleRegionsBtn.title = regionsVisible ? "Hide Regions" : "Show Regions";
+        toggleRegionsBtn.classList.toggle('active', regionsVisible);
+
+        // Toggle filter panel visibility along with the main toggle
+        if (regionsVisible && !regionFiltersPanelVisible) {
+            toggleRegionFilterPanel(); // Show panel if turning regions on
+        } else if (!regionsVisible && regionFiltersPanelVisible) {
+            toggleRegionFilterPanel(); // Hide panel if turning regions off
+        }
+
+        updateVisibleRegions(); // Apply visibility changes
+    });
+}
+
+// --- Toggle region filter panel visibility ---
+function toggleRegionFilterPanel() {
+    regionFiltersPanelVisible = !regionFiltersPanelVisible;
+    if (regionFilterContainer) {
+        regionFilterContainer.classList.toggle('visible', regionFiltersPanelVisible);
+    }
+    // Note: We don't toggle the main button's active state here,
+    // that's tied to whether regions *are* visible, not just the panel.
+}
+
+// --- Update region visibility based on main toggle and filters ---
+function updateVisibleRegions() {
+    if (!currentRegionGroup) return;
+
+    // Get the currently checked region type filters
+    const typeFilters = regionFilterContainer ? regionFilterContainer.querySelectorAll('.region-type-filter:checked') : [];
+    const typeFilterValues = Array.from(typeFilters).map(cb => cb.value);
+    const allTypesChecked = regionToggleAllCheckbox ? regionToggleAllCheckbox.checked : true;
+
+    currentRegionGroup.eachLayer(layer => {
+        const region = layer.regionData;
+        if (!region) return;
+
+        // Determine if the region's type matches the selected filters
+        // A region matches if 'Show All' is checked OR its type is in the checked list
+        const typeMatch = allTypesChecked || typeFilterValues.includes(region.type);
+
+        // Set visibility based on *both* the main toggle AND the type filter match
+        if (regionsVisible && typeMatch) {
+            layer.setStyle({
+                opacity: 1, // Make border visible
+                fillOpacity: region.fillOpacity || 0.2 // Use defined fill opacity
+            });
+            layer.bringToBack(); // Ensure regions stay behind markers
+        } else {
+            layer.setStyle({
+                opacity: 0, // Hide border
+                fillOpacity: 0 // Hide fill
+            });
+        }
+    });
+}
+
+// --- Region "Toggle All" checkbox logic ---
+if (regionToggleAllCheckbox) {
+    regionToggleAllCheckbox.addEventListener('change', () => {
+        const isChecked = regionToggleAllCheckbox.checked;
+        if (regionFilterContainer) {
+            regionFilterContainer.querySelectorAll('.region-type-filter').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        }
+        regionToggleAllCheckbox.indeterminate = false; // Reset indeterminate state
+        updateVisibleRegions(); // Trigger update based on new filter state
+    });
+}
+
+// --- Helper Function to Update the Region "Toggle All" Checkbox State ---
+// (Call this after populating filters or when individual filters change)
+function updateRegionToggleAllCheckboxState() {
+    if (!regionFilterContainer || !regionToggleAllCheckbox) return;
+
+    const allSpecificFilters = regionFilterContainer.querySelectorAll('.region-type-filter');
+    const checkedSpecificFilters = regionFilterContainer.querySelectorAll('.region-type-filter:checked');
+
+    if (allSpecificFilters.length === 0) {
+        regionToggleAllCheckbox.checked = true;
+        regionToggleAllCheckbox.indeterminate = false;
+    } else if (checkedSpecificFilters.length === 0) {
+        regionToggleAllCheckbox.checked = false;
+        regionToggleAllCheckbox.indeterminate = false;
+    } else if (checkedSpecificFilters.length === allSpecificFilters.length) {
+        regionToggleAllCheckbox.checked = true;
+        regionToggleAllCheckbox.indeterminate = false;
+    } else {
+        // Partially checked
+        regionToggleAllCheckbox.checked = false; // Or true, depending on preference
+        regionToggleAllCheckbox.indeterminate = true;
+    }
+}
+
+
+// --- Prevent map click when clicking inside the region filter panel ---
+if (regionFilterContainer) {
+    regionFilterContainer.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent map click listener from firing
+    });
+}
+
+// --- Modify the map click handler to close the region filter panel ---
+map.on('click', function(e) {
+    // Only log if not in measurement mode
+    if (!isMeasuring && currentBounds) {
+        console.log(`Map clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}] (Y, X from bottom-left)`);
+    }
+
+    // Hide POI filter panel if clicking outside
+    if (filtersPanelVisible && poiFilterContainer && !poiFilterContainer.contains(e.originalEvent.target) && e.originalEvent.target !== toggleFiltersBtn && !toggleFiltersBtn.contains(e.originalEvent.target)) {
+         toggleFilterPanel();
+    }
+
+    // Hide search results if clicking outside
+    if (searchResultsContainer && searchResultsContainer.style.display === 'block' && !searchResultsContainer.contains(e.originalEvent.target) && e.originalEvent.target !== poiSearchInput) {
+        searchResultsContainer.style.display = 'none';
+    }
+
+    // --- NEW: Hide region filter panel if clicking outside ---
+    if (regionFiltersPanelVisible && regionFilterContainer && !regionFilterContainer.contains(e.originalEvent.target) && e.originalEvent.target !== toggleRegionsBtn && !toggleRegionsBtn.contains(e.originalEvent.target)) {
+        toggleRegionFilterPanel();
+    }
+    // --- END: Hide region filter panel ---
+
+    // Measurement logic is handled in its own listener now (handleMeasurementClick)
+});
+
+// --- Modify populateRegionFilters to update toggle all state ---
+function populateRegionFilters(mapId) {
+    // Clear existing filters except toggle-all
+    const existingFilters = regionFilterContainer ? regionFilterContainer.querySelectorAll('.filter-item:not(:first-child)') : [];
+    existingFilters.forEach(el => el.remove());
+
+    const selectedMap = findMapRecursive(mapData, mapId);
+    const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
+
+    if (!hasRegions || !regionFilterContainer) {
+        if (toggleRegionsBtn) toggleRegionsBtn.style.display = 'none';
+        if (regionFilterContainer) regionFilterContainer.classList.remove('visible');
+        regionFiltersPanelVisible = false; // Ensure panel state is false
+        if (toggleRegionsBtn) toggleRegionsBtn.classList.remove('active'); // Ensure button is not active
+        return;
+    }
+
+    // Get unique region types
+    const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))].sort();
+
+    // Add filter for each type
+    regionTypes.forEach(type => {
+        const filterId = `filter-region-${type.replace(/\s+/g, '-')}`;
+        const div = document.createElement('div');
+        div.className = 'filter-item';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = filterId;
+        checkbox.value = type;
+        checkbox.className = 'region-type-filter';
+        checkbox.checked = true; // Default to checked
+
+        checkbox.addEventListener('change', () => {
+            updateVisibleRegions(); // Update map display first
+            updateRegionToggleAllCheckboxState(); // Then update the master toggle appearance
+        });
+
+        const label = document.createElement('label');
+        label.htmlFor = filterId;
+        label.textContent = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        regionFilterContainer.appendChild(div);
+    });
+
+    // Show regions button if there are regions
+    if (toggleRegionsBtn) toggleRegionsBtn.style.display = 'block';
+
+    // Ensure panel is hidden initially and button is not active
+    regionFilterContainer.classList.remove('visible');
+    regionFiltersPanelVisible = false;
+    if (toggleRegionsBtn) toggleRegionsBtn.classList.remove('active');
+
+    // Set initial state of the "Toggle All" checkbox
+    updateRegionToggleAllCheckboxState();
 }
 
         // --- Populate Sidebar (Recursive Function) ---
