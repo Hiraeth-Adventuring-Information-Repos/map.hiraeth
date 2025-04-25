@@ -64,8 +64,8 @@
              background-size: .65em auto; padding-right: 1.5em;
         }
         #mapSelect { min-width: 200px; } /* Style map select */
-        #pointDescription, #regionDescription { height: 4.5em; resize: vertical; }
-        .controls button, .output-buttons button {
+        #pointDescription, #regionDescription, #mapBlurb { height: 4.5em; resize: vertical; }
+        .controls button, .output-buttons button, .summary-actions button, .json-modal-copy, .json-modal-close { /* Added modal buttons */
             padding: 4px 10px; cursor: pointer; color: #000000;
             border: 1px solid #808080; border-left-color: #ffffff;
             border-top-color: #ffffff; background-color: #c0c0c0;
@@ -73,13 +73,13 @@
             box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf;
             text-align: center;
         }
-        .controls button:active, .output-buttons button:active {
+        .controls button:active, .output-buttons button:active, .summary-actions button:active, .json-modal-copy:active, .json-modal-close:active { /* Added modal buttons */
              border: 1px solid #808080; border-right-color: #ffffff;
              border-bottom-color: #ffffff;
              box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
              background-color: #b0b0b0;
         }
-        .controls button:disabled, .output-buttons button:disabled {
+        .controls button:disabled, .output-buttons button:disabled, .summary-actions button:disabled { /* Added summary buttons */
             color: #808080; background-color: #c0c0c0; cursor: default;
             box-shadow: none; border: 1px solid #a0a0a0;
         }
@@ -109,28 +109,18 @@
         .edit-selection { margin-top: 8px; }
         .edit-selection label { font-weight: normal; font-size: 1em; margin-bottom: 3px; display: block; text-align: left; }
         #editPointSelect, #editRegionSelect { width: 100%; }
-        .output-area { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
-        .output-area label { font-weight: normal; font-size: 1em; margin-bottom: 2px; }
-        #pointsOutput, #regionsOutput {
-            width: 100%; height: 150px; font-family: "Courier New", monospace; font-size: 0.95em;
-            border: 1px solid #808080; background-color: #ffffff; color: #000000; padding: 5px;
-            resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto;
-            box-sizing: border-box; box-shadow: inset 1px 1px 1px #404040;
+        .map-summary { /* NEW Summary Area Style */
+            flex-grow: 1; display: flex; flex-direction: column; gap: 6px;
+            padding: 6px; border: 1px solid #808080; border-right-color: #ffffff;
+            border-bottom-color: #ffffff; background-color: #c0c0c0;
+            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
         }
-        .output-buttons { display: flex; gap: 8px; justify-content: flex-end;}
-        .output-buttons button { font-size: 0.9em; }
-        .import-area { padding: 8px 10px; border-top: 1px solid #808080; display: flex; flex-direction: column; gap: 4px; }
-        .import-area label { font-weight: normal; font-size: 1em; }
-        #importDataInput {
-            width: 100%; height: 80px; font-family: "Courier New", monospace; font-size: 0.95em;
-            border: 1px solid #808080; background-color: #ffffff; color: #000000; padding: 5px;
-            resize: vertical; box-sizing: border-box; box-shadow: inset 1px 1px 1px #404040;
-        }
-        .import-instructions { font-size: 0.9em; color: #404040; margin-top: -1px; }
-        .import-area button { align-self: flex-start; }
-        .import-options { display: flex; gap: 10px; margin-top: 4px; }
-        .import-option { display: flex; align-items: center; gap: 4px; }
-        .import-option input[type="radio"] { margin: 0; }
+        .map-summary h3 { margin: 0 0 5px 0; font-size: 1.1em; }
+        .summary-stats p { margin: 2px 0; font-size: 1em; }
+        .summary-stats span { font-weight: bold; }
+        .summary-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .summary-actions button { font-size: 0.9em; }
+
         .leaflet-popup-content-wrapper { background: #f0f0f0; color: #000000; border: 1px solid #808080; border-radius: 0; box-shadow: 2px 2px 3px rgba(0,0,0,0.3); }
         .leaflet-popup-content { font-family: inherit; font-size: 1em; margin: 8px 10px; }
         .leaflet-popup-tip-container { width: 20px; height: 10px; }
@@ -153,11 +143,80 @@
             border-radius: 50%;
             box-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
+
+        /* --- NEW JSON Modal Styles --- */
+        .json-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6); /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .json-modal-content {
+            background-color: #c0c0c0;
+            border: 1px solid #808080;
+            border-left-color: #ffffff; /* 3D effect */
+            border-top-color: #ffffff;
+            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf, 3px 3px 5px rgba(0,0,0,0.3); /* Inner + Outer shadow */
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        .json-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #808080;
+        }
+        .json-modal-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .json-modal-close {
+            font-size: 1.4em;
+            font-weight: bold;
+            line-height: 1;
+            padding: 0px 6px 2px 6px; /* Adjust padding for better look */
+        }
+        .json-modal-textarea {
+            width: 100%;
+            flex-grow: 1; /* Take available space */
+            min-height: 200px; /* Ensure minimum height */
+            font-family: "Courier New", monospace;
+            font-size: 0.95em;
+            border: 1px solid #808080;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            resize: none; /* Disable manual resize */
+            box-shadow: inset 1px 1px 1px #404040;
+            white-space: pre;
+            overflow: auto; /* Add scrollbars if needed */
+        }
+        .json-modal-copy {
+            align-self: flex-end; /* Position button to the right */
+        }
     </style>
 </head>
 <body>
 
     <div class="controls">
+        <!-- Map Selection & Loading Group -->
         <div class="control-group">
             <div class="mode-selector">
                 <div class="mode-tab active" data-mode="points">Points</div>
@@ -171,8 +230,26 @@
                 </select>
             </div>
             <div class="control-row">
-                <button id="loadMapBtn">Load Map</button>
+                <button id="loadMapBtn">Load Map & Data</button>
             </div>
+            <!-- Map Details -->
+            <div class="control-row">
+                <label for="scalePixels">Scale (Pixels):</label>
+                <input type="number" id="scalePixels" value="3" min="1">
+            </div>
+            <div class="control-row">
+                <label for="scaleKilometers">Scale (Units):</label>
+                <input type="number" id="scaleKilometers" value="1" min="0.1" step="0.1">
+            </div>
+            <div class="control-row">
+                <label for="mapBlurb">Map Blurb:</label>
+                <textarea id="mapBlurb" placeholder="Brief description of this map (HTML allowed)"></textarea>
+            </div>
+            <!-- Export Button -->
+            <div class="control-row">
+                 <button id="exportMapDataBtn" disabled>View/Export Map Data (JSON)</button> <!-- Updated Label -->
+            </div>
+            <!-- Removed Copy Complete JSON button from here -->
         </div>
 
         <!-- Point Controls -->
@@ -199,6 +276,7 @@
                 <button id="addPointBtn" disabled>Add New Point</button>
                 <button id="savePointChangesBtn" class="hidden">Save Changes</button>
                 <button id="cancelPointEditBtn" class="hidden">Cancel Edit</button>
+                <button id="clearPointsBtn" disabled>Clear All Points</button> <!-- Moved Clear button here -->
             </div>
         </div>
 
@@ -243,11 +321,12 @@
                 <button id="startRegionBtn" disabled>Start Region</button>
                 <button id="finishRegionBtn" class="hidden">Finish Region</button>
                 <button id="cancelRegionBtn" class="hidden">Cancel</button>
+                <button id="clearRegionsBtn" disabled>Clear All Regions</button> <!-- Moved Clear button here -->
             </div>
             <div class="control-row">
                 <button id="saveRegionChangesBtn" class="hidden">Save Changes</button>
                 <button id="addVerticesBtn" class="hidden">Add Vertices</button>
-                <button id="editVerticesBtn" class="hidden">Edit Vertices</button> <!-- NEW BUTTON -->
+                <button id="editVerticesBtn" class="hidden">Edit Vertices</button>
                 <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
             </div>
         </div>
@@ -259,6 +338,7 @@
     <div class="bottom-section">
         <div class="info-area">
             <div class="left-info">
+                <!-- Point Mode Info -->
                 <div class="point-info">
                     <span class="instructions">Click map for new coords:</span>
                     <div class="coords-section">
@@ -271,6 +351,7 @@
                         </select>
                     </div>
                 </div>
+                <!-- Region Mode Info -->
                 <div class="region-info hidden">
                     <span class="instructions">Click map to place vertices:</span>
                     <div class="coords-section">
@@ -284,42 +365,23 @@
                     </div>
                 </div>
             </div>
-            <div class="output-area">
-                <div class="point-output">
-                    <label for="pointsOutput">Points (Copy/Paste into mapData `pointsOfInterest` array):</label>
-                    <textarea id="pointsOutput" readonly></textarea>
-                    <div class="output-buttons">
-                        <button id="copyPointsBtn" disabled>Copy All</button>
-                        <button id="clearPointsBtn" disabled>Clear All</button>
-                    </div>
+
+            <!-- NEW Map Summary Area -->
+            <div class="map-summary">
+                <h3>Map Data Summary</h3>
+                <div class="summary-stats">
+                    <p>Points: <span id="points-count">0</span></p>
+                    <p>Regions: <span id="regions-count">0</span></p>
                 </div>
-                <div class="region-output hidden">
-                    <label for="regionsOutput">Regions (Copy/Paste into mapData `regions` array):</label>
-                    <textarea id="regionsOutput" readonly></textarea>
-                    <div class="output-buttons">
-                        <button id="copyRegionsBtn" disabled>Copy All</button>
-                        <button id="clearRegionsBtn" disabled>Clear All</button>
-                    </div>
+                <div class="summary-actions">
+                    <button id="viewJsonBtn" disabled>View Complete JSON</button>
+                    <button id="copyJsonBtn" disabled>Copy Complete JSON</button>
                 </div>
             </div>
+            <!-- Removed old output-area -->
         </div>
 
-        <div class="import-area">
-            <label for="importDataInput">Import Existing Data (Paste JS Array Literal or JSON Array Here):</label>
-            <textarea id="importDataInput" placeholder='[{coords:[y,x], name:"...", type:"..."}, {...}] or region data'></textarea>
-            <div class="import-options">
-                <div class="import-option">
-                    <input type="radio" id="importPoints" name="importType" value="points" checked>
-                    <label for="importPoints">Import as Points</label>
-                </div>
-                <div class="import-option">
-                    <input type="radio" id="importRegions" name="importType" value="regions">
-                    <label for="importRegions">Import as Regions</label>
-                </div>
-            </div>
-            <span class="import-instructions">Paste an array of point/region objects. Existing items with the same name will be skipped.</span>
-            <button id="importDataBtn">Import Data</button>
-        </div>
+        <!-- Removed Import Area -->
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -331,10 +393,14 @@
         const mapElement = document.getElementById('map');
         const mapSelect = document.getElementById('mapSelect');
         const loadMapBtn = document.getElementById('loadMapBtn');
+        const exportMapDataBtn = document.getElementById('exportMapDataBtn'); // Now acts as View/Export
         const statusDisplay = document.getElementById('status');
-        const importDataInput = document.getElementById('importDataInput');
-        const importDataBtn = document.getElementById('importDataBtn');
         const modeTabs = document.querySelectorAll('.mode-tab');
+
+        // Map Detail Elements
+        const scalePixelsInput = document.getElementById('scalePixels');
+        const scaleKilometersInput = document.getElementById('scaleKilometers');
+        const mapBlurbInput = document.getElementById('mapBlurb');
 
         // Point Elements
         const pointNameInput = document.getElementById('pointName');
@@ -345,10 +411,8 @@
         const savePointChangesBtn = document.getElementById('savePointChangesBtn');
         const cancelPointEditBtn = document.getElementById('cancelPointEditBtn');
         const coordsDisplay = document.getElementById('coords-display');
-        const pointsOutput = document.getElementById('pointsOutput');
-        const copyPointsBtn = document.getElementById('copyPointsBtn');
-        const clearPointsBtn = document.getElementById('clearPointsBtn');
         const editPointSelect = document.getElementById('editPointSelect');
+        const clearPointsBtn = document.getElementById('clearPointsBtn'); // Moved
 
         // Region Elements
         const regionNameInput = document.getElementById('regionName');
@@ -363,21 +427,23 @@
         const cancelRegionBtn = document.getElementById('cancelRegionBtn');
         const saveRegionChangesBtn = document.getElementById('saveRegionChangesBtn');
         const addVerticesBtn = document.getElementById('addVerticesBtn');
-        const editVerticesBtn = document.getElementById('editVerticesBtn'); // NEW
+        const editVerticesBtn = document.getElementById('editVerticesBtn');
         const cancelRegionEditBtn = document.getElementById('cancelRegionEditBtn');
-        const regionsOutput = document.getElementById('regionsOutput');
-        const copyRegionsBtn = document.getElementById('copyRegionsBtn');
-        const clearRegionsBtn = document.getElementById('clearRegionsBtn');
         const editRegionSelect = document.getElementById('editRegionSelect');
         const regionVerticesCount = document.getElementById('region-vertices-count');
+        const clearRegionsBtn = document.getElementById('clearRegionsBtn'); // Moved
 
         // Mode-specific UI groups
         const pointControls = document.querySelector('.point-controls');
         const regionControls = document.querySelector('.region-controls');
         const pointInfo = document.querySelector('.point-info');
         const regionInfo = document.querySelector('.region-info');
-        const pointOutput = document.querySelector('.point-output');
-        const regionOutput = document.querySelector('.region-output');
+
+        // NEW Summary Elements
+        const pointsCountDisplay = document.getElementById('points-count');
+        const regionsCountDisplay = document.getElementById('regions-count');
+        const viewJsonBtn = document.getElementById('viewJsonBtn');
+        const copyJsonBtn = document.getElementById('copyJsonBtn');
 
         // --- State Variables ---
         let map = null; // Initialize map variable
@@ -391,6 +457,7 @@
         let currentlyEditingPointIndex = -1;
         let currentlyEditingRegionIndex = -1;
         let currentMode = 'points'; // 'points' or 'regions'
+        let currentMapId = null; // Store the ID of the loaded map
 
         // Region creation state
         let isCreatingRegion = false;
@@ -399,20 +466,17 @@
 
         // Region vertex adding/editing state
         let isAddingVerticesToRegion = false;
-        let isEditingVertices = false; // NEW state
+        let isEditingVertices = false;
         let addingVerticesData = { index: -1, newPoints: [] };
-        let editingVisualsLayerGroup = null; // Renamed from vertexAddingLayerGroup
-        let editingPolygonLayer = null; // Reference to the polygon being edited/visualized
+        let editingVisualsLayerGroup = null;
+        let editingPolygonLayer = null;
 
         // --- Predefined list of maps ---
-        // !!! IMPORTANT: Update this list with the actual filenames in your /maps/ directory !!!
         const availableMaps = [
-            "Fair-Content.webp", // Example
-            "IceBeach.webp",     // Example
-            // "MyOtherMap.png",
-            // "RegionDetail.jpg",
+            "Fair-Content.webp",
+            "IceBeach.webp",
         ];
-        const mapDirectory = "maps/"; // Path to your maps folder relative to the HTML file
+        const mapDirectory = "maps/";
 
         // --- POI Type Definitions ---
         const poiTypeGroups = {
@@ -442,13 +506,12 @@
                 tab.classList.toggle('active', tab.dataset.mode === mode);
             });
 
-            // Toggle visibility of controls
+            // Toggle visibility of controls and info sections
             pointControls.classList.toggle('hidden', mode !== 'points');
             regionControls.classList.toggle('hidden', mode !== 'regions');
             pointInfo.classList.toggle('hidden', mode !== 'points');
             regionInfo.classList.toggle('hidden', mode !== 'regions');
-            pointOutput.classList.toggle('hidden', mode !== 'points');
-            regionOutput.classList.toggle('hidden', mode !== 'regions');
+            // Summary section is always visible
 
             // If changing mode, cancel any active edits or creation/adding/editing states
             if (mode === 'points') {
@@ -493,7 +556,6 @@
                                           : null;
 
             editPointSelect.innerHTML = '<option value="">--Select Point to Edit--</option>';
-            // Sort points alphabetically by name for the dropdown
             const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
 
             sortedPoints.forEach(point => {
@@ -503,11 +565,10 @@
                 editPointSelect.appendChild(option);
             });
 
-            // Try to restore selection based on name
             if (previouslySelectedName) {
                 editPointSelect.value = previouslySelectedName;
             } else {
-                editPointSelect.value = ""; // Reset if no previous selection or name not found
+                editPointSelect.value = "";
             }
             editPointSelect.disabled = collectedPoints.length === 0;
         }
@@ -518,7 +579,6 @@
                                           : null;
 
             editRegionSelect.innerHTML = '<option value="">--Select Region to Edit--</option>';
-            // Sort regions alphabetically by name for the dropdown
             const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
 
             sortedRegions.forEach(region => {
@@ -528,84 +588,52 @@
                 editRegionSelect.appendChild(option);
             });
 
-            // Try to restore selection based on name
             if (previouslySelectedName) {
                 editRegionSelect.value = previouslySelectedName;
             } else {
-                editRegionSelect.value = ""; // Reset if no previous selection or name not found
+                editRegionSelect.value = "";
             }
             editRegionSelect.disabled = collectedRegions.length === 0;
         }
 
+        // --- UPDATED updatePointsOutput ---
         function updatePointsOutput() {
-            // Sort points alphabetically by name for the output
-            const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
+            // Update summary count
+            const count = collectedPoints.length;
+            pointsCountDisplay.textContent = count;
 
-            const outputString = sortedPoints.map(p => {
-                const nameStr = JSON.stringify(p.name || "");
-                const typeStr = JSON.stringify(p.type || "Unknown");
-                const descStr = JSON.stringify(p.description || "");
-                const linkStr = JSON.stringify(p.wikiLink || "");
-                // Compact output format
-                return `    { ` +
-                       `coords: [${p.coords[0]}, ${p.coords[1]}], ` +
-                       `name: ${nameStr}, ` +
-                       `type: ${typeStr}, ` +
-                       `description: ${descStr}, ` +
-                       `wikiLink: ${linkStr}` +
-                       ` }`;
-            }).join(',\n');
-            // Wrap in brackets for a valid JS array literal
-            pointsOutput.value = "[\n" + outputString + "\n]";
-
-            const hasPoints = collectedPoints.length > 0;
-            copyPointsBtn.disabled = !hasPoints;
-            clearPointsBtn.disabled = !hasPoints;
+            // Enable/disable clear button
+            clearPointsBtn.disabled = count === 0;
 
             // Update the edit dropdown
             populatePointEditDropdown();
+
+            // Enable/disable global export/copy buttons if map is loaded
+            const mapLoaded = !!imageLayer;
+            exportMapDataBtn.disabled = !mapLoaded;
+            viewJsonBtn.disabled = !mapLoaded;
+            copyJsonBtn.disabled = !mapLoaded;
         }
 
+        // --- UPDATED updateRegionsOutput ---
         function updateRegionsOutput() {
-            // Sort regions alphabetically by name for the output
-            const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
+            // Update summary count
+            const count = collectedRegions.length;
+            regionsCountDisplay.textContent = count;
 
-            const outputString = sortedRegions.map(r => {
-                const nameStr = JSON.stringify(r.name || "");
-                const typeStr = JSON.stringify(r.type || "");
-                const descStr = JSON.stringify(r.description || "");
-                const linkStr = JSON.stringify(r.wikiLink || "");
-                const colorStr = JSON.stringify(r.color || "#3388ff");
-                const fillColorStr = JSON.stringify(r.fillColor || "#3388ff");
-                // Format coordinates nicely
-                const coordsStr = JSON.stringify(r.coordinates)
-                                    .replace(/],\[/g, '],\n            [') // Newline for each coordinate pair
-                                    .replace(/^\[\[/, '[\n            [') // Newline after opening bracket
-                                    .replace(/]]$/, '\n        ]'); // Newline before closing bracket
-
-                // Formatted output
-                return `    {\n` +
-                       `        id: ${JSON.stringify("region-" + r.name.toLowerCase().replace(/\s+/g, '-'))},\n` + // Auto-generate an ID
-                       `        name: ${nameStr},\n` +
-                       `        description: ${descStr},\n` +
-                       `        type: ${typeStr},\n` +
-                       `        color: ${colorStr},\n` +
-                       `        fillColor: ${fillColorStr},\n` +
-                       `        fillOpacity: ${r.fillOpacity || 0.2},\n` +
-                       `        wikiLink: ${linkStr},\n` +
-                       `        coordinates: ${coordsStr}\n` +
-                       `    }`;
-            }).join(',\n');
-            // Wrap in brackets for a valid JS array literal
-            regionsOutput.value = "[\n" + outputString + "\n]";
-
-            const hasRegions = collectedRegions.length > 0;
-            copyRegionsBtn.disabled = !hasRegions;
-            clearRegionsBtn.disabled = !hasRegions;
+            // Enable/disable clear button
+            clearRegionsBtn.disabled = count === 0;
 
             // Update the edit dropdown
             populateRegionEditDropdown();
+
+            // Enable/disable global export/copy buttons if map is loaded
+            const mapLoaded = !!imageLayer;
+            exportMapDataBtn.disabled = !mapLoaded;
+            viewJsonBtn.disabled = !mapLoaded;
+            copyJsonBtn.disabled = !mapLoaded;
         }
+
 
         function setStatus(message, type = 'info') {
              statusDisplay.textContent = message;
@@ -629,7 +657,7 @@
                     setStatus('Creating region. Click map to add vertices. Click Finish when done.');
                 } else if (isAddingVerticesToRegion) {
                     setStatus(`Adding vertices to region '${collectedRegions[addingVerticesData.index].name}'. Click map to add, or click Stop.`);
-                } else if (isEditingVertices) { // NEW Check
+                } else if (isEditingVertices) {
                     setStatus(`Editing vertices for region '${collectedRegions[currentlyEditingRegionIndex].name}'. Drag vertices to move, or click Stop.`);
                 } else if (isEditingRegion) {
                     setStatus('Editing region. Modify details, Save Changes, Add Vertices, Edit Vertices, or Cancel.');
@@ -644,10 +672,9 @@
             currentlyEditingPointIndex = -1; // Reset index
 
             if (editing && pointNameOrIndex !== null) {
-                // Find the actual current index based on the name provided
                 const nameToFind = (typeof pointNameOrIndex === 'number')
-                                   ? collectedPoints[pointNameOrIndex]?.name // Get name if index was passed
-                                   : pointNameOrIndex; // Use name directly if string was passed
+                                   ? collectedPoints[pointNameOrIndex]?.name
+                                   : pointNameOrIndex;
                 if (nameToFind) {
                     currentlyEditingPointIndex = collectedPoints.findIndex(p => p.name === nameToFind);
                 }
@@ -657,6 +684,7 @@
             savePointChangesBtn.classList.toggle('hidden', !editing);
             cancelPointEditBtn.classList.toggle('hidden', !editing);
             mapElement.classList.toggle('disabled-map', editing);
+            clearPointsBtn.classList.toggle('hidden', editing); // Hide clear button during edit
 
             if (!editing) {
                 pointNameInput.value = '';
@@ -665,7 +693,7 @@
                 pointWikiLinkInput.value = '';
                 coordsDisplay.textContent = '[Y, X]';
                 lastClickedCoordsArray = null;
-                addPointBtn.disabled = !imageLayer; // Enable add only if map is loaded
+                addPointBtn.disabled = !imageLayer;
                 editPointSelect.value = "";
             } else {
                  addPointBtn.disabled = true;
@@ -684,7 +712,6 @@
             // ---
 
             if (editing && regionNameOrIndex !== null) {
-                // Find the actual current index based on the name provided
                 const nameToFind = (typeof regionNameOrIndex === 'number')
                                    ? collectedRegions[regionNameOrIndex]?.name
                                    : regionNameOrIndex;
@@ -698,8 +725,9 @@
             startRegionBtn.classList.toggle('hidden', editing);
             saveRegionChangesBtn.classList.toggle('hidden', !editing);
             addVerticesBtn.classList.toggle('hidden', !editing);
-            editVerticesBtn.classList.toggle('hidden', !editing); // Show/hide Edit Vertices button
+            editVerticesBtn.classList.toggle('hidden', !editing);
             cancelRegionEditBtn.classList.toggle('hidden', !editing);
+            clearRegionsBtn.classList.toggle('hidden', editing); // Hide clear button during edit
             // Map disabled only if editing details, not adding/editing vertices
             mapElement.classList.toggle('disabled-map', editing && !isAddingVerticesToRegion && !isEditingVertices);
 
@@ -717,7 +745,7 @@
                 editRegionSelect.value = "";
 
                 // Clear any editing polygon visualization
-                clearEditingVisuals(); // Use the renamed function
+                clearEditingVisuals();
             } else {
                 startRegionBtn.disabled = true;
             }
@@ -731,6 +759,7 @@
             startRegionBtn.classList.toggle('hidden', creating);
             finishRegionBtn.classList.toggle('hidden', !creating);
             cancelRegionBtn.classList.toggle('hidden', !creating);
+            clearRegionsBtn.classList.toggle('hidden', creating); // Hide clear button during creation
             mapElement.classList.toggle('region-creation-mode', creating);
 
             // Clear any temporary layers
@@ -743,7 +772,6 @@
             updateStatus();
         }
 
-        // --- UPDATED: Function to toggle vertex adding mode ---
         function setVertexAddingState(adding) {
             isAddingVerticesToRegion = adding;
             addVerticesBtn.textContent = adding ? 'Stop Adding Vertices' : 'Add Vertices';
@@ -767,7 +795,6 @@
             updateStatus();
         }
 
-        // --- NEW: Function to toggle vertex editing mode ---
         function setVertexEditingState(editing) {
             isEditingVertices = editing;
             editVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
@@ -810,6 +837,7 @@
             regionVerticesCount.textContent = `${count} ${count === 1 ? 'vertex' : 'vertices'}`;
         }
 
+        // --- UPDATED resetUIState ---
         function resetUIState() {
             setStatus('Select and load a map image first.');
             coordsDisplay.textContent = '[Y, X]';
@@ -824,14 +852,18 @@
             regionColorInput.value = '#3388ff';
             regionFillColorInput.value = '#3388ff';
             regionOpacityInput.value = '0.2';
+            scalePixelsInput.value = '3'; // Reset map details
+            scaleKilometersInput.value = '1';
+            mapBlurbInput.value = '';
             addPointBtn.disabled = true;
             startRegionBtn.disabled = true;
-            copyPointsBtn.disabled = true;
-            clearPointsBtn.disabled = true;
-            copyRegionsBtn.disabled = true;
-            clearRegionsBtn.disabled = true;
-            pointsOutput.value = '';
-            regionsOutput.value = '';
+            clearPointsBtn.disabled = true; // Moved button
+            clearRegionsBtn.disabled = true; // Moved button
+            exportMapDataBtn.disabled = true;
+            viewJsonBtn.disabled = true; // Disable new buttons
+            copyJsonBtn.disabled = true;
+            pointsCountDisplay.textContent = '0'; // Reset counts
+            regionsCountDisplay.textContent = '0';
             lastClickedCoordsArray = null;
             collectedPoints = [];
             collectedRegions = [];
@@ -840,7 +872,7 @@
             }
             imageLayer = null;
             currentBounds = null;
-            importDataInput.value = '';
+            currentMapId = null; // Reset map ID
             setPointEditingState(false);
             setRegionEditingState(false); // This now also resets vertex adding/editing state
             setRegionCreationState(false);
@@ -850,118 +882,151 @@
             mapSelect.value = "";
         }
 
-        function loadImage() {
+        // --- UPDATED loadImage Function ---
+        async function loadImage() {
             const selectedFilename = mapSelect.value;
             if (!selectedFilename) { alert("Please select a map from the dropdown."); return; }
-            const imageUrl = mapDirectory + selectedFilename;
 
-            console.log("Load button clicked. URL:", imageUrl);
+            const imageUrl = mapDirectory + selectedFilename;
+            const jsonFilename = selectedFilename.replace(/\.(webp|png|jpg|jpeg)$/i, '.json');
+            const jsonUrl = mapDirectory + jsonFilename;
+
+            console.log("Loading map image:", imageUrl);
+            console.log("Attempting to load map data:", jsonUrl);
 
             // Reset state when loading a new map
             resetUIState();
 
             loadMapBtn.disabled = true;
-            setStatus('Loading image...');
+            setStatus('Loading image and map data...');
 
-            const img = new Image();
-            img.onload = () => {
+            try {
+                // --- 1. Load Image ---
+                const img = new Image();
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = () => reject(new Error(`Could not load image file: ${imageUrl}`));
+                    img.src = imageUrl;
+                });
+
                 const mapWidth = img.naturalWidth;
                 const mapHeight = img.naturalHeight;
                 if (mapWidth === 0 || mapHeight === 0) {
-                     setStatus('Error: Image has zero dimensions.', 'error');
-                     loadMapBtn.disabled = false; return;
+                    throw new Error('Image has zero dimensions.');
                 }
-                setStatus(`Dimensions: ${mapWidth}x${mapHeight}. Adding to map...`);
+                setStatus(`Image loaded (${mapWidth}x${mapHeight}). Loading map data...`);
                 currentBounds = [[0, 0], [mapHeight, mapWidth]];
+
+                // --- 2. Load JSON Data ---
+                let mapData = {};
+                let jsonLoadError = null;
                 try {
-                    if (!map) throw new Error("Map object not initialized.");
-                    imageLayer = L.imageOverlay(imageUrl, currentBounds);
-                    imageLayer.on('error', (e) => {
-                        setStatus(`Error displaying image.`, 'error');
-                        if(imageLayer && map.hasLayer(imageLayer)) map.removeLayer(imageLayer);
-                        imageLayer = null; loadMapBtn.disabled = false;
-                    });
-                    imageLayer.on('load', () => {
-                        setStatus(`Loaded: ${selectedFilename} (${mapWidth}x${mapHeight}). ${currentMode === 'points' ? 'Click map for new point' : 'Fill in region details'}.`);
-                        map.fitBounds(currentBounds);
-                        loadMapBtn.disabled = false;
-                        addPointBtn.disabled = true; // Still need map click for points
-                        startRegionBtn.disabled = false; // Enable region creation
-                    });
-                    imageLayer.addTo(map);
-                } catch (error) {
-                     setStatus(`Error adding image overlay: ${error.message}`, 'error');
-                     console.error("Overlay Error:", error);
-                     loadMapBtn.disabled = false;
-                }
-            };
-            img.onerror = (e) => {
-                setStatus(`Error: Could not load image. Check path/URL: ${imageUrl}`, 'error');
-                loadMapBtn.disabled = false;
-            };
-            img.src = imageUrl;
-        }
-
-        // --- CORRECTED importData Function ---
-        function importData() {
-            const importText = importDataInput.value.trim();
-            if (!importText) { setStatus('Import field is empty.', 'error'); return; }
-
-            // Determine import type (points or regions)
-            const importType = document.querySelector('input[name="importType"]:checked').value;
-
-            let importedData;
-            try {
-                // Use the Function constructor to safely parse JS array/object literals
-                importedData = new Function(`return ${importText}`)();
-
-                if (!Array.isArray(importedData)) {
-                    // Check if it's a single object and wrap it in an array
-                    if (typeof importedData === 'object' && importedData !== null) {
-                        importedData = [importedData];
+                    const response = await fetch(jsonUrl);
+                    if (response.ok) {
+                        mapData = await response.json();
+                        console.log("Successfully loaded map data:", mapData);
+                    } else if (response.status === 404) {
+                        console.warn(`JSON file not found: ${jsonUrl}. Starting with empty data.`);
+                        setStatus(`Image loaded. No existing map data found for ${jsonFilename}. Starting fresh.`);
                     } else {
-                        throw new Error("Input is not a valid JavaScript Array or Object literal.");
+                        throw new Error(`Failed to load JSON: ${response.status} ${response.statusText}`);
                     }
+                } catch (fetchError) {
+                    jsonLoadError = fetchError;
+                    console.error(`Error fetching or parsing JSON: ${jsonUrl}`, fetchError);
+                    setStatus(`Image loaded. Error loading map data: ${fetchError.message}. Starting fresh.`, 'error');
                 }
+
+                // --- 3. Initialize Map and Import Data ---
+                if (!map) throw new Error("Map object not initialized.");
+
+                imageLayer = L.imageOverlay(imageUrl, currentBounds);
+                imageLayer.on('error', (e) => {
+                    setStatus(`Error displaying image overlay.`, 'error');
+                    if(imageLayer && map.hasLayer(imageLayer)) map.removeLayer(imageLayer);
+                    imageLayer = null; loadMapBtn.disabled = false; exportMapDataBtn.disabled = true; viewJsonBtn.disabled = true; copyJsonBtn.disabled = true;
+                });
+                imageLayer.addTo(map);
+                map.fitBounds(currentBounds);
+
+                currentMapId = jsonFilename.replace('.json', '');
+
+                scalePixelsInput.value = mapData.scalePixels || 3;
+                scaleKilometersInput.value = mapData.scaleKilometers || 1;
+                mapBlurbInput.value = mapData.blurb || "";
+
+                let pointsImported = 0;
+                let regionsImported = 0;
+                try {
+                    if (mapData.pointsOfInterest && Array.isArray(mapData.pointsOfInterest)) {
+                        importPoints(mapData.pointsOfInterest, true);
+                        pointsImported = mapData.pointsOfInterest.length;
+                    }
+                } catch (e) { console.error("Error during point import:", e); }
+                try {
+                    if (mapData.regions && Array.isArray(mapData.regions)) {
+                        importRegions(mapData.regions, true);
+                        regionsImported = mapData.regions.length;
+                    }
+                } catch (e) { console.error("Error during region import:", e); }
+
+                let finalStatus = `Loaded: ${selectedFilename}. `;
+                if (jsonLoadError) {
+                    finalStatus += `Error loading data: ${jsonLoadError.message}. Starting fresh. `;
+                } else {
+                    finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions. `;
+                }
+                finalStatus += `${currentMode === 'points' ? 'Click map for new point' : 'Fill in region details'}.`;
+                setStatus(finalStatus, jsonLoadError ? 'error' : 'success');
+
+                // Enable controls
+                addPointBtn.disabled = true; // Still disabled until map click
+                startRegionBtn.disabled = false;
+                exportMapDataBtn.disabled = false; // Enable export/view button
+                viewJsonBtn.disabled = false; // Enable summary buttons
+                copyJsonBtn.disabled = false;
+
             } catch (error) {
-                let errorMsg = `Import failed: Invalid Format. ${error.message}`;
-                console.error("Import Parsing Error:", error);
-                setStatus(errorMsg, 'error');
-                return;
+                setStatus(`Error loading map: ${error.message}`, 'error');
+                console.error("Map Loading Error:", error);
+                resetUIState();
+            } finally {
+                loadMapBtn.disabled = false;
             }
-
-            if (importType === 'points') {
-                importPoints(importedData);
-            } else {
-                importRegions(importedData);
-            }
-
-            importDataInput.value = ''; // Clear input after successful import
         }
-        // --- END CORRECTED importData Function ---
 
-
-        function importPoints(importedData) {
+        // --- Internal importPoints Function (used by loadImage) ---
+        function importPoints(dataToImport, suppressStatus = false) {
             let addedCount = 0;
             let skippedCount = 0;
             const existingNames = new Set(collectedPoints.map(p => p.name));
 
-            importedData.forEach(item => {
-                if (item && Array.isArray(item.coords) && item.coords.length === 2 &&
+            dataToImport.forEach(item => {
+                if (item && typeof item === 'object' &&
+                    Array.isArray(item.coords) && item.coords.length === 2 &&
                     typeof item.name === 'string' && item.name.trim() !== "") {
+
                     const pointName = item.name.trim();
                     if (existingNames.has(pointName)) {
                         skippedCount++;
                     } else {
-                        collectedPoints.push({
-                            coords: [Math.round(item.coords[0]), Math.round(item.coords[1])],
-                            name: pointName,
-                            type: item.type || "Unknown",
-                            description: item.description || "",
-                            wikiLink: item.wikiLink || ""
-                        });
-                        existingNames.add(pointName);
-                        addedCount++;
+                        const lat = Number(item.coords[0]);
+                        const lng = Number(item.coords[1]);
+
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            collectedPoints.push({
+                                coords: [Math.round(lat), Math.round(lng)],
+                                name: pointName,
+                                type: item.type || "Unknown",
+                                description: item.description || "",
+                                wikiLink: item.wikiLink || ""
+                            });
+                            existingNames.add(pointName);
+                            addedCount++;
+                        } else {
+                            console.warn("Skipping point with invalid coordinates:", item);
+                            skippedCount++;
+                        }
                     }
                 } else {
                     console.warn("Skipping invalid/incomplete point during import:", item);
@@ -969,30 +1034,35 @@
                 }
             });
 
-            updatePointsOutput();
-            setStatus(`Import complete: Added ${addedCount} points, skipped ${skippedCount} (duplicates/invalid/incomplete).`, 'success');
+            updatePointsOutput(); // Updates count and dropdown
+            if (!suppressStatus) { // Only show status if manually triggered (which is removed now)
+                setStatus(`Import complete: Added ${addedCount} points, skipped ${skippedCount} (duplicates/invalid/incomplete).`, 'success');
+            }
             setPointEditingState(false);
         }
 
-        function importRegions(importedData) {
+        // --- Internal importRegions Function (used by loadImage) ---
+        function importRegions(dataToImport, suppressStatus = false) {
             let addedCount = 0;
             let skippedCount = 0;
             const existingNames = new Set(collectedRegions.map(r => r.name));
 
-            importedData.forEach(item => {
-                if (item && Array.isArray(item.coordinates) && item.coordinates.length >= 3 &&
+            dataToImport.forEach(item => {
+                if (item && typeof item === 'object' &&
+                    Array.isArray(item.coordinates) && item.coordinates.length >= 3 &&
                     typeof item.name === 'string' && item.name.trim() !== "") {
+
                     const regionName = item.name.trim();
                     if (existingNames.has(regionName)) {
                         skippedCount++;
                     } else {
-                        // Ensure all coordinates are valid number pairs
                         const validCoords = item.coordinates.every(coord =>
                             Array.isArray(coord) && coord.length === 2 &&
-                            !isNaN(coord[0]) && !isNaN(coord[1]));
+                            !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
 
                         if (validCoords) {
                             collectedRegions.push({
+                                id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`,
                                 name: regionName,
                                 type: item.type || "",
                                 description: item.description || "",
@@ -1000,7 +1070,7 @@
                                 color: item.color || "#3388ff",
                                 fillColor: item.fillColor || "#3388ff",
                                 fillOpacity: item.fillOpacity || 0.2,
-                                coordinates: item.coordinates.map(coord => [Number(coord[0]), Number(coord[1])])
+                                coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))])
                             });
                             existingNames.add(regionName);
                             addedCount++;
@@ -1015,10 +1085,13 @@
                 }
             });
 
-            updateRegionsOutput();
-            setStatus(`Import complete: Added ${addedCount} regions, skipped ${skippedCount} (duplicates/invalid/incomplete).`, 'success');
+            updateRegionsOutput(); // Updates count and dropdown
+            if (!suppressStatus) { // Only show status if manually triggered (which is removed now)
+                setStatus(`Import complete: Added ${addedCount} regions, skipped ${skippedCount} (duplicates/invalid/incomplete).`, 'success');
+            }
             setRegionEditingState(false);
         }
+
 
         function loadPointForEditing(pointName) {
             const index = collectedPoints.findIndex(p => p.name === pointName);
@@ -1054,21 +1127,18 @@
             regionFillColorInput.value = region.fillColor || "#3388ff";
             regionOpacityInput.value = region.fillOpacity || 0.2;
 
-            // Show the region on the map for reference
-            clearEditingVisuals(); // Clear any previous visuals
-            editingVisualsLayerGroup = L.layerGroup().addTo(map); // Ensure group exists
+            clearEditingVisuals();
+            editingVisualsLayerGroup = L.layerGroup().addTo(map);
 
-            // Store the polygon layer reference
             editingPolygonLayer = L.polygon(region.coordinates, {
                 color: region.color || "#3388ff",
                 fillColor: region.fillColor || "#3388ff",
                 fillOpacity: region.fillOpacity || 0.2,
                 weight: 3,
-                dashArray: "5, 5" // Dashed to indicate editing mode
+                dashArray: "5, 5"
             });
             editingVisualsLayerGroup.addLayer(editingPolygonLayer);
 
-            // Fit the map to show the region
             map.fitBounds(editingPolygonLayer.getBounds().pad(0.1));
 
             setRegionEditingState(true, region.name);
@@ -1095,30 +1165,26 @@
                     alert(`Another point named "${newName}" already exists.`); pointNameInput.focus(); return;
                 }
             }
-
-            // Update the point object in the array
             originalPoint.name = newName;
             originalPoint.type = newType;
             originalPoint.description = newDescription;
             originalPoint.wikiLink = newWikiLink;
-            // Coordinates are NOT updated here
 
-            console.log("Saved changes to point:", originalPoint);
             updatePointsOutput();
+            setStatus(`Point "${newName}" updated successfully.`, 'success');
             setPointEditingState(false);
-            setStatus('Point changes saved successfully.', 'success');
+        }
+
+        function cancelPointEditing() {
+            setPointEditingState(false);
+            setStatus('Point editing cancelled.');
         }
 
         function saveRegionChanges() {
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || currentlyEditingRegionIndex >= collectedRegions.length) {
-                 console.error("Save Region Changes called with invalid state:", isEditingRegion, currentlyEditingRegionIndex);
-                 return;
+                console.error("Save Region Changes called with invalid state:", isEditingRegion, currentlyEditingRegionIndex);
+                return;
             }
-            // --- NEW: Stop vertex editing before saving details ---
-            if (isEditingVertices) {
-                stopEditingVertices(true); // Commit vertex changes first
-            }
-            // ---
 
             const originalRegion = collectedRegions[currentlyEditingRegionIndex];
             const newName = regionNameInput.value.trim();
@@ -1130,10 +1196,7 @@
             const newOpacity = parseFloat(regionOpacityInput.value);
 
             if (!newName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
-            if (!newType) { alert("Please select a Region Type."); regionTypeSelect.focus(); return; }
-            if (isNaN(newOpacity) || newOpacity < 0 || newOpacity > 1) {
-                alert("Fill Opacity must be a number between 0 and 1."); regionOpacityInput.focus(); return;
-            }
+            if (isNaN(newOpacity) || newOpacity < 0 || newOpacity > 1) { alert("Invalid Opacity value (must be 0.0 to 1.0)."); regionOpacityInput.focus(); return; }
 
             if (newName !== originalRegion.name) {
                 const nameConflict = collectedRegions.some((r, index) => index !== currentlyEditingRegionIndex && r.name === newName);
@@ -1142,7 +1205,6 @@
                 }
             }
 
-            // Update the region object in the array
             originalRegion.name = newName;
             originalRegion.type = newType;
             originalRegion.description = newDescription;
@@ -1150,641 +1212,792 @@
             originalRegion.color = newColor;
             originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity;
-            // Coordinates are updated via vertex editing/adding
+            originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
 
-            console.log("Saved changes to region:", originalRegion);
             updateRegionsOutput();
-            setRegionEditingState(false); // This also clears visuals
-            setStatus('Region changes saved successfully.', 'success');
-        }
-
-        function cancelPointEditing() {
-            setPointEditingState(false);
-            setStatus('Point edit cancelled.');
+            setStatus(`Region "${newName}" details updated successfully.`, 'success');
+            setRegionEditingState(false);
         }
 
         function cancelRegionEditing() {
-            setRegionEditingState(false); // This now handles clearing visuals and vertex adding/editing state
-            setStatus('Region edit cancelled.');
+            setRegionEditingState(false);
+            setStatus('Region editing cancelled.');
         }
 
         function startRegionCreation() {
-            const regionName = regionNameInput.value.trim();
-            const regionType = regionTypeSelect.value;
-            if (!regionName) { alert("Enter Region Name."); regionNameInput.focus(); return; }
-            if (!regionType) { alert("Select Region Type."); regionTypeSelect.focus(); return; }
-
-            if (collectedRegions.some(r => r.name === regionName)) {
-                alert(`Region named "${regionName}" already exists.`); regionNameInput.focus(); return;
-            }
-
-            // Begin region creation mode
+            if (!imageLayer) { alert("Load a map first!"); return; }
+            if (isEditingRegion) { alert("Finish editing the current region first."); return; }
             setRegionCreationState(true);
-            // Apply default colors based on type
-            if (regionTypeColors[regionType]) {
-                regionColorInput.value = regionTypeColors[regionType].color;
-                regionFillColorInput.value = regionTypeColors[regionType].fillColor;
-            }
         }
 
-        function addVertexToRegionCreation(coords) {
-            tempRegionVertices.push(coords);
-            updateRegionVerticesCount();
+        function handleMapClickForRegion(e) {
+            if (!isCreatingRegion && !isAddingVerticesToRegion) return;
 
-            // Update the preview polygon
-            if (tempRegionLayer) {
-                map.removeLayer(tempRegionLayer);
-            }
+            const coords = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
 
-            if (tempRegionVertices.length > 2) {
-                // Draw a closed polygon if we have at least 3 points
-                tempRegionLayer = L.polygon(tempRegionVertices, {
-                    color: regionColorInput.value,
-                    fillColor: regionFillColorInput.value,
-                    fillOpacity: parseFloat(regionOpacityInput.value),
-                    weight: 2
-                }).addTo(map);
-            } else if (tempRegionVertices.length === 2) {
-                // Draw a line if we only have 2 points
-                tempRegionLayer = L.polyline(tempRegionVertices, {
-                    color: regionColorInput.value,
-                    weight: 2
-                }).addTo(map);
-            } else {
-                // Draw a marker for the first point
-                tempRegionLayer = L.marker(coords).addTo(map);
+            if (isCreatingRegion) {
+                tempRegionVertices.push(coords);
+                updateRegionVerticesCount();
+
+                if (tempRegionLayer) {
+                    map.removeLayer(tempRegionLayer);
+                }
+                if (tempRegionVertices.length >= 2) {
+                    const options = {
+                        color: regionColorInput.value || '#3388ff',
+                        fillColor: regionFillColorInput.value || '#3388ff',
+                        fillOpacity: parseFloat(regionOpacityInput.value) || 0.2,
+                        weight: 2,
+                        dashArray: '5, 5'
+                    };
+                    tempRegionLayer = (tempRegionVertices.length === 2)
+                        ? L.polyline(tempRegionVertices, options)
+                        : L.polygon(tempRegionVertices, options);
+                    tempRegionLayer.addTo(map);
+                }
+                setStatus(`Added vertex ${tempRegionVertices.length}. Click map for next, or Finish.`);
+            } else if (isAddingVerticesToRegion) {
+                handleMapClickForVertexAdd(coords);
             }
         }
 
         function finishRegionCreation() {
+            if (!isCreatingRegion) return;
             if (tempRegionVertices.length < 3) {
-                alert("A region must have at least 3 vertices.");
+                alert("A region needs at least 3 vertices.");
                 return;
             }
 
-            // Ensure the polygon is closed by adding the first point again if needed
-            const firstPoint = tempRegionVertices[0];
-            const lastPoint = tempRegionVertices[tempRegionVertices.length - 1];
-            if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
-                tempRegionVertices.push([...firstPoint]); // Close the polygon
+            const regionName = regionNameInput.value.trim();
+            const regionType = regionTypeSelect.value;
+            const regionColor = regionColorInput.value;
+            const regionFillColor = regionFillColorInput.value;
+            const regionOpacity = parseFloat(regionOpacityInput.value);
+            const regionDescription = regionDescriptionInput.value.trim();
+            const regionWikiLink = regionWikiLinkInput.value.trim();
+
+            if (!regionName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
+            if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity value (must be 0.0 to 1.0)."); regionOpacityInput.focus(); return; }
+
+            const nameConflict = collectedRegions.some(r => r.name === regionName);
+            if (nameConflict) {
+                alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return;
             }
 
-            // Create the region object
-            const newRegion = {
-                name: regionNameInput.value.trim(),
-                type: regionTypeSelect.value,
-                description: regionDescriptionInput.value.trim(),
-                wikiLink: regionWikiLinkInput.value.trim(),
-                color: regionColorInput.value,
-                fillColor: regionFillColorInput.value,
-                fillOpacity: parseFloat(regionOpacityInput.value),
-                coordinates: tempRegionVertices.map(vertex => [...vertex]) // Clone the vertices array
-            };
+            collectedRegions.push({
+                id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`,
+                name: regionName,
+                type: regionType,
+                description: regionDescription,
+                wikiLink: regionWikiLink,
+                color: regionColor,
+                fillColor: regionFillColor,
+                fillOpacity: regionOpacity,
+                coordinates: [...tempRegionVertices]
+            });
 
-            // Add to collection
-            collectedRegions.push(newRegion);
             updateRegionsOutput();
-
-            // Exit region creation mode
+            setStatus(`Region "${regionName}" created successfully.`, 'success');
             setRegionCreationState(false);
-
-            // Reset form fields
             regionNameInput.value = '';
+            regionTypeSelect.value = '';
             regionDescriptionInput.value = '';
             regionWikiLinkInput.value = '';
-
-            setStatus('Region added! Fill in details for next region.', 'success');
-            regionNameInput.focus();
         }
 
         function cancelRegionCreation() {
-            // Clear temporary data
-            if (tempRegionLayer) {
-                map.removeLayer(tempRegionLayer);
-                tempRegionLayer = null;
-            }
-            tempRegionVertices = [];
-            updateRegionVerticesCount();
-
+            if (!isCreatingRegion) return;
             setRegionCreationState(false);
             setStatus('Region creation cancelled.');
         }
 
-        // --- UPDATED: Functions for Adding/Editing Vertices ---
-
-        function toggleAddVerticesMode() {
-            if (!isEditingRegion || currentlyEditingRegionIndex < 0 || isEditingVertices) return; // Don't allow if editing vertices
-
-            if (!isAddingVerticesToRegion) {
-                startAddingVertices();
-            } else {
-                stopAddingVertices(true); // Commit changes when stopping
-            }
-        }
-
+        // --- Vertex Adding Logic ---
         function startAddingVertices() {
             if (!isEditingRegion || currentlyEditingRegionIndex < 0) return;
+            if (isEditingVertices) { alert("Stop editing vertices first."); return; }
 
-            addingVerticesData = {
-                index: currentlyEditingRegionIndex,
-                newPoints: [] // Start with empty new points
-            };
-            setVertexAddingState(true);
-            displayRegionForVertexManipulation(); // Use common display function
+            if (isAddingVerticesToRegion) {
+                stopAddingVertices(true);
+            } else {
+                addingVerticesData.index = currentlyEditingRegionIndex;
+                addingVerticesData.newPoints = [];
+                setVertexAddingState(true);
+                if (editingPolygonLayer) {
+                    editingPolygonLayer.setStyle({ dashArray: null, weight: 5 });
+                }
+            }
         }
 
-        function stopAddingVertices(commitChanges = true) {
+        function stopAddingVertices(userInitiated = false) {
             if (!isAddingVerticesToRegion) return;
 
-            if (commitChanges && addingVerticesData.newPoints.length > 0) {
-                commitAddedVertices();
+            const region = collectedRegions[addingVerticesData.index];
+            if (addingVerticesData.newPoints.length > 0) {
+                let closestSegmentIndex = -1;
+                let minDistanceSq = Infinity;
+                const firstNewPoint = L.latLng(addingVerticesData.newPoints[0]);
+
+                for (let i = 0; i < region.coordinates.length; i++) {
+                    const p1 = L.latLng(region.coordinates[i]);
+                    const p2 = L.latLng(region.coordinates[(i + 1) % region.coordinates.length]);
+                    const closestPointOnSegment = L.GeometryUtil.closest(map, L.polyline([p1, p2]), firstNewPoint);
+                    const distanceSq = firstNewPoint.distanceTo(closestPointOnSegment) ** 2;
+
+                    if (distanceSq < minDistanceSq) {
+                        minDistanceSq = distanceSq;
+                        closestSegmentIndex = i;
+                    }
+                }
+
+                region.coordinates.splice(closestSegmentIndex + 1, 0, ...addingVerticesData.newPoints);
+
+                updateRegionsOutput();
+                loadRegionForEditing(region.name); // Reload to reflect changes
+                setStatus(`Added ${addingVerticesData.newPoints.length} vertices to '${region.name}'.`, 'success');
+            } else if (userInitiated) {
+                setStatus(`Stopped adding vertices to '${region.name}'. No points added.`, 'info');
             }
 
-            clearEditingVisuals(); // Use common clear function
-            addingVerticesData = { index: -1, newPoints: [] }; // Reset data
+            addingVerticesData.index = -1;
+            addingVerticesData.newPoints = [];
             setVertexAddingState(false);
-            // Keep the region selected in the dropdown and redisplay for editing details
-            if (currentlyEditingRegionIndex >= 0) {
-                editRegionSelect.value = collectedRegions[currentlyEditingRegionIndex]?.name || "";
-                displayRegionForVertexManipulation(false); // Redisplay dashed polygon
+            if (editingPolygonLayer) { // Restore style if it exists (might have been reloaded)
+                editingPolygonLayer.setStyle({ dashArray: "5, 5", weight: 3 });
             }
         }
 
-        function handleVertexAddClick(coords) {
-            if (!isAddingVerticesToRegion || addingVerticesData.index < 0) return;
+        function handleMapClickForVertexAdd(coords) {
+            if (!isAddingVerticesToRegion) return;
 
             addingVerticesData.newPoints.push(coords);
-            updateTemporaryRegionVisuals(); // Update the preview
-            setStatus(`Vertex added (${addingVerticesData.newPoints.length}). Click map for more or Stop.`);
-        }
 
-        // --- NEW: Functions for Editing Vertices ---
-        function toggleVertexEditingMode() {
-            if (!isEditingRegion || currentlyEditingRegionIndex < 0 || isAddingVerticesToRegion) return; // Don't allow if adding vertices
-
-            if (!isEditingVertices) {
-                startEditingVertices();
-            } else {
-                stopEditingVertices(true); // Commit changes when stopping
+            if (editingVisualsLayerGroup) {
+                L.circleMarker(coords, {
+                    radius: 5, color: 'lime', fillColor: 'lime', fillOpacity: 0.8, pane: 'markerPane'
+                }).addTo(editingVisualsLayerGroup);
             }
+
+            setStatus(`Added new vertex ${addingVerticesData.newPoints.length}. Click map for next, or Stop Adding.`);
         }
 
+        // --- Vertex Editing Logic ---
         function startEditingVertices() {
             if (!isEditingRegion || currentlyEditingRegionIndex < 0) return;
-            setVertexEditingState(true);
-            displayRegionForVertexManipulation(true); // Display with draggable markers
+            if (isAddingVerticesToRegion) { alert("Stop adding vertices first."); return; }
+
+            if (isEditingVertices) {
+                stopEditingVertices(true);
+            } else {
+                setVertexEditingState(true);
+                createVertexMarkers();
+            }
         }
 
-        function stopEditingVertices(commitChanges = true) {
+        function stopEditingVertices(userInitiated = false) {
             if (!isEditingVertices) return;
 
-            // Changes are already committed via dragend, just update output if needed
-            if (commitChanges) {
-                updateRegionsOutput();
-                setStatus('Vertex edits saved.', 'success');
-            } else {
-                // TODO: Implement reverting changes if needed (more complex)
-                console.warn("Cancelling vertex edit without reverting changes.");
+            let changed = false;
+            if (editingVisualsLayerGroup) {
+                const region = collectedRegions[currentlyEditingRegionIndex];
+                const newCoords = [];
+
+                // Collect current vertex marker positions in order
+                const vertexMarkers = [];
+                editingVisualsLayerGroup.eachLayer(layer => {
+                    if (layer.options.isVertexMarker) {
+                        vertexMarkers.push(layer);
+                    }
+                });
+                vertexMarkers.sort((a, b) => a.options.vertexIndex - b.options.vertexIndex);
+
+                vertexMarkers.forEach((marker, index) => {
+                    const newLatLng = marker.getLatLng();
+                    const newCoord = [Math.round(newLatLng.lat), Math.round(newLatLng.lng)];
+                    newCoords.push(newCoord); // Add in sorted order
+
+                    // Check if coordinate actually changed from original
+                    if (index < region.coordinates.length && // Ensure original index exists
+                        (region.coordinates[index][0] !== newCoord[0] ||
+                         region.coordinates[index][1] !== newCoord[1])) {
+                        changed = true;
+                    }
+                });
+
+                 // Check if the number of vertices changed (due to midpoint drag)
+                if (newCoords.length !== region.coordinates.length) {
+                    changed = true;
+                }
+
+                if (changed) {
+                    region.coordinates = newCoords; // Update with potentially reordered/new coords
+                    updateRegionsOutput();
+                    // Reload region to update polygon shape immediately and reset editing state
+                    loadRegionForEditing(region.name);
+                    setStatus(`Vertices updated for region '${region.name}'.`, 'success');
+                } else if (userInitiated) {
+                    setStatus(`Stopped editing vertices for '${region.name}'. No changes made.`, 'info');
+                }
             }
+
+            clearEditingVisuals(); // Remove markers
+            setVertexEditingState(false);
+            // Restore polygon style if needed (loadRegionForEditing already does this)
+        }
+
+        function createVertexMarkers() {
+            if (!isEditingRegion || currentlyEditingRegionIndex < 0 || !editingPolygonLayer) return;
 
             clearEditingVisuals();
-            setVertexEditingState(false);
-            // Keep the region selected and redisplay for editing details
-            if (currentlyEditingRegionIndex >= 0) {
-                editRegionSelect.value = collectedRegions[currentlyEditingRegionIndex]?.name || "";
-                displayRegionForVertexManipulation(false); // Redisplay dashed polygon
-            }
-        }
-
-        function handleVertexDragEnd(e) {
-            if (!isEditingVertices || currentlyEditingRegionIndex < 0) return;
-
-            const marker = e.target;
-            const vertexIndex = marker.options.vertexIndex;
-            const region = collectedRegions[currentlyEditingRegionIndex];
-
-            if (typeof vertexIndex !== 'number' || !region || vertexIndex >= region.coordinates.length) {
-                console.error("Error identifying dragged vertex index:", vertexIndex);
-                return;
-            }
-
-            const newLatLng = marker.getLatLng();
-            const newCoords = [Math.round(newLatLng.lat), Math.round(newLatLng.lng)];
-
-            // Clamp coordinates
-            const clampedY = Math.max(0, Math.min(newCoords[0], currentBounds[1][0]));
-            const clampedX = Math.max(0, Math.min(newCoords[1], currentBounds[1][1]));
-            const finalCoords = [clampedY, clampedX];
-
-            // Update the coordinate in the main data array
-            region.coordinates[vertexIndex] = finalCoords;
-
-            // If the first/last vertex moved, update the other end too
-            if (vertexIndex === 0) {
-                region.coordinates[region.coordinates.length - 1] = finalCoords;
-            } else if (vertexIndex === region.coordinates.length - 1) {
-                region.coordinates[0] = finalCoords;
-            }
-
-            // Update the marker's position to the clamped value
-            marker.setLatLng(finalCoords);
-
-            // Redraw the main editing polygon
-            if (editingPolygonLayer) {
-                editingPolygonLayer.setLatLngs(region.coordinates);
-            }
-            // No need to call updateRegionsOutput here, wait until "Stop Editing"
-            setStatus(`Vertex ${vertexIndex} moved. Drag another or click Stop.`);
-        }
-
-
-        // Helper: Calculate squared distance between two points [y, x]
-        function distSq(p1, p2) {
-            const dy = p1[0] - p2[0];
-            const dx = p1[1] - p2[1];
-            return dy * dy + dx * dx;
-        }
-
-        // Helper: Calculate squared distance from point p to line segment v-w
-        function pointToLineSegmentDistanceSq(p, v, w) {
-            const l2 = distSq(v, w);
-            if (l2 === 0) return distSq(p, v); // v == w case
-            let t = ((p[1] - v[1]) * (w[1] - v[1]) + (p[0] - v[0]) * (w[0] - v[0])) / l2;
-            t = Math.max(0, Math.min(1, t)); // Clamp t to [0, 1]
-            const projection = [v[0] + t * (w[0] - v[0]), v[1] + t * (w[1] - v[1])];
-            return distSq(p, projection);
-        }
-
-        // Helper: Find the index *after which* to insert a new point along the polygon border
-        function findInsertionIndex(newPoint, existingCoords) {
-            let minDistSq = Infinity;
-            let bestIndex = 0;
-
-            // Iterate through existing segments
-            for (let i = 0; i < existingCoords.length - 1; i++) { // -1 because the last segment connects back to 0
-                const v = existingCoords[i];
-                const w = existingCoords[i + 1]; // Next point in array (handles closing segment below)
-                const dSq = pointToLineSegmentDistanceSq(newPoint, v, w);
-
-                if (dSq < minDistSq) {
-                    minDistSq = dSq;
-                    bestIndex = i + 1; // Insert *after* index i
-                }
-            }
-            return bestIndex;
-        }
-
-        // --- UPDATED: Common function to display region visuals ---
-        function displayRegionForVertexManipulation(makeVerticesDraggable = false) {
-            clearEditingVisuals(); // Clear previous visuals first
-            const regionIndex = isAddingVerticesToRegion ? addingVerticesData.index : currentlyEditingRegionIndex;
-            if (regionIndex < 0) return;
-
-            const region = collectedRegions[regionIndex];
-            if (!region || !region.coordinates) return;
-
             editingVisualsLayerGroup = L.layerGroup().addTo(map);
 
-            // Draw the main polygon
-            editingPolygonLayer = L.polygon(region.coordinates, {
-                color: makeVerticesDraggable ? '#0000ff' : (region.color || '#ff0000'), // Blue when editing vertices, red/original when adding
+            const region = collectedRegions[currentlyEditingRegionIndex];
+            const latLngs = region.coordinates;
+
+            editingPolygonLayer = L.polygon(latLngs, {
+                color: region.color || "#3388ff",
+                fillColor: region.fillColor || "#3388ff",
+                fillOpacity: region.fillOpacity || 0.2,
                 weight: 3,
-                fill: false, // No fill for clarity during manipulation
-                dashArray: makeVerticesDraggable ? null : "5, 5", // Solid when editing, dashed otherwise
-                interactive: false
+                dashArray: "5, 5"
             }).addTo(editingVisualsLayerGroup);
 
-            // Add markers for original vertices
-            region.coordinates.forEach((coord, index) => {
-                // Don't draw marker for the closing point (same as first)
-                if (index === region.coordinates.length - 1 && region.coordinates.length > 1) return;
-
-                const marker = L.circleMarker(coord, {
-                    radius: 5, // Slightly larger for easier grabbing
-                    fillColor: makeVerticesDraggable ? '#0000ff' : '#ff0000', // Blue when editing, red otherwise
-                    color: '#ffffff', // White border
-                    weight: 1,
-                    opacity: 1,
-                    fillOpacity: 0.9,
-                    interactive: true, // Make interactive
-                    draggable: makeVerticesDraggable, // Set draggable based on mode
-                    className: 'vertex-marker',
-                    isVertexMarker: true, // Custom flag
-                    vertexIndex: index // Store the index
-                }).addTo(editingVisualsLayerGroup);
-
-                // Add dragend listener only if starting vertex editing mode
-                if (makeVerticesDraggable) {
-                    marker.on('dragend', handleVertexDragEnd);
-                    marker.on('drag', () => { // Update polygon visually during drag
-                         if (editingPolygonLayer && isEditingVertices) {
-                             const currentCoords = [...region.coordinates]; // Get current state
-                             const newPos = marker.getLatLng();
-                             currentCoords[index] = [Math.round(newPos.lat), Math.round(newPos.lng)];
-                             // Update closing point if first point moved
-                             if (index === 0) {
-                                 currentCoords[currentCoords.length - 1] = currentCoords[index];
-                             }
-                             editingPolygonLayer.setLatLngs(currentCoords);
-                         }
-                    });
-                }
+            // Add draggable markers for each vertex
+            latLngs.forEach((latLng, index) => {
+                addVertexMarker(latLng, index);
             });
 
-            if (!makeVerticesDraggable) { // Only fit bounds when initially loading for edit/add
-                 map.fitBounds(editingPolygonLayer.getBounds().pad(0.1)); // Zoom to the area
-            }
+            // Add midpoint markers
+            addMidpointMarkers();
         }
 
+        function addVertexMarker(latLng, index) {
+             const marker = L.marker(latLng, {
+                draggable: true,
+                icon: L.divIcon({
+                    className: 'vertex-marker',
+                    iconSize: [10, 10],
+                    iconAnchor: [5, 5] // Center the icon
+                }),
+                isVertexMarker: true, // Custom option to identify these markers
+                vertexIndex: index     // Store the original index
+            }).addTo(editingVisualsLayerGroup);
 
-        function updateTemporaryRegionVisuals() {
-            if (!editingVisualsLayerGroup || addingVerticesData.index < 0) return;
+            marker.on('drag', updatePolygonFromMarkers); // Update polygon shape while dragging
+            marker.on('dragend', () => {
+                // Snap to integer coordinates on drag end
+                const newLatLng = marker.getLatLng();
+                marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]);
+                updatePolygonFromMarkers(); // Update polygon with snapped coords
+            });
+            return marker;
+        }
 
-            // Clear previous temporary layers (new points, temp polygon)
+        function addMidpointMarkers() {
+            if (!editingVisualsLayerGroup || !editingPolygonLayer) return;
+
+            const latLngs = editingPolygonLayer.getLatLngs()[0]; // Get current polygon points
+
+            // Remove existing midpoint markers first
             editingVisualsLayerGroup.eachLayer(layer => {
-                if (layer.options.isTempVertex || layer.options.isTempPolygon) {
+                if (layer.options.isMidpointMarker) {
                     editingVisualsLayerGroup.removeLayer(layer);
                 }
             });
 
-            const region = collectedRegions[addingVerticesData.index];
-            if (!region || !region.coordinates || addingVerticesData.newPoints.length === 0) return;
+            // Add new midpoint markers
+            for (let i = 0; i < latLngs.length; i++) {
+                const p1 = latLngs[i];
+                const p2 = latLngs[(i + 1) % latLngs.length]; // Wrap around
+                const midPoint = L.latLng((p1.lat + p2.lat) / 2, (p1.lng + p2.lng) / 2);
 
-            // Create a temporary coordinate array with new points inserted
-            let tempCoords = [...region.coordinates]; // Start with original
-            const pointsToInsert = [...addingVerticesData.newPoints]; // Copy points
-
-            // Sort points to insert based on their closest segment insertion index
-            pointsToInsert.sort((a, b) => {
-                const indexA = findInsertionIndex(a, region.coordinates);
-                const indexB = findInsertionIndex(b, region.coordinates);
-                return indexA - indexB;
-            });
-
-            // Insert points one by one, adjusting indices as we go
-            let insertedCount = 0;
-            pointsToInsert.forEach(point => {
-                const insertionIndex = findInsertionIndex(point, region.coordinates); // Find index based on *original* coords
-                tempCoords.splice(insertionIndex + insertedCount, 0, point); // Insert into temp array, adjusting index
-                insertedCount++;
-            });
-
-
-            // Draw the temporary polygon preview
-            L.polygon(tempCoords, {
-                color: '#00ff00', // Green preview
-                weight: 2,
-                dashArray: '5, 5',
-                fill: false,
-                interactive: false,
-                isTempPolygon: true // Mark as temporary
-            }).addTo(editingVisualsLayerGroup);
-
-            // Draw markers for the newly added points
-            addingVerticesData.newPoints.forEach(coord => {
-                L.circleMarker(coord, {
-                    radius: 5,
-                    fillColor: '#00ff00', // Green fill
-                    color: '#ffffff', // White border
-                    weight: 1,
-                    opacity: 1,
-                    fillOpacity: 0.9,
-                    interactive: false,
-                    className: 'new-vertex-marker', // Add class if needed
-                    isTempVertex: true // Mark as temporary
+                const midMarker = L.marker(midPoint, {
+                    draggable: true, // Make midpoint draggable to become a new vertex
+                    icon: L.divIcon({
+                        className: 'new-vertex-marker', // Different style
+                        iconSize: [8, 8],
+                        iconAnchor: [4, 4]
+                    }),
+                    isMidpointMarker: true,
+                    segmentStartIndex: i // Index of the vertex *before* this midpoint
                 }).addTo(editingVisualsLayerGroup);
-            });
+
+                midMarker.on('dragstart', (e) => {
+                    // Convert this midpoint marker into a real vertex marker upon dragging
+                    const marker = e.target;
+                    const segmentStartIndex = marker.options.segmentStartIndex;
+                    const newLatLng = marker.getLatLng(); // Position where drag started
+                    const newCoord = [Math.round(newLatLng.lat), Math.round(newLatLng.lng)];
+
+                    // Remove the midpoint marker itself
+                    editingVisualsLayerGroup.removeLayer(marker);
+
+                    // Insert the new coordinate into the polygon's latlngs
+                    const currentLatLngs = editingPolygonLayer.getLatLngs()[0];
+                    currentLatLngs.splice(segmentStartIndex + 1, 0, L.latLng(newCoord));
+                    editingPolygonLayer.setLatLngs(currentLatLngs); // Update polygon shape
+
+                    // Recreate all vertex and midpoint markers based on the new shape
+                    // This is simpler than trying to re-index everything on the fly
+                    recreateAllVertexMarkers();
+
+                    // Find the newly created vertex marker and start dragging it
+                    editingVisualsLayerGroup.eachLayer(layer => {
+                        if (layer.options.isVertexMarker && layer.options.vertexIndex === segmentStartIndex + 1) {
+                            // Manually trigger drag start on the new vertex marker
+                            // This is a bit tricky and might require simulating events or finding a Leaflet internal way
+                            // For simplicity, we'll just let the user click and drag the new vertex marker again after it appears.
+                            // layer.fire('mousedown').fire('dragstart'); // This might not work reliably across browsers/versions
+                        }
+                    });
+
+                    setStatus('Added new vertex. Continue dragging or Stop Editing.', 'info');
+                });
+            }
         }
 
-        function commitAddedVertices() {
-            if (addingVerticesData.index < 0 || addingVerticesData.newPoints.length === 0) return;
+        function recreateAllVertexMarkers() {
+            if (!editingVisualsLayerGroup || !editingPolygonLayer) return;
 
-            const region = collectedRegions[addingVerticesData.index];
-            if (!region || !region.coordinates) return;
+            const currentLatLngs = editingPolygonLayer.getLatLngs()[0];
 
-            const pointsToInsert = [...addingVerticesData.newPoints];
-
-            // Sort points based on insertion index relative to the *original* coordinates
-            pointsToInsert.sort((a, b) => {
-                const indexA = findInsertionIndex(a, region.coordinates);
-                const indexB = findInsertionIndex(b, region.coordinates);
-                // If indices are the same, maintain original click order (or add secondary sort)
-                return indexA - indexB;
+            // Remove existing vertex and midpoint markers
+            editingVisualsLayerGroup.eachLayer(layer => {
+                if (layer.options.isVertexMarker || layer.options.isMidpointMarker) {
+                    editingVisualsLayerGroup.removeLayer(layer);
+                }
             });
 
-            // Insert points into the *actual* region coordinates array
-            let insertedCount = 0;
-            pointsToInsert.forEach(point => {
-                const insertionIndex = findInsertionIndex(point, region.coordinates); // Find index based on *original*
-                region.coordinates.splice(insertionIndex + insertedCount, 0, point); // Insert into actual array
-                insertedCount++;
+            // Add new vertex markers
+            currentLatLngs.forEach((latLng, index) => {
+                addVertexMarker(latLng, index);
             });
 
-            console.log(`Added ${pointsToInsert.length} vertices to region '${region.name}'`);
-            updateRegionsOutput(); // Update the text area
-            setStatus(`Successfully added ${pointsToInsert.length} vertices.`, 'success');
+            // Add new midpoint markers
+            addMidpointMarkers();
         }
 
-        // --- UPDATED: Common function to clear all editing visuals ---
+
+        function updatePolygonFromMarkers() {
+            if (!isEditingVertices || !editingVisualsLayerGroup || !editingPolygonLayer) return;
+
+            const newLatLngs = [];
+            const vertexMarkers = [];
+            editingVisualsLayerGroup.eachLayer(layer => {
+                if (layer.options.isVertexMarker) {
+                    vertexMarkers.push(layer);
+                }
+            });
+            // Sort markers by their vertex index to maintain shape
+            vertexMarkers.sort((a, b) => a.options.vertexIndex - b.options.vertexIndex);
+
+            vertexMarkers.forEach(marker => {
+                newLatLngs.push(marker.getLatLng());
+            });
+
+            if (newLatLngs.length >= 3) {
+                editingPolygonLayer.setLatLngs(newLatLngs);
+                // Update midpoint markers dynamically as vertices move
+                addMidpointMarkers();
+            }
+        }
+
         function clearEditingVisuals() {
             if (editingVisualsLayerGroup) {
                 map.removeLayer(editingVisualsLayerGroup);
                 editingVisualsLayerGroup = null;
+                editingPolygonLayer = null; // Clear reference
             }
-            editingPolygonLayer = null; // Clear polygon reference
+        }
+
+        // --- Helper to generate the complete map data object ---
+                // --- Helper to generate the complete map data object ---
+                function generateCompleteMapData() {
+            const selectedFilename = mapSelect.value;
+
+            // --- DETAILED STATE CHECK ---
+            console.log("--- generateCompleteMapData called ---");
+            console.log("Current State Check:", {
+                selectedFilename: selectedFilename,
+                imageLayerExists: !!imageLayer,
+                currentMapIdValue: currentMapId,
+                currentBoundsValue: currentBounds ? JSON.stringify(currentBounds) : null // Stringify for better logging
+            });
+
+            // Attempt to fix mapSelect value if it seems wrong but other state exists
+            if (!selectedFilename && imageLayer && currentMapId) {
+                console.warn("mapSelect.value is empty, attempting to find matching option for mapId:", currentMapId);
+                for (const option of mapSelect.options) {
+                    // Check if the option's value (filename) contains the map ID
+                    if (option.value && option.value.toLowerCase().includes(currentMapId.toLowerCase())) {
+                        mapSelect.value = option.value;
+                        console.log("Restored mapSelect.value to:", mapSelect.value);
+                        // Re-read the value after setting it
+                        selectedFilename = mapSelect.value;
+                        break;
+                    }
+                }
+                if (!selectedFilename) {
+                     console.error("Could not find a matching option in mapSelect for mapId:", currentMapId);
+                }
+            }
+            // --- END ATTEMPT TO FIX mapSelect ---
+
+
+            // --- FINAL CHECK ---
+            if (!selectedFilename || !imageLayer || !currentMapId || !currentBounds) {
+                console.error("generateCompleteMapData failed: One or more required state variables are missing.");
+                // Log which specific variable failed
+                if (!selectedFilename) console.error("Reason: selectedFilename is missing or empty.");
+                if (!imageLayer) console.error("Reason: imageLayer is null or undefined.");
+                if (!currentMapId) console.error("Reason: currentMapId is null or undefined.");
+                if (!currentBounds) console.error("Reason: currentBounds is null or undefined.");
+                return null; // Not enough info to generate
+            }
+            console.log("All checks passed. Generating map data for:", currentMapId);
+            // --- END FINAL CHECK ---
+
+
+            // Sort points and regions alphabetically by name for the final output
+            const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
+            const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
+
+            const mapData = {
+                id: currentMapId,
+                // Use selectedFilename to derive name if needed, ensure consistency
+                name: currentMapId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                width: currentBounds[1][1], // lng corresponds to width
+                height: currentBounds[1][0], // lat corresponds to height
+                imageUrl: mapDirectory + selectedFilename, // Use the potentially corrected filename
+                scalePixels: parseInt(scalePixelsInput.value) || 3,
+                scaleKilometers: parseFloat(scaleKilometersInput.value) || 1,
+                blurb: mapBlurbInput.value || "",
+                pointsOfInterest: sortedPoints.map(p => ({
+                    coords: p.coords,
+                    name: p.name || "",
+                    type: p.type || "Unknown",
+                    description: p.description || "",
+                    wikiLink: p.wikiLink || ""
+                })),
+                regions: sortedRegions.map(r => ({
+                    id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`,
+                    name: r.name || "",
+                    description: r.description || "",
+                    type: r.type || "",
+                    color: r.color || "#3388ff",
+                    fillColor: r.fillColor || "#3388ff",
+                    fillOpacity: r.fillOpacity || 0.2,
+                    wikiLink: r.wikiLink || "",
+                    coordinates: r.coordinates || []
+                }))
+            };
+            console.log("Map data generated successfully.");
+            return mapData;
+        }
+
+        // --- UPDATED Export Function (Shows Modal) ---
+                // --- UPDATED Export Function (Shows Modal) ---
+                function exportMapData() {
+            console.log("--- exportMapData (View JSON) button clicked ---");
+            // Log state *just before* calling generate
+             console.log("State before calling generateCompleteMapData:", {
+                selectedFilename: mapSelect.value,
+                imageLayerExists: !!imageLayer,
+                currentMapIdValue: currentMapId,
+                currentBoundsValue: currentBounds ? JSON.stringify(currentBounds) : null
+            });
+
+            const mapData = generateCompleteMapData(); // This now has internal logging
+
+            if (!mapData) {
+                // The alert is now more specific if generateCompleteMapData returned null
+                alert("Export failed: Map state is incomplete. Check console logs for details.");
+                setStatus('Export failed. Map state incomplete. See console.', 'error');
+                return;
+            }
+
+            const jsonString = JSON.stringify(mapData, null, 2); // Pretty print JSON
+            showJsonModal(jsonString, mapData.id + '.json'); // Show in modal
+            setStatus('Map data ready to copy from the modal.', 'success');
+        }
+
+
+        // --- NEW Show JSON Modal Function ---
+        function showJsonModal(jsonContent, filename) {
+            // Remove existing modal if any
+            const existingModal = document.querySelector('.json-modal');
+            if (existingModal) {
+                document.body.removeChild(existingModal);
+            }
+
+            // Create modal elements
+            const modal = document.createElement('div');
+            modal.className = 'json-modal';
+            // Close modal if clicking outside the content area
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            };
+
+            const modalContent = document.createElement('div');
+            modalContent.className = 'json-modal-content';
+
+            const header = document.createElement('div');
+            header.className = 'json-modal-header';
+
+            const title = document.createElement('h3');
+            title.textContent = filename;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '×';
+            closeBtn.className = 'json-modal-close';
+            closeBtn.title = 'Close'; // Tooltip
+            closeBtn.onclick = () => document.body.removeChild(modal);
+
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+
+            const textarea = document.createElement('textarea');
+            textarea.className = 'json-modal-textarea';
+            textarea.value = jsonContent;
+            textarea.readOnly = true;
+
+            const copyBtn = document.createElement('button');
+            copyBtn.textContent = 'Copy to Clipboard';
+            copyBtn.className = 'json-modal-copy';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(textarea.value)
+                    .then(() => {
+                        copyBtn.textContent = 'Copied!';
+                        textarea.select(); // Keep text selected
+                        setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+                    })
+                    .catch(err => {
+                        console.error("Copy failed: ", err);
+                        copyBtn.textContent = 'Copy Failed!';
+                        setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+                        // Fallback for older browsers (less reliable)
+                        try {
+                            textarea.select();
+                            document.execCommand('copy');
+                            copyBtn.textContent = 'Copied! (Fallback)';
+                            setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+                        } catch (execErr) {
+                            console.error("Fallback copy failed: ", execErr);
+                        }
+                    });
+            };
+
+            modalContent.appendChild(header);
+            modalContent.appendChild(textarea);
+            modalContent.appendChild(copyBtn);
+            modal.appendChild(modalContent);
+
+            document.body.appendChild(modal);
+            textarea.focus(); // Focus textarea for immediate interaction
+            textarea.select(); // Select text automatically
+        }
+
+
+        // --- NEW Copy Complete JSON Function (Direct Copy) ---
+                // --- NEW Copy Complete JSON Function (Direct Copy) ---
+                function copyCompleteJson() {
+            console.log("--- copyCompleteJson button clicked ---");
+             // Log state *just before* calling generate
+             console.log("State before calling generateCompleteMapData:", {
+                selectedFilename: mapSelect.value,
+                imageLayerExists: !!imageLayer,
+                currentMapIdValue: currentMapId,
+                currentBoundsValue: currentBounds ? JSON.stringify(currentBounds) : null
+            });
+
+            const mapData = generateCompleteMapData(); // This now has internal logging
+
+            if (!mapData) {
+                 // The alert is now more specific if generateCompleteMapData returned null
+                alert("Copy failed: Map state is incomplete. Check console logs for details.");
+                setStatus('Copy failed. Map state incomplete. See console.', 'error');
+                return;
+            }
+
+            const jsonString = JSON.stringify(mapData, null, 2);
+
+            navigator.clipboard.writeText(jsonString)
+                .then(() => setStatus('Complete map JSON copied to clipboard!', 'success'))
+                .catch(err => {
+                    setStatus('Failed to copy complete JSON.', 'error');
+                    console.error("Copy JSON error:", err);
+                    // Optionally show the modal as a fallback if direct copy fails
+                    // showJsonModal(jsonString, mapData.id + '.json');
+                });
+        }
+
+
+        // --- Map Initialization ---
+        function initMap() {
+            if (map) return; // Already initialized
+
+            map = L.map('map', {
+                crs: L.CRS.Simple,
+                minZoom: -5,
+                maxZoom: 5,
+                center: [0, 0],
+                zoom: 0,
+                doubleClickZoom: false
+            });
+
+            map.on('click', (e) => {
+                if (isEditingPoint || (isEditingRegion && !isAddingVerticesToRegion && !isEditingVertices)) {
+                    return;
+                }
+
+                if (currentMode === 'points' && !isEditingPoint) {
+                    lastClickedCoordsArray = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
+                    coordsDisplay.textContent = `[${lastClickedCoordsArray[0]}, ${lastClickedCoordsArray[1]}]`;
+                    pointNameInput.value = '';
+                    poiTypeSelect.value = '';
+                    pointDescriptionInput.value = '';
+                    pointWikiLinkInput.value = '';
+                    addPointBtn.disabled = false;
+                    setStatus('Coordinates captured. Enter point details and click Add New Point.');
+                    pointNameInput.focus();
+                } else if (currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion)) {
+                    handleMapClickForRegion(e);
+                }
+            });
+
+            map.on('mousemove', (e) => {
+                if (!isEditingPoint && !isEditingRegion && !isCreatingRegion && !isAddingVerticesToRegion && !isEditingVertices) { // Show only when idle
+                    coordsDisplay.textContent = `[${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}]`;
+                }
+            });
         }
 
         // --- Event Listeners ---
-
-        // Mode Switching
-        modeTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                setMode(tab.dataset.mode);
-            });
-        });
-
-        loadMapBtn.addEventListener('click', loadImage);
-
-        // Point Events
-        addPointBtn.addEventListener('click', () => {
-            if (isEditingPoint) return;
-            if (!lastClickedCoordsArray) { alert("Click map first."); return; }
-            const pointName = pointNameInput.value.trim();
-            const pointType = poiTypeSelect.value;
-            const pointDescription = pointDescriptionInput.value.trim();
-            const pointWikiLink = pointWikiLinkInput.value.trim();
-            if (!pointName) { alert("Enter Point Name."); pointNameInput.focus(); return; }
-            if (!pointType) { alert("Select Point Type."); poiTypeSelect.focus(); return; }
-            if (collectedPoints.some(p => p.name === pointName)) {
-                alert(`Point named "${pointName}" already exists.`); pointNameInput.focus(); return;
-            }
-            collectedPoints.push({
-                coords: lastClickedCoordsArray, name: pointName, type: pointType,
-                description: pointDescription, wikiLink: pointWikiLink
-            });
-            updatePointsOutput();
-            // Reset fields
-            pointNameInput.value = ''; poiTypeSelect.value = '';
-            pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
-            coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null;
-            addPointBtn.disabled = true;
-            setStatus('Point added! Click map for next point.', 'success');
-            pointNameInput.focus();
-        });
-
-        editPointSelect.addEventListener('change', (e) => {
-            const selectedName = e.target.value;
-            if (selectedName) {
-                loadPointForEditing(selectedName);
-            } else {
-                setPointEditingState(false);
-            }
-        });
-
-        savePointChangesBtn.addEventListener('click', savePointChanges);
-        cancelPointEditBtn.addEventListener('click', cancelPointEditing);
-
-        copyPointsBtn.addEventListener('click', () => {
-            if (pointsOutput.value) {
-                navigator.clipboard.writeText(pointsOutput.value).then(() => {
-                    copyPointsBtn.textContent = 'Copied!';
-                    setTimeout(() => { copyPointsBtn.textContent = 'Copy All'; }, 1500);
-                }).catch(err => { alert('Failed to copy.'); });
-            }
-        });
-
-        clearPointsBtn.addEventListener('click', () => {
-            if (confirm("Clear all collected points?")) {
-                collectedPoints = []; lastClickedCoordsArray = null;
-                updatePointsOutput();
-                coordsDisplay.textContent = '[Y, X]'; addPointBtn.disabled = true;
-                setPointEditingState(false);
-                setStatus('Cleared all points.');
-            }
-        });
-
-        // Region Events
-        startRegionBtn.addEventListener('click', startRegionCreation);
-        finishRegionBtn.addEventListener('click', finishRegionCreation);
-        cancelRegionBtn.addEventListener('click', cancelRegionCreation);
-
-        editRegionSelect.addEventListener('change', (e) => {
-            const selectedName = e.target.value;
-            if (selectedName) {
-                loadRegionForEditing(selectedName);
-            } else {
-                setRegionEditingState(false); // This also cancels vertex adding/editing
-            }
-        });
-
-        addVerticesBtn.addEventListener('click', toggleAddVerticesMode);
-        editVerticesBtn.addEventListener('click', toggleVertexEditingMode); // NEW Listener
-        saveRegionChangesBtn.addEventListener('click', saveRegionChanges);
-        cancelRegionEditBtn.addEventListener('click', cancelRegionEditing);
-
-        copyRegionsBtn.addEventListener('click', () => {
-            if (regionsOutput.value) {
-                navigator.clipboard.writeText(regionsOutput.value).then(() => {
-                    copyRegionsBtn.textContent = 'Copied!';
-                    setTimeout(() => { copyRegionsBtn.textContent = 'Copy All'; }, 1500);
-                }).catch(err => { alert('Failed to copy.'); });
-            }
-        });
-
-        clearRegionsBtn.addEventListener('click', () => {
-            if (confirm("Clear all collected regions?")) {
-                collectedRegions = [];
-                updateRegionsOutput();
-                setRegionEditingState(false);
-                setStatus('Cleared all regions.');
-            }
-        });
-
-        // Import
-        importDataBtn.addEventListener('click', importData);
-
-        // Region Type changes (sync colors)
-        regionTypeSelect.addEventListener('change', (e) => {
-            const selectedType = e.target.value;
-            if (selectedType && regionTypeColors[selectedType]) {
-                regionColorInput.value = regionTypeColors[selectedType].color;
-                regionFillColorInput.value = regionTypeColors[selectedType].fillColor;
-            }
-        });
-
-        // --- Initialize Map and UI ---
         document.addEventListener('DOMContentLoaded', () => {
-            try {
-                map = L.map('map', { crs: L.CRS.Simple, minZoom: -5, maxZoom: 5 }).setView([0, 0], -5);
+            initMap();
+            populateMapSelector();
+            populateTypeDropdown();
+            resetUIState();
+            setMode('points');
 
-                map.on('click', function(e) {
-                    // Ignore clicks if editing details (point or region) and NOT adding/editing vertices
-                    if (isEditingPoint || (isEditingRegion && !isAddingVerticesToRegion && !isEditingVertices)) {
-                        setStatus('Map clicking disabled while editing details.', 'error');
-                        return;
-                    }
+            loadMapBtn.addEventListener('click', loadImage);
+            exportMapDataBtn.addEventListener('click', exportMapData); // Changed target function
 
-                    if (!imageLayer || !currentBounds) {
-                        coordsDisplay.textContent = 'Load image first!';
-                        addPointBtn.disabled = true;
-                        return;
-                    }
+            // Mode switching
+            modeTabs.forEach(tab => {
+                tab.addEventListener('click', () => setMode(tab.dataset.mode));
+            });
 
-                    const yCoord = Math.round(e.latlng.lat);
-                    const xCoord = Math.round(e.latlng.lng);
+            // Point Controls
+            addPointBtn.addEventListener('click', () => {
+                if (!lastClickedCoordsArray) { alert("Click on the map first to set coordinates."); return; }
+                const pointName = pointNameInput.value.trim();
+                const pointType = poiTypeSelect.value;
+                const pointDescription = pointDescriptionInput.value.trim();
+                const pointWikiLink = pointWikiLinkInput.value.trim();
 
-                    // Clamp coordinates to image bounds
-                    const clampedY = Math.max(0, Math.min(yCoord, currentBounds[1][0]));
-                    const clampedX = Math.max(0, Math.min(xCoord, currentBounds[1][1]));
-                    const coordsArray = [clampedY, clampedX];
+                if (!pointName) { alert("Point Name cannot be empty."); pointNameInput.focus(); return; }
+                if (!pointType) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
 
-                    if (currentMode === 'points') {
-                        // Point mode: Store coords for adding a point
-                        lastClickedCoordsArray = coordsArray;
-                        coordsDisplay.textContent = `[${clampedY}, ${clampedX}]`;
-                        addPointBtn.disabled = false; // Enable add button
-                        setStatus('Coordinates selected. Enter details and click Add New Point.');
-                        editPointSelect.value = ""; // Deselect edit dropdown
+                const nameConflict = collectedPoints.some(p => p.name === pointName);
+                if (nameConflict) {
+                    alert(`A point named "${pointName}" already exists.`); pointNameInput.focus(); return;
+                }
 
-                        // Optional temporary marker
-                        L.marker(coordsArray).addTo(map)
-                            .bindPopup(`Click Add New Point to save:\n[${clampedY}, ${clampedX}]`)
-                            .openPopup()
-                            .on('popupclose', function(ev) {
-                                if(map && map.hasLayer(ev.target)) map.removeLayer(ev.target);
-                            });
-                    } else if (currentMode === 'regions') {
-                        if (isCreatingRegion) {
-                            // Region creation mode: Add vertex to current region
-                            addVertexToRegionCreation(coordsArray);
-                        } else if (isAddingVerticesToRegion) {
-                            // Vertex adding mode: Add vertex to existing region
-                            handleVertexAddClick(coordsArray);
-                        }
-                        // Clicks are ignored during vertex editing mode (handled by marker drag)
-                    }
+                collectedPoints.push({
+                    coords: lastClickedCoordsArray,
+                    name: pointName,
+                    type: pointType,
+                    description: pointDescription,
+                    wikiLink: pointWikiLink
                 });
-
-                // Populate dropdowns and set initial state
-                populateMapSelector();
-                populateTypeDropdown();
-                populatePointEditDropdown();
-                populateRegionEditDropdown();
-                setPointEditingState(false);
-                setRegionEditingState(false); // Resets vertex add/edit
-                setRegionCreationState(false);
-                setMode('points'); // Start in points mode
-
-            } catch(e) {
-                console.error("Failed to initialize Leaflet map:", e);
-                setStatus("FATAL ERROR: Could not initialize map. Check console.", 'error');
-                // Disable controls if map fails fundamentally
-                loadMapBtn.disabled = true;
+                updatePointsOutput();
+                setStatus(`Point "${pointName}" added successfully.`, 'success');
+                pointNameInput.value = '';
+                poiTypeSelect.value = '';
+                pointDescriptionInput.value = '';
+                pointWikiLinkInput.value = '';
+                coordsDisplay.textContent = '[Y, X]';
+                lastClickedCoordsArray = null;
                 addPointBtn.disabled = true;
-                startRegionBtn.disabled = true;
-                importDataBtn.disabled = true;
-                mapSelect.disabled = true;
-            }
+            });
+
+            editPointSelect.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    loadPointForEditing(e.target.value);
+                } else {
+                    cancelPointEditing();
+                }
+            });
+            savePointChangesBtn.addEventListener('click', savePointChanges);
+            cancelPointEditBtn.addEventListener('click', cancelPointEditing);
+            clearPointsBtn.addEventListener('click', () => { // Moved button listener
+                if (confirm('Are you sure you want to clear all points? This cannot be undone.')) {
+                    collectedPoints = [];
+                    updatePointsOutput();
+                    setPointEditingState(false); // Ensure UI resets if editing was cancelled by clearing
+                    setStatus('All points cleared.');
+                }
+            });
+
+            // Region Controls
+            startRegionBtn.addEventListener('click', startRegionCreation);
+            finishRegionBtn.addEventListener('click', finishRegionCreation);
+            cancelRegionBtn.addEventListener('click', cancelRegionCreation);
+
+            editRegionSelect.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    loadRegionForEditing(e.target.value);
+                } else {
+                    cancelRegionEditing();
+                }
+            });
+            saveRegionChangesBtn.addEventListener('click', saveRegionChanges);
+            cancelRegionEditBtn.addEventListener('click', cancelRegionEditing);
+            addVerticesBtn.addEventListener('click', startAddingVertices);
+            editVerticesBtn.addEventListener('click', startEditingVertices);
+            clearRegionsBtn.addEventListener('click', () => { // Moved button listener
+                if (confirm('Are you sure you want to clear all regions? This cannot be undone.')) {
+                    collectedRegions = [];
+                    updateRegionsOutput();
+                    setRegionEditingState(false); // Ensure UI resets
+                    setRegionCreationState(false); // Ensure UI resets
+                    setStatus('All regions cleared.');
+                }
+            });
+
+            // Update region preview colors dynamically
+            regionColorInput.addEventListener('input', () => {
+                const color = regionColorInput.value;
+                if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ color: color });
+                if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ color: color });
+            });
+            regionFillColorInput.addEventListener('input', () => {
+                const color = regionFillColorInput.value;
+                if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillColor: color });
+                if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillColor: color });
+            });
+            regionOpacityInput.addEventListener('input', () => {
+                const opacity = parseFloat(regionOpacityInput.value);
+                if (!isNaN(opacity)) {
+                    if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillOpacity: opacity });
+                    if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillOpacity: opacity });
+                }
+            });
+            regionTypeSelect.addEventListener('change', (e) => {
+                const type = e.target.value;
+                if (regionTypeColors[type] && !isEditingRegion && !isCreatingRegion) {
+                    regionColorInput.value = regionTypeColors[type].color;
+                    regionFillColorInput.value = regionTypeColors[type].fillColor;
+                }
+            });
+
+            // NEW Summary Area Button Listeners
+            viewJsonBtn.addEventListener('click', exportMapData); // Reuses the export function to show modal
+            copyJsonBtn.addEventListener('click', copyCompleteJson); // Uses the direct copy function
+
+            // Removed Import Controls Listener
         });
 
     </script>
