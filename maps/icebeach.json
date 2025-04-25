@@ -1,6 +1,6 @@
 {
-    "id": "icebeach_detail",
-    "name": "Icebeach",
+    "id": "IceBeach",
+    "name": "IceBeach",
     "width": 7016,
     "height": 4960,
     "imageUrl": "maps/IceBeach.webp",
@@ -8,163 +8,605 @@
     "scaleKilometers": 1,
     "blurb": "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
     "pointsOfInterest": [
-         {
-            "coords": [3516, 3698],
-            "name": "Castgate",
-            "type": "City",
-            "description": "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
-            "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate"
-         },
-         {
-            "coords": [2736, 4098],
-            "name": "Flamore",
-            "type": "Ruin",
-            "description": "This now ruined Wizard's college was a blacksite training ground.",
-            "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry"
-         },
-         {
-            "coords": [2310, 2722],
-            "name": "Fractured Point",
-            "type": "Capital",
-            "description": "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
-            "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
-         },
-         { "coords": [3422, 4370], "name": "Gernerum", "type": "Village", "description": "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
-         { "coords": [780, 1080], "name": "Houlen Top", "type": "Town", "description": "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop" },
-         { "coords": [3876, 2990], "name": "Icemoor", "type": "Settlement", "description": "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor" },
-         { "coords": [4358, 2976], "name": "Little Rock Mentle Asylam", "type": "Asylum", "description": "This small institution holds some of the most hardened crimnals of the Gilded Nations.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum" },
-         { "coords": [2938, 4182], "name": "Morana's Fang", "type": "Mountain", "description": "The tallest point in the world.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang" },
-         { "coords": [604, 2416], "name": "Mt. Solaria", "type": "Mountain", "description": "A large mountian said to be inhabited by a dragon.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria" },
-         { "coords": [1664, 3372], "name": "Ottiker", "type": "Town", "description": "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror" },
-         { "coords": [1210, 3924], "name": "Quilt", "type": "Hamlet", "description": "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt" },
-         { "coords": [1356, 1620], "name": "Shiverwallow", "type": "Village", "description": "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow" },
-         { "coords": [2154, 3588], "name": "Sleetmond", "type": "Settlement", "description": "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond" },
-         { "coords": [1116, 4038], "name": "The Foaming Burrow", "type": "Cavern", "description": "The origin of the river, how water bubbles forth outo of this cave.", "wikiLink": "TBD" },
-         { "coords": [2036, 3074], "name": "The Hope Tree", "type": "Natural Landmark", "description": "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree" },
-         { "coords": [2862, 4840], "name": "Thrawbreak", "type": "Hamlet", "description": "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak" },
-         { "coords": [4266, 3192], "name": "Whitedrift", "type": "Settlement", "description": "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift" },
-         { "coords": [4002, 3488], "name": "Winrich Fortress", "type": "Fortress", "description": "The Ancient fortress of a long dead and powerful Lich", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress" },
-         { "coords": [716, 1508], "name": "Wynwood Peak", "type": "Mountain", "description": "This smaller mountian is said to be a place were the...", "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak" }
+      {
+        "coords": [
+          3516,
+          3698
+        ],
+        "name": "Castgate",
+        "type": "City",
+        "description": "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate"
+      },
+      {
+        "coords": [
+          2736,
+          4098
+        ],
+        "name": "Flamore",
+        "type": "Ruin",
+        "description": "This now ruined Wizard's college was a blacksite training ground.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry"
+      },
+      {
+        "coords": [
+          2310,
+          2722
+        ],
+        "name": "Fractured Point",
+        "type": "Capital",
+        "description": "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
+      },
+      {
+        "coords": [
+          3422,
+          4370
+        ],
+        "name": "Gernerum",
+        "type": "Village",
+        "description": "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum"
+      },
+      {
+        "coords": [
+          780,
+          1080
+        ],
+        "name": "Houlen Top",
+        "type": "Town",
+        "description": "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop"
+      },
+      {
+        "coords": [
+          3876,
+          2990
+        ],
+        "name": "Icemoor",
+        "type": "Settlement",
+        "description": "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor"
+      },
+      {
+        "coords": [
+          4358,
+          2976
+        ],
+        "name": "Little Rock Mentle Asylam",
+        "type": "Asylum",
+        "description": "This small institution holds some of the most hardened crimnals of the Gilded Nations.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum"
+      },
+      {
+        "coords": [
+          2938,
+          4182
+        ],
+        "name": "Morana's Fang",
+        "type": "Mountain",
+        "description": "The tallest point in the world.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang"
+      },
+      {
+        "coords": [
+          604,
+          2416
+        ],
+        "name": "Mt. Solaria",
+        "type": "Mountain",
+        "description": "A large mountian said to be inhabited by a dragon.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria"
+      },
+      {
+        "coords": [
+          1664,
+          3372
+        ],
+        "name": "Ottiker",
+        "type": "Town",
+        "description": "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror"
+      },
+      {
+        "coords": [
+          1210,
+          3924
+        ],
+        "name": "Quilt",
+        "type": "Hamlet",
+        "description": "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt"
+      },
+      {
+        "coords": [
+          1356,
+          1620
+        ],
+        "name": "Shiverwallow",
+        "type": "Village",
+        "description": "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow"
+      },
+      {
+        "coords": [
+          2154,
+          3588
+        ],
+        "name": "Sleetmond",
+        "type": "Settlement",
+        "description": "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond"
+      },
+      {
+        "coords": [
+          1116,
+          4038
+        ],
+        "name": "The Foaming Burrow",
+        "type": "Cavern",
+        "description": "The origin of the river, how water bubbles forth outo of this cave.",
+        "wikiLink": "TBDs"
+      },
+      {
+        "coords": [
+          2036,
+          3074
+        ],
+        "name": "The Hope Tree",
+        "type": "Natural Landmark",
+        "description": "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree"
+      },
+      {
+        "coords": [
+          2862,
+          4840
+        ],
+        "name": "Thrawbreak",
+        "type": "Hamlet",
+        "description": "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak"
+      },
+      {
+        "coords": [
+          4266,
+          3192
+        ],
+        "name": "Whitedrift",
+        "type": "Settlement",
+        "description": "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift"
+      },
+      {
+        "coords": [
+          4002,
+          3488
+        ],
+        "name": "Winrich Fortress",
+        "type": "Fortress",
+        "description": "The Ancient fortress of a long dead and powerful Lich",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress"
+      },
+      {
+        "coords": [
+          716,
+          1508
+        ],
+        "name": "Wynwood Peak",
+        "type": "Mountain",
+        "description": "This smaller mountian is said to be a place were the...",
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak"
+      }
     ],
     "regions": [
-            {
-                "id": "region-kingdom-of-icebeach",
-                "name": "Kingdom of Icebeach",
-                "description": "The northern kingdom known for its harsh climate",
-                "type": "political",
-                "color": "#3388ff",
-                "fillColor": "#3388ff",
-                "fillOpacity": 0.2,
-                "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach",
-                "coordinates": [
-                    [3000,2000],
-                    [3680,2176],
-                    [4000,2500],
-                    [3800,3500],
-                    [2900,3000],
-                    [3000,2000]]
-                },
-                {
-                "id": "region-winrich-glacier",
-                "name": "Winrich Glacier",
-                "description": "This Glacier glows a soft sicky green and blue and is said to hold acient horrors.",
-                "type": "terrain",
-                "color": "#33aa33",
-                "fillColor": "#33aa33",
-                "fillOpacity": 0.2,
-                "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach",
-                "coordinates": [
-                    [3694,3695],
-                    [3738,3777],
-                    [3752,3818],
-                    [3730,3841],
-                    [3733,3887],
-                    [3758,3910],
-                    [3748,3942],
-                    [3708,3935],
-                    [3680,3940],
-                    [3654,3919],
-                    [3639,3936],
-                    [3626,3944],
-                    [3611,3944],
-                    [3587,3955],
-                    [3567,3965],
-                    [3561,3972],
-                    [3547,3991],
-                    [3532,4006],
-                    [3504,4030],
-                    [3491,4035],
-                    [3483,4041],
-                    [3474,4046],
-                    [3462,4065],
-                    [3452,4074],
-                    [3451,4087],
-                    [3451,4095],
-                    [3440,4095],
-                    [3440,4123],
-                    [3436,4138],
-                    [3435,4143],
-                    [3435,4158],
-                    [3436,4173],
-                    [3436,4179],
-                    [3429,4183],
-                    [3425,4185],
-                    [3425,4205],
-                    [3421,4228],
-                    [3411,4242],
-                    [3409,4261],
-                    [3408,4285],
-                    [3409,4304],
-                    [3390,4292],
-                    [3374,4273],
-                    [3363,4265],
-                    [3352,4241],
-                    [3338,4232],
-                    [3325,4236],
-                    [3325,4256],
-                    [3319,4261],
-                    [3312,4264],
-                    [3307,4269],
-                    [3301,4285],
-                    [3290,4284],
-                    [3286,4291],
-                    [3286,4291],
-                    [3276,4281],
-                    [3253,4246],
-                    [3225,4234],
-                    [3210,4244],
-                    [3198,4256],
-                    [3196,4273],
-                    [3187,4298],
-                    [3172,4311],
-                    [3152,4286],
-                    [3132,4244],
-                    [3111,4285],
-                    [3098,4273],
-                    [3091,4285],
-                    [3074,4267],
-                    [3047,4217],
-                    [3018,4265],
-                    [2988,4222],
-                    [3025,4190],
-                    [2984,4145],
-                    [3010,4111],
-                    [3000,4094],
-                    [3078,3988],
-                    [3106,3985],
-                    [3109,4036],
-                    [3175,3917],
-                    [3203,3923],
-                    [3203,3950],
-                    [3235,3877],
-                    [3266,3844],
-                    [3296,3859],
-                    [3296,3878],
-                    [3299,3862],
-                    [3308,3899],
-                    [3342,3835],
-                    [3694,3695]
-            ]
-            }
+      {
+        "id": "region-starcaller's-grove",
+        "name": "Starcaller's Grove",
+        "description": "The northern kingdom known for its harsh climate",
+        "type": "terrain",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach",
+        "coordinates": [
+          [
+            3498,
+            4408
+          ],
+          [
+            3604,
+            4464
+          ],
+          [
+            3618,
+            4594
+          ],
+          [
+            3546,
+            4704
+          ],
+          [
+            3400,
+            4616
+          ],
+          [
+            3360,
+            4522
+          ]
         ]
-}
+      },
+      {
+        "id": "region-winrich-glacier",
+        "name": "Winrich Glacier",
+        "description": "This Glacier glows a soft sicky green and blue and is said to hold acient horrors.",
+        "type": "terrain",
+        "color": "#33aa33",
+        "fillColor": "#33aa33",
+        "fillOpacity": 0.2,
+        "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach",
+        "coordinates": [
+          [
+            3694,
+            3695
+          ],
+          [
+            3738,
+            3777
+          ],
+          [
+            3752,
+            3818
+          ],
+          [
+            3730,
+            3841
+          ],
+          [
+            3733,
+            3887
+          ],
+          [
+            3758,
+            3910
+          ],
+          [
+            3748,
+            3942
+          ],
+          [
+            3708,
+            3935
+          ],
+          [
+            3680,
+            3940
+          ],
+          [
+            3654,
+            3919
+          ],
+          [
+            3639,
+            3936
+          ],
+          [
+            3626,
+            3944
+          ],
+          [
+            3611,
+            3944
+          ],
+          [
+            3587,
+            3955
+          ],
+          [
+            3567,
+            3965
+          ],
+          [
+            3561,
+            3972
+          ],
+          [
+            3547,
+            3991
+          ],
+          [
+            3532,
+            4006
+          ],
+          [
+            3504,
+            4030
+          ],
+          [
+            3491,
+            4035
+          ],
+          [
+            3483,
+            4041
+          ],
+          [
+            3474,
+            4046
+          ],
+          [
+            3462,
+            4065
+          ],
+          [
+            3452,
+            4074
+          ],
+          [
+            3451,
+            4087
+          ],
+          [
+            3451,
+            4095
+          ],
+          [
+            3440,
+            4095
+          ],
+          [
+            3440,
+            4123
+          ],
+          [
+            3436,
+            4138
+          ],
+          [
+            3435,
+            4143
+          ],
+          [
+            3435,
+            4158
+          ],
+          [
+            3436,
+            4173
+          ],
+          [
+            3436,
+            4179
+          ],
+          [
+            3429,
+            4183
+          ],
+          [
+            3425,
+            4185
+          ],
+          [
+            3425,
+            4205
+          ],
+          [
+            3421,
+            4228
+          ],
+          [
+            3411,
+            4242
+          ],
+          [
+            3409,
+            4261
+          ],
+          [
+            3408,
+            4285
+          ],
+          [
+            3409,
+            4304
+          ],
+          [
+            3390,
+            4292
+          ],
+          [
+            3374,
+            4273
+          ],
+          [
+            3363,
+            4265
+          ],
+          [
+            3352,
+            4241
+          ],
+          [
+            3338,
+            4232
+          ],
+          [
+            3325,
+            4236
+          ],
+          [
+            3325,
+            4256
+          ],
+          [
+            3319,
+            4261
+          ],
+          [
+            3312,
+            4264
+          ],
+          [
+            3307,
+            4269
+          ],
+          [
+            3301,
+            4285
+          ],
+          [
+            3290,
+            4284
+          ],
+          [
+            3286,
+            4291
+          ],
+          [
+            3286,
+            4291
+          ],
+          [
+            3276,
+            4281
+          ],
+          [
+            3253,
+            4246
+          ],
+          [
+            3225,
+            4234
+          ],
+          [
+            3210,
+            4244
+          ],
+          [
+            3198,
+            4256
+          ],
+          [
+            3196,
+            4273
+          ],
+          [
+            3187,
+            4298
+          ],
+          [
+            3172,
+            4311
+          ],
+          [
+            3152,
+            4286
+          ],
+          [
+            3132,
+            4244
+          ],
+          [
+            3111,
+            4285
+          ],
+          [
+            3098,
+            4273
+          ],
+          [
+            3091,
+            4285
+          ],
+          [
+            3074,
+            4267
+          ],
+          [
+            3047,
+            4217
+          ],
+          [
+            3018,
+            4265
+          ],
+          [
+            2988,
+            4222
+          ],
+          [
+            3025,
+            4190
+          ],
+          [
+            2984,
+            4145
+          ],
+          [
+            3010,
+            4111
+          ],
+          [
+            3000,
+            4094
+          ],
+          [
+            3078,
+            3988
+          ],
+          [
+            3106,
+            3985
+          ],
+          [
+            3109,
+            4036
+          ],
+          [
+            3175,
+            3917
+          ],
+          [
+            3203,
+            3923
+          ],
+          [
+            3203,
+            3950
+          ],
+          [
+            3235,
+            3877
+          ],
+          [
+            3266,
+            3844
+          ],
+          [
+            3296,
+            3859
+          ],
+          [
+            3296,
+            3878
+          ],
+          [
+            3299,
+            3862
+          ],
+          [
+            3308,
+            3899
+          ],
+          [
+            3342,
+            3835
+          ],
+          [
+            3694,
+            3695
+          ]
+        ]
+      }
+    ]
+  }
