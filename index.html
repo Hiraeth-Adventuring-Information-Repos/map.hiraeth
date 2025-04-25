@@ -76,10 +76,20 @@
         }
 
         /* --- Keyframes for Twinkling Stars --- */
-        @keyframes twinkle {
-            0% { opacity: 0; }
-            50% { opacity: 0.6; } /* Adjust max brightness */
-            100% { opacity: 0; }
+        @keyframes twinkleEnhanced {
+            0% { opacity: 0.1; }
+            20% { opacity: 0.6; }
+            40% { opacity: 0.1; }
+            60% { opacity: 0.3; }
+            80% { opacity: 0.7; }
+            100% { opacity: 0.1; }
+        }
+
+        @keyframes twinkleSubtle {
+            0% { opacity: 0.1; }
+            33% { opacity: 0.4; }
+            66% { opacity: 0.2; }
+            100% { opacity: 0.1; }
         }
 
         /* --- Keyframes for Moving Clouds --- */
@@ -133,54 +143,6 @@
             white-space: nowrap; color: var(--text-primary); flex-shrink: 0;
         }
         body.dark-theme #sidebar h2 { border-bottom-color: var(--glass-border-dark); }
-
-        /* Region Toggle Button */
-        #toggle-regions-btn {
-            top: 189px; /* Position below measure tool */
-        }
-        #toggle-regions-btn svg {
-            margin-top: 7px; /* Center the SVG icon */
-            opacity: 0.6; /* Default: slightly dimmed */
-        }
-        #toggle-regions-btn.active svg {
-            opacity: 1; /* Full opacity when active */
-        }
-        #toggle-regions-btn.active {
-            background-color: var(--active-bg); /* Use active color */
-        }
-
-        /* Region Filter Panel */
-        #region-filter-container {
-            position: absolute;
-            top: 185px; /* Align near the region button */
-            left: 50px; /* Position to the right of the button */
-            z-index: 999;
-            background-color: var(--glass-bg-light);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--glass-border-light);
-            color: var(--text-primary);
-            border-radius: 6px;
-            padding: 10px 15px;
-            width: 180px;
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-            box-shadow: 0 1px 5px var(--shadow-color);
-            transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
-            opacity: 0;
-            transform: scale(0.95);
-            transform-origin: top left;
-            pointer-events: none; /* Hidden by default */
-        }
-        #region-filter-container.visible {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-        body.dark-theme #region-filter-container {
-            background-color: var(--glass-bg-dark);
-            border-color: var(--glass-border-dark);
-        }
 
         /* Sidebar List Styling */
         #map-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
@@ -247,7 +209,7 @@
             cursor: crosshair;
         }
         body.dark-theme #map {
-            background-image: url('images/night-sky.png'); /* Base static stars */
+            /* background-image: url('images/night-sky.png'); */ /* Base static stars - REMOVED for CSS stars */
             background-repeat: repeat;
             background-color: #050510;
         }
@@ -279,24 +241,69 @@
             background-position: 0 20%; opacity: 0.3; animation-duration: 110s; animation-delay: -10s;
         }
 
-        /* --- Ensure Dark Theme Hides Clouds & Defines Stars --- */
-        body.dark-theme #map::before,
-        body.dark-theme #map::after {
-            opacity: 0; /* Hide clouds by default */
-        }
+        /* --- Enhanced Dark Theme Stars --- */
         body.dark-theme #map::before {
-            background-image: radial-gradient(circle, white 1px, transparent 1.5px);
-            background-size: 75px 75px; background-position: 0 0;
-            animation: twinkle 6s linear infinite; animation-delay: 0s;
-            opacity: 1; /* Base opacity for stars */
-            z-index: 0; content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; pointer-events: none;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle, rgba(255, 255, 255, 0.9) 1px, transparent 1.5px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.5px, transparent 1px);
+            background-size:
+                75px 75px,
+                50px 50px;
+            background-position:
+                0 0,
+                25px 25px;
+            animation: twinkleEnhanced 8s infinite;
+            opacity: 1; /* Ensure visible */
         }
+
         body.dark-theme #map::after {
-            background-image: radial-gradient(circle, white 1px, transparent 1.5px);
-            background-size: 55px 55px; background-position: 25px 25px;
-            animation: twinkle 4s linear infinite; animation-delay: 2s;
-            opacity: 1; /* Base opacity for stars */
-             z-index: 0; content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; pointer-events: none;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.7px, transparent 1px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.7) 0.3px, transparent 0.6px);
+            background-size:
+                60px 60px,
+                35px 35px;
+            background-position:
+                15px 15px,
+                40px 40px;
+            animation: twinkleSubtle 5s infinite;
+            animation-delay: 2s;
+            opacity: 1; /* Ensure visible */
+        }
+
+        /* Third star layer for more variety */
+        body.dark-theme #map > div:first-child::before { /* Target inner Leaflet container */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Keep behind map elements */
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle, rgba(220, 240, 255, 0.9) 0.2px, transparent 0.5px);
+            background-size: 30px 30px;
+            background-position: 5px 10px;
+            animation: twinkleEnhanced 6s infinite;
+            animation-delay: 1s;
+            opacity: 1; /* Ensure visible */
         }
         /* --- End Theme Effects --- */
 
@@ -396,6 +403,7 @@
             text-align: center;
             box-shadow: 0 1px 5px var(--shadow-color);
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.2s ease;
+            display: none; /* Hide by default, shown via JS */
         }
         .map-control-button:hover {
             background-color: rgba(255, 255, 255, 0.75);
@@ -410,7 +418,7 @@
         }
         /* --- END: Map Control Buttons Common Style --- */
 
-        /* Marker Toggle Button */
+        /* Marker Toggle Button (Now controls Markers & Regions) */
         #toggle-markers-btn {
             top: 78px; /* Position below zoom controls */
             /* Inherits from .map-control-button */
@@ -424,18 +432,13 @@
             opacity: 0.5; /* Dimmed when hidden */
         }
 
-        /* --- NEW: Filter Toggle Button --- */
+        /* --- Filter Toggle Button (Now uses Map Icon) --- */
         #toggle-filters-btn {
             top: 115px; /* Position below marker toggle */
             /* Inherits from .map-control-button */
+            /* Icon is now applied via JS-injected style */
         }
-        #toggle-filters-btn::before {
-            content: '🔎'; /* Magnifying glass icon */
-            opacity: 0.6; /* Default: slightly dimmed */
-        }
-        #toggle-filters-btn.active::before {
-            opacity: 1; /* Full opacity when active */
-        }
+        /* #toggle-filters-btn::before { ... } - Removed, handled by JS */
         #toggle-filters-btn.active {
              background-color: var(--active-bg); /* Use active color */
         }
@@ -444,7 +447,7 @@
         }
         /* --- END: Filter Toggle Button --- */
 
-        /* --- NEW: Filter Panel Styling --- */
+        /* --- Filter Panel Styling (Now includes POI and Region filters) --- */
         #poi-filter-container {
             position: absolute;
             top: 110px; /* Align near the filter button */
@@ -476,14 +479,17 @@
             background-color: var(--glass-bg-dark);
             border-color: var(--glass-border-dark);
         }
-        #poi-filter-container h3 {
-            margin-top: 0;
+        #poi-filter-container h3 { /* Style for section headers */
+            margin-top: 10px; /* Add space above subsequent headers */
             margin-bottom: 8px;
             font-size: 1rem;
             font-weight: 600;
             color: var(--text-secondary);
             padding-bottom: 5px;
             border-bottom: 1px solid var(--glass-border-light);
+        }
+        #poi-filter-container h3:first-of-type {
+             margin-top: 0; /* No top margin for the very first header */
         }
         body.dark-theme #poi-filter-container h3 {
             border-bottom-color: var(--glass-border-dark);
@@ -525,7 +531,14 @@
              background-color: var(--active-bg); /* Use active color */
         }
 
-        /* --- NEW: Search Control Container (Bottom Center) --- */
+        /* Sound Toggle Button */
+        #toggle-sound-btn {
+            top: 189px; /* Position below measure tool */
+            /* Inherits from .map-control-button */
+            display: block; /* Make visible by default */
+        }
+
+        /* --- Search Control Container (Bottom Center) --- */
         #search-control-container {
             position: absolute;
             bottom: 40px; /* Above bottom link bar */
@@ -560,7 +573,7 @@
         }
         /* --- END: Search Control Container --- */
 
-        /* --- NEW: Search Results Container --- */
+        /* --- Search Results Container --- */
         #search-results-container {
             position: absolute;
             bottom: 80px; /* Above search bar */
@@ -700,8 +713,7 @@
             100% { transform: rotate(360deg); }
         }
 
-
-    </style>
+</style>
 </head>
 <body>
     <!-- Container and Map Structure -->
@@ -710,7 +722,7 @@
             <h2>Select Map</h2>
             <!-- Search and Filter Section REMOVED from here -->
             <ul id="map-list">
-                <!-- Populated by JS -->
+                <!-- Populated by JS after data load -->
             </ul>
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="theme-checkbox">
@@ -729,51 +741,42 @@
 
             <div id="loading-indicator" style="display: none;">
                 <div class="spinner"></div>
-                <div class="loading-text">Loading Map...</div>
+                <div class="loading-text">Loading Map Data...</div>
                 <div class="progress-container">
                     <div class="progress-bar"></div>
                 </div>
-            </div>            
+            </div>
 
             <!-- Map Control Buttons -->
-            <button id="toggle-markers-btn" title="Toggle Markers" class="map-control-button leaflet-control" style="display: none;"></button>
-            <button id="toggle-filters-btn" title="Toggle Filters" class="map-control-button leaflet-control" style="display: none;"></button> <!-- NEW Filter Button -->
-            <button id="measure-tool-btn" title="Measure Distance" class="map-control-button leaflet-control" style="display: none;"></button>
-            <button id="toggle-regions-btn" title="Toggle Regions" class="map-control-button leaflet-control" style="display: none;">
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                    <path fill="currentColor" d="M15,19L9,16.89V5L15,7.11V19M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z"/>
-                </svg>
+            <button id="toggle-markers-btn" title="Toggle Markers" class="map-control-button leaflet-control"></button>
+            <button id="toggle-filters-btn" title="Toggle Filters" class="map-control-button leaflet-control"></button>
+            <button id="measure-tool-btn" title="Measure Distance" class="map-control-button leaflet-control"></button>
+            <button id="toggle-sound-btn" title="Toggle Sound" class="map-control-button leaflet-control">
+                <span id="sound-icon">🔇</span> <!-- Start muted -->
             </button>
-            
-            <!-- Region Filter Panel -->
-            <div id="region-filter-container" class="leaflet-control">
-                <h3>Region Types:</h3>
-                <div class="filter-item">
-                    <input type="checkbox" id="region-toggle-all" checked>
-                    <label for="region-toggle-all">Show All / Hide All</label>
-                </div>
-                <!-- Region type filters will be added here -->
-            </div>
-            <!-- END: Map Control Buttons -->
 
-            <!-- NEW: Filter Panel (moved from sidebar) -->
-            <div id="poi-filter-container" class="leaflet-control"> <!-- Added leaflet-control for potential future integration -->
+            <!-- Region Filter Panel (REMOVED - Merged into POI Filter Panel) -->
+            <!-- <div id="region-filter-container" class="leaflet-control"> ... </div> -->
+
+            <!-- Combined Filter Panel -->
+            <div id="poi-filter-container" class="leaflet-control">
                  <h3>Filter by Type:</h3>
                  <!-- Checkboxes will be populated by JS -->
                  <div class="filter-item">
                      <input type="checkbox" id="filter-toggle-all" checked>
                      <label for="filter-toggle-all">Show All / Hide All</label>
                  </div>
+                 <!-- Region filters will be added here under a new h3 if needed -->
             </div>
             <!-- END: Filter Panel -->
 
-            <!-- NEW: Search Control Container -->
+            <!-- Search Control Container -->
             <div id="search-control-container" class="leaflet-control">
                 <input type="search" id="poi-search-input" placeholder="Search locations...">
             </div>
             <!-- END: Search Control Container -->
 
-            <!-- NEW: Search Results Container -->
+            <!-- Search Results Container -->
             <div id="search-results-container" class="leaflet-control">
                 <!-- Results populated by JS -->
             </div>
@@ -790,6 +793,16 @@
         </div>
     </div>
 
+    <!-- Audio Elements -->
+    <audio id="light-ambient" loop preload="auto"> <!-- Use preload="auto" -->
+      <source src="sounds/gentle-winds.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="dark-ambient" loop preload="auto"> <!-- Use preload="auto" -->
+      <source src="sounds/space-ambient.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -797,108 +810,13 @@
 
     <!-- Main Application JS -->
     <script>
+        // --- Global Variables ---
+        let mapData = []; // Will be populated by loadMapData
         let loadingProgressInterval = null;
         let loadingProgress = 0;
-        // Add to your global variables
         let currentRegionGroup = null;
-        let regionsVisible = false;
-        let regionFiltersPanelVisible = false;
-
-        // Function to add regions to map (modified to use mapData structure)
-        function addRegionsToMap(mapId) {
-            // Clear previous regions
-            if (!currentRegionGroup) {
-                currentRegionGroup = L.layerGroup().addTo(map);
-            } else {
-                currentRegionGroup.clearLayers();
-            }
-            
-            // Find the map data
-            const selectedMap = findMapRecursive(mapData, mapId);
-            if (!selectedMap || !selectedMap.regions || !Array.isArray(selectedMap.regions)) {
-                console.log(`No regions found for map: ${mapId}`);
-                return;
-            }
-            
-            // Add each region as a polygon
-            selectedMap.regions.forEach(region => {
-                if (!region.coordinates || region.coordinates.length < 3) {
-                    console.warn(`Invalid coordinates for region: ${region.name}`);
-                    return;
-                }
-                
-                const polygon = L.polygon(region.coordinates, {
-                    color: region.color || '#3388ff',
-                    fillColor: region.fillColor || '#3388ff',
-                    fillOpacity: regionsVisible ? (region.fillOpacity || 0.2) : 0,
-                    weight: 2,
-                    opacity: regionsVisible ? 1 : 0
-                });
-                
-                // Add popup with region info
-                let popupContent = `<h3>${region.name}</h3>`;
-                if (region.description) {
-                    popupContent += `<p>${region.description}</p>`;
-                }
-                if (region.wikiLink) {
-                    popupContent += `<p><a href="${region.wikiLink}" target="_blank" rel="noopener noreferrer">Learn more</a></p>`;
-                }
-                polygon.bindPopup(popupContent);
-                
-                // Store region data with the polygon for filtering
-                polygon.regionData = region;
-                
-                // Add to the region group
-                currentRegionGroup.addLayer(polygon);
-                
-                // Ensure regions are behind markers
-                polygon.bringToBack();
-            });
-        }
-
-        // Populate region filters based on the loaded map
-        function populateRegionFilters(mapId) {
-            // Clear existing filters except toggle-all
-            const existingFilters = regionFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
-            existingFilters.forEach(el => el.remove());
-            
-            const selectedMap = findMapRecursive(mapData, mapId);
-            if (!selectedMap || !selectedMap.regions || !Array.isArray(selectedMap.regions) || selectedMap.regions.length === 0) {
-                toggleRegionsBtn.style.display = 'none';
-                regionFilterContainer.classList.remove('visible');
-                return;
-            }
-            
-            // Get unique region types
-            const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))];
-            
-            // Add filter for each type
-            regionTypes.forEach(type => {
-                const filterId = `filter-region-${type.replace(/\s+/g, '-')}`;
-                const div = document.createElement('div');
-                div.className = 'filter-item';
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = filterId;
-                checkbox.value = type;
-                checkbox.className = 'region-type-filter';
-                checkbox.checked = true;
-                
-                checkbox.addEventListener('change', updateVisibleRegions);
-                
-                const label = document.createElement('label');
-                label.htmlFor = filterId;
-                label.textContent = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize
-                
-                div.appendChild(checkbox);
-                div.appendChild(label);
-                regionFilterContainer.appendChild(div);
-            });
-            
-            // Show regions button if there are regions
-            toggleRegionsBtn.style.display = regionTypes.length > 0 ? 'block' : 'none';
-        }
+        let regionsVisible = false; // Overall region visibility toggle
+        // let regionFiltersPanelVisible = false; // No longer needed as separate panel
 
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
@@ -928,7 +846,7 @@
         }
         // --- END: POI Type Grouping Configuration ---
 
-        // --- Global variables ---
+        // --- More Global variables ---
         let currentImageLayer = null;
         let currentMarkerGroup = null; // Holds currently *visible* markers
         let allMapMarkers = []; // Holds *all* markers for the loaded map
@@ -937,7 +855,7 @@
         let currentSidebarState = 'o';
         let markersVisible = true; // Overall visibility toggle state
         const transitionDuration = 300; // ms for sidebar animation
-        let filtersPanelVisible = false; // NEW: State for filter panel visibility
+        let filtersPanelVisible = false; // State for combined filter panel visibility
 
         // --- Measurement Tool State ---
         let isMeasuring = false;
@@ -954,15 +872,20 @@
         const mapElement = document.getElementById('map'); // Get map div
         const mapBlurbElement = document.getElementById('map-blurb');
         const toggleMarkersBtn = document.getElementById('toggle-markers-btn');
-        // --- NEW/MODIFIED: Search/Filter/Measure Elements ---
-        const searchControlContainer = document.getElementById('search-control-container'); // NEW
+        const searchControlContainer = document.getElementById('search-control-container');
         const poiSearchInput = document.getElementById('poi-search-input');
-        const searchResultsContainer = document.getElementById('search-results-container'); // NEW
-        const poiFilterContainer = document.getElementById('poi-filter-container'); // Now the panel
+        const searchResultsContainer = document.getElementById('search-results-container');
+        const poiFilterContainer = document.getElementById('poi-filter-container');
         const filterToggleAllCheckbox = document.getElementById('filter-toggle-all');
-        const toggleFiltersBtn = document.getElementById('toggle-filters-btn'); // NEW Filter Button
+        const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
         const measureToolBtn = document.getElementById('measure-tool-btn');
         const loadingIndicator = document.getElementById('loading-indicator');
+        // Sound elements
+        const lightAmbient = document.getElementById('light-ambient');
+        const darkAmbient = document.getElementById('dark-ambient');
+        const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+        const soundIcon = document.getElementById('sound-icon');
+        let soundEnabled = false;
 
 
         // --- Helper Functions ---
@@ -1007,10 +930,9 @@
                     sidebarState = parts[1];
                 }
             }
-            const defaultMapId = findFirstLoadableIdRecursive(mapData);
-
+            // Default map ID determination moved to initializeApp after data is loaded
             return {
-                mapId: mapId || defaultMapId,
+                mapId: mapId, // May be null initially
                 sidebarState: sidebarState || 'o'
             };
         }
@@ -1045,8 +967,9 @@
 
         // --- Helper Function to Update the "Toggle All" Checkbox State ---
         function updateToggleAllCheckboxState() {
-            const allSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all)');
-            const checkedSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all):checked');
+            // Select all specific filter checkboxes (both POI and Region)
+            const allSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter');
+            const checkedSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-type-filter:checked');
 
             if (allSpecificFilters.length === 0) {
                 filterToggleAllCheckbox.checked = true;
@@ -1063,242 +986,32 @@
             }
         }
 
-        // --- Map Data Configuration ---
-        // IMPORTANT: Ensure you have created .webp versions of your map images!
-        // IMPORTANT: Add scalePixels and scaleKilometers for maps needing measurement.
-        // *** REPLACE PLACEHOLDER SCALE VALUES BELOW WITH YOUR ACTUAL VALUES ***
-        const mapData = [
-            {
-                type: 'folder',
-                id: 'main_continent',
-                name: 'Content Map',
-                width: 8192,
-                height: 6144,
-                imageUrl: 'maps/Fair-Content.webp',
-                // --- ADD SCALE IF KNOWN ---
-                // scalePixels: 1000, // Example: 1000 pixels...
-                // scaleKilometers: 50, // Example: ...represents 50 km
-                blurb: "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
-                pointsOfInterest: [
-                    // No POIs here in this example, add if needed
-                ],
-                children: [
-                    {
-                        id: 'icebeach_detail',
-                        name: 'Icebeach',
-                        width: 7016,
-                        height: 4960,
-                        imageUrl: 'maps/IceBeach.webp',
-                        scalePixels: 3,
-                        scaleKilometers: 1,
-                        blurb: "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
-                        pointsOfInterest: [
-                             {
-                                coords: [3516, 3698],
-                                name: "Castgate",
-                                type: "City",
-                                description: "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate"
-                             },
-                             {
-                                coords: [2736, 4098],
-                                name: "Flamore",
-                                type: "Ruin",
-                                description: "This now ruined Wizard's college was a blacksite training ground.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry"
-                             },
-                             {
-                                coords: [2310, 2722],
-                                name: "Fractured Point",
-                                type: "Capital",
-                                description: "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
-                                wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
-                             },
-                             { coords: [3422, 4370], name: "Gernerum", type: "Village", description: "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum" },
-                             { coords: [780, 1080], name: "Houlen Top", type: "Town", description: "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop" },
-                             { coords: [3876, 2990], name: "Icemoor", type: "Settlement", description: "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor" },
-                             { coords: [4358, 2976], name: "Little Rock Mentle Asylam", type: "Asylum", description: "This small institution holds some of the most hardened crimnals of the Gilded Nations.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum" },
-                             { coords: [2938, 4182], name: "Morana's Fang", type: "Mountain", description: "The tallest point in the world.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang" },
-                             { coords: [604, 2416], name: "Mt. Solaria", type: "Mountain", description: "A large mountian said to be inhabited by a dragon.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria" },
-                             { coords: [1664, 3372], name: "Ottiker", type: "Town", description: "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror" },
-                             { coords: [1210, 3924], name: "Quilt", type: "Hamlet", description: "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt" },
-                             { coords: [1356, 1620], name: "Shiverwallow", type: "Village", description: "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow" },
-                             { coords: [2154, 3588], name: "Sleetmond", type: "Settlement", description: "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond" },
-                             { coords: [1116, 4038], name: "The Foaming Burrow", type: "Cavern", description: "The origin of the river, how water bubbles forth outo of this cave.", wikiLink: "TBD" },
-                             { coords: [2036, 3074], name: "The Hope Tree", type: "Natural Landmark", description: "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree" },
-                             { coords: [2862, 4840], name: "Thrawbreak", type: "Hamlet", description: "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak" },
-                             { coords: [4266, 3192], name: "Whitedrift", type: "Settlement", description: "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift" },
-                             { coords: [4002, 3488], name: "Winrich Fortress", type: "Fortress", description: "The Ancient fortress of a long dead and powerful Lich", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress" },
-                             { coords: [716, 1508], name: "Wynwood Peak", type: "Mountain", description: "This smaller mountian is said to be a place were the...", wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak" }
-                        ],
-                        regions: [
-                                {
-                                    id: "region-kingdom-of-icebeach",
-                                    name: "Kingdom of Icebeach",
-                                    description: "The northern kingdom known for its harsh climate",
-                                    type: "political",
-                                    color: "#3388ff",
-                                    fillColor: "#3388ff",
-                                    fillOpacity: 0.2,
-                                    wikiLink: "https://www.hiraeth.wiki/books/players-guide-to-icebeach",
-                                    coordinates: [
-                                        [3000,2000],
-                                        [3680,2176],
-                                        [4000,2500],
-                                        [3800,3500],
-                                        [2900,3000],
-                                        [3000,2000]]
-                                    },
-                                    {
-                                    id: "region-winrich-glacier",
-                                    name: "Winrich Glacier",
-                                    description: "",
-                                    type: "terrain",
-                                    color: "#33aa33",
-                                    fillColor: "#33aa33",
-                                    fillOpacity: 0.2,
-                                    wikiLink: "",
-                                    coordinates: [
-                                        [3694,3695],
-                                        [3738,3777],
-                                        [3752,3818],
-                                        [3730,3841],
-                                        [3733,3887],
-                                        [3758,3910],
-                                        [3748,3942],
-                                        [3708,3935],
-                                        [3680,3940],
-                                        [3654,3919],
-                                        [3639,3936],
-                                        [3626,3944],
-                                        [3611,3944],
-                                        [3587,3955],
-                                        [3567,3965],
-                                        [3561,3972],
-                                        [3547,3991],
-                                        [3532,4006],
-                                        [3504,4030],
-                                        [3491,4035],
-                                        [3483,4041],
-                                        [3474,4046],
-                                        [3462,4065],
-                                        [3452,4074],
-                                        [3451,4087],
-                                        [3451,4095],
-                                        [3440,4095],
-                                        [3440,4123],
-                                        [3436,4138],
-                                        [3435,4143],
-                                        [3435,4158],
-                                        [3436,4173],
-                                        [3436,4179],
-                                        [3429,4183],
-                                        [3425,4185],
-                                        [3425,4205],
-                                        [3421,4228],
-                                        [3411,4242],
-                                        [3409,4261],
-                                        [3408,4285],
-                                        [3409,4304],
-                                        [3390,4292],
-                                        [3374,4273],
-                                        [3363,4265],
-                                        [3352,4241],
-                                        [3338,4232],
-                                        [3325,4236],
-                                        [3325,4256],
-                                        [3319,4261],
-                                        [3312,4264],
-                                        [3307,4269],
-                                        [3301,4285],
-                                        [3290,4284],
-                                        [3286,4291],
-                                        [3286,4291],
-                                        [3276,4281],
-                                        [3253,4246],
-                                        [3225,4234],
-                                        [3210,4244],
-                                        [3198,4256],
-                                        [3196,4273],
-                                        [3187,4298],
-                                        [3172,4311],
-                                        [3152,4286],
-                                        [3132,4244],
-                                        [3111,4285],
-                                        [3098,4273],
-                                        [3091,4285],
-                                        [3074,4267],
-                                        [3047,4217],
-                                        [3018,4265],
-                                        [2988,4222],
-                                        [3025,4190],
-                                        [2984,4145],
-                                        [3010,4111],
-                                        [3000,4094],
-                                        [3078,3988],
-                                        [3106,3985],
-                                        [3109,4036],
-                                        [3175,3917],
-                                        [3203,3923],
-                                        [3203,3950],
-                                        [3235,3877],
-                                        [3266,3844],
-                                        [3296,3859],
-                                        [3296,3878],
-                                        [3299,3862],
-                                        [3308,3899],
-                                        [3342,3835],
-                                        [3694,3695]
-                                ]
-                                }
-                            ]
-                    },
-                    {
-                        id: 'Old-Lin',
-                        name: 'Old-Lin',
-                        status: 'coming-soon' // Mark as unavailable
-                    },
-                    {
-                        id: 'southern-thalassia',
-                        name: 'Southern Thalassia',
-                        status: 'coming-soon'
-                    }
-                ]
-            },
-            {
-                 id: 'system',
-                 name: 'Solar System',
-                 status: 'coming-soon'
-                 // No scale needed for this type of map perhaps
-            }
-        ];
+        // --- Map Data Configuration (REMOVED - Now loaded externally) ---
+        // const mapData = [ ... ]; // THIS IS REMOVED
 
-        // --- MODIFIED: Function to Update Visible Markers AND Search Results ---
+        // --- Function to Update Visible Markers AND Search Results ---
         function updateVisibleMarkersAndSearch() {
             if (!currentMarkerGroup || allMapMarkers.length === 0) {
                 // Hide map-based controls if no markers
                 searchControlContainer.style.display = 'none';
                 searchResultsContainer.style.display = 'none';
-                poiFilterContainer.classList.remove('visible'); // Hide filter panel
-                toggleFiltersBtn.style.display = 'none'; // Hide filter button
-                filtersPanelVisible = false;
-                toggleFiltersBtn.classList.remove('active');
+                // Don't hide filter panel/button here, regions might still need filtering
                 return;
             }
 
             // Ensure map-based controls are potentially visible if markers exist
             searchControlContainer.style.display = 'block';
-            toggleFiltersBtn.style.display = 'block'; // Show filter button
 
             const searchTerm = poiSearchInput.value.toLowerCase().trim();
             searchResultsContainer.innerHTML = ''; // Clear previous results
             let searchResultFound = false;
 
-            // Get the set of *specifically* checked group filters
+            // Get the set of *specifically* checked POI group filters
             const activeSpecificGroupFilters = new Set();
             poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all):checked').forEach(checkbox => {
                  activeSpecificGroupFilters.add(checkbox.value);
             });
+            const allPoiGroupsChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate; // True if master toggle is fully checked
 
             allMapMarkers.forEach(marker => {
                 const poi = marker.poiData;
@@ -1308,10 +1021,8 @@
 
                 const specificType = poi.type || 'Unknown';
                 const poiGroup = typeToGroupMap[specificType] || 'Other';
-                let groupMatch = false;
-                if (activeSpecificGroupFilters.size > 0) {
-                    groupMatch = activeSpecificGroupFilters.has(poiGroup);
-                }
+                // A POI group matches if the master toggle is checked OR its specific group is checked
+                const groupMatch = allPoiGroupsChecked || activeSpecificGroupFilters.has(poiGroup);
 
                 // Update marker visibility on map
                 if (markersVisible && nameMatch && groupMatch) {
@@ -1324,29 +1035,26 @@
                     }
                 }
 
-                // --- NEW: Populate Search Results ---
+                // --- Populate Search Results ---
                 if (searchTerm && nameMatch) { // Only add to results if search term exists and name matches
                     searchResultFound = true;
                     const resultItem = document.createElement('div');
                     resultItem.className = 'search-result-item';
-                    // Basic highlighting (optional)
                     const highlightedName = poi.name.replace(
                         new RegExp(searchTerm, 'gi'),
                         '<strong>$&</strong>'
                     );
-                    resultItem.innerHTML = highlightedName; // Use innerHTML for highlighting
+                    resultItem.innerHTML = highlightedName;
                     resultItem.title = `Go to ${poi.name}`;
                     resultItem.addEventListener('click', () => {
-                        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 1)); // Fly to marker, ensure zoom >= 1
+                        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 1));
                         marker.openPopup();
-                        // Clear search and hide results
                         poiSearchInput.value = '';
                         searchResultsContainer.style.display = 'none';
                         searchResultsContainer.innerHTML = '';
                     });
                     searchResultsContainer.appendChild(resultItem);
                 }
-                // --- END: Populate Search Results ---
             });
 
             // Show/hide search results container
@@ -1354,16 +1062,18 @@
         }
 
 
-        // --- MODIFIED: Function to Populate Filter Checkboxes (in the panel) ---
-        function populateFilters(pointsOfInterest) {
-            // Clear existing filters (except the 'Toggle All' template)
-            const existingFilters = poiFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
-            existingFilters.forEach(el => el.remove());
+        // --- Function to Populate Filter Checkboxes (in the panel) ---
+        function populateFilters(pointsOfInterest, mapId) {
+            // Clear existing dynamic filters (headers, dividers, specific checkboxes)
+            const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child)');
+            dynamicElements.forEach(el => el.remove());
 
             const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
+            const selectedMap = findMapRecursive(mapData, mapId);
+            const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
 
-            // Hide filter panel and button if no POIs
-            if (!hasPOIs) {
+            // Hide filter button if no POIs and no regions
+            if (!hasPOIs && !hasRegions) {
                 poiFilterContainer.classList.remove('visible');
                 toggleFiltersBtn.style.display = 'none';
                 filtersPanelVisible = false;
@@ -1373,618 +1083,473 @@
                 return;
             }
 
-            // Determine relevant groups for this map
-            const relevantGroups = new Set();
-            pointsOfInterest.forEach(poi => {
-                const specificType = poi.type || 'Unknown';
-                const group = typeToGroupMap[specificType] || 'Other';
-                relevantGroups.add(group);
-            });
-
-            const sortedGroups = Array.from(relevantGroups).sort();
-            let filtersAdded = false;
-
-            // Create checkboxes for relevant groups
-            sortedGroups.forEach(groupName => {
-                if (!groupName || (poiTypeGroups[groupName] && poiTypeGroups[groupName].length === 0)) {
-                    return;
+            // PART 1: Add POI type filters
+            if (hasPOIs) {
+                // Add "POI Types" section header (only if not the first header)
+                if (poiFilterContainer.querySelector('h3')) { // Check if "Filter by Type:" exists
+                    const poiHeader = document.createElement('h3');
+                    poiHeader.textContent = "POI Types:";
+                    poiFilterContainer.appendChild(poiHeader);
                 }
-                filtersAdded = true; // Mark that we added at least one filter
 
-                const filterId = `filter-group-${groupName.replace(/\s+/g, '-')}`;
-                const div = document.createElement('div');
-                div.className = 'filter-item';
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = filterId;
-                checkbox.value = groupName;
-                checkbox.checked = true; // Default checked
-                checkbox.className = 'poi-filter-checkbox';
-
-                checkbox.addEventListener('change', () => {
-                    updateVisibleMarkersAndSearch(); // Update markers/search first
-                    updateToggleAllCheckboxState(); // Then update master toggle appearance
+                const relevantGroups = new Set();
+                pointsOfInterest.forEach(poi => {
+                    const specificType = poi.type || 'Unknown';
+                    const group = typeToGroupMap[specificType] || 'Other';
+                    relevantGroups.add(group);
                 });
+                const sortedGroups = Array.from(relevantGroups).sort();
 
-                const label = document.createElement('label');
-                label.htmlFor = filterId;
-                label.textContent = groupName;
+                sortedGroups.forEach(groupName => {
+                    if (!groupName || (poiTypeGroups[groupName] && poiTypeGroups[groupName].length === 0)) return;
 
-                div.appendChild(checkbox);
-                div.appendChild(label);
-                poiFilterContainer.appendChild(div);
-            });
+                    const filterId = `filter-group-${groupName.replace(/\s+/g, '-')}`;
+                    const div = document.createElement('div');
+                    div.className = 'filter-item';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = filterId;
+                    checkbox.value = groupName;
+                    checkbox.checked = true; // Default checked
+                    checkbox.className = 'poi-filter-checkbox'; // Specific class for POI filters
+                    // Event listener added later to the container
 
-            // Show/hide the filter *button* based on whether filters were actually added
-            toggleFiltersBtn.style.display = filtersAdded ? 'block' : 'none';
+                    const label = document.createElement('label');
+                    label.htmlFor = filterId;
+                    label.textContent = groupName;
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    poiFilterContainer.appendChild(div);
+                });
+            }
+
+            // PART 2: Add region type filters
+            if (hasRegions) {
+                // Add a divider and header if we also have POI filters
+                if (hasPOIs) {
+                    const divider = document.createElement('hr');
+                    divider.style.margin = '10px 0';
+                    divider.style.borderColor = 'var(--glass-border-light)'; // Use CSS var
+                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)'); // Dark mode
+                    poiFilterContainer.appendChild(divider);
+
+                    const regionHeader = document.createElement('h3');
+                    regionHeader.textContent = "Region Types:";
+                    poiFilterContainer.appendChild(regionHeader);
+                } else if (poiFilterContainer.querySelector('h3')) {
+                    // If only regions, but "Filter by Type:" exists, add header
+                    const regionHeader = document.createElement('h3');
+                    regionHeader.textContent = "Region Types:";
+                    poiFilterContainer.appendChild(regionHeader);
+                }
+
+
+                const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))].sort();
+
+                regionTypes.forEach(type => {
+                    const filterId = `filter-region-${type.replace(/\s+/g, '-')}`;
+                    const div = document.createElement('div');
+                    div.className = 'filter-item';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = filterId;
+                    checkbox.value = type;
+                    checkbox.checked = true; // Default checked
+                    checkbox.className = 'region-type-filter'; // Specific class for region filters
+                    // Event listener added later to the container
+
+                    const label = document.createElement('label');
+                    label.htmlFor = filterId;
+                    label.textContent = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    poiFilterContainer.appendChild(div);
+                });
+            }
+
+            // Show filter button since we have filters
+            toggleFiltersBtn.style.display = 'block';
+
             // Ensure panel is hidden initially and button is not active
             poiFilterContainer.classList.remove('visible');
             filtersPanelVisible = false;
             toggleFiltersBtn.classList.remove('active');
 
+            // Set initial state of the master toggle
+            updateToggleAllCheckboxState();
+        }
+
+
+        // --- Function to Load/Switch Map ---
+        function loadMap(mapId, updateHash = true) {
+            // --- Show loading indicator ---
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'flex';
+                const progressBar = loadingIndicator.querySelector('.progress-bar');
+                const loadingText = loadingIndicator.querySelector('.loading-text');
+                const spinner = loadingIndicator.querySelector('.spinner');
+
+                loadingProgress = 0;
+                if (progressBar) progressBar.style.width = '0%';
+                if (loadingText) loadingText.textContent = "Loading Map...";
+                if (spinner) spinner.style.display = 'block';
+
+                if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+                loadingProgressInterval = setInterval(() => {
+                    if (loadingProgress < 90) {
+                        loadingProgress += 2 + Math.random() * 3;
+                        loadingProgress = Math.min(loadingProgress, 90);
+                        if (progressBar) progressBar.style.width = loadingProgress + '%';
+                    } else {
+                        clearInterval(loadingProgressInterval);
+                        loadingProgressInterval = null;
+                    }
+                }, 150);
+            }
+            // --- END: Loading Indicator Setup ---
+
+            if (isMeasuring) toggleMeasurementTool();
+            measurementLayerGroup.clearLayers();
+
+            // --- Hide Search/Filter UI during load ---
+            searchControlContainer.style.display = 'none';
+            searchResultsContainer.style.display = 'none';
+            poiFilterContainer.classList.remove('visible');
+            toggleFiltersBtn.style.display = 'none';
+            filtersPanelVisible = false;
+            toggleFiltersBtn.classList.remove('active');
+            poiSearchInput.value = '';
+
+            const selectedMap = findMapRecursive(mapData, mapId);
+
+            // --- Clear Filter Checkboxes ---
+            const dynamicFilters = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child)');
+            dynamicFilters.forEach(el => el.remove());
             filterToggleAllCheckbox.checked = true;
             filterToggleAllCheckbox.indeterminate = false;
-        }
 
+            if (!selectedMap || selectedMap.status === 'coming-soon') {
+                console.warn("Attempted to load map data not found or coming soon:", mapId);
+                if (selectedMap) alert(`The map "${selectedMap.name}" is coming soon!`);
+                if (currentImageLayer) map.removeLayer(currentImageLayer);
+                if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
+                if (currentRegionGroup) map.removeLayer(currentRegionGroup);
+                currentImageLayer = null;
+                currentMarkerGroup = null;
+                currentRegionGroup = null;
+                allMapMarkers = [];
+                currentlyLoadedMapId = null;
+                mapBlurbElement.classList.remove('visible');
+                toggleMarkersBtn.style.display = 'none';
+                measureToolBtn.style.display = 'none';
+                toggleFiltersBtn.style.display = 'none';
+                searchControlContainer.style.display = 'none';
+                if (updateHash) history.pushState(null, '', generateHash('', currentSidebarState));
 
-// --- Function to Load/Switch Map (Updated with Regions) ---
-function loadMap(mapId, updateHash = true) {
-    // --- NEW: Reset and show loading indicator with progress bar ---
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'flex'; // Use flex for alignment
-        const progressBar = loadingIndicator.querySelector('.progress-bar');
-        const loadingText = loadingIndicator.querySelector('.loading-text'); // Get text element
-        const spinner = loadingIndicator.querySelector('.spinner'); // Get spinner
-
-        // Reset progress bar and text
-        loadingProgress = 0;
-        if (progressBar) progressBar.style.width = '0%';
-        if (loadingText) loadingText.textContent = "Loading Map...";
-        if (spinner) spinner.style.display = 'block'; // Ensure spinner is visible
-
-        // Clear any existing interval
-        if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-
-        // Start fake progress that goes to 90% (saving last 10% for actual completion)
-        loadingProgressInterval = setInterval(() => {
-            if (loadingProgress < 90) {
-                // Use a slightly more consistent increment for smoother feel
-                loadingProgress += 2 + Math.random() * 3;
-                loadingProgress = Math.min(loadingProgress, 90); // Cap at 90%
-                if (progressBar) progressBar.style.width = loadingProgress + '%';
-            } else {
-                // Once we hit 90%, clear the interval, the rest happens on load/error
-                clearInterval(loadingProgressInterval);
-                loadingProgressInterval = null;
-            }
-        }, 150); // Faster interval for quicker initial progress
-    }
-    // --- END: Loading Indicator Setup ---
-
-    // Deactivate measurement tool if active
-    if (isMeasuring) {
-        toggleMeasurementTool(); // Turn it off
-    }
-    measurementLayerGroup.clearLayers();
-
-    // --- Hide Search/Filter/Region UI during load ---
-    searchControlContainer.style.display = 'none';
-    searchResultsContainer.style.display = 'none';
-    poiFilterContainer.classList.remove('visible');
-    toggleFiltersBtn.style.display = 'none';
-    filtersPanelVisible = false;
-    toggleFiltersBtn.classList.remove('active');
-    poiSearchInput.value = ''; // Clear search input
-    // --- NEW: Hide Region UI ---
-    toggleRegionsBtn.style.display = 'none';
-    regionFilterContainer.classList.remove('visible');
-    regionFiltersPanelVisible = false;
-    toggleRegionsBtn.classList.remove('active');
-    // --- END: Hide Region UI ---
-
-    const selectedMap = findMapRecursive(mapData, mapId);
-
-    // --- Clear Filter Checkboxes (important before populateFilters) ---
-    const existingFilters = poiFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
-    existingFilters.forEach(el => el.remove());
-    filterToggleAllCheckbox.checked = true;
-    filterToggleAllCheckbox.indeterminate = false;
-
-    // --- NEW: Clear Region Filter Checkboxes ---
-    const existingRegionFilters = regionFilterContainer.querySelectorAll('.filter-item:not(:first-child)');
-    existingRegionFilters.forEach(el => el.remove());
-    if (regionToggleAllCheckbox) regionToggleAllCheckbox.checked = true; // Check if exists
-    // --- END: Clear Region Filter Checkboxes ---
-
-    if (!selectedMap || selectedMap.status === 'coming-soon') {
-        console.warn("Attempted to load map data not found or coming soon:", mapId);
-        if (selectedMap) { alert(`The map "${selectedMap.name}" is coming soon!`); }
-        if (currentImageLayer) map.removeLayer(currentImageLayer);
-        if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-        if (currentRegionGroup) map.removeLayer(currentRegionGroup); // NEW: Remove regions
-        currentImageLayer = null;
-        currentMarkerGroup = null;
-        currentRegionGroup = null; // NEW: Reset region group
-        allMapMarkers = [];
-        currentlyLoadedMapId = null;
-        mapBlurbElement.classList.remove('visible');
-        toggleMarkersBtn.style.display = 'none';
-        measureToolBtn.style.display = 'none';
-        toggleFiltersBtn.style.display = 'none'; // Hide filter button
-        searchControlContainer.style.display = 'none'; // Hide search
-        toggleRegionsBtn.style.display = 'none'; // NEW: Hide region button
-        if (updateHash) { history.pushState(null, '', generateHash('', currentSidebarState)); }
-
-        // --- NEW: Hide loading indicator on failure/coming soon ---
-        if (loadingIndicator) {
-            if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-            loadingIndicator.style.display = 'none';
-        }
-        return;
-    }
-
-    if (mapId === currentlyLoadedMapId) {
-         console.log(`Map ${mapId} is already loaded.`);
-         if (updateHash) {
-             const currentHash = generateHash(mapId, currentSidebarState);
-             if (window.location.hash !== currentHash) {
-                  console.log("Updating hash from loadMap (state change only):", currentHash);
-                  history.replaceState(null, '', currentHash);
-             }
-         }
-         // --- NEW: Hide loading indicator if map already loaded ---
-         if (loadingIndicator) {
-             if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-             loadingIndicator.style.display = 'none';
-         }
-         return;
-    }
-
-    console.log(`Loading map: ${selectedMap.name} (ID: ${mapId})`);
-
-    // Remove previous layers
-    if (currentImageLayer) map.removeLayer(currentImageLayer);
-    if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-    if (currentRegionGroup) map.removeLayer(currentRegionGroup); // NEW: Remove regions
-
-    // Reset marker state
-    currentMarkerGroup = L.layerGroup();
-    allMapMarkers = [];
-    // NEW: Reset region state
-    currentRegionGroup = L.layerGroup().addTo(map); // Add immediately so it's under markers
-    regionsVisible = false; // Reset visibility state
-    regionFiltersPanelVisible = false; // Reset panel state
-
-    const mapHeight = selectedMap.height;
-    const mapWidth = selectedMap.width;
-    if (isNaN(mapHeight) || isNaN(mapWidth) || !selectedMap.imageUrl) {
-        console.error(`Invalid dimensions or missing imageUrl for map ID ${mapId}`);
-        mapBlurbElement.classList.remove('visible');
-        toggleMarkersBtn.style.display = 'none';
-        measureToolBtn.style.display = 'none';
-        toggleFiltersBtn.style.display = 'none';
-        searchControlContainer.style.display = 'none';
-        toggleRegionsBtn.style.display = 'none'; // NEW: Hide region button
-        currentlyLoadedMapId = null;
-        if (updateHash) { history.pushState(null, '', generateHash('', currentSidebarState)); }
-
-        // --- NEW: Hide loading indicator on invalid map data ---
-        if (loadingIndicator) {
-            if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-            const loadingText = loadingIndicator.querySelector('.loading-text');
-            const progressBar = loadingIndicator.querySelector('.progress-bar');
-            const spinner = loadingIndicator.querySelector('.spinner');
-            if(loadingText) loadingText.textContent = "Error: Invalid map data.";
-            if(progressBar) progressBar.style.width = '0%';
-            if(spinner) spinner.style.display = 'none'; // Hide spinner on error
-            setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
-        }
-        return;
-    }
-    currentBounds = [[0, 0], [mapHeight, mapWidth]];
-
-    // Main Image Layer
-    currentImageLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds);
-
-    // --- FIXED: Preload image and setup handlers to avoid race condition ---
-    const preloadImg = new Image();
-    let imageLoaded = false; // Flag to prevent double execution
-    let loadingComplete = false; // Flag to track if finishLoading has run
-    let loadingTimeout = null; // Variable for the fallback timer
-
-    // Function to handle successful loading - will only run once
-    function finishLoading() {
-        if (loadingComplete) return; // Guard against double execution
-        loadingComplete = true; // Mark as complete
-        clearTimeout(loadingTimeout); // Clear the fallback timer
-
-        console.log("Image overlay loaded (or timed out).");
-        if (loadingIndicator) {
-            const progressBar = loadingIndicator.querySelector('.progress-bar');
-            if (progressBar) {
-                // Complete the progress bar animation
-                progressBar.style.width = '100%';
-                // Hide after a short delay to show completion
-                setTimeout(() => {
-                    // Ensure interval is cleared *before* hiding
+                if (loadingIndicator) {
                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                    loadingProgressInterval = null; // Reset interval variable
                     loadingIndicator.style.display = 'none';
-                }, 300); // Short delay to see 100%
-            } else {
-                // Fallback if no progress bar
-                if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                loadingProgressInterval = null;
-                loadingIndicator.style.display = 'none';
+                }
+                return;
             }
-        }
-        // Fit bounds *after* image is loaded and indicator is handled
-        map.fitBounds(currentBounds);
-    }
 
-    // Handler for the preloaded image
-    preloadImg.onload = function() {
-        console.log("Preload image onload fired.");
-        imageLoaded = true;
-        finishLoading();
-    };
-
-    // Handler for the Leaflet layer's load event (backup)
-    currentImageLayer.on('load', function() {
-        console.log("Leaflet image layer onload fired.");
-        imageLoaded = true; // Mark as loaded just in case preload didn't fire
-        finishLoading();
-    });
-
-    // --- MODIFIED: Image Error Handler ---
-    currentImageLayer.on('error', function() {
-         if (loadingComplete) return; // Don't run error if loading already finished
-         loadingComplete = true; // Mark as complete to prevent finishLoading timer
-         clearTimeout(loadingTimeout); // Clear the fallback timer
-
-         console.error("Image overlay failed to load:", selectedMap.imageUrl);
-         if (loadingIndicator) {
-             // Clear interval immediately on error
-             if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-             loadingProgressInterval = null;
-
-             const progressBar = loadingIndicator.querySelector('.progress-bar');
-             const loadingText = loadingIndicator.querySelector('.loading-text');
-             const spinner = loadingIndicator.querySelector('.spinner');
-
-             if (progressBar) progressBar.style.width = '0%'; // Reset progress
-             if (loadingText) loadingText.textContent = "Error loading map image.";
-             if (spinner) spinner.style.display = 'none'; // Hide spinner on error
-
-             // Hide after a delay to show error message
-             setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
-         }
-         // Clear map state on error
-         if (currentImageLayer) map.removeLayer(currentImageLayer);
-         currentImageLayer = null;
-         currentlyLoadedMapId = null; // Prevent hash updates for failed load
-         // Also hide map-specific controls
-         toggleMarkersBtn.style.display = 'none';
-         measureToolBtn.style.display = 'none';
-         toggleFiltersBtn.style.display = 'none';
-         searchControlContainer.style.display = 'none';
-         toggleRegionsBtn.style.display = 'none'; // NEW: Hide region button
-    });
-
-    // --- ADDED: Fallback timer to ensure loading completes ---
-    loadingTimeout = setTimeout(() => {
-        console.warn("Loading fallback timer triggered.");
-        finishLoading(); // Force completion if events haven't fired
-    }, 8000); // 8 seconds max wait time
-
-    // Start preloading the image *after* setting up handlers
-    preloadImg.src = selectedMap.imageUrl;
-
-    // Add layer to map *after* setting up handlers
-    currentImageLayer.addTo(map);
-    // --- END: Preload and Handler Fix ---
-
-    // Add Points of Interest
-    const points = selectedMap.pointsOfInterest || [];
-    populateFilters(points); // Populate POI filters
-
-    points.forEach(point => {
-        if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
-            // Check bounds carefully: Lat (Y) is coord[0], Lng (X) is coord[1]
-            if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
-                 const marker = L.marker(point.coords);
-                 marker.poiData = point; // Store POI data
-                 let popupContent = '';
-                 if (point.wikiLink) {
-                     popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`;
-                 } else {
-                     popupContent += `<h3>${point.name}</h3>`;
+            if (mapId === currentlyLoadedMapId) {
+                 console.log(`Map ${mapId} is already loaded.`);
+                 if (updateHash) {
+                     const currentHash = generateHash(mapId, currentSidebarState);
+                     if (window.location.hash !== currentHash) {
+                          history.replaceState(null, '', currentHash);
+                     }
                  }
-                 popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`;
-                 popupContent += `<p>${point.description || ''}</p>`;
-                 marker.bindPopup(popupContent);
-                 allMapMarkers.push(marker);
-            } else { console.warn(`POI coordinates out of bounds for map ${selectedMap.name}: ${point.name}`, point.coords); }
-        } else { console.warn(`Invalid coordinates for POI: ${point.name}`, point.coords); }
-    });
+                 if (loadingIndicator) {
+                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+                     loadingIndicator.style.display = 'none';
+                 }
+                 return;
+            }
 
-    // Add marker group to map
-    currentMarkerGroup.addTo(map);
+            console.log(`Loading map: ${selectedMap.name} (ID: ${mapId})`);
 
-    // Perform initial filtering/search (shows all markers by default, hides search results)
-    updateVisibleMarkersAndSearch();
-    updateToggleAllCheckboxState(); // Ensure POI toggle all is correct
+            // Remove previous layers
+            if (currentImageLayer) map.removeLayer(currentImageLayer);
+            if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
+            if (currentRegionGroup) map.removeLayer(currentRegionGroup);
 
-    // --- NEW: Add Regions ---
-    addRegionsToMap(mapId);
-    populateRegionFilters(mapId); // Populate region filters
-    // --- END: Add Regions ---
+            // Reset marker state
+            currentMarkerGroup = L.layerGroup();
+            allMapMarkers = [];
+            // Reset region state
+            currentRegionGroup = L.layerGroup().addTo(map); // Add immediately
+            regionsVisible = markersVisible; // Sync initial region visibility
 
-    // Show/hide marker toggle and search based on POIs existing
-    const hasPOIs = allMapMarkers.length > 0;
-    toggleMarkersBtn.style.display = hasPOIs ? 'block' : 'none';
-    searchControlContainer.style.display = hasPOIs ? 'block' : 'none'; // Show search bar if POIs exist
+            const mapHeight = selectedMap.height;
+            const mapWidth = selectedMap.width;
+            if (isNaN(mapHeight) || isNaN(mapWidth) || !selectedMap.imageUrl) {
+                console.error(`Invalid dimensions or missing imageUrl for map ID ${mapId}`);
+                mapBlurbElement.classList.remove('visible');
+                toggleMarkersBtn.style.display = 'none';
+                measureToolBtn.style.display = 'none';
+                toggleFiltersBtn.style.display = 'none';
+                searchControlContainer.style.display = 'none';
+                currentlyLoadedMapId = null;
+                if (updateHash) history.pushState(null, '', generateHash('', currentSidebarState));
 
-    // Show/hide measure button based on scale info
-    const hasValidScale = typeof selectedMap.scalePixels === 'number' && selectedMap.scalePixels > 0 &&
-                          typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
-    measureToolBtn.style.display = hasValidScale ? 'block' : 'none';
+                if (loadingIndicator) {
+                    if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+                    const loadingText = loadingIndicator.querySelector('.loading-text');
+                    const progressBar = loadingIndicator.querySelector('.progress-bar');
+                    const spinner = loadingIndicator.querySelector('.spinner');
+                    if(loadingText) loadingText.textContent = "Error: Invalid map data.";
+                    if(progressBar) progressBar.style.width = '0%';
+                    if(spinner) spinner.style.display = 'none';
+                    setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
+                }
+                return;
+            }
+            currentBounds = [[0, 0], [mapHeight, mapWidth]];
 
-    // --- NEW: Show/hide regions button based on regions existing ---
-    const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
-    toggleRegionsBtn.style.display = hasRegions ? 'block' : 'none';
-    // --- END: Show/hide regions button ---
+            // Main Image Layer
+            currentImageLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds);
 
-    toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible); // Set initial state for marker toggle
+            const preloadImg = new Image();
+            let loadingComplete = false;
+            let loadingTimeout = null;
 
-    // map.fitBounds(currentBounds); // Moved to finishLoading function
+            function finishLoading() {
+                if (loadingComplete) return;
+                loadingComplete = true;
+                clearTimeout(loadingTimeout);
 
-    // Update Map Blurb
-    if (selectedMap.blurb) {
-        mapBlurbElement.innerHTML = selectedMap.blurb;
-        mapBlurbElement.classList.add('visible');
-    } else {
-        mapBlurbElement.innerHTML = '';
-        mapBlurbElement.classList.remove('visible');
-    }
+                console.log("Image overlay loaded (or timed out).");
+                if (loadingIndicator) {
+                    const progressBar = loadingIndicator.querySelector('.progress-bar');
+                    if (progressBar) {
+                        progressBar.style.width = '100%';
+                        setTimeout(() => {
+                            if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+                            loadingProgressInterval = null;
+                            loadingIndicator.style.display = 'none';
+                        }, 300);
+                    } else {
+                        if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+                        loadingProgressInterval = null;
+                        loadingIndicator.style.display = 'none';
+                    }
+                }
+                map.fitBounds(currentBounds);
+            }
 
-    // Update Sidebar Active State
-    document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
-    const activeMapItem = document.querySelector(`#map-list .map-item[data-map-id="${mapId}"]`);
-    const activeFolderHeader = document.querySelector(`#map-list .folder-header[data-map-id="${mapId}"]`);
-    if (activeMapItem) {
-        activeMapItem.classList.add('active');
-        let parent = activeMapItem.closest('.nested-list');
-        while (parent) {
-            const folderLi = parent.closest('.folder');
-            if (folderLi && folderLi.classList.contains('closed')) { folderLi.classList.remove('closed'); }
-            parent = folderLi?.parentElement.closest('.nested-list');
-        }
-    } else if (activeFolderHeader) {
-        activeFolderHeader.classList.add('active');
-         const folderLi = activeFolderHeader.closest('.folder');
-         if (folderLi && folderLi.classList.contains('closed')) { folderLi.classList.remove('closed'); }
-    }
-
-    currentlyLoadedMapId = mapId;
-    if (updateHash) {
-        const newHash = generateHash(mapId, currentSidebarState);
-        console.log("Updating hash from loadMap:", newHash);
-        // Use pushState here for new map loads to allow back/forward
-        history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
-    }
-    console.log(`Finished setting up map load for: ${selectedMap.name}`); // Note: Actual finish is async
-}
-
-
-// --- Additional JavaScript for Region Toggle Logic ---
-
-// --- Region variables ---
-// let currentRegionGroup = null; // Defined globally earlier
-// let regionsVisible = false; // Defined globally earlier
-// let regionFiltersPanelVisible = false; // Defined globally earlier
-
-// --- Region DOM Elements ---
-const toggleRegionsBtn = document.getElementById('toggle-regions-btn');
-const regionFilterContainer = document.getElementById('region-filter-container');
-const regionToggleAllCheckbox = document.getElementById('region-toggle-all');
-
-// --- Toggle regions button click handler ---
-if (toggleRegionsBtn) {
-    toggleRegionsBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent map click
-        regionsVisible = !regionsVisible;
-        toggleRegionsBtn.title = regionsVisible ? "Hide Regions" : "Show Regions";
-        toggleRegionsBtn.classList.toggle('active', regionsVisible);
-
-        // Toggle filter panel visibility along with the main toggle
-        if (regionsVisible && !regionFiltersPanelVisible) {
-            toggleRegionFilterPanel(); // Show panel if turning regions on
-        } else if (!regionsVisible && regionFiltersPanelVisible) {
-            toggleRegionFilterPanel(); // Hide panel if turning regions off
-        }
-
-        updateVisibleRegions(); // Apply visibility changes
-    });
-}
-
-// --- Toggle region filter panel visibility ---
-function toggleRegionFilterPanel() {
-    regionFiltersPanelVisible = !regionFiltersPanelVisible;
-    if (regionFilterContainer) {
-        regionFilterContainer.classList.toggle('visible', regionFiltersPanelVisible);
-    }
-    // Note: We don't toggle the main button's active state here,
-    // that's tied to whether regions *are* visible, not just the panel.
-}
-
-// --- Update region visibility based on main toggle and filters ---
-function updateVisibleRegions() {
-    if (!currentRegionGroup) return;
-
-    // Get the currently checked region type filters
-    const typeFilters = regionFilterContainer ? regionFilterContainer.querySelectorAll('.region-type-filter:checked') : [];
-    const typeFilterValues = Array.from(typeFilters).map(cb => cb.value);
-    const allTypesChecked = regionToggleAllCheckbox ? regionToggleAllCheckbox.checked : true;
-
-    currentRegionGroup.eachLayer(layer => {
-        const region = layer.regionData;
-        if (!region) return;
-
-        // Determine if the region's type matches the selected filters
-        // A region matches if 'Show All' is checked OR its type is in the checked list
-        const typeMatch = allTypesChecked || typeFilterValues.includes(region.type);
-
-        // Set visibility based on *both* the main toggle AND the type filter match
-        if (regionsVisible && typeMatch) {
-            layer.setStyle({
-                opacity: 1, // Make border visible
-                fillOpacity: region.fillOpacity || 0.2 // Use defined fill opacity
+            preloadImg.onload = function() { finishLoading(); };
+            currentImageLayer.on('load', function() { finishLoading(); });
+            currentImageLayer.on('error', function() {
+                 if (loadingComplete) return;
+                 loadingComplete = true;
+                 clearTimeout(loadingTimeout);
+                 console.error("Image overlay failed to load:", selectedMap.imageUrl);
+                 if (loadingIndicator) {
+                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+                     loadingProgressInterval = null;
+                     const progressBar = loadingIndicator.querySelector('.progress-bar');
+                     const loadingText = loadingIndicator.querySelector('.loading-text');
+                     const spinner = loadingIndicator.querySelector('.spinner');
+                     if (progressBar) progressBar.style.width = '0%';
+                     if (loadingText) loadingText.textContent = "Error loading map image.";
+                     if (spinner) spinner.style.display = 'none';
+                     setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
+                 }
+                 if (currentImageLayer) map.removeLayer(currentImageLayer);
+                 currentImageLayer = null;
+                 currentlyLoadedMapId = null;
+                 toggleMarkersBtn.style.display = 'none';
+                 measureToolBtn.style.display = 'none';
+                 toggleFiltersBtn.style.display = 'none';
+                 searchControlContainer.style.display = 'none';
             });
-            layer.bringToBack(); // Ensure regions stay behind markers
-        } else {
-            layer.setStyle({
-                opacity: 0, // Hide border
-                fillOpacity: 0 // Hide fill
+
+            loadingTimeout = setTimeout(() => {
+                console.warn("Loading fallback timer triggered.");
+                finishLoading();
+            }, 8000);
+
+            preloadImg.src = selectedMap.imageUrl;
+            currentImageLayer.addTo(map);
+
+            // Add Points of Interest
+            const points = selectedMap.pointsOfInterest || [];
+            populateFilters(points, mapId); // Populate combined filters
+
+            points.forEach(point => {
+                if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
+                    if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
+                         const marker = L.marker(point.coords);
+                         marker.poiData = point;
+                         let popupContent = '';
+                         if (point.wikiLink) {
+                             popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`;
+                         } else {
+                             popupContent += `<h3>${point.name}</h3>`;
+                         }
+                         popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`;
+                         popupContent += `<p>${point.description || ''}</p>`;
+                         marker.bindPopup(popupContent);
+                         allMapMarkers.push(marker);
+                    } else { console.warn(`POI coordinates out of bounds for map ${selectedMap.name}: ${point.name}`, point.coords); }
+                } else { console.warn(`Invalid coordinates for POI: ${point.name}`, point.coords); }
+            });
+
+            currentMarkerGroup.addTo(map);
+            updateVisibleMarkersAndSearch(); // Initial marker visibility
+            // updateToggleAllCheckboxState(); // Called by populateFilters
+
+            // Add Regions
+            addRegionsToMap(mapId);
+            updateVisibleRegions(); // Initial region visibility
+
+            // Show/hide controls based on content
+            // Show/hide controls based on content
+            const hasPOIs = allMapMarkers.length > 0;
+            toggleMarkersBtn.style.display = hasPOIs ? 'block' : 'none';
+            searchControlContainer.style.display = hasPOIs ? 'block' : 'none';
+
+            const hasValidScale = typeof selectedMap.scalePixels === 'number' && selectedMap.scalePixels > 0 &&
+                                typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
+            measureToolBtn.style.display = hasValidScale ? 'block' : 'none';
+
+            // Filter button visibility handled by populateFilters
+
+
+            // Filter button visibility handled by populateFilters
+
+            // Set initial state for marker toggle
+            toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
+            toggleMarkersBtn.title = markersVisible ? "Hide Markers & Regions" : "Show Markers & Regions";
+
+            // Update Map Blurb
+            // Update Map Blurb
+            if (selectedMap.blurb) {
+                mapBlurbElement.innerHTML = selectedMap.blurb;
+                mapBlurbElement.classList.add('visible');
+            } else {
+                mapBlurbElement.innerHTML = '';
+                mapBlurbElement.classList.remove('visible');
+            }
+
+
+            // Update Sidebar Active State
+            document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
+            const activeMapItem = document.querySelector(`#map-list .map-item[data-map-id="${mapId}"]`);
+            const activeFolderHeader = document.querySelector(`#map-list .folder-header[data-map-id="${mapId}"]`);
+            if (activeMapItem) {
+                activeMapItem.classList.add('active');
+                let parent = activeMapItem.closest('.nested-list');
+                while (parent) {
+                    const folderLi = parent.closest('.folder');
+                    if (folderLi && folderLi.classList.contains('closed')) { folderLi.classList.remove('closed'); }
+                    parent = folderLi?.parentElement.closest('.nested-list');
+                }
+            } else if (activeFolderHeader) {
+                activeFolderHeader.classList.add('active');
+                 const folderLi = activeFolderHeader.closest('.folder');
+                 if (folderLi && folderLi.classList.contains('closed')) { folderLi.classList.remove('closed'); }
+            }
+
+            currentlyLoadedMapId = mapId;
+            if (updateHash) {
+                const newHash = generateHash(mapId, currentSidebarState);
+                history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
+            }
+            console.log(`Finished setting up map load for: ${selectedMap.name}`);
+        }
+
+        // --- Function to add regions to map ---
+        function addRegionsToMap(mapId) {
+            if (!currentRegionGroup) {
+                currentRegionGroup = L.layerGroup().addTo(map);
+            } else {
+                currentRegionGroup.clearLayers();
+            }
+
+            const selectedMap = findMapRecursive(mapData, mapId);
+            if (!selectedMap || !selectedMap.regions || !Array.isArray(selectedMap.regions)) {
+                console.log(`No regions found for map: ${mapId}`);
+                return;
+            }
+
+            selectedMap.regions.forEach(region => {
+                if (!region.coordinates || region.coordinates.length < 3) {
+                    console.warn(`Invalid coordinates for region: ${region.name}`);
+                    return;
+                }
+
+                const polygon = L.polygon(region.coordinates, {
+                    color: region.color || '#3388ff',
+                    fillColor: region.fillColor || '#3388ff',
+                    fillOpacity: regionsVisible ? (region.fillOpacity || 0.2) : 0, // Initial opacity based on toggle
+                    weight: 2,
+                    opacity: regionsVisible ? 1 : 0, // Initial opacity based on toggle
+                    interactive: true // Make regions clickable
+                });
+
+                let popupContent = '';
+                if (region.wikiLink) {
+                    popupContent += `<h3><a href="${region.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${region.name}">${region.name}</a></h3>`;
+                } else {
+                    popupContent += `<h3>${region.name}</h3>`;
+                }
+                popupContent += `<p><em>Type: ${region.type || 'Region'}</em></p>`;
+                if (region.description) {
+                    popupContent += `<p>${region.description}</p>`;
+                }
+                polygon.bindPopup(popupContent);
+
+                polygon.regionData = region; // Store data for filtering
+                currentRegionGroup.addLayer(polygon);
+                polygon.bringToBack(); // Ensure regions are behind markers
             });
         }
-    });
-}
 
-// --- Region "Toggle All" checkbox logic ---
-if (regionToggleAllCheckbox) {
-    regionToggleAllCheckbox.addEventListener('change', () => {
-        const isChecked = regionToggleAllCheckbox.checked;
-        if (regionFilterContainer) {
-            regionFilterContainer.querySelectorAll('.region-type-filter').forEach(checkbox => {
-                checkbox.checked = isChecked;
+        // --- Update region visibility based on main toggle and filters ---
+        function updateVisibleRegions() {
+            if (!currentRegionGroup) return;
+
+            // Get the currently checked region type filters from the combined panel
+            const typeFilters = poiFilterContainer.querySelectorAll('.region-type-filter:checked');
+            const typeFilterValues = Array.from(typeFilters).map(cb => cb.value);
+            // Check the master toggle state
+            const allTypesChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
+
+            console.log("Region visibility update:", { regionsVisible, typeFilterValues, allTypesChecked });
+
+            currentRegionGroup.eachLayer(layer => {
+                const region = layer.regionData;
+                if (!region) return;
+
+                // A region's type matches if the master toggle is checked OR its specific type is checked
+                const typeMatch = allTypesChecked || typeFilterValues.includes(region.type);
+
+                console.log(`- Region "${region.name}" (${region.type}): typeMatch=${typeMatch}`);
+
+                // Apply visibility based on *both* the overall toggle AND the type filter match
+                if (regionsVisible && typeMatch) {
+                    layer.setStyle({
+                        opacity: 1, // Make border visible
+                        fillOpacity: region.fillOpacity || 0.2 // Use defined fill opacity
+                    });
+                    layer.bringToBack(); // Ensure regions stay behind markers
+                } else {
+                    layer.setStyle({
+                        opacity: 0, // Hide border
+                        fillOpacity: 0 // Hide fill
+                    });
+                }
             });
         }
-        regionToggleAllCheckbox.indeterminate = false; // Reset indeterminate state
-        updateVisibleRegions(); // Trigger update based on new filter state
-    });
-}
-
-// --- Helper Function to Update the Region "Toggle All" Checkbox State ---
-// (Call this after populating filters or when individual filters change)
-function updateRegionToggleAllCheckboxState() {
-    if (!regionFilterContainer || !regionToggleAllCheckbox) return;
-
-    const allSpecificFilters = regionFilterContainer.querySelectorAll('.region-type-filter');
-    const checkedSpecificFilters = regionFilterContainer.querySelectorAll('.region-type-filter:checked');
-
-    if (allSpecificFilters.length === 0) {
-        regionToggleAllCheckbox.checked = true;
-        regionToggleAllCheckbox.indeterminate = false;
-    } else if (checkedSpecificFilters.length === 0) {
-        regionToggleAllCheckbox.checked = false;
-        regionToggleAllCheckbox.indeterminate = false;
-    } else if (checkedSpecificFilters.length === allSpecificFilters.length) {
-        regionToggleAllCheckbox.checked = true;
-        regionToggleAllCheckbox.indeterminate = false;
-    } else {
-        // Partially checked
-        regionToggleAllCheckbox.checked = false; // Or true, depending on preference
-        regionToggleAllCheckbox.indeterminate = true;
-    }
-}
-
-
-// --- Prevent map click when clicking inside the region filter panel ---
-if (regionFilterContainer) {
-    regionFilterContainer.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent map click listener from firing
-    });
-}
-
-// --- Modify the map click handler to close the region filter panel ---
-map.on('click', function(e) {
-    // Only log if not in measurement mode
-    if (!isMeasuring && currentBounds) {
-        console.log(`Map clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}] (Y, X from bottom-left)`);
-    }
-
-    // Hide POI filter panel if clicking outside
-    if (filtersPanelVisible && poiFilterContainer && !poiFilterContainer.contains(e.originalEvent.target) && e.originalEvent.target !== toggleFiltersBtn && !toggleFiltersBtn.contains(e.originalEvent.target)) {
-         toggleFilterPanel();
-    }
-
-    // Hide search results if clicking outside
-    if (searchResultsContainer && searchResultsContainer.style.display === 'block' && !searchResultsContainer.contains(e.originalEvent.target) && e.originalEvent.target !== poiSearchInput) {
-        searchResultsContainer.style.display = 'none';
-    }
-
-    // --- NEW: Hide region filter panel if clicking outside ---
-    if (regionFiltersPanelVisible && regionFilterContainer && !regionFilterContainer.contains(e.originalEvent.target) && e.originalEvent.target !== toggleRegionsBtn && !toggleRegionsBtn.contains(e.originalEvent.target)) {
-        toggleRegionFilterPanel();
-    }
-    // --- END: Hide region filter panel ---
-
-    // Measurement logic is handled in its own listener now (handleMeasurementClick)
-});
-
-// --- Modify populateRegionFilters to update toggle all state ---
-function populateRegionFilters(mapId) {
-    // Clear existing filters except toggle-all
-    const existingFilters = regionFilterContainer ? regionFilterContainer.querySelectorAll('.filter-item:not(:first-child)') : [];
-    existingFilters.forEach(el => el.remove());
-
-    const selectedMap = findMapRecursive(mapData, mapId);
-    const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
-
-    if (!hasRegions || !regionFilterContainer) {
-        if (toggleRegionsBtn) toggleRegionsBtn.style.display = 'none';
-        if (regionFilterContainer) regionFilterContainer.classList.remove('visible');
-        regionFiltersPanelVisible = false; // Ensure panel state is false
-        if (toggleRegionsBtn) toggleRegionsBtn.classList.remove('active'); // Ensure button is not active
-        return;
-    }
-
-    // Get unique region types
-    const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))].sort();
-
-    // Add filter for each type
-    regionTypes.forEach(type => {
-        const filterId = `filter-region-${type.replace(/\s+/g, '-')}`;
-        const div = document.createElement('div');
-        div.className = 'filter-item';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = filterId;
-        checkbox.value = type;
-        checkbox.className = 'region-type-filter';
-        checkbox.checked = true; // Default to checked
-
-        checkbox.addEventListener('change', () => {
-            updateVisibleRegions(); // Update map display first
-            updateRegionToggleAllCheckboxState(); // Then update the master toggle appearance
-        });
-
-        const label = document.createElement('label');
-        label.htmlFor = filterId;
-        label.textContent = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize
-
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        regionFilterContainer.appendChild(div);
-    });
-
-    // Show regions button if there are regions
-    if (toggleRegionsBtn) toggleRegionsBtn.style.display = 'block';
-
-    // Ensure panel is hidden initially and button is not active
-    regionFilterContainer.classList.remove('visible');
-    regionFiltersPanelVisible = false;
-    if (toggleRegionsBtn) toggleRegionsBtn.classList.remove('active');
-
-    // Set initial state of the "Toggle All" checkbox
-    updateRegionToggleAllCheckboxState();
-}
 
         // --- Populate Sidebar (Recursive Function) ---
         function populateSidebar(parentElement, items) {
+            parentElement.innerHTML = ''; // Clear existing items before populating
             items.forEach(item => {
                 const listItem = document.createElement('li');
 
@@ -1996,7 +1561,7 @@ function populateRegionFilters(mapId) {
                     const nestedList = document.createElement('ul');
                     nestedList.classList.add('nested-list');
                     if (item.children && item.children.length > 0) {
-                        populateSidebar(nestedList, item.children);
+                        populateSidebar(nestedList, item.children); // Recursively populate children
                     }
 
                     header.addEventListener('click', (e) => {
@@ -2004,22 +1569,21 @@ function populateRegionFilters(mapId) {
                         listItem.classList.toggle('closed');
                     });
 
-                    if (item.id) {
+                    // Allow loading map from folder if it has an ID and isn't coming soon
+                    if (item.id && item.status !== 'coming-soon') {
                         header.dataset.mapId = item.id;
-                        if (item.status === 'coming-soon') {
-                            header.title = `${item.name} - Coming Soon!`;
-                            header.classList.add('coming-soon');
-                            header.addEventListener('dblclick', (e) => {
-                                e.stopPropagation();
-                                alert(`The map "${item.name}" is coming soon!`);
-                            });
-                        } else {
-                            header.title = `Click to toggle '${item.name}', double-click to load map.`;
-                            header.addEventListener('dblclick', (e) => {
-                                e.stopPropagation();
-                                loadMap(item.id, true);
-                            });
-                        }
+                        header.title = `Click to toggle '${item.name}', double-click to load map.`;
+                        header.addEventListener('dblclick', (e) => {
+                            e.stopPropagation();
+                            loadMap(item.id, true);
+                        });
+                    } else if (item.status === 'coming-soon') {
+                         header.classList.add('coming-soon');
+                         header.title = `${item.name} - Coming Soon!`;
+                         header.addEventListener('dblclick', (e) => {
+                             e.stopPropagation();
+                             alert(`The map "${item.name}" is coming soon!`);
+                         });
                     } else {
                          header.title = `Click to toggle '${item.name}'.`;
                     }
@@ -2050,7 +1614,7 @@ function populateRegionFilters(mapId) {
                 parentElement.appendChild(listItem);
             });
         }
-        populateSidebar(mapListElement, mapData);
+        // populateSidebar is now called within initializeApp after data is loaded
 
         // --- Sidebar Toggle Button Logic ---
         toggleBtn.addEventListener('click', () => {
@@ -2062,21 +1626,124 @@ function populateRegionFilters(mapId) {
         function applyTheme(theme) {
             if (theme === 'dark') { bodyElement.classList.add('dark-theme'); themeToggle.checked = true; }
             else { bodyElement.classList.remove('dark-theme'); themeToggle.checked = false; }
+            // Update divider color in filter panel
+            const divider = poiFilterContainer.querySelector('hr');
+            if (divider) {
+                divider.style.borderColor = theme === 'dark' ? 'var(--glass-border-dark)' : 'var(--glass-border-light)';
+            }
         }
+
+        // --- Sound Control Logic ---
+        function fadeAudio(audioElement, targetVolume, duration = 1500) { // Shorter fade
+            const startVolume = audioElement.volume;
+            const volumeChange = targetVolume - startVolume;
+            if (volumeChange === 0 && (targetVolume === 0 || !audioElement.paused)) return; // No change needed
+
+            const startTime = Date.now();
+
+            function updateVolume() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                audioElement.volume = Math.max(0, Math.min(1, startVolume + (volumeChange * progress))); // Clamp volume
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateVolume);
+                } else {
+                    if (targetVolume === 0 && !audioElement.paused) {
+                        audioElement.pause();
+                        console.log("Paused:", audioElement.id);
+                    }
+                }
+            }
+
+            if (targetVolume > 0 && audioElement.paused) {
+                audioElement.volume = 0; // Start from silent
+                audioElement.play().then(() => {
+                    console.log("Playing:", audioElement.id);
+                    requestAnimationFrame(updateVolume);
+                }).catch(e => console.log('Audio play prevented:', e));
+            } else if (targetVolume > 0 && !audioElement.paused) {
+                 requestAnimationFrame(updateVolume); // Already playing, just adjust volume
+            } else if (targetVolume === 0) {
+                 requestAnimationFrame(updateVolume); // Fading out
+            }
+        }
+
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
-            localStorage.setItem('theme', newTheme); applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+
+            if (soundEnabled) {
+                if (newTheme === 'dark') {
+                    fadeAudio(lightAmbient, 0);
+                    fadeAudio(darkAmbient, 0.3); // Adjust target volume as needed
+                } else {
+                    fadeAudio(darkAmbient, 0);
+                    fadeAudio(lightAmbient, 0.3); // Adjust target volume as needed
+                }
+            }
         });
+
+        toggleSoundBtn.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled); // Save preference
+
+            if (soundEnabled) {
+                soundIcon.textContent = '🔊';
+                toggleSoundBtn.title = "Mute Sound";
+                const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
+                if (currentTheme === 'dark') {
+                    fadeAudio(darkAmbient, 0.3);
+                } else {
+                    fadeAudio(lightAmbient, 0.3);
+                }
+            } else {
+                soundIcon.textContent = '🔇';
+                toggleSoundBtn.title = "Unmute Sound";
+                fadeAudio(lightAmbient, 0);
+                fadeAudio(darkAmbient, 0);
+            }
+        });
+
+        // Function to initialize sound state from localStorage
+        function initializeSoundState() {
+            const savedSoundState = localStorage.getItem('soundEnabled');
+            soundEnabled = savedSoundState === 'true'; // Convert string to boolean
+
+            // Set initial volume to 0 to prevent autoplay issues on load
+            lightAmbient.volume = 0;
+            darkAmbient.volume = 0;
+
+            if (soundEnabled) {
+                soundIcon.textContent = '🔊';
+                toggleSoundBtn.title = "Mute Sound";
+                // Start playing the correct track based on the current theme
+                const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
+                 if (currentTheme === 'dark') {
+                    fadeAudio(darkAmbient, 0.3);
+                } else {
+                    fadeAudio(lightAmbient, 0.3);
+                }
+            } else {
+                soundIcon.textContent = '🔇';
+                toggleSoundBtn.title = "Unmute Sound";
+            }
+            // Make button visible now that state is set
+            toggleSoundBtn.style.display = 'block';
+        }
+        // initializeSoundState is called in initializeApp
+
+        // Apply initial theme from storage
         const savedTheme = localStorage.getItem('theme') || 'light';
         applyTheme(savedTheme);
 
-        // --- Helper: Log Coordinates on Click (Modified) ---
+        // --- Map Click Handler ---
         map.on('click', function(e) {
-            // Only log if not in measurement mode
             if (!isMeasuring && currentBounds) {
                 console.log(`Map clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}] (Y, X from bottom-left)`);
             }
-            // Hide filter panel if clicking outside of it or its button
+            // Hide filter panel if clicking outside
             if (filtersPanelVisible && !poiFilterContainer.contains(e.originalEvent.target) && e.originalEvent.target !== toggleFiltersBtn && !toggleFiltersBtn.contains(e.originalEvent.target)) {
                  toggleFilterPanel();
             }
@@ -2084,11 +1751,26 @@ function populateRegionFilters(mapId) {
             if (searchResultsContainer.style.display === 'block' && !searchResultsContainer.contains(e.originalEvent.target) && e.originalEvent.target !== poiSearchInput) {
                 searchResultsContainer.style.display = 'none';
             }
-            // Measurement logic is handled in its own listener now
+            // Measurement logic handled separately
         });
 
 
         // --- Handle Hash Changes / Back/Forward Navigation ---
+        window.addEventListener('popstate', (event) => {
+            console.log("Popstate event:", event.state);
+            const { mapId: hashMpId, sidebarState: hashSidebarState } = parseHash(); // Re-parse hash
+            const targetMapId = event.state?.mapId || hashMpId;
+            const targetSidebarState = event.state?.sidebarState || hashSidebarState;
+
+            console.log("Navigating via history - Target Map:", targetMapId, "Target Sidebar:", targetSidebarState);
+
+            if (targetMapId && targetMapId !== currentlyLoadedMapId) {
+                loadMap(targetMapId, false); // Load map without pushing new state
+            }
+            if (targetSidebarState && targetSidebarState !== currentSidebarState) {
+                 setSidebarState(targetSidebarState, false); // Set sidebar without updating hash
+            }
+        });
         window.addEventListener('beforeunload', () => {
             if (loadingProgressInterval) clearInterval(loadingProgressInterval);
         });
@@ -2097,14 +1779,18 @@ function populateRegionFilters(mapId) {
         // --- Marker Toggle Button Logic ---
         toggleMarkersBtn.addEventListener('click', () => {
             markersVisible = !markersVisible;
-            toggleMarkersBtn.title = markersVisible ? "Hide Markers" : "Show Markers";
+            regionsVisible = markersVisible; // Sync regions with markers
+
+            toggleMarkersBtn.title = markersVisible ? "Hide Markers & Regions" : "Show Markers & Regions";
             toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
-            // Re-run the filter/search logic
-            updateVisibleMarkersAndSearch();
-            console.log(`Markers toggled. Visible: ${markersVisible}`);
+
+            updateVisibleRegions(); // Update regions visibility
+            updateVisibleMarkersAndSearch(); // Update marker visibility
+
+            console.log(`Markers and regions toggled. Visible: ${markersVisible}`);
         });
 
-        // --- NEW: Filter Panel Toggle Logic ---
+        // --- Filter Panel Toggle Logic ---
         function toggleFilterPanel() {
             filtersPanelVisible = !filtersPanelVisible;
             poiFilterContainer.classList.toggle('visible', filtersPanelVisible);
@@ -2112,26 +1798,40 @@ function populateRegionFilters(mapId) {
             toggleFiltersBtn.title = filtersPanelVisible ? "Hide Filters" : "Show Filters";
         }
         toggleFiltersBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent map click listener from firing immediately
+            e.stopPropagation();
             toggleFilterPanel();
         });
 
         // --- Search Input Logic ---
         poiSearchInput.addEventListener('input', updateVisibleMarkersAndSearch);
-        // Prevent map click when clicking inside search input
         poiSearchInput.addEventListener('click', (e) => e.stopPropagation());
-        // Prevent map click when clicking inside search results
         searchResultsContainer.addEventListener('click', (e) => e.stopPropagation());
 
 
-        // --- Filter "Toggle All" Logic (in the panel) ---
-        filterToggleAllCheckbox.addEventListener('change', () => {
-            const isChecked = filterToggleAllCheckbox.checked;
-            poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all)').forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            filterToggleAllCheckbox.indeterminate = false;
-            updateVisibleMarkersAndSearch(); // Trigger update
+        // --- Combined Filter Panel Logic ---
+        poiFilterContainer.addEventListener('change', (e) => {
+            const target = e.target;
+            if (target.type !== 'checkbox') return; // Only handle checkbox changes
+
+            if (target.id === 'filter-toggle-all') {
+                // Master toggle changed
+                const isChecked = target.checked;
+                poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+                filterToggleAllCheckbox.indeterminate = false;
+            } else {
+                // Specific filter changed, update master toggle state
+                updateToggleAllCheckboxState();
+            }
+
+            // Update map based on which type of filter changed
+            if (target.classList.contains('poi-filter-checkbox') || target.id === 'filter-toggle-all') {
+                updateVisibleMarkersAndSearch();
+            }
+            if (target.classList.contains('region-type-filter') || target.id === 'filter-toggle-all') {
+                updateVisibleRegions();
+            }
         });
         // Prevent map click when clicking inside filter panel
         poiFilterContainer.addEventListener('click', (e) => e.stopPropagation());
@@ -2140,22 +1840,15 @@ function populateRegionFilters(mapId) {
         // --- Measurement Tool Logic ---
         function handleMeasurementClick(e) {
             if (!isMeasuring || !currentlyLoadedMapId) return;
-
-            // --- NEW: Prevent measurement if clicking on a control ---
-            if (e.originalEvent.target.closest('.leaflet-control')) {
-                console.log("Measurement click ignored (on control).");
-                return;
-            }
+            if (e.originalEvent.target.closest('.leaflet-control')) return; // Ignore clicks on controls
 
             const clickPoint = e.latlng;
             const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
-
             const scalePx = currentMapInfo?.scalePixels;
             const scaleKm = currentMapInfo?.scaleKilometers;
             const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
                                   typeof scaleKm === 'number' && scaleKm > 0;
 
-            // Clear previous line/end marker if starting a new measurement pair
             measurementLayerGroup.eachLayer(layer => {
                 if (layer instanceof L.Polyline || (layer.options && layer.options.isEndPoint)) {
                     measurementLayerGroup.removeLayer(layer);
@@ -2163,16 +1856,13 @@ function populateRegionFilters(mapId) {
             });
 
             if (!measurementStartPoint) {
-                // First click
                 measurementStartPoint = clickPoint;
                 L.circleMarker(measurementStartPoint, {
                     radius: 5, color: 'red', fillColor: '#f03', fillOpacity: 0.8, interactive: false
                 }).addTo(measurementLayerGroup)
                   .bindTooltip("Start point. Click second point.", { permanent: false, direction: 'top', className: 'measure-tooltip', offset: L.point(0, -5) })
                   .openTooltip();
-
             } else {
-                // Second click
                 const endPoint = clickPoint;
                 const pixelDistance = map.distance(measurementStartPoint, endPoint);
                 let distanceString = `${pixelDistance.toFixed(0)} pixels`;
@@ -2181,7 +1871,6 @@ function populateRegionFilters(mapId) {
                     const kmDistance = (pixelDistance / scalePx) * scaleKm;
                     distanceString = `${kmDistance.toFixed(2)} km`;
                 } else {
-                    console.warn(`Measurement: Scale information missing or invalid for map ${currentlyLoadedMapId}. Displaying pixels.`);
                     distanceString += " (Scale unknown)";
                 }
 
@@ -2195,7 +1884,7 @@ function populateRegionFilters(mapId) {
                   .bindTooltip(`${distanceString}`, { permanent: true, direction: 'center', className: 'measure-tooltip' })
                   .openTooltip();
 
-                measurementStartPoint = null; // Reset for next measurement
+                measurementStartPoint = null; // Reset
             }
         }
 
@@ -2206,85 +1895,218 @@ function populateRegionFilters(mapId) {
 
             if (isMeasuring) {
                 measureToolBtn.title = "Deactivate Measure Tool (Click map)";
-                // Add listener with higher priority to potentially intercept clicks before others
-                map.on('click', handleMeasurementClick);
+                map.on('click', handleMeasurementClick); // Add listener
                 measurementLayerGroup.clearLayers();
                 measurementStartPoint = null;
-                // --- NEW: Hide filter panel when measuring ---
-                if (filtersPanelVisible) {
-                    toggleFilterPanel();
-                }
+                if (filtersPanelVisible) toggleFilterPanel(); // Hide filter panel
             } else {
                 measureToolBtn.title = "Measure Distance";
-                map.off('click', handleMeasurementClick);
-                // Optionally clear graphics when deactivating
-                // measurementLayerGroup.clearLayers();
+                map.off('click', handleMeasurementClick); // Remove listener
                 measurementStartPoint = null;
             }
         }
 
         measureToolBtn.addEventListener('click', (e) => {
-             e.stopPropagation(); // Prevent map click
+             e.stopPropagation();
              toggleMeasurementTool();
         });
 
+        // --- Inject Map Icon CSS ---
+        function updateStyleWithMapIcon() {
+            const style = document.createElement('style');
+            style.textContent = `
+                #toggle-filters-btn::before {
+                    content: ''; display: inline-block; width: 16px; height: 16px;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M15,19L9,16.89V5L15,7.11V19M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat; background-position: center;
+                    margin-top: 7px; opacity: 0.6;
+                }
+                #toggle-filters-btn.active::before { opacity: 1; }
+            `;
+            document.head.appendChild(style);
+        }
+        updateStyleWithMapIcon(); // Inject CSS immediately
 
-        // --- Initial Page Load Logic ---
-        function initializeApp() {
-            // Show loading indicator at start of initialization
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'flex';
-                const progressBar = loadingIndicator.querySelector('.progress-bar');
-                if (progressBar) progressBar.style.width = '0%';
+        // --- NEW: Data Loading Functions ---
+        async function loadMapData() {
+            try {
+                // Show loading indicator for data fetch
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'flex';
+                    const progressBar = loadingIndicator.querySelector('.progress-bar');
+                    const loadingText = loadingIndicator.querySelector('.loading-text');
+                    if (progressBar) progressBar.style.width = '10%'; // Initial progress
+                    if (loadingText) loadingText.textContent = "Loading Map Index...";
+                }
+
+                const response = await fetch('maps/maps.json');
+                if (!response.ok) throw new Error(`Failed to load maps.json: ${response.statusText}`);
+                const maps = await response.json();
+
+                if (loadingIndicator && loadingIndicator.querySelector('.progress-bar')) {
+                    loadingIndicator.querySelector('.progress-bar').style.width = '30%';
+                    loadingIndicator.querySelector('.loading-text').textContent = "Processing Map Data...";
+                }
+
+                // Process map data (fetch children, etc.)
+                mapData = await processMapData(maps);
+
+                if (loadingIndicator && loadingIndicator.querySelector('.progress-bar')) {
+                    loadingIndicator.querySelector('.progress-bar').style.width = '100%';
+                }
+
+                // Hide loading indicator *before* initializing the rest of the app
+                if (loadingIndicator) {
+                     setTimeout(() => { loadingIndicator.style.display = 'none'; }, 200); // Short delay
+                }
+
+                // Now that data is loaded, initialize the application
+                initializeApp();
+
+            } catch (error) {
+                console.error('Error loading map data:', error);
+                if (loadingIndicator) {
+                    const loadingText = loadingIndicator.querySelector('.loading-text');
+                    const spinner = loadingIndicator.querySelector('.spinner');
+                    const progressContainer = loadingIndicator.querySelector('.progress-container');
+                    if (loadingText) loadingText.textContent = "Error loading map data. Please check console.";
+                    if (spinner) spinner.style.display = 'none';
+                    if (progressContainer) progressContainer.style.display = 'none';
+                    // Keep indicator visible for a bit longer on error
+                    // setTimeout(() => { loadingIndicator.style.display = 'none'; }, 5000);
+                }
+                // Optionally display an error message to the user in the UI
+                sidebar.innerHTML = '<h2>Error</h2><p>Could not load map data. Please try refreshing the page or check the console for details.</p>';
+            }
+        }
+
+        async function processMapData(maps) {
+            const processedMaps = [];
+            let totalChildrenToLoad = 0;
+            let childrenLoaded = 0;
+
+            // First pass: count children to load for progress calculation
+            maps.forEach(map => {
+                if (map.children && Array.isArray(map.children) && typeof map.children[0] === 'string') {
+                    totalChildrenToLoad += map.children.length;
+                }
+            });
+
+            // Function to update progress bar during child loading
+            function updateChildLoadProgress() {
+                childrenLoaded++;
+                if (totalChildrenToLoad > 0 && loadingIndicator && loadingIndicator.querySelector('.progress-bar')) {
+                    const baseProgress = 30; // Progress after loading maps.json
+                    const childProgress = (childrenLoaded / totalChildrenToLoad) * (100 - baseProgress);
+                    loadingIndicator.querySelector('.progress-bar').style.width = `${baseProgress + childProgress}%`;
+                }
             }
 
-            const { mapId: initialMapId, sidebarState: initialSidebarState } = parseHash();
-            let mapToLoadData = findMapRecursive(mapData, initialMapId);
-            let mapIdToLoad = initialMapId;
+            for (let map of maps) {
+                if (map.children && Array.isArray(map.children) && typeof map.children[0] === 'string') {
+                    const childIds = map.children;
+                    map.children = []; // Prepare to replace IDs with objects
+                    const childPromises = childIds.map(async (childId) => {
+                        try {
+                            // Handle known 'coming-soon' cases directly
+                            if (childId === 'Old-Lin' || childId === 'southern-thalassia') {
+                                updateChildLoadProgress(); // Count as "loaded"
+                                return {
+                                    id: childId,
+                                    name: childId === 'Old-Lin' ? 'Old-Lin' : 'Southern Thalassia',
+                                    status: 'coming-soon'
+                                };
+                            } else {
+                                // Fetch the child map data
+                                const response = await fetch(`maps/${childId}.json`);
+                                updateChildLoadProgress(); // Update progress after fetch attempt
+                                if (response.ok) {
+                                    const childMap = await response.json();
+                                    return childMap; // Return the loaded child map object
+                                } else {
+                                    console.warn(`Failed to load child map: ${childId} (${response.statusText})`);
+                                    // Return a placeholder for failed loads
+                                    return { id: childId, name: childId, status: 'coming-soon', error: true };
+                                }
+                            }
+                        } catch (error) {
+                            console.error(`Error loading child map ${childId}:`, error);
+                            updateChildLoadProgress(); // Still update progress on error
+                            return { id: childId, name: childId, status: 'coming-soon', error: true };
+                        }
+                    });
+                    // Wait for all children of this folder to load
+                    map.children = await Promise.all(childPromises);
+                }
+                processedMaps.push(map); // Add the processed map (with loaded children)
+            }
+            return processedMaps; // Return the fully processed map structure
+        }
 
+
+        // --- Initial Page Load Logic (Called AFTER data is loaded) ---
+        function initializeApp() {
+            console.log("Initializing App with loaded mapData:", mapData);
+
+            // Populate sidebar now that mapData is ready
+            populateSidebar(mapListElement, mapData);
+
+            // Determine initial map and sidebar state
+            const { mapId: initialMapIdFromHash, sidebarState: initialSidebarState } = parseHash();
+            let mapIdToLoad = initialMapIdFromHash;
+            let mapToLoadData = null;
+
+            // If hash points to a valid map, try to load it
+            if (mapIdToLoad) {
+                mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
+            }
+
+            // If hash map is invalid/missing/coming-soon, or no hash map, find the default
             if (!mapToLoadData || mapToLoadData.status === 'coming-soon') {
-                console.log("Initial hash map not loadable, finding default.");
+                console.log("Initial hash map not loadable or not specified, finding default.");
                 mapIdToLoad = findFirstLoadableIdRecursive(mapData);
                 mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
             }
 
-            console.log("Initializing App. Map to Load:", mapIdToLoad, "Initial Sidebar State:", initialSidebarState);
+            console.log("Final Map to Load:", mapIdToLoad, "Initial Sidebar State:", initialSidebarState);
 
-            setSidebarState(initialSidebarState, false);
+            setSidebarState(initialSidebarState, false); // Set sidebar state without updating hash yet
 
-            // Hide controls initially
+            // Hide controls initially (loadMap will show them if needed)
             toggleMarkersBtn.style.display = 'none';
             toggleFiltersBtn.style.display = 'none';
             measureToolBtn.style.display = 'none';
+            // toggleSoundBtn.style.display = 'none'; // Sound button shown by initializeSoundState
             searchControlContainer.style.display = 'none';
             searchResultsContainer.style.display = 'none';
             poiFilterContainer.classList.remove('visible');
 
+            // Load the determined map
             if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
                 markersVisible = true; // Default to visible
-                loadMap(mapIdToLoad, false); // loadMap now handles visibility of controls
+                loadMap(mapIdToLoad, false); // Load map, don't update hash yet
             } else {
                 console.error("No loadable map data found for initialization.");
-                sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>'; // Keep sidebar basics
+                sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>';
                 mapBlurbElement.classList.remove('visible');
-                
-                // Make sure to hide loading indicator here
-                if (loadingIndicator) {
-                    if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                    loadingIndicator.style.display = 'none';
-                }
-                
+                // Ensure loading indicator is hidden if it somehow wasn't
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                // Set a clean hash state
                 history.replaceState(null, '', generateHash('', initialSidebarState));
-                return; // Stop initialization here
+                return; // Stop initialization
             }
 
-            // Ensure the history state is correct after potentially loading a default map
+            // Initialize sound state (after theme is applied)
+            initializeSoundState();
+
+            // Set the correct initial history state *after* loading the map
             const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState);
             console.log("Replacing initial history state with:", correctInitialHash);
             history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', correctInitialHash);
         }
 
-        initializeApp(); // Run initialization
+        // --- Start the application by loading data ---
+        loadMapData();
 
     </script>
 
