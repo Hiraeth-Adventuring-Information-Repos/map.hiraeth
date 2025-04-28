@@ -1735,8 +1735,23 @@
         });
 
         // Function to initialize sound state from localStorage
+        // Function to initialize sound state from localStorage
         function initializeSoundState() {
+            // --- NEW: Check for embedded mode ---
+            const urlParams = getUrlParameters(); // Need to get params here too
+            if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
+                console.log("Embedded mode: Sound initialization skipped.");
+                soundEnabled = false; // Ensure state reflects no sound
+                // Set icon/title to muted state (even though button is hidden)
+                soundIcon.textContent = '🔇';
+                if(toggleSoundBtn) toggleSoundBtn.title = "Unmute Sound"; // Check if button exists before setting title
+                return; // Exit early, do not proceed with sound logic
+            }
+            // --- END: Embedded mode check ---
+
+
             const savedSoundState = localStorage.getItem('soundEnabled');
+            // Only proceed if not in embedded mode (checked above)
             soundEnabled = savedSoundState === 'true'; // Convert string to boolean
 
             // Set initial volume to 0 to prevent autoplay issues on load
@@ -1745,7 +1760,7 @@
 
             if (soundEnabled) {
                 soundIcon.textContent = '🔊';
-                toggleSoundBtn.title = "Mute Sound";
+                if(toggleSoundBtn) toggleSoundBtn.title = "Mute Sound";
                 // Start playing the correct track based on the current theme
                 const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
                  if (currentTheme === 'dark') {
@@ -1755,12 +1770,12 @@
                 }
             } else {
                 soundIcon.textContent = '🔇';
-                toggleSoundBtn.title = "Unmute Sound";
+                 if(toggleSoundBtn) toggleSoundBtn.title = "Unmute Sound";
             }
-            // Make button visible now that state is set
-            toggleSoundBtn.style.display = 'block';
+            // Make button visible now that state is set (only if not embedded)
+            if(toggleSoundBtn) toggleSoundBtn.style.display = 'block';
         }
-        // initializeSoundState is called in initializeApp
+
 
         // Apply initial theme from storage
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -2074,11 +2089,11 @@
 
         // --- Initial Page Load Logic (Called AFTER data is loaded) ---
         // --- Initial Page Load Logic (Called AFTER data is loaded) ---
-        function initializeApp() {
+                // --- Initial Page Load Logic (Called AFTER data is loaded) ---
+                function initializeApp() {
             // --- NEW: Check URL parameters for embedding ---
             const urlParams = getUrlParameters();
 
-            // Handle embedded view - hide UI elements
             // Handle embedded view - hide UI elements
             if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
                 console.log("Embedded view detected, hiding UI elements.");
@@ -2087,14 +2102,20 @@
 
                 const bottomLinkBar = document.getElementById('bottom-link-bar');
                 if (bottomLinkBar) bottomLinkBar.style.display = 'none';
-                
+
                 // Hide the sidebar toggle button
                 const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
                 if (toggleSidebarBtn) toggleSidebarBtn.style.display = 'none';
-                
+
+                // --- ADD THIS LINE ---
+                // Hide the sound toggle button
+                const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+                if (toggleSoundBtn) toggleSoundBtn.style.display = 'none';
+                // --- END ADDED LINE ---
+
                 // Force sidebar to be collapsed initially
                 setSidebarState('c', false);
-                
+
                 // Optional: Add a class to the body for additional styling
                 document.body.classList.add('embedded-view');
             }
@@ -2130,7 +2151,7 @@
             toggleMarkersBtn.style.display = 'none';
             toggleFiltersBtn.style.display = 'none';
             measureToolBtn.style.display = 'none';
-            // toggleSoundBtn.style.display = 'none'; // Sound button shown by initializeSoundState
+            // toggleSoundBtn is handled above for embed mode, otherwise shown by initializeSoundState
             searchControlContainer.style.display = 'none';
             searchResultsContainer.style.display = 'none';
             poiFilterContainer.classList.remove('visible');
@@ -2151,6 +2172,7 @@
             }
 
             // Initialize sound state (after theme is applied)
+            // This will now check for embed mode internally
             initializeSoundState();
 
             // Set the correct initial history state *after* loading the map
