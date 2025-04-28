@@ -240,7 +240,10 @@
         body:not(.dark-theme) #map::after {
             background-position: 0 20%; opacity: 0.3; animation-duration: 110s; animation-delay: -10s;
         }
-
+        
+        body.embedded-view #search-control-container {
+            bottom: 10px; /* Adjust from 40px when bottom bar is hidden */
+        }
         /* --- Enhanced Dark Theme Stars --- */
         body.dark-theme #map::before {
             content: '';
@@ -2070,7 +2073,25 @@
 
 
         // --- Initial Page Load Logic (Called AFTER data is loaded) ---
+        // --- Initial Page Load Logic (Called AFTER data is loaded) ---
         function initializeApp() {
+            // --- NEW: Check URL parameters for embedding ---
+            const urlParams = getUrlParameters();
+
+            // Handle embedded view - hide UI elements
+            if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
+                console.log("Embedded view detected, hiding UI elements.");
+                const wipPopup = document.getElementById('wip-popup');
+                if (wipPopup) wipPopup.style.display = 'none';
+
+                const bottomLinkBar = document.getElementById('bottom-link-bar');
+                if (bottomLinkBar) bottomLinkBar.style.display = 'none';
+
+                // Optional: Add a class to the body for additional styling
+                document.body.classList.add('embedded-view');
+            }
+            // --- END: Embedding Check ---
+
             console.log("Initializing App with loaded mapData:", mapData);
 
             // Populate sidebar now that mapData is ready
