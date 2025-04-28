@@ -1001,6 +1001,61 @@
                 filterToggleAllCheckbox.indeterminate = true;
             }
         }
+        function findPOIByName(name) {
+            if (!allMapMarkers || allMapMarkers.length === 0) return null;
+
+            name = name.toLowerCase().trim();
+            // First try exact match
+            let poi = allMapMarkers.find(marker =>
+                marker.poiData && marker.poiData.name.toLowerCase() === name);
+
+            // If no exact match, try contains match
+            if (!poi) {
+                poi = allMapMarkers.find(marker =>
+                    marker.poiData && marker.poiData.name.toLowerCase().includes(name));
+            }
+
+            return poi;
+        }
+
+        // --- Find Region by name ---
+        function findRegionByName(name) {
+            if (!currentRegionGroup) return null;
+
+            name = name.toLowerCase().trim();
+            let foundRegion = null;
+
+            currentRegionGroup.eachLayer(layer => {
+                if (layer.regionData &&
+                    layer.regionData.name &&
+                    layer.regionData.name.toLowerCase().includes(name)) {
+                    foundRegion = layer;
+                }
+            });
+
+            return foundRegion;
+        }
+
+        // --- Focus on POI or Region ---
+        function focusOnMapElement(element, zoom = 2) {
+            if (!element) return false;
+
+            // For POI (marker)
+            if (element.getLatLng) {
+                map.flyTo(element.getLatLng(), Math.max(map.getZoom(), zoom));
+                element.openPopup();
+                return true;
+            }
+
+            // For Region (polygon)
+            if (element.getBounds) {
+                map.flyToBounds(element.getBounds(), { padding: [50, 50] });
+                element.openPopup();
+                return true;
+            }
+
+            return false;
+        }
 
         // --- Map Data Configuration (REMOVED - Now loaded externally) ---
         // const mapData = [ ... ]; // THIS IS REMOVED
@@ -1198,297 +1253,155 @@
         }
 
 
-        // --- Function to Load/Switch Map ---
-        function loadMap(mapId, updateHash = true) {
-            // --- Show loading indicator ---
-            if (loadingIndicator) {
-                loadingIndicator.style.display = 'flex';
-                const progressBar = loadingIndicator.querySelector('.progress-bar');
-                const loadingText = loadingIndicator.querySelector('.loading-text');
-                const spinner = loadingIndicator.querySelector('.spinner');
+        // --- Initial Page Load Logic (Called AFTER data is loaded) ---
+        function initializeApp() {
+            // --- NEW: Check URL parameters for embedding ---
+            const urlParams = getUrlParameters();
 
-                loadingProgress = 0;
-                if (progressBar) progressBar.style.width = '0%';
-                if (loadingText) loadingText.textContent = "Loading Map...";
-                if (spinner) spinner.style.display = 'block';
+            // Handle embedded view - hide UI elements
+            if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
+                console.log("Embedded view detected, hiding UI elements.");
+                const wipPopup = document.getElementById('wip-popup');
+                if (wipPopup) wipPopup.style.display = 'none';
 
-                if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                loadingProgressInterval = setInterval(() => {
-                    if (loadingProgress < 90) {
-                        loadingProgress += 2 + Math.random() * 3;
-                        loadingProgress = Math.min(loadingProgress, 90);
-                        if (progressBar) progressBar.style.width = loadingProgress + '%';
-                    } else {
-                        clearInterval(loadingProgressInterval);
-                        loadingProgressInterval = null;
-                    }
-                }, 150);
+                const bottomLinkBar = document.getElementById('bottom-link-bar');
+                if (bottomLinkBar) bottomLinkBar.style.display = 'none';
+
+                // Optional: Add a class to the body for additional styling
+                document.body.classList.add('embedded-view');
             }
-            // --- END: Loading Indicator Setup ---
+            // --- END: Embedding Check ---
 
-            if (isMeasuring) toggleMeasurementTool();
-            measurementLayerGroup.clearLayers();
+            console.log("Initializing App with loaded mapData:", mapData);
 
-            // --- Hide Search/Filter UI during load ---
+            // Populate sidebar now that mapData is ready
+            populateSidebar(mapListElement, mapData);
+
+            // Determine initial map and sidebar state
+            const { mapId: initialMapIdFromHash, sidebarState: initialSidebarState } = parseHash();
+            let mapIdToLoad = initialMapIdFromHash;
+            let mapToLoadData = null;
+
+            // If hash points to a valid map, try to load it
+            if (mapIdToLoad) {
+                mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
+            }
+
+            // If hash map is invalid/missing/coming-soon, or no hash map, find the default
+            if (!mapToLoadData || mapToLoadData.status === 'coming-soon') {
+                console.log("Initial hash map not loadable or not specified, finding default.");
+                mapIdToLoad = findFirstLoadableIdRecursive(mapData);
+                mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
+            }
+
+            console.log("Final Map to Load:", mapIdToLoad, "Initial Sidebar State:", initialSidebarState);
+
+            setSidebarState(initialSidebarState, false); // Set sidebar state without updating hash yet
+
+            // Hide controls initially (loadMap will show them if needed)
+            toggleMarkersBtn.style.display = 'none';
+            toggleFiltersBtn.style.display = 'none';
+            measureToolBtn.style.display = 'none';
+            // toggleSoundBtn.style.display = 'none'; // Sound button shown by initializeSoundState
             searchControlContainer.style.display = 'none';
             searchResultsContainer.style.display = 'none';
             poiFilterContainer.classList.remove('visible');
-            toggleFiltersBtn.style.display = 'none';
-            filtersPanelVisible = false;
-            toggleFiltersBtn.classList.remove('active');
-            poiSearchInput.value = '';
 
-            const selectedMap = findMapRecursive(mapData, mapId);
+            // Load the determined map
+            if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
+                markersVisible = true; // Default to visible
 
-            // --- Clear Filter Checkboxes ---
-            const dynamicFilters = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child)');
-            dynamicFilters.forEach(el => el.remove());
-            filterToggleAllCheckbox.checked = true;
-            filterToggleAllCheckbox.indeterminate = false;
+                // --- MODIFIED loadMap CALL ---
+                // Pass a callback function to execute AFTER the map is loaded
+                loadMap(mapIdToLoad, false, () => {
+                    // --- START: Callback Logic ---
+                    // This code runs *after* loadMap finishes setting up the map
 
-            if (!selectedMap || selectedMap.status === 'coming-soon') {
-                console.warn("Attempted to load map data not found or coming soon:", mapId);
-                if (selectedMap) alert(`The map "${selectedMap.name}" is coming soon!`);
-                if (currentImageLayer) map.removeLayer(currentImageLayer);
-                if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-                if (currentRegionGroup) map.removeLayer(currentRegionGroup);
-                currentImageLayer = null;
-                currentMarkerGroup = null;
-                currentRegionGroup = null;
-                allMapMarkers = [];
-                currentlyLoadedMapId = null;
-                mapBlurbElement.classList.remove('visible');
-                toggleMarkersBtn.style.display = 'none';
-                measureToolBtn.style.display = 'none';
-                toggleFiltersBtn.style.display = 'none';
-                searchControlContainer.style.display = 'none';
-                if (updateHash) history.pushState(null, '', generateHash('', currentSidebarState));
+                    // Check for POI or region in URL parameters AFTER map is loaded
+                    const currentUrlParams = getUrlParameters(); // Re-get params in case they changed? (unlikely but safe)
+                    // Decode URI components and replace '+' with space for names like "Point+of+Interest"
+                    const poiParam = currentUrlParams.poi ? decodeURIComponent(currentUrlParams.poi.replace(/\+/g, ' ')) : null;
+                    const regionParam = currentUrlParams.region ? decodeURIComponent(currentUrlParams.region.replace(/\+/g, ' ')) : null;
 
-                if (loadingIndicator) {
-                    if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                    loadingIndicator.style.display = 'none';
-                }
-                return;
-            }
+                    console.log("Checking URL params inside loadMap callback:", { poiParam, regionParam });
 
+                    let focused = false; // Flag to track if we focused on something
 
-            if (updateHash) {
-                const newHash = generateHash(mapId, currentSidebarState);
-                const currentPath = window.location.pathname;
-                const currentSearch = window.location.search; // This contains the UTM parameters
-                history.pushState(
-                    { mapId: mapId, sidebarState: currentSidebarState }, 
-                    selectedMap.name, 
-                    `${currentPath}${currentSearch}${newHash}`
-                );
-            }
-
-            if (mapId === currentlyLoadedMapId) {
-                 console.log(`Map ${mapId} is already loaded.`);
-                 if (updateHash) {
-                     const currentHash = generateHash(mapId, currentSidebarState);
-                     if (window.location.hash !== currentHash) {
-                          history.replaceState(null, '', currentHash);
-                     }
-                 }
-                 if (loadingIndicator) {
-                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                     loadingIndicator.style.display = 'none';
-                 }
-                 return;
-            }
-
-            console.log(`Loading map: ${selectedMap.name} (ID: ${mapId})`);
-
-            // Remove previous layers
-            if (currentImageLayer) map.removeLayer(currentImageLayer);
-            if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-            if (currentRegionGroup) map.removeLayer(currentRegionGroup);
-
-            // Reset marker state
-            currentMarkerGroup = L.layerGroup();
-            allMapMarkers = [];
-            // Reset region state
-            currentRegionGroup = L.layerGroup().addTo(map); // Add immediately
-            regionsVisible = markersVisible; // Sync initial region visibility
-
-            const mapHeight = selectedMap.height;
-            const mapWidth = selectedMap.width;
-            if (isNaN(mapHeight) || isNaN(mapWidth) || !selectedMap.imageUrl) {
-                console.error(`Invalid dimensions or missing imageUrl for map ID ${mapId}`);
-                mapBlurbElement.classList.remove('visible');
-                toggleMarkersBtn.style.display = 'none';
-                measureToolBtn.style.display = 'none';
-                toggleFiltersBtn.style.display = 'none';
-                searchControlContainer.style.display = 'none';
-                currentlyLoadedMapId = null;
-                if (updateHash) history.pushState(null, '', generateHash('', currentSidebarState));
-
-                if (loadingIndicator) {
-                    if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                    const loadingText = loadingIndicator.querySelector('.loading-text');
-                    const progressBar = loadingIndicator.querySelector('.progress-bar');
-                    const spinner = loadingIndicator.querySelector('.spinner');
-                    if(loadingText) loadingText.textContent = "Error: Invalid map data.";
-                    if(progressBar) progressBar.style.width = '0%';
-                    if(spinner) spinner.style.display = 'none';
-                    setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
-                }
-                return;
-            }
-            currentBounds = [[0, 0], [mapHeight, mapWidth]];
-
-            // Main Image Layer
-            currentImageLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds);
-
-            const preloadImg = new Image();
-            let loadingComplete = false;
-            let loadingTimeout = null;
-
-            function finishLoading() {
-                if (loadingComplete) return;
-                loadingComplete = true;
-                clearTimeout(loadingTimeout);
-
-                console.log("Image overlay loaded (or timed out).");
-                if (loadingIndicator) {
-                    const progressBar = loadingIndicator.querySelector('.progress-bar');
-                    if (progressBar) {
-                        progressBar.style.width = '100%';
-                        setTimeout(() => {
-                            if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                            loadingProgressInterval = null;
-                            loadingIndicator.style.display = 'none';
-                        }, 300);
-                    } else {
-                        if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                        loadingProgressInterval = null;
-                        loadingIndicator.style.display = 'none';
+                    // --- POI Check ---
+                    if (poiParam) {
+                        const poiMarker = findPOIByName(poiParam);
+                        if (poiMarker) {
+                            console.log("Found POI:", poiParam);
+                            // Ensure markers/regions are visible if linking directly to a POI
+                            if (!markersVisible) {
+                                markersVisible = true;
+                                regionsVisible = true; // Keep synced
+                                toggleMarkersBtn.title = "Hide Markers & Regions";
+                                toggleMarkersBtn.classList.remove('markers-hidden');
+                                updateVisibleRegions(); // Update region styles
+                                updateVisibleMarkersAndSearch(); // Update marker visibility
+                                console.log("Made markers/regions visible for POI link.");
+                            }
+                            // Focus on the POI marker
+                            focused = focusOnMapElement(poiMarker, 2); // Use zoom level 2 for POIs
+                            if(focused) console.log("Focused on POI:", poiParam);
+                        } else {
+                            console.log("POI not found:", poiParam);
+                        }
                     }
-                }
-                map.fitBounds(currentBounds);
-            }
 
-            preloadImg.onload = function() { finishLoading(); };
-            currentImageLayer.on('load', function() { finishLoading(); });
-            currentImageLayer.on('error', function() {
-                 if (loadingComplete) return;
-                 loadingComplete = true;
-                 clearTimeout(loadingTimeout);
-                 console.error("Image overlay failed to load:", selectedMap.imageUrl);
-                 if (loadingIndicator) {
-                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                     loadingProgressInterval = null;
-                     const progressBar = loadingIndicator.querySelector('.progress-bar');
-                     const loadingText = loadingIndicator.querySelector('.loading-text');
-                     const spinner = loadingIndicator.querySelector('.spinner');
-                     if (progressBar) progressBar.style.width = '0%';
-                     if (loadingText) loadingText.textContent = "Error loading map image.";
-                     if (spinner) spinner.style.display = 'none';
-                     setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
-                 }
-                 if (currentImageLayer) map.removeLayer(currentImageLayer);
-                 currentImageLayer = null;
-                 currentlyLoadedMapId = null;
-                 toggleMarkersBtn.style.display = 'none';
-                 measureToolBtn.style.display = 'none';
-                 toggleFiltersBtn.style.display = 'none';
-                 searchControlContainer.style.display = 'none';
-            });
+                    // --- Region Check (only if POI wasn't found/focused) ---
+                    if (!focused && regionParam) {
+                        const regionLayer = findRegionByName(regionParam);
+                        if (regionLayer) {
+                            console.log("Found Region:", regionParam);
+                             // Ensure markers/regions are visible if linking directly to a region
+                            if (!regionsVisible) { // Check regionsVisible specifically
+                                regionsVisible = true;
+                                markersVisible = true; // Keep synced
+                                toggleMarkersBtn.title = "Hide Markers & Regions";
+                                toggleMarkersBtn.classList.remove('markers-hidden');
+                                updateVisibleRegions(); // Update region styles
+                                updateVisibleMarkersAndSearch(); // Update marker visibility
+                                console.log("Made markers/regions visible for Region link.");
+                            }
+                            // Focus on the region layer
+                            focused = focusOnMapElement(regionLayer); // Default zoom for regions (fitBounds)
+                            if(focused) console.log("Focused on Region:", regionParam);
+                        } else {
+                            console.log("Region not found:", regionParam);
+                        }
+                    }
 
-            loadingTimeout = setTimeout(() => {
-                console.warn("Loading fallback timer triggered.");
-                finishLoading();
-            }, 8000);
+                    // --- Update History State ---
+                    // Set the correct initial history state *after* loading the map and potentially focusing
+                    // This ensures the URL reflects the loaded map even if we navigated via POI/region param
+                    const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState);
+                    console.log("Replacing initial history state after map load & potential focus:", correctInitialHash);
+                    // Use replaceState so the back button doesn't just remove the POI focus
+                    history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', correctInitialHash);
 
-            preloadImg.src = selectedMap.imageUrl;
-            currentImageLayer.addTo(map);
+                    // --- END: Callback Logic ---
+                });
+                // --- End of modified loadMap call ---
 
-            // Add Points of Interest
-            const points = selectedMap.pointsOfInterest || [];
-            populateFilters(points, mapId); // Populate combined filters
-
-            points.forEach(point => {
-                if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
-                    if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
-                         const marker = L.marker(point.coords);
-                         marker.poiData = point;
-                         let popupContent = '';
-                         if (point.wikiLink) {
-                             popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`;
-                         } else {
-                             popupContent += `<h3>${point.name}</h3>`;
-                         }
-                         popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`;
-                         popupContent += `<p>${point.description || ''}</p>`;
-                         marker.bindPopup(popupContent);
-                         allMapMarkers.push(marker);
-                    } else { console.warn(`POI coordinates out of bounds for map ${selectedMap.name}: ${point.name}`, point.coords); }
-                } else { console.warn(`Invalid coordinates for POI: ${point.name}`, point.coords); }
-            });
-
-            currentMarkerGroup.addTo(map);
-            updateVisibleMarkersAndSearch(); // Initial marker visibility
-            // updateToggleAllCheckboxState(); // Called by populateFilters
-
-            // Add Regions
-            addRegionsToMap(mapId);
-            updateVisibleRegions(); // Initial region visibility
-
-            // Show/hide controls based on content
-            // Show/hide controls based on content
-            const hasPOIs = allMapMarkers.length > 0;
-            toggleMarkersBtn.style.display = hasPOIs ? 'block' : 'none';
-            searchControlContainer.style.display = hasPOIs ? 'block' : 'none';
-
-            const hasValidScale = typeof selectedMap.scalePixels === 'number' && selectedMap.scalePixels > 0 &&
-                                typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
-            measureToolBtn.style.display = hasValidScale ? 'block' : 'none';
-
-            // Filter button visibility handled by populateFilters
-
-
-            // Filter button visibility handled by populateFilters
-
-            // Set initial state for marker toggle
-            toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
-            toggleMarkersBtn.title = markersVisible ? "Hide Markers & Regions" : "Show Markers & Regions";
-
-            // Update Map Blurb
-            // Update Map Blurb
-            if (selectedMap.blurb) {
-                mapBlurbElement.innerHTML = selectedMap.blurb;
-                mapBlurbElement.classList.add('visible');
             } else {
-                mapBlurbElement.innerHTML = '';
+                // Fallback if no loadable map found
+                console.error("No loadable map data found for initialization.");
+                sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>';
                 mapBlurbElement.classList.remove('visible');
+                // Ensure loading indicator is hidden if it somehow wasn't
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                // Set a clean hash state even on error
+                history.replaceState(null, '', generateHash('', initialSidebarState));
+                return; // Stop initialization
             }
 
+            // Initialize sound state (after theme is applied)
+            initializeSoundState();
 
-            // Update Sidebar Active State
-            document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
-            const activeMapItem = document.querySelector(`#map-list .map-item[data-map-id="${mapId}"]`);
-            const activeFolderHeader = document.querySelector(`#map-list .folder-header[data-map-id="${mapId}"]`);
-            if (activeMapItem) {
-                activeMapItem.classList.add('active');
-                let parent = activeMapItem.closest('.nested-list');
-                while (parent) {
-                    const folderLi = parent.closest('.folder');
-                    if (folderLi && folderLi.classList.contains('closed')) { folderLi.classList.remove('closed'); }
-                    parent = folderLi?.parentElement.closest('.nested-list');
-                }
-            } else if (activeFolderHeader) {
-                activeFolderHeader.classList.add('active');
-                 const folderLi = activeFolderHeader.closest('.folder');
-                 if (folderLi && folderLi.classList.contains('closed')) { folderLi.classList.remove('closed'); }
-            }
-
-            currentlyLoadedMapId = mapId;
-            if (updateHash) {
-                const newHash = generateHash(mapId, currentSidebarState);
-                history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
-            }
-            console.log(`Finished setting up map load for: ${selectedMap.name}`);
+            // The history.replaceState call was moved inside the loadMap callback
+            // to ensure it runs *after* the map is loaded and any focusing is done.
         }
 
         // --- Function to add regions to map ---
