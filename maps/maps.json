@@ -5,6 +5,8 @@
       "name": "Content Map",
       "width": 8192,
       "height": 6144,
+      "scalePixels": 1,
+      "scaleKilometers": 1.3,
       "imageUrl": "maps/Fair-Content.webp",
       "blurb": "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
       "pointsOfInterest": [],
