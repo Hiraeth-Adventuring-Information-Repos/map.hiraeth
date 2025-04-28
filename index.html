@@ -836,6 +836,18 @@
             "Other": ["Point of Interest", "Region", "Portal"],
             "Unknown": ["Unknown"]
         };
+        
+        function getUrlParameters() {
+            const params = {};
+            const queryString = window.location.search.substring(1);
+            const pairs = queryString.split('&');
+            
+            for (const pair of pairs) {
+                const [key, value] = pair.split('=');
+                if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+            }
+            return params;
+        }
 
         // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
         const typeToGroupMap = {};
@@ -937,7 +949,8 @@
             };
         }
         function generateHash(mapId, sidebarState) {
-            return `#${mapId || ''}-s=${sidebarState}`;
+            const currentParams = window.location.search;
+            return `#${mapId || ''}-s=${sidebarState}${currentParams}`;
         }
 
         // --- Function to Set Sidebar State ---
@@ -1253,6 +1266,18 @@
                     loadingIndicator.style.display = 'none';
                 }
                 return;
+            }
+
+
+            if (updateHash) {
+                const newHash = generateHash(mapId, currentSidebarState);
+                const currentPath = window.location.pathname;
+                const currentSearch = window.location.search; // This contains the UTM parameters
+                history.pushState(
+                    { mapId: mapId, sidebarState: currentSidebarState }, 
+                    selectedMap.name, 
+                    `${currentPath}${currentSearch}${newHash}`
+                );
             }
 
             if (mapId === currentlyLoadedMapId) {
