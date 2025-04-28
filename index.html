@@ -818,8 +818,6 @@
         let regionsVisible = false; // Overall region visibility toggle
         // let regionFiltersPanelVisible = false; // No longer needed as separate panel
 
-        
-
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
             crs: L.CRS.Simple,
@@ -830,7 +828,6 @@
         });
         // Add styled zoom control
         L.control.zoom({ position: 'topleft' }).addTo(map);
-
 
         const poiTypeGroups = {
             "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
@@ -890,17 +887,6 @@
         const soundIcon = document.getElementById('sound-icon');
         let soundEnabled = false;
 
-        function getUrlParameters() {
-            const params = {};
-            const queryString = window.location.search.substring(1);
-            const pairs = queryString.split('&');
-            
-            for (const pair of pairs) {
-                const [key, value] = pair.split('=');
-                if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-            }
-            return params;
-            }
 
         // --- Helper Functions ---
         function findMapRecursive(items, id) {
@@ -951,11 +937,7 @@
             };
         }
         function generateHash(mapId, sidebarState) {
-            // Get current URL parameters
-            const currentParams = window.location.search;
-            
-            // Return hash with parameters preserved
-            return `#${mapId || ''}-s=${sidebarState}${currentParams}`;
+            return `#${mapId || ''}-s=${sidebarState}`;
         }
 
         // --- Function to Set Sidebar State ---
@@ -973,12 +955,9 @@
 
                  currentSidebarState = state;
                  if (updateHash && currentlyLoadedMapId) {
-                     const newHash = generateHash(currentlyLoadedMapId, state); // Gets only #map-s=o
-                     const currentPath = window.location.pathname;
-                     const currentSearch = window.location.search; // Gets ?utm=...&embed=true
-                     const newUrl = `${currentPath}${currentSearch}${newHash}`; // Reconstructs full URL
-                     console.log("Updating hash from setSidebarState:", newUrl);
-                     history.replaceState(null, '', newUrl); // Use replaceState for sidebar toggle
+                     const newHash = generateHash(currentlyLoadedMapId, state);
+                     console.log("Updating hash from setSidebarState:", newHash);
+                     history.replaceState(null, '', newHash); // Use replaceState for sidebar toggle
                  }
             } else {
                  currentSidebarState = state;
@@ -1478,28 +1457,8 @@
 
             currentlyLoadedMapId = mapId;
             if (updateHash) {
-<<<<<<< Updated upstream
                 const newHash = generateHash(mapId, currentSidebarState);
-<<<<<<< HEAD
                 history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
-=======
-                const newHash = generateHash(mapId, currentSidebarState); // Gets only #map-s=o
-                const currentPath = window.location.pathname;
-                const currentSearch = window.location.search; // Gets ?utm=...&embed=true
-                const newUrl = `${currentPath}${currentSearch}${newHash}`; // Reconstructs full URL
-                console.log(`Pushing history state: ${newUrl}`);
-                history.pushState(
-                    { mapId: mapId, sidebarState: currentSidebarState },
-                    selectedMap.name,
-                    newUrl
-                );
-                const currentPath = window.location.pathname;
-                const currentSearch = window.location.search; // This contains the UTM parameters
-                history.pushState(
-                    { mapId: mapId, sidebarState: currentSidebarState }, 
-                    selectedMap.name, 
-                    `${currentPath}${currentSearch}${newHash}`
-                );
             }
             console.log(`Finished setting up map load for: ${selectedMap.name}`);
         }
@@ -2089,48 +2048,31 @@
         function initializeApp() {
             console.log("Initializing App with loaded mapData:", mapData);
 
-            // --- NEW: Check URL parameters for embed mode ---
-            const urlParams = getUrlParameters();
-            if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
-                console.log("Embed mode detected, hiding UI elements.");
-                const wipPopup = document.getElementById('wip-popup');
-                if (wipPopup) wipPopup.style.display = 'none';
-
-                const bottomLinkBar = document.getElementById('bottom-link-bar');
-                if (bottomLinkBar) bottomLinkBar.style.display = 'none';
-
-                // Optional: Add a class for further CSS targeting if needed
-                // document.body.classList.add('embedded-view');
-            }
-            // --- END: Embed mode check ---
-
-
             // Populate sidebar now that mapData is ready
             populateSidebar(mapListElement, mapData);
 
-            // Determine initial map and sidebar state from hash
+            // Determine initial map and sidebar state
             const { mapId: initialMapIdFromHash, sidebarState: initialSidebarState } = parseHash();
             let mapIdToLoad = initialMapIdFromHash;
             let mapToLoadData = null;
 
-            // If hash points to a valid map, try to find its data
+            // If hash points to a valid map, try to load it
             if (mapIdToLoad) {
                 mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
             }
 
-            // If hash map is invalid/missing/coming-soon, or no hash map was provided, find the default
+            // If hash map is invalid/missing/coming-soon, or no hash map, find the default
             if (!mapToLoadData || mapToLoadData.status === 'coming-soon') {
                 console.log("Initial hash map not loadable or not specified, finding default.");
-                mapIdToLoad = findFirstLoadableIdRecursive(mapData); // Find the first available map ID
-                mapToLoadData = findMapRecursive(mapData, mapIdToLoad); // Get its data
+                mapIdToLoad = findFirstLoadableIdRecursive(mapData);
+                mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
             }
 
             console.log("Final Map to Load:", mapIdToLoad, "Initial Sidebar State:", initialSidebarState);
 
-            // Set initial sidebar state (without updating hash yet, as loadMap might change mapIdToLoad)
-            setSidebarState(initialSidebarState, false);
+            setSidebarState(initialSidebarState, false); // Set sidebar state without updating hash yet
 
-            // Hide controls initially (loadMap will show them if needed for the loaded map)
+            // Hide controls initially (loadMap will show them if needed)
             toggleMarkersBtn.style.display = 'none';
             toggleFiltersBtn.style.display = 'none';
             measureToolBtn.style.display = 'none';
@@ -2139,39 +2081,28 @@
             searchResultsContainer.style.display = 'none';
             poiFilterContainer.classList.remove('visible');
 
-            // Attempt to load the determined map
+            // Load the determined map
             if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
-                markersVisible = true; // Default to visible when loading a map
+                markersVisible = true; // Default to visible
                 loadMap(mapIdToLoad, false); // Load map, don't update hash yet
             } else {
-                // Handle case where absolutely no loadable map is found
                 console.error("No loadable map data found for initialization.");
                 sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>';
                 mapBlurbElement.classList.remove('visible');
-                if (loadingIndicator) loadingIndicator.style.display = 'none'; // Ensure loading is hidden
-
-                // Set a clean initial history state, preserving search params but using default hash
-                const cleanHash = generateHash('', initialSidebarState); // # -s=o (or c)
-                const currentPath = window.location.pathname;
-                const currentSearch = window.location.search; // Preserve ?embed=true etc.
-                const cleanUrl = `${currentPath}${currentSearch}${cleanHash}`;
-                history.replaceState(null, '', cleanUrl);
-                return; // Stop initialization as there's nothing to show
+                // Ensure loading indicator is hidden if it somehow wasn't
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                // Set a clean hash state
+                history.replaceState(null, '', generateHash('', initialSidebarState));
+                return; // Stop initialization
             }
 
-            // Initialize sound state (after theme is applied and map potentially loaded)
+            // Initialize sound state (after theme is applied)
             initializeSoundState();
 
-            // Set the correct initial history state *after* successfully loading the map
-            // Use currentlyLoadedMapId which is set by loadMap
-            const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState); // Gets #mapId-s=state
-            const currentPath = window.location.pathname;
-            const currentSearch = window.location.search; // Gets ?utm=...&embed=true
-            const correctInitialUrl = `${currentPath}${currentSearch}${correctInitialHash}`; // Reconstructs full URL
-            console.log("Replacing initial history state with:", correctInitialUrl);
-            // Use the actual loaded map's name for the title if available
-            const pageTitle = mapToLoadData?.name || document.title;
-            history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, pageTitle, correctInitialUrl);
+            // Set the correct initial history state *after* loading the map
+            const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState);
+            console.log("Replacing initial history state with:", correctInitialHash);
+            history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', correctInitialHash);
         }
 
         // --- Start the application by loading data ---
