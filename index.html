@@ -799,7 +799,7 @@
       Your browser does not support the audio element.
     </audio>
     <audio id="dark-ambient" loop preload="auto"> <!-- Use preload="auto" -->
-      <source src="sounds/space-ambient.mp3" type="audio/mpeg">
+      <source src="sounds/night-ambient.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
 
@@ -818,6 +818,8 @@
         let regionsVisible = false; // Overall region visibility toggle
         // let regionFiltersPanelVisible = false; // No longer needed as separate panel
 
+        
+
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
             crs: L.CRS.Simple,
@@ -828,6 +830,7 @@
         });
         // Add styled zoom control
         L.control.zoom({ position: 'topleft' }).addTo(map);
+
 
         const poiTypeGroups = {
             "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
@@ -887,6 +890,17 @@
         const soundIcon = document.getElementById('sound-icon');
         let soundEnabled = false;
 
+        function getUrlParameters() {
+            const params = {};
+            const queryString = window.location.search.substring(1);
+            const pairs = queryString.split('&');
+            
+            for (const pair of pairs) {
+                const [key, value] = pair.split('=');
+                if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+            }
+            return params;
+            }
 
         // --- Helper Functions ---
         function findMapRecursive(items, id) {
@@ -937,7 +951,11 @@
             };
         }
         function generateHash(mapId, sidebarState) {
-            return `#${mapId || ''}-s=${sidebarState}`;
+            // Get current URL parameters
+            const currentParams = window.location.search;
+            
+            // Return hash with parameters preserved
+            return `#${mapId || ''}-s=${sidebarState}${currentParams}`;
         }
 
         // --- Function to Set Sidebar State ---
@@ -1458,7 +1476,13 @@
             currentlyLoadedMapId = mapId;
             if (updateHash) {
                 const newHash = generateHash(mapId, currentSidebarState);
-                history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
+                const currentPath = window.location.pathname;
+                const currentSearch = window.location.search; // This contains the UTM parameters
+                history.pushState(
+                    { mapId: mapId, sidebarState: currentSidebarState }, 
+                    selectedMap.name, 
+                    `${currentPath}${currentSearch}${newHash}`
+                );
             }
             console.log(`Finished setting up map load for: ${selectedMap.name}`);
         }
