@@ -2079,6 +2079,7 @@
             const urlParams = getUrlParameters();
 
             // Handle embedded view - hide UI elements
+            // Handle embedded view - hide UI elements
             if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
                 console.log("Embedded view detected, hiding UI elements.");
                 const wipPopup = document.getElementById('wip-popup');
@@ -2086,7 +2087,14 @@
 
                 const bottomLinkBar = document.getElementById('bottom-link-bar');
                 if (bottomLinkBar) bottomLinkBar.style.display = 'none';
-
+                
+                // Hide the sidebar toggle button
+                const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+                if (toggleSidebarBtn) toggleSidebarBtn.style.display = 'none';
+                
+                // Force sidebar to be collapsed initially
+                setSidebarState('c', false);
+                
                 // Optional: Add a class to the body for additional styling
                 document.body.classList.add('embedded-view');
             }
