@@ -1,11 +1,13 @@
-[
-  {
-    "type": "folder",
-    "id": "main_continent",
-    "name": "Content Map",
+{
+    "id": "Fair-Content",
+    "name": "Fair-Content",
     "width": 8192,
     "height": 6144,
     "imageUrl": "maps/Fair-Content.webp",
+    "scalePixels": 3,
+    "scaleKilometers": 1,
+    "blurb": "",
+    "pointsOfInterest": [],
     "regions": [
       {
         "id": "region-icebeach",
@@ -27,17 +29,6 @@
           [ 5250, 2885 ], [ 5155, 2785 ], [ 4896, 2633 ], [ 4882, 2505 ],
           [ 4840, 2399 ], [ 4641, 2169 ], [ 4608, 2153 ], [ 4612, 2150 ]
         ]
-      }],
-    "blurb": "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
-    "children": [
-      "icebeach",
-      "Old-Lin",
-      "southern-thalassia"
+      }
     ]
-  },
-  {
-    "id": "system",
-    "name": "Solar System",
-    "status": "coming-soon"
   }
-]
