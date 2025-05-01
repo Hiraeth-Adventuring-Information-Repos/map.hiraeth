@@ -715,7 +715,72 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        @media (max-width: 768px) {
+          /* Styles specifically for screens 768px wide or less */
 
+          #sidebar {
+            width: 200px; /* Example: Make sidebar narrower */
+            /* Or you might hide it completely and use the toggle */
+          }
+
+          .map-control-button {
+            /* Example: Make map buttons larger for touch */
+            width: 40px;
+            height: 40px;
+            font-size: 1.6rem;
+            line-height: 40px; /* Adjust line-height too */
+          }
+
+          /* Adjust button positions if needed */
+          #toggle-markers-btn { top: 70px; }
+          #toggle-filters-btn { top: 118px; }
+          #measure-tool-btn { top: 166px; }
+          #toggle-sound-btn { top: 214px; }
+
+          #poi-search-input {
+            width: 180px; /* Example: Adjust search input width */
+          }
+          #search-control-container {
+             /* Maybe adjust padding or position */
+             padding: 5px;
+          }
+
+          #map-blurb {
+            max-width: 150px;
+            font-size: 0.8rem;
+            padding: 6px 10px;
+          }
+
+          .leaflet-popup-content {
+              font-size: 1rem; /* Slightly smaller popup text */
+          }
+
+          /* Add other adjustments as needed: font sizes, padding, margins */
+        }
+
+        @media (max-width: 480px) {
+           /* Styles for even smaller screens (optional) */
+           #sidebar {
+               /* Maybe hide it by default on very small screens */
+               /* width: 0; */
+               /* position: fixed; /* Example: make it an overlay */
+               /* height: 100%; */
+               /* left: -200px; /* Start off-screen */
+               /* transition: left 0.3s ease; */
+           }
+           /* Add styles to show/hide overlay sidebar */
+
+           #bottom-link-bar {
+               font-size: 0.75rem; /* Smaller text on bottom bar */
+               height: auto; /* Allow wrapping */
+               padding: 5px;
+               flex-wrap: wrap; /* Allow links to wrap */
+               justify-content: space-around;
+           }
+            #bottom-link-bar a {
+                 margin: 2px 5px;
+            }
+        }
 </style>
 </head>
 <body>
