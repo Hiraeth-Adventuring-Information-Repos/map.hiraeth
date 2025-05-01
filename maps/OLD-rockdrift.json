@@ -1,0 +1,12 @@
+{
+    "id": "OLD-rockdrift",
+    "name": "Map of Rockdrift",
+    "width": 4517,
+    "height": 3714,
+    "imageUrl": "maps/OLD-rockdrift.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2020s for the Ruby Hands climatic end to their first campign.",
+    "pointsOfInterest": [],
+    "regions": []
+}
