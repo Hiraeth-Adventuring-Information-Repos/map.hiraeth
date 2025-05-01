@@ -1,0 +1,12 @@
+{
+    "id": "OLD-CONT",
+    "name": "Old Map of a Found Content",
+    "width": 6668,
+    "height": 5249,
+    "imageUrl": "maps/OLD-CONT.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2015, and would be to the left of the old Fair Map.",
+    "pointsOfInterest": [],
+    "regions": []
+}
