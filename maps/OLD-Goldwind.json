@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Goldwind",
+    "name": "Godlwind",
+    "width": 4703,
+    "height": 5691,
+    "imageUrl": "maps/OLD-Goldwind.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2020s, it was the base for a hex crawl that ended with the party just flying to the Platnium Spire.",
+    "pointsOfInterest": [],
+    "regions": []
+}
