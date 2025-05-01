@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Icebeach-Map",
+    "name": "Map of Icebeach 2022",
+    "width": 4032,
+    "height": 3024,
+    "imageUrl": "maps/OLD-Icebeach-Map.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2022, it served as the map for the in person Icebeach games. The program that made this map crashed and would no longer work after this draft.  The plan was to have a red line mark where the party went.  It is persumed that all the tnt from the tower explotion broke the map.",
+    "pointsOfInterest": [],
+    "regions": []
+}
