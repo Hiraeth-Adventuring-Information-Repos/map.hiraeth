@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Oldlins",
+    "name": "Map of Oldlin 2014",
+    "width": 10000,
+    "height": 9578,
+    "imageUrl": "maps/OLD-Oldlins.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2014, it served as the map for the first adventures in the world of Hiraeth.",
+    "pointsOfInterest": [],
+    "regions": []
+}
