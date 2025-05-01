@@ -75,22 +75,24 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* --- Keyframes for Twinkling Stars --- */
-        @keyframes twinkleEnhanced {
-            0% { opacity: 0.1; }
-            20% { opacity: 0.6; }
-            40% { opacity: 0.1; }
-            60% { opacity: 0.3; }
-            80% { opacity: 0.7; }
-            100% { opacity: 0.1; }
+        /* --- /* --- Keyframes for Twinkling Stars --- */
+
+        /* --- Base Dark Theme Map Style --- */
+        body.dark-theme #map {
+            /* Set the background image */
+            background-image: url('images/night-sky.webp');
+
+            /* Ensure it tiles */
+            background-repeat: repeat;
+
+            /* Fallback color if image fails */
+            background-color: #050510;
+
+            /* These might no longer be strictly necessary, but often harmless */
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes twinkleSubtle {
-            0% { opacity: 0.1; }
-            33% { opacity: 0.4; }
-            66% { opacity: 0.2; }
-            100% { opacity: 0.1; }
-        }
 
         /* --- Keyframes for Moving Clouds --- */
         @keyframes moveClouds {
