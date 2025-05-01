@@ -443,13 +443,22 @@
     "blurb": "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
     "children": [
       "icebeach",
-      "Old-Lin",
       "southern-thalassia"
     ]
   },
   {
-    "id": "system",
-    "name": "Solar System",
-    "status": "coming-soon"
+    "type": "folder",
+    "id": "IRL Old Maps",
+    "name": "Old Dev Maps",
+    "children": [
+      "OLD-Oldlins",
+      "OLD-Fair",
+      "OLD-CONT",
+      "OLD-Goldwind",
+      "OLD-Icebeach-Drawn-Map-POI",
+      "OLD-Icebeach-Map",
+      "OLD-rockdrift",
+      "OLD-map-of-south-eastern-fair"
+    ]
   }
 ]
