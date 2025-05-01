@@ -1632,23 +1632,78 @@
                     interactive: true // Make regions clickable
                 });
 
-                let popupContent = '';
-                if (region.wikiLink) {
-                    popupContent += `<h3><a href="${region.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${region.name}">${region.name}</a></h3>`;
+                // --- Start Popup Content Generation ---
+                let popupHeaderHTML = '';
+                const hasWikiLink = region.wikiLink;
+                const hasMapLink = region.linkedMapId; // Check if the new field exists
+
+                // Build the core name part (link if wikiLink exists)
+                if (hasWikiLink) {
+                    popupHeaderHTML += `<a href="${region.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${region.name}">${region.name}</a>`;
                 } else {
-                    popupContent += `<h3>${region.name}</h3>`;
+                    popupHeaderHTML += region.name;
                 }
+
+                // Add a placeholder for the map link if linkedMapId exists
+                if (hasMapLink) {
+                    // Add a non-breaking space for separation and the placeholder span
+                    popupHeaderHTML += `&nbsp;<span class="region-map-link-placeholder" data-target-map-id="${region.linkedMapId}"></span>`;
+                }
+
+                // Construct the full popup content
+                let popupContent = `<h3>${popupHeaderHTML}</h3>`; // Use the constructed header
                 popupContent += `<p><em>Type: ${region.type || 'Region'}</em></p>`;
                 if (region.description) {
                     popupContent += `<p>${region.description}</p>`;
                 }
+                // --- End Popup Content Generation ---
+
                 polygon.bindPopup(popupContent);
 
-                polygon.regionData = region; // Store data for filtering
+                polygon.regionData = region; // Store data for filtering AND for the popupopen event
                 currentRegionGroup.addLayer(polygon);
-                polygon.bringToBack(); // Ensure regions are behind markers
+                polygon.bringToBack();
             });
         }
+
+        // --- Add this event listener somewhere in your main script execution area ---
+        map.on('popupopen', function (e) {
+            const popup = e.popup;
+            const contentElement = popup.getElement().querySelector('.leaflet-popup-content');
+            if (!contentElement) return;
+
+            const placeholder = contentElement.querySelector('.region-map-link-placeholder');
+            if (placeholder) {
+                const targetMapId = placeholder.dataset.targetMapId;
+                if (!targetMapId) return;
+
+                // Check if the target map exists and is loadable
+                const targetMap = findMapRecursive(mapData, targetMapId);
+                if (targetMap && targetMap.status !== 'coming-soon') {
+                    // Create the actual link element dynamically
+                    const link = document.createElement('a');
+                    link.href = '#'; // Prevent default navigation
+                    link.title = `Go to map: ${targetMap.name}`;
+                    link.textContent = '🗺️'; // Map emoji or use text like "[Go to Map]"
+                    link.style.cursor = 'pointer';
+                    link.style.textDecoration = 'none'; // Optional: remove underline
+
+                    link.addEventListener('click', (event) => {
+                        event.preventDefault(); // Stop link default behavior
+                        event.stopPropagation(); // Stop click from bubbling further
+                        map.closePopup(); // Close the current popup
+                        loadMap(targetMapId, true); // Load the target map
+                    });
+
+                    // Replace the placeholder span with the created link
+                    placeholder.parentNode.replaceChild(link, placeholder);
+                } else {
+                    // If target map isn't loadable, just remove the placeholder
+                    placeholder.remove();
+                    console.log(`Linked map ID "${targetMapId}" not found or is coming soon.`);
+                }
+            }
+        },
 
         // --- Update region visibility based on main toggle and filters ---
         function updateVisibleRegions() {
@@ -1685,7 +1740,7 @@
                     });
                 }
             });
-        }
+        },
 
         // --- Populate Sidebar (Recursive Function) ---
         function populateSidebar(parentElement, items) {
@@ -1753,14 +1808,14 @@
                 }
                 parentElement.appendChild(listItem);
             });
-        }
+        },
         // populateSidebar is now called within initializeApp after data is loaded
 
         // --- Sidebar Toggle Button Logic ---
         toggleBtn.addEventListener('click', () => {
             const newState = container.classList.contains('sidebar-collapsed') ? 'o' : 'c';
             setSidebarState(newState, true);
-        });
+        }),
 
         // --- Theme Toggle Logic ---
         function applyTheme(theme) {
@@ -1771,7 +1826,7 @@
             if (divider) {
                 divider.style.borderColor = theme === 'dark' ? 'var(--glass-border-dark)' : 'var(--glass-border-light)';
             }
-        }
+        },
 
         // --- Sound Control Logic ---
         function fadeAudio(audioElement, targetVolume, duration = 1500) { // Shorter fade
@@ -1807,7 +1862,7 @@
             } else if (targetVolume === 0) {
                  requestAnimationFrame(updateVolume); // Fading out
             }
-        }
+        },
 
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
@@ -1823,7 +1878,7 @@
                     fadeAudio(lightAmbient, 0.3); // Adjust target volume as needed
                 }
             }
-        });
+        }),
 
         toggleSoundBtn.addEventListener('click', () => {
             soundEnabled = !soundEnabled;
@@ -1844,7 +1899,7 @@
                 fadeAudio(lightAmbient, 0);
                 fadeAudio(darkAmbient, 0);
             }
-        });
+        }));
 
         // Function to initialize sound state from localStorage
         // Function to initialize sound state from localStorage
@@ -1880,13 +1935,14 @@
                 } else {
                     fadeAudio(lightAmbient, 0.3);
                 }
-            } else {
-                soundIcon.textContent = '🔇';
-                 if(toggleSoundBtn) toggleSoundBtn.title = "Unmute Sound";
-            }
-            // Make button visible now that state is set (only if not embedded)
-            if(toggleSoundBtn) toggleSoundBtn.style.display = 'block';
-        }
+                } else {
+                    soundIcon.textContent = '🔇';
+                    if(toggleSoundBtn) toggleSoundBtn.title = "Unmute Sound";
+                }
+                // Make button visible now that state is set (only if not embedded)
+                if(toggleSoundBtn) toggleSoundBtn.style.display = 'block';
+            };
+            
 
 
         // Apply initial theme from storage
