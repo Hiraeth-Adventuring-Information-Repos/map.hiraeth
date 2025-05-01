@@ -754,6 +754,9 @@
             width: 200px; /* Example: Make sidebar narrower */
             /* Or you might hide it completely and use the toggle */
           }
+        .leaflet-control-zoom {
+            display: none;
+        }
 
           .map-control-button {
             /* Example: Make map buttons larger for touch */
@@ -825,6 +828,11 @@
                 bottom: 85px; /* Adjust this value as needed */
                 /* Ensure it doesn't overlap the toggle button */
                 max-width: calc(100% - 30px); /* Prevent full width */
+            }
+            #wip-popup.fade-out {
+                opacity: 0;
+                transform: translateY(15px); /* Optional slide down */
+                pointer-events: none; /* Prevent interaction after fading */
             }
         }
         
@@ -2198,12 +2206,7 @@
             return processedMaps; // Return the fully processed map structure
         }
 
-
-        // --- Initial Page Load Logic (Called AFTER data is loaded) ---
-        // --- Initial Page Load Logic (Called AFTER data is loaded) ---
-                // --- Initial Page Load Logic (Called AFTER data is loaded) ---
-                function initializeApp() {
-            // --- NEW: Check URL parameters for embedding ---
+            function initializeApp() {
             const urlParams = getUrlParameters();
 
             // Handle embedded view - hide UI elements
@@ -2230,6 +2233,15 @@
 
                 // Optional: Add a class to the body for additional styling
                 document.body.classList.add('embedded-view');
+
+                if (window.innerWidth <= 600) { // Or your preferred mobile breakpoint
+                    const wipPopup = document.getElementById('wip-popup');
+                    if (wipPopup) {
+                        setTimeout(() => {
+                            wipPopup.classList.add('fade-out');
+                        }, 7000); // 7 seconds delay
+                    }
+                }
             }
             // --- END: Embedding Check ---
 
