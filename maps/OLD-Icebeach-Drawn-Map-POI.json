@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Icebeach-Drawn-Map-POI",
+    "name": "Hand Drawn Map Icebeach 2020",
+    "width": 4032,
+    "height": 3024,
+    "imageUrl": "maps/OLD-Icebeach-Drawn-Map-POI.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2020, it served as the map for the Icebeach games.",
+    "pointsOfInterest": [],
+    "regions": []
+}
