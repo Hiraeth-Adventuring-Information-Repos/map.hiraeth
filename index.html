@@ -368,9 +368,26 @@
         body.dark-theme .leaflet-popup-content h3 a:active {
              color: var(--text-secondary); /* Already uses variable */
         }
-
         /* Buttons */
-        #toggle-sidebar-btn { position: absolute; bottom: 43px; left: 15px; z-index: 1000; background-color: var(--glass-bg-light); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--glass-border-light); color: var(--text-primary); border-radius: 4px; padding: 5px 8px; cursor: pointer; font-size: 1.2rem; line-height: 1; box-shadow: 0 1px 5px var(--shadow-color); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        #toggle-sidebar-btn {
+            position: absolute;
+            bottom: 43px;
+            left: 15px;
+            /* Change z-index from 1000 to 1002 (or higher than the popup) */
+            z-index: 1002;
+            background-color: var(--glass-bg-light);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border-light);
+            color: var(--text-primary);
+            border-radius: 4px;
+            padding: 5px 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            box-shadow: 0 1px 5px var(--shadow-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
         #toggle-sidebar-btn:hover { background-color: rgba(255, 255, 255, 0.75); }
         body.dark-theme #toggle-sidebar-btn { background-color: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
         body.dark-theme #toggle-sidebar-btn:hover { background-color: rgba(70, 70, 70, 0.75); }
