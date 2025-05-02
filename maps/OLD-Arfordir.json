@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Arfordir",
+    "name": "Arfordir",
+    "width": 3024,
+    "height": 4032,
+    "imageUrl": "maps/OLD-Arfordir.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2021 for the adventures of the Ruby Hand.",
+    "pointsOfInterest": [],
+    "regions": []
+}
