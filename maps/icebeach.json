@@ -1,6 +1,11 @@
 {
+  "type": "folder",
   "id": "IceBeach",
   "name": "IceBeach",
+  "children": [
+    "Casgate-City",
+    "Flamore"
+  ],
   "width": 7016,
   "height": 4960,
   "imageUrl": "maps/IceBeach.webp",
