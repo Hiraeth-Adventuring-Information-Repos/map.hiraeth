@@ -1699,71 +1699,91 @@
 
         // --- Populate Sidebar (Recursive Function) ---
         function populateSidebar(parentElement, items) {
-            parentElement.innerHTML = ''; // Clear existing items before populating
-            items.forEach(item => {
-                const listItem = document.createElement('li');
+    // Add this log at the start of the function
+    console.log(`Populating sidebar for parent:`, parentElement, 'with items:', items);
 
-                if (item.type === 'folder') {
-                    listItem.classList.add('folder', 'closed');
-                    const header = document.createElement('div');
-                    header.classList.add('folder-header');
-                    header.innerHTML = `<span class="folder-toggle-icon"></span><span>${item.name}</span>`;
-                    const nestedList = document.createElement('ul');
-                    nestedList.classList.add('nested-list');
-                    if (item.children && item.children.length > 0) {
-                        populateSidebar(nestedList, item.children); // Recursively populate children
-                    }
+    parentElement.innerHTML = '';
+    items.forEach(item => {
+        // Add this log inside the loop
+        console.log(`Processing item:`, JSON.stringify(item)); // Stringify to see the whole object easily
 
-                    header.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        listItem.classList.toggle('closed');
-                    });
+        const listItem = document.createElement('li');
 
-                    // Allow loading map from folder if it has an ID and isn't coming soon
-                    if (item.id && item.status !== 'coming-soon') {
-                        header.dataset.mapId = item.id;
-                        header.title = `Click to toggle '${item.name}', double-click to load map.`;
-                        header.addEventListener('dblclick', (e) => {
-                            e.stopPropagation();
-                            loadMap(item.id, true);
-                        });
-                    } else if (item.status === 'coming-soon') {
-                         header.classList.add('coming-soon');
-                         header.title = `${item.name} - Coming Soon!`;
-                         header.addEventListener('dblclick', (e) => {
-                             e.stopPropagation();
-                             alert(`The map "${item.name}" is coming soon!`);
-                         });
-                    } else {
-                         header.title = `Click to toggle '${item.name}'.`;
-                    }
-                    listItem.appendChild(header);
-                    listItem.appendChild(nestedList);
+        if (item.type === 'folder') {
+            // Add this log for folders
+            console.log(`-- It's a Folder. Name: '<span class="math-inline">\{item\.name\}', Status\: '</span>{item.status}'`);
 
-                } else { // Regular map item or coming soon map item
-                    listItem.classList.add('map-item');
-                    listItem.textContent = item.name;
-                    listItem.dataset.mapId = item.id;
+            listItem.classList.add('folder', 'closed');
+            const header = document.createElement('div');
+            header.classList.add('folder-header');
+            // This line includes the fix from before
+            header.innerHTML = `<span class="folder-toggle-icon"></span><span>${item.name || 'Unnamed Folder!'}</span>`; // Add fallback text
+            const nestedList = document.createElement('ul');
+            nestedList.classList.add('nested-list');
 
-                    if (item.status === 'coming-soon') {
-                        listItem.classList.add('coming-soon');
-                        listItem.textContent = `${item.name} (Soon)`;
-                        listItem.title = `${item.name} - Coming Soon!`;
-                        listItem.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            alert(`The map "${item.name}" is coming soon!`);
-                        });
-                    } else {
-                        listItem.title = `Load map: ${item.name}`;
-                        listItem.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            loadMap(item.id, true);
-                        });
-                    }
-                }
-                parentElement.appendChild(listItem);
+            if (item.children && item.children.length > 0) {
+                // Log before recursion
+                console.log(`---- Populating children for folder '${item.name}'`);
+                populateSidebar(nestedList, item.children);
+            } else {
+                // Log if no children
+                console.log(`---- Folder '${item.name}' has no children.`);
+            }
+
+            header.addEventListener('click', (e) => {
+                e.stopPropagation();
+                listItem.classList.toggle('closed');
             });
+
+            if (item.id && item.status !== 'coming-soon') {
+                header.dataset.mapId = item.id;
+                header.title = `Click to toggle '${item.name}', double-click to load map.`;
+                header.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    loadMap(item.id, true);
+                });
+            } else if (item.status === 'coming-soon') {
+                 header.classList.add('coming-soon');
+                 // Apply the (Soon) text suffix and title
+                 header.innerHTML = `<span class="folder-toggle-icon"></span><span>${item.name || 'Unnamed Folder!'} (Soon)</span>`;
+                 header.title = `${item.name || 'Coming Soon!'} - Coming Soon!`;
+                 header.addEventListener('dblclick', (e) => {
+                     e.stopPropagation();
+                     alert(`The map "${item.name || 'this map'}" is coming soon!`);
+                 });
+            } else {
+                 header.title = `Click to toggle '${item.name || 'Unnamed Folder!'}'.`;
+            }
+            listItem.appendChild(header);
+            listItem.appendChild(nestedList);
+
+        } else { // Map Item
+            // Add this log for map items
+            console.log(`-- It's a Map Item. Name: '<span class="math-inline">\{item\.name\}', Status\: '</span>{item.status}'`);
+
+            listItem.classList.add('map-item');
+            listItem.textContent = item.name || 'Unnamed Map!'; // Add fallback text
+            listItem.dataset.mapId = item.id;
+
+            if (item.status === 'coming-soon') {
+                listItem.classList.add('coming-soon');
+                listItem.textContent = `${item.name || 'Unnamed Map!'} (Soon)`;
+                listItem.title = `${item.name || 'Coming Soon!'} - Coming Soon!`;
+                listItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    alert(`The map "${item.name || 'this map'}" is coming soon!`);
+                });
+            } else {
+                listItem.title = `Load map: ${item.name || 'Unnamed Map!'}`;
+                listItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    loadMap(item.id, true);
+                });
+            }
         }
+        parentElement.appendChild(listItem);
+    });
+}
         // populateSidebar is now called within initializeApp after data is loaded
 
         // --- Sidebar Toggle Button Logic ---
@@ -2145,68 +2165,78 @@
             }
         }
 
-        async function processMapData(maps) {
-            const processedMaps = [];
-            let totalChildrenToLoad = 0;
-            let childrenLoaded = 0;
+        // --- NEW Recursive Helper Function ---
+async function processChild(childId, level = 0) {
+    // Base case for recursion depth limit or invalid ID
+    if (level > 5 || !childId || typeof childId !== 'string') {
+        console.warn(`Skipping child processing for: ${childId} at level ${level}`);
+        // Return a placeholder that populateSidebar can handle as coming soon/error
+        return { id: childId, name: String(childId || 'Invalid Child'), status: 'coming-soon', error: true };
+    }
 
-            // First pass: count children to load for progress calculation
-            maps.forEach(map => {
-                if (map.children && Array.isArray(map.children) && typeof map.children[0] === 'string') {
-                    totalChildrenToLoad += map.children.length;
-                }
-            });
+    console.log(`${'-'.repeat(level * 2)} Processing child: ${childId} at level ${level}`);
+    try {
+        // Optional: Handle known 'coming-soon' IDs directly if needed
+        // if (childId === 'some-known-coming-soon-id') {
+        //     return { id: childId, name: 'Known Coming Soon Item', status: 'coming-soon' };
+        // }
 
-            // Function to update progress bar during child loading
-            function updateChildLoadProgress() {
-                childrenLoaded++;
-                if (totalChildrenToLoad > 0 && loadingIndicator && loadingIndicator.querySelector('.progress-bar')) {
-                    const baseProgress = 30; // Progress after loading maps.json
-                    const childProgress = (childrenLoaded / totalChildrenToLoad) * (100 - baseProgress);
-                    loadingIndicator.querySelector('.progress-bar').style.width = `${baseProgress + childProgress}%`;
-                }
+        // Fetch the child map data
+        const response = await fetch(`maps/${childId}.json`);
+
+        if (response.ok) {
+            let childData = await response.json();
+            console.log(`${'-'.repeat(level * 2)} --> Fetched data for ${childId}:`, childData);
+
+            // *** RECURSIVE STEP ***
+            // Check if the fetched child ALSO has children that are string IDs
+            if (childData.children && Array.isArray(childData.children) && childData.children.length > 0 && typeof childData.children[0] === 'string') {
+                console.log(`${'-'.repeat(level * 2)} --> Child ${childId} has children to process recursively:`, childData.children);
+                const subChildIds = childData.children;
+                childData.children = []; // Prepare for processed sub-children
+                const subChildPromises = subChildIds.map(subId => processChild(subId, level + 1)); // Recursive call
+                childData.children = await Promise.all(subChildPromises);
             }
+            // *** END RECURSIVE STEP ***
 
-            for (let map of maps) {
-                if (map.children && Array.isArray(map.children) && typeof map.children[0] === 'string') {
-                    const childIds = map.children;
-                    map.children = []; // Prepare to replace IDs with objects
-                    const childPromises = childIds.map(async (childId) => {
-                        try {
-                            // Handle known 'coming-soon' cases directly
-                            if (childId === 'Old-Lin' || childId === 'southern-thalassia') {
-                                updateChildLoadProgress(); // Count as "loaded"
-                                return {
-                                    id: childId,
-                                    name: childId === 'Old-Lin' ? 'Old-Lin' : 'Southern Thalassia',
-                                    status: 'coming-soon'
-                                };
-                            } else {
-                                // Fetch the child map data
-                                const response = await fetch(`maps/${childId}.json`);
-                                updateChildLoadProgress(); // Update progress after fetch attempt
-                                if (response.ok) {
-                                    const childMap = await response.json();
-                                    return childMap; // Return the loaded child map object
-                                } else {
-                                    console.warn(`Failed to load child map: ${childId} (${response.statusText})`);
-                                    // Return a placeholder for failed loads
-                                    return { id: childId, name: childId, status: 'coming-soon', error: true };
-                                }
-                            }
-                        } catch (error) {
-                            console.error(`Error loading child map ${childId}:`, error);
-                            updateChildLoadProgress(); // Still update progress on error
-                            return { id: childId, name: childId, status: 'coming-soon', error: true };
-                        }
-                    });
-                    // Wait for all children of this folder to load
-                    map.children = await Promise.all(childPromises);
-                }
-                processedMaps.push(map); // Add the processed map (with loaded children)
-            }
-            return processedMaps; // Return the fully processed map structure
+            // Ensure basic properties exist if fetched data is incomplete
+            childData.id = childData.id || childId;
+            childData.name = childData.name || childId; // Use ID as fallback name
+
+            return childData; // Return the processed child data
+
+        } else if (response.status === 404) {
+             console.warn(`Child map file not found: maps/${childId}.json - Marking as 'coming-soon'`);
+             // File not found, treat as coming soon
+             return { id: childId, name: childId, status: 'coming-soon', error: 'not found' };
+        } else {
+            console.warn(`Failed to load child map: ${childId} (${response.statusText}) - Marking as 'coming-soon'`);
+            // Other fetch error, treat as coming soon
+            return { id: childId, name: childId, status: 'coming-soon', error: `Workspace failed (${response.status})` };
         }
+    } catch (error) {
+        console.error(`Error processing child ${childId}:`, error);
+        // Error during fetch/parse, treat as coming soon
+        return { id: childId, name: childId, status: 'coming-soon', error: error.message };
+    }
+}
+            async function processMapData(maps) {
+                const processedMaps = [];
+                console.log("Starting processMapData with:", maps);
+
+                for (let map of maps) {
+                    if (map.children && Array.isArray(map.children) && map.children.length > 0 && typeof map.children[0] === 'string') {
+                        const childIds = map.children;
+                        console.log(`Processing top-level children for ${map.id || map.name}:`, childIds);
+                        map.children = [];
+                        const childPromises = childIds.map(childId => processChild(childId, 1));
+                        map.children = await Promise.all(childPromises);
+                    }
+                    processedMaps.push(map);
+                }
+                console.log("Finished processing map data. Result:", processedMaps);
+                return processedMaps;
+            }
 
             function initializeApp() {
             const urlParams = getUrlParameters();
