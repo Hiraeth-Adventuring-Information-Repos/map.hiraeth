@@ -443,7 +443,8 @@
     "blurb": "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
     "children": [
       "icebeach",
-      "southern-thalassia"
+      "southern-thalassia",
+      "Oldin-COS"
     ]
   },
   {
@@ -458,7 +459,13 @@
       "OLD-Icebeach-Drawn-Map-POI",
       "OLD-Icebeach-Map",
       "OLD-rockdrift",
-      "OLD-map-of-south-eastern-fair"
+      "OLD-map-of-south-eastern-fair",
+      "OLD-Arfordir",
+      "OLD-Bec",
+      "OLD-Castgate",
+      "OLD-Wolgari-Collage",
+      "OLD-Collage-Side",
+      "OLD-Icebeach-LARGE"
     ]
   }
 ]
