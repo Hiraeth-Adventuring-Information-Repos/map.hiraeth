@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Bec",
+    "name": "Bec",
+    "width": 3024,
+    "height": 4032,
+    "imageUrl": "maps/OLD-Bec.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2023 for a defunked D&D group.",
+    "pointsOfInterest": [],
+    "regions": []
+}
