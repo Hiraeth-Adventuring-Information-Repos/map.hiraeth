@@ -1,0 +1,12 @@
+{
+    "id": "OLD-Collage-Side",
+    "name": "Collage Side",
+    "width": 3024,
+    "height": 4032,
+    "imageUrl": "maps/OLD-Collage-Side.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "This map was made in 2019 for Wolgari and Zavi.",
+    "pointsOfInterest": [],
+    "regions": []
+}
