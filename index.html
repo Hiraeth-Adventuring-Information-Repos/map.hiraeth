@@ -2068,6 +2068,7 @@
                 const endPoint = clickPoint;
                 const pixelDistance = map.distance(measurementStartPoint, endPoint);
                 let distanceString = ""; // Will be constructed based on scale availability
+                let kmDistance = null;   // Will store distance in the map's defined units (e.g., km)
                 let tooltipContent = '';
 
                 // These lines should already be present just before this 'else' block,
