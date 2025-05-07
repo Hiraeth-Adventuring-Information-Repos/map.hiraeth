@@ -942,6 +942,11 @@
         let currentRegionGroup = null;
         let regionsVisible = false; // Overall region visibility toggle
         // let regionFiltersPanelVisible = false; // No longer needed as separate panel
+        
+        // --- Measurement Tool State ---
+        let isMeasuring = false; // Existing
+        let measurementStartPoint = null; // Existing
+        let measurementLayerGroup; // Declare it here
 
         // --- Initialize Leaflet Map ---
         const map = L.map('map', {
@@ -951,6 +956,23 @@
             attributionControl: false,
             zoomControl: false // Disable default zoom, using custom styled one
         });
+
+        // NOW Initialize measurementLayerGroup
+        measurementLayerGroup = L.layerGroup().addTo(map);
+
+
+        // --- NEW: Multi-Point Measurement State ---
+        let isMeasuringMultiPoint = false; // Tracks if multi-point mode is active
+        let multiPointPath = []; // Array of L.LatLng objects for the current path
+        let multiPointPolyline = null; // The L.Polyline layer for the drawn path
+        let multiPointVertexMarkers = []; // Array of L.CircleMarker for vertices
+        let multiPointSegmentTooltips = []; // Array of L.Tooltip for segment lengths (optional)
+        let multiPointTotalTooltip = null; // L.Tooltip for the total path length
+        let temporaryMouseMoveLine = null; // L.Polyline for the line from last point to cursor
+        let temporaryMouseMoveTooltip = null; // L.Tooltip for the temporary line's length
+
+
+        // --- Initialize Leaflet Map ---
         // Add styled zoom control
         L.control.zoom({ position: 'topleft' }).addTo(map);
 
@@ -993,11 +1015,6 @@
         let markersVisible = true; // Overall visibility toggle state
         const transitionDuration = 300; // ms for sidebar animation
         let filtersPanelVisible = false; // State for combined filter panel visibility
-
-        // --- Measurement Tool State ---
-        let isMeasuring = false;
-        let measurementStartPoint = null;
-        let measurementLayerGroup = L.layerGroup().addTo(map); // For temp markers/lines
 
         // --- DOM Elements ---
         const container = document.querySelector('.container');
@@ -2074,26 +2091,215 @@
         }
 
         function toggleMeasurementTool() {
-            isMeasuring = !isMeasuring;
-            measureToolBtn.classList.toggle('active', isMeasuring);
-            mapElement.classList.toggle('measuring-cursor', isMeasuring);
+            isMeasuringMultiPoint = !isMeasuringMultiPoint; // Use the new state variable
+            measureToolBtn.classList.toggle('active', isMeasuringMultiPoint);
+            mapElement.classList.toggle('measuring-cursor', isMeasuringMultiPoint);
 
-            if (isMeasuring) {
-                measureToolBtn.title = "Deactivate Measure Tool (Click map)";
-                map.on('click', handleMeasurementClick); // Add listener
+            if (isMeasuringMultiPoint) {
+                measureToolBtn.title = "Measuring Path... Click to add points. Double-click or Esc to finish.";
+                map.on('click', handleMultiPointMeasureClick);
+                map.on('mousemove', handleMultiPointMouseMove);
+                map.on('dblclick', finalizeMultiPointMeasure); // Add dblclick listener
+                document.addEventListener('keydown', handleMeasureKeyDown); // For Esc key
+
+                // Clear previous measurement layers (if any)
                 measurementLayerGroup.clearLayers();
-                measurementStartPoint = null;
-                if (filtersPanelVisible) toggleFilterPanel(); // Hide filter panel
+                multiPointPath = [];
+                multiPointVertexMarkers = [];
+                if (multiPointPolyline) map.removeLayer(multiPointPolyline);
+                multiPointPolyline = null;
+                if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
+                multiPointTotalTooltip = null;
+                // Clear other related layers/tooltips if you add them
+
+                if (filtersPanelVisible) toggleFilterPanel();
             } else {
                 measureToolBtn.title = "Measure Distance";
-                map.off('click', handleMeasurementClick); // Remove listener
-                measurementStartPoint = null;
+                finalizeMultiPointMeasure(false); // Clean up without making permanent
+            }
+        }
+
+        function handleMultiPointMeasureClick(e) {
+            if (!isMeasuringMultiPoint || !currentlyLoadedMapId) return;
+            if (e.originalEvent.target.closest('.leaflet-control')) return;
+
+            const clickPoint = e.latlng;
+            multiPointPath.push(clickPoint);
+
+            // Add a vertex marker
+            const vertexMarker = L.circleMarker(clickPoint, {
+                radius: 5,
+                color: 'cyan', // Or your preferred color
+                fillColor: '#0ff',
+                fillOpacity: 0.7,
+                interactive: false
+            }).addTo(measurementLayerGroup);
+            multiPointVertexMarkers.push(vertexMarker);
+
+            // Update the polyline
+            if (multiPointPolyline) {
+                multiPointPolyline.setLatLngs(multiPointPath);
+            } else if (multiPointPath.length >= 2) {
+                multiPointPolyline = L.polyline(multiPointPath, {
+                    color: 'yellow',
+                    weight: 3,
+                    dashArray: '5, 5',
+                    interactive: false
+                }).addTo(measurementLayerGroup);
+            }
+
+            updateMeasurementTooltips(); // New function to handle tooltips
+        }
+
+        function handleMultiPointMouseMove(e) {
+            if (!isMeasuringMultiPoint || multiPointPath.length === 0 || !currentlyLoadedMapId) return;
+
+            const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
+            const scalePx = currentMapInfo?.scalePixels;
+            const scaleKm = currentMapInfo?.scaleKilometers;
+
+            const lastFixedPoint = multiPointPath[multiPointPath.length - 1];
+            const currentMousePos = e.latlng;
+
+            if (temporaryMouseMoveLine) {
+                measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
+            }
+            temporaryMouseMoveLine = L.polyline([lastFixedPoint, currentMousePos], {
+                color: 'lime',
+                weight: 2,
+                dashArray: '3, 3',
+                interactive: false
+            }).addTo(measurementLayerGroup);
+
+            if (temporaryMouseMoveTooltip) {
+                map.removeLayer(temporaryMouseMoveTooltip); // Or measurementLayerGroup.removeLayer
+            }
+
+            const pixelDistance = map.distance(lastFixedPoint, currentMousePos);
+            let segmentDistanceString = `${pixelDistance.toFixed(0)} px`;
+            if (scalePx && scaleKm) {
+                const kmDistance = (pixelDistance / scalePx) * scaleKm;
+                segmentDistanceString = `${kmDistance.toFixed(2)} km`;
+            }
+
+            temporaryMouseMoveTooltip = L.tooltip({
+                permanent: true,
+                direction: 'top',
+                className: 'measure-tooltip',
+                offset: L.point(0, -10)
+            })
+            .setLatLng(currentMousePos)
+            .setContent(`Segment: ${segmentDistanceString}`)
+            .addTo(map); // Add to map to follow mouse, or to measurementLayerGroup
+        }
+
+        function updateMeasurementTooltips() {
+            if (!currentlyLoadedMapId || multiPointPath.length < 1) return;
+
+            const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
+            const scalePx = currentMapInfo?.scalePixels;
+            const scaleKm = currentMapInfo?.scaleKilometers;
+            let totalPixelDistance = 0;
+
+            if (multiPointPath.length >= 2) {
+                for (let i = 0; i < multiPointPath.length - 1; i++) {
+                    totalPixelDistance += map.distance(multiPointPath[i], multiPointPath[i + 1]);
+                }
+            }
+
+            let totalDistanceString = `${totalPixelDistance.toFixed(0)} px`;
+            if (scalePx && scaleKm && totalPixelDistance > 0) {
+                const totalKmDistance = (totalPixelDistance / scalePx) * scaleKm;
+                totalDistanceString = `${totalKmDistance.toFixed(2)} km`;
+            } else if (totalPixelDistance === 0 && multiPointPath.length === 1) {
+                totalDistanceString = "Start point";
+            }
+
+
+            if (multiPointTotalTooltip) {
+                map.removeLayer(multiPointTotalTooltip);
+            }
+
+            if (multiPointPath.length > 0) {
+                multiPointTotalTooltip = L.tooltip({
+                    permanent: true,
+                    direction: 'right',
+                    className: 'measure-tooltip',
+                    offset: L.point(10, 0)
+                })
+                .setLatLng(multiPointPath[multiPointPath.length - 1])
+                .setContent(`Total: ${totalDistanceString}`)
+                .addTo(map); // Or measurementLayerGroup
+            }
+        }
+
+
+        function finalizeMultiPointMeasure(makePermanent = true) {
+            if (!isMeasuringMultiPoint && !makePermanent) { // If called to just clean up
+                measurementLayerGroup.clearLayers();
+                if (multiPointPolyline) map.removeLayer(multiPointPolyline);
+                if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
+                if (temporaryMouseMoveLine) measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
+                if (temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
+                multiPointPath = [];
+                multiPointVertexMarkers = [];
+                multiPointPolyline = null;
+                multiPointTotalTooltip = null;
+                temporaryMouseMoveLine = null;
+                temporaryMouseMoveTooltip = null;
+            }
+
+            isMeasuringMultiPoint = false; // Ensure it's set to false
+            map.off('click', handleMultiPointMeasureClick);
+            map.off('mousemove', handleMultiPointMouseMove);
+            map.off('dblclick', finalizeMultiPointMeasure);
+            document.removeEventListener('keydown', handleMeasureKeyDown);
+            mapElement.classList.remove('measuring-cursor');
+            measureToolBtn.classList.remove('active');
+            measureToolBtn.title = "Measure Distance";
+
+
+            if (temporaryMouseMoveLine) {
+                measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
+                temporaryMouseMoveLine = null;
+            }
+            if (temporaryMouseMoveTooltip) {
+                map.removeLayer(temporaryMouseMoveTooltip);
+                temporaryMouseMoveTooltip = null;
+            }
+
+            if (!makePermanent || multiPointPath.length < 2) {
+                measurementLayerGroup.clearLayers(); // Clears markers too
+                if (multiPointPolyline) map.removeLayer(multiPointPolyline); // Redundant if using layer group
+                multiPointPolyline = null;
+                if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
+                multiPointTotalTooltip = null;
+                multiPointPath = [];
+                multiPointVertexMarkers = [];
+            } else {
+                // Path is already on measurementLayerGroup.
+                // Make the total tooltip permanent on the polyline itself
+                if (multiPointPolyline && multiPointTotalTooltip) {
+                    map.removeLayer(multiPointTotalTooltip); // Remove the one following the mouse
+                    multiPointPolyline.bindTooltip(multiPointTotalTooltip.getContent(), {
+                        permanent: true,
+                        direction: 'center',
+                        className: 'measure-tooltip'
+                    }).openTooltip();
+                }
+            }
+        }
+
+        function handleMeasureKeyDown(e) {
+            if (e.key === 'Escape' && isMeasuringMultiPoint) {
+                e.preventDefault();
+                finalizeMultiPointMeasure(false); // Cancel measurement
             }
         }
 
         measureToolBtn.addEventListener('click', (e) => {
-             e.stopPropagation();
-             toggleMeasurementTool();
+            e.stopPropagation();
+            toggleMeasurementTool(); // This should now call the multi-point version
         });
 
         // --- Inject Map Icon CSS ---
@@ -2144,6 +2350,122 @@
                 if (loadingIndicator) {
                      setTimeout(() => { loadingIndicator.style.display = 'none'; }, 200); // Short delay
                 }
+
+                // --- Keyboard Shortcut Logic ---
+            const keyboardHelpModal = document.getElementById('keyboard-help-modal');
+            const closeKeyboardHelpBtn = document.getElementById('close-keyboard-help-btn');
+
+            if (closeKeyboardHelpBtn) { // Check if modal exists
+                closeKeyboardHelpBtn.addEventListener('click', () => {
+                    if (keyboardHelpModal) keyboardHelpModal.style.display = 'none';
+                });
+            }
+
+            function isInputFocused() {
+                const activeElement = document.activeElement;
+                return activeElement && (activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.isContentEditable);
+            }
+
+            document.addEventListener('keydown', function(e) {
+                // Handle modal display first
+                if (e.key === '?') {
+                    if (!isInputFocused()) { // Don't trigger if typing '?' in search
+                        e.preventDefault();
+                        if (keyboardHelpModal) {
+                            keyboardHelpModal.style.display = keyboardHelpModal.style.display === 'none' ? 'flex' : 'none';
+                        }
+                        return;
+                    }
+                }
+
+                // If help modal is open, Esc should close it
+                if (keyboardHelpModal && keyboardHelpModal.style.display !== 'none' && e.key === 'Escape') {
+                    e.preventDefault();
+                    keyboardHelpModal.style.display = 'none';
+                    return;
+                }
+
+                // Handle Escape for other UI elements
+                if (e.key === 'Escape') {
+                    if (map.getPanes().popupPane.firstChild) { // Check if a Leaflet popup is open
+                        map.closePopup();
+                        e.preventDefault();
+                    } else if (filtersPanelVisible) {
+                        toggleFilterPanel(); // Your existing function
+                        e.preventDefault();
+                    } else if (searchResultsContainer.style.display === 'block') {
+                        searchResultsContainer.style.display = 'none';
+                        if (poiSearchInput) poiSearchInput.blur();
+                        e.preventDefault();
+                    } else if (isMeasuringMultiPoint) { // For the new measurement tool
+                        finalizeMultiPointMeasure(false); // Cancel measurement
+                        e.preventDefault();
+                    }
+                    // Add other Escape handlers here if needed
+                    return; // Processed Escape, no further checks for this key press
+                }
+
+                // For other shortcuts, don't act if an input is focused or help modal is open
+                if (isInputFocused() || (keyboardHelpModal && keyboardHelpModal.style.display !== 'none')) {
+                    return;
+                }
+
+                // Non-input-focused shortcuts
+                switch (e.key.toLowerCase()) {
+                    case '+':
+                    case '=':
+                        if (map) map.zoomIn();
+                        e.preventDefault();
+                        break;
+                    case '-':
+                        if (map) map.zoomOut();
+                        e.preventDefault();
+                        break;
+                    case 's':
+                        if (toggleBtn) toggleBtn.click(); // Toggle Sidebar
+                        e.preventDefault();
+                        break;
+                    case 't':
+                        if (themeToggle) themeToggle.click(); // Toggle Theme
+                        e.preventDefault();
+                        break;
+                    case 'm':
+                        if (measureToolBtn && measureToolBtn.style.display !== 'none') {
+                            measureToolBtn.click();
+                            e.preventDefault();
+                        }
+                        break;
+                    case 'h': // Toggle Markers/Regions
+                        if (toggleMarkersBtn && toggleMarkersBtn.style.display !== 'none') {
+                            toggleMarkersBtn.click();
+                            e.preventDefault();
+                        }
+                        break;
+                    case 'f': // Toggle Filters Panel
+                        if (toggleFiltersBtn && toggleFiltersBtn.style.display !== 'none') {
+                            toggleFiltersBtn.click();
+                            e.preventDefault();
+                        }
+                        break;
+                    case '/':
+                        if (searchControlContainer && searchControlContainer.style.display !== 'none' && poiSearchInput) {
+                            poiSearchInput.focus();
+                            e.preventDefault();
+                        }
+                        break;
+                }
+
+                // Example for Ctrl/Cmd + F (if you want to override browser find for your search)
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                    if (searchControlContainer && searchControlContainer.style.display !== 'none' && poiSearchInput) {
+                        poiSearchInput.focus();
+                        e.preventDefault(); // Prevent browser's default find
+                    }
+                }
+            });
+
 
                 // Now that data is loaded, initialize the application
                 initializeApp();
@@ -2346,6 +2668,25 @@ async function processChild(childId, level = 0) {
     <div id="wip-popup">
         <p>This site is a Work in Progress</p>
         <p>Markers, Names, and Map May Not Be Acurate</p>
+    </div>
+    <div id="keyboard-help-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background-color: var(--bg-secondary); color: var(--text-primary); padding: 25px; border-radius: 8px; width: 90%; max-width: 500px; box-shadow: 0 5px 20px var(--shadow-color); position: relative;">
+            <button id="close-keyboard-help-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; color: var(--text-primary); cursor: pointer;">&times;</button>
+            <h2 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Keyboard Shortcuts</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 8px;"><kbd>+</kbd> / <kbd>=</kbd> : Zoom In</li>
+                <li style="margin-bottom: 8px;"><kbd>-</kbd> : Zoom Out</li>
+                <li style="margin-bottom: 8px;"><kbd>s</kbd> : Toggle Sidebar</li>
+                <li style="margin-bottom: 8px;"><kbd>t</kbd> : Toggle Theme</li>
+                <li style="margin-bottom: 8px;"><kbd>m</kbd> : Toggle Measurement Tool</li>
+                <li style="margin-bottom: 8px;"><kbd>h</kbd> : Toggle Markers/Regions</li>
+                <li style="margin-bottom: 8px;"><kbd>f</kbd> : Toggle Filters Panel</li>
+                <li style="margin-bottom: 8px;"><kbd>/</kbd> : Focus Search Bar</li>
+                <li style="margin-bottom: 8px;"><kbd>Esc</kbd> : Close Popup / Panel / Cancel Measurement</li>
+                <li style="margin-bottom: 8px;"><kbd>?</kbd> : Show/Hide this Help</li>
+                <!-- Add more as you implement them -->
+            </ul>
+        </div>
     </div>
 
 </body>
