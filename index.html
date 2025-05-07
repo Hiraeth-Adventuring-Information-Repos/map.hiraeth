@@ -2067,23 +2067,46 @@
             } else {
                 const endPoint = clickPoint;
                 const pixelDistance = map.distance(measurementStartPoint, endPoint);
-                let distanceString = `${pixelDistance.toFixed(0)} pixels`;
+                let distanceString = ""; // Will be constructed based on scale availability
+                let tooltipContent = '';
+
+                // These lines should already be present just before this 'else' block,
+                // but ensure they are correctly fetching scale info for the current map.
+                // const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
+                // const scalePx = currentMapInfo?.scalePixels;
+                // const scaleKm = currentMapInfo?.scaleKilometers; // Represents the unit value for scale, e.g., km, miles
+                // const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
+                //                       typeof scaleKm === 'number' && scaleKm > 0;
 
                 if (hasValidScale) {
-                    const kmDistance = (pixelDistance / scalePx) * scaleKm;
-                    distanceString = `${kmDistance.toFixed(2)} km`;
+                    kmDistance = (pixelDistance / scalePx) * scaleKm;
+                    // The unit (e.g., "km") is assumed from your JSON's "scaleKilometers" field.
+                    // If your "scaleKilometers" field actually represents miles, you can change "km" to "miles" here.
+                    distanceString = `${kmDistance.toFixed(2)} ${currentMapInfo.scaleUnitName || 'units'}`; // Assuming you might add a 'scaleUnitName' to your map JSON, otherwise defaults to 'units'
+
+                    // --- ADJUST THESE PACE VALUES FOR YOUR GAME ---
+                    const normalPaceUnitsPerDay = 25; // e.g., 25 km per day or 25 miles per day
+                    const fastPaceUnitsPerDay = 40;   // e.g., 40 km per day or 40 miles per day
+                    // ---
+
+                    let daysNormalPace = (kmDistance / normalPaceUnitsPerDay).toFixed(1);
+                    let daysFastPace = (kmDistance / fastPaceUnitsPerDay).toFixed(1);
+
+                    tooltipContent = `Distance: ${distanceString}<br>Normal Pace: ${daysNormalPace} Day(s)<br>Fast Pace: ${daysFastPace}Day(s)`;
                 } else {
-                    distanceString += " (Scale unknown)";
+                    // If no valid scale, distance is in pixels.
+                    distanceString = `${pixelDistance.toFixed(0)} pixels (Scale unknown)`;
+                    tooltipContent = `Distance: ${distanceString}<br>Days at Normal Pace: N/A (scale unknown)<br>Days at Fast Pace: N/A (scale unknown)`;
                 }
 
-                 L.circleMarker(endPoint, {
+                L.circleMarker(endPoint, {
                     radius: 5, color: 'blue', fillColor: '#30f', fillOpacity: 0.8, interactive: false, isEndPoint: true
                 }).addTo(measurementLayerGroup);
 
                 L.polyline([measurementStartPoint, endPoint], {
                     color: 'yellow', weight: 2, dashArray: '5, 5', interactive: false
                 }).addTo(measurementLayerGroup)
-                  .bindTooltip(`${distanceString}`, { permanent: true, direction: 'center', className: 'measure-tooltip' })
+                  .bindTooltip(tooltipContent, { permanent: true, direction: 'center', className: 'measure-tooltip' })
                   .openTooltip();
 
                 measurementStartPoint = null; // Reset
@@ -2194,45 +2217,94 @@
         }
 
         function updateMeasurementTooltips() {
-            if (!currentlyLoadedMapId || multiPointPath.length < 1) return;
+                    // Ensure the function doesn't run if not measuring or no path exists
+                    if (!currentlyLoadedMapId || multiPointPath.length < 1) {
+                        // Clean up any leftover tooltip if the path becomes empty
+                        if (multiPointTotalTooltip) {
+                            map.removeLayer(multiPointTotalTooltip);
+                            multiPointTotalTooltip = null;
+                        }
+                        return;
+                    }
 
-            const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
-            const scalePx = currentMapInfo?.scalePixels;
-            const scaleKm = currentMapInfo?.scaleKilometers;
-            let totalPixelDistance = 0;
+                    // Get map scale information
+                    const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
+                    const scalePx = currentMapInfo?.scalePixels;
+                    // Assuming scaleKilometers in JSON truly represents kilometers for this calculation
+                    const scaleKmValue = currentMapInfo?.scaleKilometers;
+                    // Use 'km' as the unit name if scaleUnitName is not set or is generic,
+                    // but prefer scaleUnitName if it's specific (e.g. "miles" and you adjusted paces accordingly)
+                    const scaleUnitName = (currentMapInfo?.scaleUnitName && currentMapInfo.scaleUnitName !== 'units') ? currentMapInfo.scaleUnitName : 'km';
 
-            if (multiPointPath.length >= 2) {
-                for (let i = 0; i < multiPointPath.length - 1; i++) {
-                    totalPixelDistance += map.distance(multiPointPath[i], multiPointPath[i + 1]);
+                    const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
+                                        typeof scaleKmValue === 'number' && scaleKmValue > 0;
+
+                    // Calculate total pixel distance
+                    let totalPixelDistance = 0;
+                    if (multiPointPath.length >= 2) {
+                        for (let i = 0; i < multiPointPath.length - 1; i++) {
+                            totalPixelDistance += map.distance(multiPointPath[i], multiPointPath[i + 1]);
+                        }
+                    }
+
+                    // --- Build the Tooltip Content String ---
+                    let tooltipContent = '';
+                    let displayDistanceString = '';
+
+                    if (hasValidScale) {
+                        // Calculate distance in kilometers (or the unit defined by scaleKmValue)
+                        const totalDistanceInKm = (totalPixelDistance / scalePx) * scaleKmValue;
+                        displayDistanceString = `${totalDistanceInKm.toFixed(2)} ${scaleUnitName}`;
+
+                        // --- Updated Pace Values in Kilometers per Day ---
+                        const fastPaceKmPerDay = 48.28;
+                        const normalPaceKmPerDay = 38.62;
+                        const slowPaceKmPerDay = 28.97;
+                        // ---
+
+                        // Calculate days for each pace
+                        const daysFastPace = (totalDistanceInKm / fastPaceKmPerDay).toFixed(1);
+                        const daysNormalPace = (totalDistanceInKm / normalPaceKmPerDay).toFixed(1);
+                        const daysSlowPace = (totalDistanceInKm / slowPaceKmPerDay).toFixed(1);
+
+                        // Construct the multi-line tooltip content
+                        tooltipContent = `Total: ${displayDistanceString}<br>Fast: ${daysFastPace} Day(s)<br>Normal: ${daysNormalPace} Day(s)<br>Slow: ${daysSlowPace} Day(s)`;
+
+                    } else {
+                        // Scale is unknown or distance is zero
+                        if (totalPixelDistance > 0) {
+                            displayDistanceString = `${totalPixelDistance.toFixed(0)} pixels (Scale unknown)`;
+                            tooltipContent = `Total: ${displayDistanceString}<br>Days at Fast Pace: N/A<br>Days at Normal Pace: N/A<br>Days at Slow Pace: N/A`;
+                        } else if (multiPointPath.length === 1) {
+                            displayDistanceString = "Start point";
+                            tooltipContent = displayDistanceString; // Only show "Start point"
+                        } else {
+                            displayDistanceString = "0 pixels";
+                            tooltipContent = `Total: ${displayDistanceString}<br>Days at Fast Pace: N/A<br>Days at Normal Pace: N/A<br>Days at Slow Pace: N/A`;
+                        }
+                    }
+                    // --- Tooltip Content String is now built ---
+
+                    // Remove the previous total tooltip (if it exists)
+                    if (multiPointTotalTooltip) {
+                        map.removeLayer(multiPointTotalTooltip);
+                    }
+
+                    // Create and add the new total tooltip using the constructed content
+                    if (multiPointPath.length > 0) {
+                        multiPointTotalTooltip = L.tooltip({
+                            permanent: true,
+                            direction: 'right',
+                            className: 'measure-tooltip',
+                            offset: L.point(10, 0) // Position offset from the point
+                        })
+                        .setLatLng(multiPointPath[multiPointPath.length - 1]) // Position at the last point
+                        .setContent(tooltipContent) // Use the full tooltipContent string
+                        .addTo(map);
+                    } else {
+                        multiPointTotalTooltip = null; // Ensure it's null if path is empty
+                    }
                 }
-            }
-
-            let totalDistanceString = `${totalPixelDistance.toFixed(0)} px`;
-            if (scalePx && scaleKm && totalPixelDistance > 0) {
-                const totalKmDistance = (totalPixelDistance / scalePx) * scaleKm;
-                totalDistanceString = `${totalKmDistance.toFixed(2)} km`;
-            } else if (totalPixelDistance === 0 && multiPointPath.length === 1) {
-                totalDistanceString = "Start point";
-            }
-
-
-            if (multiPointTotalTooltip) {
-                map.removeLayer(multiPointTotalTooltip);
-            }
-
-            if (multiPointPath.length > 0) {
-                multiPointTotalTooltip = L.tooltip({
-                    permanent: true,
-                    direction: 'right',
-                    className: 'measure-tooltip',
-                    offset: L.point(10, 0)
-                })
-                .setLatLng(multiPointPath[multiPointPath.length - 1])
-                .setContent(`Total: ${totalDistanceString}`)
-                .addTo(map); // Or measurementLayerGroup
-            }
-        }
-
 
         function finalizeMultiPointMeasure(makePermanent = true) {
             if (!isMeasuringMultiPoint && !makePermanent) { // If called to just clean up
@@ -2249,7 +2321,7 @@
                 temporaryMouseMoveTooltip = null;
             }
 
-            isMeasuringMultiPoint = false; // Ensure it's set to false
+            isMeasuringMultiPoint = false;
             map.off('click', handleMultiPointMeasureClick);
             map.off('mousemove', handleMultiPointMouseMove);
             map.off('dblclick', finalizeMultiPointMeasure);
@@ -2269,23 +2341,33 @@
             }
 
             if (!makePermanent || multiPointPath.length < 2) {
-                measurementLayerGroup.clearLayers(); // Clears markers too
-                if (multiPointPolyline) map.removeLayer(multiPointPolyline); // Redundant if using layer group
+                measurementLayerGroup.clearLayers();
+                if (multiPointPolyline) map.removeLayer(multiPointPolyline);
                 multiPointPolyline = null;
                 if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
                 multiPointTotalTooltip = null;
                 multiPointPath = [];
                 multiPointVertexMarkers = [];
             } else {
-                // Path is already on measurementLayerGroup.
-                // Make the total tooltip permanent on the polyline itself
+                // Path and markers are already on measurementLayerGroup.
+                // Make the total tooltip permanent on the polyline itself.
                 if (multiPointPolyline && multiPointTotalTooltip) {
-                    map.removeLayer(multiPointTotalTooltip); // Remove the one following the mouse
-                    multiPointPolyline.bindTooltip(multiPointTotalTooltip.getContent(), {
+                    // The multiPointTotalTooltip already has the full content
+                    // from the last call to updateMeasurementTooltips.
+                    // We just need to re-bind it or ensure it stays.
+                    // For simplicity, let's ensure it uses the latest content if it was removed and re-added.
+                    const finalContent = multiPointTotalTooltip.getContent(); // Get the already formatted content
+                    map.removeLayer(multiPointTotalTooltip); // Remove the one that was following the mouse
+
+                    multiPointPolyline.bindTooltip(finalContent, { // Use the captured finalContent
                         permanent: true,
                         direction: 'center',
-                        className: 'measure-tooltip'
+                        className: 'measure-tooltip',
+                        sticky: true // Make it sticky to the line
                     }).openTooltip();
+                    // Ensure the individual vertex markers are cleared if they are not desired permanently
+                    multiPointVertexMarkers.forEach(marker => measurementLayerGroup.removeLayer(marker));
+                    multiPointVertexMarkers = [];
                 }
             }
         }
