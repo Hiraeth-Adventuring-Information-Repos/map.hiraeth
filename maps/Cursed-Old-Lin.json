@@ -64,7 +64,7 @@
         "id": "region-lake-oreel",
         "name": "Lake Oreel",
         "description": "",
-        "type": "",
+        "type": "Lake",
         "color": "#3388ff",
         "fillColor": "#3388ff",
         "fillOpacity": 0.2,

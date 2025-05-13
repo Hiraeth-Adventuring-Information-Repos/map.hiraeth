@@ -3048,7 +3048,7 @@
     {
       "id": "region-lake-1",
       "name": "Lake 1",
-      "description": "",
+      "description": "Lake",
       "type": "",
       "color": "#3388ff",
       "fillColor": "#3388ff",
@@ -3408,7 +3408,7 @@
     {
       "id": "region-lake-2",
       "name": "Lake 2",
-      "description": "",
+      "description": "Lake",
       "type": "",
       "color": "#3388ff",
       "fillColor": "#3388ff",
