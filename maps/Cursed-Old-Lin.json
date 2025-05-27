@@ -10,6 +10,176 @@
   "pointsOfInterest": [
     {
       "coords": [
+        3044,
+        4926
+      ],
+      "name": "^",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2656,
+        5238
+      ],
+      "name": "✓",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        4024,
+        4814
+      ],
+      "name": "🌌",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2476,
+        7080
+      ],
+      "name": "🌑",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3476,
+        2818
+      ],
+      "name": "🌕",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1430,
+        7504
+      ],
+      "name": "🏛️",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        4554,
+        2546
+      ],
+      "name": "🐺",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1556,
+        1998
+      ],
+      "name": "👻",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1234,
+        3544
+      ],
+      "name": "🕷️",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2218,
+        2412
+      ],
+      "name": "🦉",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2680,
+        5526
+      ],
+      "name": "🧛",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3802,
+        1846
+      ],
+      "name": "🧛‍♀️",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2858,
+        4494
+      ],
+      "name": "🧟",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        4334,
+        4552
+      ],
+      "name": "🧿",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1694,
+        5968
+      ],
+      "name": "🪶",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1628,
+        6552
+      ],
+      "name": "Ag",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3524,
+        7532
+      ],
+      "name": "Fe",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
         2431,
         5719
       ],
@@ -56,6 +226,156 @@
       "name": "Old Gallows & Aasimars Grave",
       "type": "Ruin",
       "description": "The Gallows here were built over the grave of a cleric who thought they could fight against Strauhd and win.  The Gallows were later burned and spirits set free.",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1380,
+        3842
+      ],
+      "name": "TG",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2949,
+        5079
+      ],
+      "name": "X",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1740,
+        934
+      ],
+      "name": "Δ",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        4043,
+        3175
+      ],
+      "name": "ε",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3091,
+        3141
+      ],
+      "name": "θ",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3862,
+        2308
+      ],
+      "name": "Κ",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        4120,
+        2110
+      ],
+      "name": "Λ - ???",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1852,
+        6060
+      ],
+      "name": "Λ - Lesser",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3520,
+        3982
+      ],
+      "name": "Μ",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2935,
+        1518
+      ],
+      "name": "Ο",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1659,
+        5597
+      ],
+      "name": "π",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        2759,
+        4697
+      ],
+      "name": "Π",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3936,
+        2844
+      ],
+      "name": "𝛙",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        3708,
+        2920
+      ],
+      "name": "Ψ",
+      "type": "Unknown",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        1544,
+        2044
+      ],
+      "name": "𖦹",
+      "type": "Unknown",
+      "description": "",
       "wikiLink": ""
     }
   ],
