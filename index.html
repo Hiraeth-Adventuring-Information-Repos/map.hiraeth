@@ -941,6 +941,7 @@
         let loadingProgress = 0;
         let currentRegionGroup = null;
         let regionsVisible = false; // Overall region visibility toggle
+        let currentRoadGroup = null; // Holds currently displayed road layers
         // let regionFiltersPanelVisible = false; // No longer needed as separate panel
         
         // --- Measurement Tool State ---
@@ -1012,7 +1013,7 @@
         let currentBounds = null;
         let currentlyLoadedMapId = null;
         let currentSidebarState = 'o';
-        let markersVisible = true; // Overall visibility toggle state
+        let markersVisible = true; // <--- THIS SHOULD BE TRUE FOR VISIBLE BY DEFAULT
         const transitionDuration = 300; // ms for sidebar animation
         let filtersPanelVisible = false; // State for combined filter panel visibility
 
@@ -1122,27 +1123,28 @@
 
         // --- Helper Function to Update the "Toggle All" Checkbox State ---
         function updateToggleAllCheckboxState() {
-            // Select all specific filter checkboxes (both POI and Region)
-            const allSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter');
-            const checkedSpecificFilters = poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-type-filter:checked');
+            // Select all specific filter checkboxes (POI, Region, and Line)
+            const allSpecificFilters = poiFilterContainer.querySelectorAll(
+                '.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter, .line-type-filter'
+            );
+            const checkedSpecificFilters = poiFilterContainer.querySelectorAll(
+                '.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-type-filter:checked, .line-type-filter:checked'
+            );
 
-            if (allSpecificFilters.length === 0) {
+            if (allSpecificFilters.length === 0) { // No specific filters exist at all
                 filterToggleAllCheckbox.checked = true;
                 filterToggleAllCheckbox.indeterminate = false;
-            } else if (checkedSpecificFilters.length === 0) {
+            } else if (checkedSpecificFilters.length === 0) { // All specific filters are unchecked
                 filterToggleAllCheckbox.checked = false;
                 filterToggleAllCheckbox.indeterminate = false;
-            } else if (checkedSpecificFilters.length === allSpecificFilters.length) {
+            } else if (checkedSpecificFilters.length === allSpecificFilters.length) { // All specific filters are checked
                 filterToggleAllCheckbox.checked = true;
                 filterToggleAllCheckbox.indeterminate = false;
-            } else {
+            } else { // Some are checked, some are not
                 filterToggleAllCheckbox.checked = false;
                 filterToggleAllCheckbox.indeterminate = true;
             }
         }
-
-        // --- Map Data Configuration (REMOVED - Now loaded externally) ---
-        // const mapData = [ ... ]; // THIS IS REMOVED
 
         // --- Function to Update Visible Markers AND Search Results ---
         function updateVisibleMarkersAndSearch() {
@@ -1180,7 +1182,7 @@
                 const groupMatch = allPoiGroupsChecked || activeSpecificGroupFilters.has(poiGroup);
 
                 // Update marker visibility on map
-                if (markersVisible && nameMatch && groupMatch) {
+                if (markersVisible && nameMatch && groupMatch) { // Governed by markersVisible
                     if (!currentMarkerGroup.hasLayer(marker)) {
                         currentMarkerGroup.addLayer(marker);
                     }
@@ -1226,9 +1228,10 @@
             const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
             const selectedMap = findMapRecursive(mapData, mapId);
             const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
+            const hasRoads = selectedMap && selectedMap.roads && Array.isArray(selectedMap.roads) && selectedMap.roads.length > 0; // New check for roads
 
-            // Hide filter button if no POIs and no regions
-            if (!hasPOIs && !hasRegions) {
+            // Hide filter button if no POIs, no regions, and no roads
+            if (!hasPOIs && !hasRegions && !hasRoads) {
                 poiFilterContainer.classList.remove('visible');
                 toggleFiltersBtn.style.display = 'none';
                 filtersPanelVisible = false;
@@ -1238,10 +1241,10 @@
                 return;
             }
 
-            // PART 1: Add POI type filters
+            // PART 1: Add POI type filters (existing logic)
             if (hasPOIs) {
                 // Add "POI Types" section header (only if not the first header)
-                if (poiFilterContainer.querySelector('h3')) { // Check if "Filter by Type:" exists
+                if (poiFilterContainer.querySelector('h3')) { 
                     const poiHeader = document.createElement('h3');
                     poiHeader.textContent = "POI Types:";
                     poiFilterContainer.appendChild(poiHeader);
@@ -1265,9 +1268,8 @@
                     checkbox.type = 'checkbox';
                     checkbox.id = filterId;
                     checkbox.value = groupName;
-                    checkbox.checked = true; // Default checked
-                    checkbox.className = 'poi-filter-checkbox'; // Specific class for POI filters
-                    // Event listener added later to the container
+                    checkbox.checked = true; 
+                    checkbox.className = 'poi-filter-checkbox'; 
 
                     const label = document.createElement('label');
                     label.htmlFor = filterId;
@@ -1279,26 +1281,19 @@
                 });
             }
 
-            // PART 2: Add region type filters
+            // PART 2: Add region type filters (existing logic)
             if (hasRegions) {
-                // Add a divider and header if we also have POI filters
-                if (hasPOIs) {
+                if (hasPOIs) { // Add divider only if POI filters are also present
                     const divider = document.createElement('hr');
                     divider.style.margin = '10px 0';
-                    divider.style.borderColor = 'var(--glass-border-light)'; // Use CSS var
-                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)'); // Dark mode
+                    divider.style.borderColor = 'var(--glass-border-light)'; 
+                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)'); 
                     poiFilterContainer.appendChild(divider);
-
-                    const regionHeader = document.createElement('h3');
-                    regionHeader.textContent = "Region Types:";
-                    poiFilterContainer.appendChild(regionHeader);
-                } else if (poiFilterContainer.querySelector('h3')) {
-                    // If only regions, but "Filter by Type:" exists, add header
-                    const regionHeader = document.createElement('h3');
-                    regionHeader.textContent = "Region Types:";
-                    poiFilterContainer.appendChild(regionHeader);
                 }
-
+                
+                const regionHeader = document.createElement('h3');
+                regionHeader.textContent = "Region Types:";
+                poiFilterContainer.appendChild(regionHeader);
 
                 const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))].sort();
 
@@ -1310,9 +1305,45 @@
                     checkbox.type = 'checkbox';
                     checkbox.id = filterId;
                     checkbox.value = type;
+                    checkbox.checked = true; 
+                    checkbox.className = 'region-type-filter'; 
+
+                    const label = document.createElement('label');
+                    label.htmlFor = filterId;
+                    label.textContent = type.charAt(0).toUpperCase() + type.slice(1); 
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    poiFilterContainer.appendChild(div);
+                });
+            }
+
+            // PART 3: Add line type filters (New)
+            if (hasRoads) {
+                if (hasPOIs || hasRegions) { // Add divider if other filters are present
+                    const divider = document.createElement('hr');
+                    divider.style.margin = '10px 0';
+                    divider.style.borderColor = 'var(--glass-border-light)';
+                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
+                    poiFilterContainer.appendChild(divider);
+                }
+
+                const lineHeader = document.createElement('h3');
+                lineHeader.textContent = "Line Types:";
+                poiFilterContainer.appendChild(lineHeader);
+
+                const lineTypes = [...new Set(selectedMap.roads.map(r => r.type || "Unnamed Road Type").filter(Boolean))].sort();
+
+                lineTypes.forEach(type => {
+                    const filterId = `filter-line-${(type || "untyped").replace(/\s+/g, '-').toLowerCase()}`;
+                    const div = document.createElement('div');
+                    div.className = 'filter-item';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = filterId;
+                    checkbox.value = type;
                     checkbox.checked = true; // Default checked
-                    checkbox.className = 'region-type-filter'; // Specific class for region filters
-                    // Event listener added later to the container
+                    checkbox.className = 'line-type-filter'; // Specific class for line filters
 
                     const label = document.createElement('label');
                     label.htmlFor = filterId;
@@ -1323,6 +1354,7 @@
                     poiFilterContainer.appendChild(div);
                 });
             }
+
 
             // Show filter button since we have filters
             toggleFiltersBtn.style.display = 'block';
@@ -1365,8 +1397,10 @@
             }
             // --- END: Loading Indicator Setup ---
 
-            if (isMeasuring) toggleMeasurementTool();
+            if (isMeasuring) toggleMeasurementTool(); // Assuming this is for the old tool
+            if (isMeasuringMultiPoint) finalizeMultiPointMeasure(false); // Finalize new tool if active
             measurementLayerGroup.clearLayers();
+
 
             // --- Hide Search/Filter UI during load ---
             searchControlContainer.style.display = 'none';
@@ -1385,16 +1419,22 @@
             filterToggleAllCheckbox.checked = true;
             filterToggleAllCheckbox.indeterminate = false;
 
+            // Remove previous layers
+            if (currentImageLayer) map.removeLayer(currentImageLayer);
+            if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
+            if (currentRegionGroup) map.removeLayer(currentRegionGroup);
+            if (currentRoadGroup) map.removeLayer(currentRoadGroup);
+            currentRoadGroup = L.layerGroup().addTo(map); 
+
+            currentImageLayer = null;
+            currentMarkerGroup = null;
+            currentRegionGroup = null;
+            currentRoadGroup = null; // Explicitly nullify before reinitialization
+            allMapMarkers = [];
+
             if (!selectedMap || selectedMap.status === 'coming-soon') {
                 console.warn("Attempted to load map data not found or coming soon:", mapId);
                 if (selectedMap) alert(`The map "${selectedMap.name}" is coming soon!`);
-                if (currentImageLayer) map.removeLayer(currentImageLayer);
-                if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-                if (currentRegionGroup) map.removeLayer(currentRegionGroup);
-                currentImageLayer = null;
-                currentMarkerGroup = null;
-                currentRegionGroup = null;
-                allMapMarkers = [];
                 currentlyLoadedMapId = null;
                 mapBlurbElement.classList.remove('visible');
                 toggleMarkersBtn.style.display = 'none';
@@ -1410,14 +1450,13 @@
                 return;
             }
 
-
             if (updateHash) {
                 const newHash = generateHash(mapId, currentSidebarState);
                 const currentPath = window.location.pathname;
-                const currentSearch = window.location.search; // This contains the UTM parameters
+                const currentSearch = window.location.search;
                 history.pushState(
-                    { mapId: mapId, sidebarState: currentSidebarState }, 
-                    selectedMap.name, 
+                    { mapId: mapId, sidebarState: currentSidebarState },
+                    selectedMap.name,
                     `${currentPath}${currentSearch}${newHash}`
                 );
             }
@@ -1439,17 +1478,12 @@
 
             console.log(`Loading map: ${selectedMap.name} (ID: ${mapId})`);
 
-            // Remove previous layers
-            if (currentImageLayer) map.removeLayer(currentImageLayer);
-            if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
-            if (currentRegionGroup) map.removeLayer(currentRegionGroup);
+            // Initialize Layer Groups for this map load
+            currentMarkerGroup = L.layerGroup(); // Not added to map until populated
+            currentRegionGroup = L.layerGroup().addTo(map); // Add to map immediately
+            currentRoadGroup = L.layerGroup().addTo(map);   // Add to map immediately
+            console.log("Initialized currentRoadGroup in loadMap:", currentRoadGroup, "Is L.LayerGroup:", currentRoadGroup instanceof L.LayerGroup);
 
-            // Reset marker state
-            currentMarkerGroup = L.layerGroup();
-            allMapMarkers = [];
-            // Reset region state
-            currentRegionGroup = L.layerGroup().addTo(map); // Add immediately
-            regionsVisible = markersVisible; // Sync initial region visibility
 
             const mapHeight = selectedMap.height;
             const mapWidth = selectedMap.width;
@@ -1465,19 +1499,18 @@
 
                 if (loadingIndicator) {
                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-                    const loadingText = loadingIndicator.querySelector('.loading-text');
-                    const progressBar = loadingIndicator.querySelector('.progress-bar');
-                    const spinner = loadingIndicator.querySelector('.spinner');
-                    if(loadingText) loadingText.textContent = "Error: Invalid map data.";
-                    if(progressBar) progressBar.style.width = '0%';
-                    if(spinner) spinner.style.display = 'none';
+                    const loadingTextEl = loadingIndicator.querySelector('.loading-text');
+                    const progressBarEl = loadingIndicator.querySelector('.progress-bar');
+                    const spinnerEl = loadingIndicator.querySelector('.spinner');
+                    if(loadingTextEl) loadingTextEl.textContent = "Error: Invalid map data.";
+                    if(progressBarEl) progressBarEl.style.width = '0%';
+                    if(spinnerEl) spinnerEl.style.display = 'none';
                     setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
                 }
                 return;
             }
             currentBounds = [[0, 0], [mapHeight, mapWidth]];
 
-            // Main Image Layer
             currentImageLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds);
 
             const preloadImg = new Image();
@@ -1491,9 +1524,9 @@
 
                 console.log("Image overlay loaded (or timed out).");
                 if (loadingIndicator) {
-                    const progressBar = loadingIndicator.querySelector('.progress-bar');
-                    if (progressBar) {
-                        progressBar.style.width = '100%';
+                    const progressBarEl = loadingIndicator.querySelector('.progress-bar');
+                    if (progressBarEl) {
+                        progressBarEl.style.width = '100%';
                         setTimeout(() => {
                             if (loadingProgressInterval) clearInterval(loadingProgressInterval);
                             loadingProgressInterval = null;
@@ -1518,12 +1551,12 @@
                  if (loadingIndicator) {
                      if (loadingProgressInterval) clearInterval(loadingProgressInterval);
                      loadingProgressInterval = null;
-                     const progressBar = loadingIndicator.querySelector('.progress-bar');
-                     const loadingText = loadingIndicator.querySelector('.loading-text');
-                     const spinner = loadingIndicator.querySelector('.spinner');
-                     if (progressBar) progressBar.style.width = '0%';
-                     if (loadingText) loadingText.textContent = "Error loading map image.";
-                     if (spinner) spinner.style.display = 'none';
+                     const progressBarEl = loadingIndicator.querySelector('.progress-bar');
+                     const loadingTextEl = loadingIndicator.querySelector('.loading-text');
+                     const spinnerEl = loadingIndicator.querySelector('.spinner');
+                     if (progressBarEl) progressBarEl.style.width = '0%';
+                     if (loadingTextEl) loadingTextEl.textContent = "Error loading map image.";
+                     if (spinnerEl) spinnerEl.style.display = 'none';
                      setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
                  }
                  if (currentImageLayer) map.removeLayer(currentImageLayer);
@@ -1543,58 +1576,109 @@
             preloadImg.src = selectedMap.imageUrl;
             currentImageLayer.addTo(map);
 
-            // Add Points of Interest
-            const points = selectedMap.pointsOfInterest || [];
-            populateFilters(points, mapId); // Populate combined filters
+            const points = selectedMap.pointsOfInterest || []; //
+            populateFilters(points, mapId); //
 
-            points.forEach(point => {
-                if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
-                    if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
-                         const marker = L.marker(point.coords);
-                         marker.poiData = point;
-                         let popupContent = '';
-                         if (point.wikiLink) {
-                             popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`;
-                         } else {
-                             popupContent += `<h3>${point.name}</h3>`;
-                         }
-                         popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`;
-                         popupContent += `<p>${point.description || ''}</p>`;
-                         marker.bindPopup(popupContent);
-                         allMapMarkers.push(marker);
-                    } else { console.warn(`POI coordinates out of bounds for map ${selectedMap.name}: ${point.name}`, point.coords); }
-                } else { console.warn(`Invalid coordinates for POI: ${point.name}`, point.coords); }
+            points.forEach(point => { //
+                try { // START OF ADDED TRY BLOCK
+                    if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) { //
+                        // mapHeight and mapWidth are defined earlier in loadMap
+                        if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) { //
+                             const marker = L.marker(point.coords); //
+                             
+                             // It's good practice to check if marker was created, though L.marker usually throws its own error if L is undefined.
+                             // The ReferenceError for 'marker' is unusual here unless L.marker itself has an issue.
+                             if (marker) {
+                                 marker.poiData = point; //
+                                 let popupContent = '';
+                                 if (point.wikiLink) { //
+                                     popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`; //
+                                 } else {
+                                     popupContent += `<h3>${point.name}</h3>`; //
+                                 }
+                                 popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`; //
+                                 popupContent += `<p>${point.description || ''}</p>`; //
+                                 marker.bindPopup(popupContent); //
+                                 allMapMarkers.push(marker); //
+                             } else {
+                                 // This case is unlikely if L.marker is standard Leaflet, but good for robustness
+                                 console.warn(`L.marker call returned undefined for POI: ${point.name || 'Unnamed POI'} at coords:`, point.coords);
+                             }
+                        } else { 
+                            console.warn(`POI coordinates out of bounds for map ${selectedMap.name}: ${point.name}`, point.coords);  //
+                        }
+                    } else { 
+                        console.warn(`Invalid coordinates for POI: ${point.name}`, point.coords);  //
+                    }
+                } catch (e) {
+                    // Log the error and the POI that caused it
+                    console.error(`Error processing POI: ${point ? (point.name || JSON.stringify(point)) : 'Unknown POI'}. Error: ${e.message}`, e);
+                    // This will help identify if a specific POI's data is causing L.marker() to fail.
+                    // The original ReferenceError might be a symptom of L.marker() failing internally due to bad data.
+                } // END OF ADDED TRY BLOCK
             });
 
-            currentMarkerGroup.addTo(map);
-            updateVisibleMarkersAndSearch(); // Initial marker visibility
-            // updateToggleAllCheckboxState(); // Called by populateFilters
+            currentMarkerGroup.addTo(map); // Add populated marker group to map //
+            updateVisibleMarkersAndSearch(); //
 
-            // Add Regions
-            addRegionsToMap(mapId);
-            updateVisibleRegions(); // Initial region visibility
+            addRegionsToMap(mapId); // Populates currentRegionGroup //
+            updateVisibleRegions(); //
 
-            // Show/hide controls based on content
-            // Show/hide controls based on content
+            addRoadsToMap(mapId); // Populates currentRoadGroup //
+            // updateVisibleLines(); // This was added in the previous step, ensure it's still here.
+            // Check if updateVisibleLines is present; if not, re-add it from the previous response.
+            // Based on the provided file, it seems you might be merging changes.
+            // Ensure this line is present if you implemented line filtering:
+            if (typeof updateVisibleLines === "function") {
+                 updateVisibleLines();
+            }
+            updateVisibleRegions();
+
+            addRoadsToMap(mapId); // Populates currentRoadGroup
+            console.log("currentRoadGroup before bringToBack in loadMap:", currentRoadGroup, "Is L.LayerGroup:", currentRoadGroup instanceof L.LayerGroup);
+
+
+            // Adjust layering order as desired
+            if (currentRegionGroup && typeof currentRegionGroup.bringToBack === 'function') {
+                currentRegionGroup.bringToBack(); // Regions furthest back
+            } else {
+                console.warn("currentRegionGroup not valid for bringToBack or method missing");
+            }
+
+            if (currentRoadGroup && typeof currentRoadGroup.bringToBack === 'function') {
+                 currentRoadGroup.bringToBack(); // Roads will also go to back, potentially over regions if pane is same.
+                                               // To ensure roads are above regions, you might need separate panes or careful ordering.
+                                               // For now, let's assume default pane; this will place roads at the bottom, then regions above them (if also sent to back).
+                                               // If you want roads ON TOP of regions:
+                                               // currentRegionGroup.bringToBack();
+                                               // (roads are already added, they will be above regions unless also sent back AFTER regions)
+            } else {
+                console.error("loadMap: currentRoadGroup.bringToBack is not a function!", currentRoadGroup);
+            }
+            
+            // Markers are added to currentMarkerGroup which is then added to map. They usually appear on top by default.
+            // If explicit control is needed:
+            // if (currentMarkerGroup && typeof currentMarkerGroup.bringToFront === 'function') {
+            //    currentMarkerGroup.bringToFront();
+            // }
+
+
             const hasPOIs = allMapMarkers.length > 0;
-            toggleMarkersBtn.style.display = hasPOIs ? 'block' : 'none';
-            searchControlContainer.style.display = hasPOIs ? 'block' : 'none';
+            // Adjust control visibility based on whether POIs, Regions, or Roads exist
+            const hasRegions = selectedMap.regions && selectedMap.regions.length > 0;
+            const hasRoads = selectedMap.roads && selectedMap.roads.length > 0;
+
+            toggleMarkersBtn.style.display = (hasPOIs || hasRegions) ? 'block' : 'none'; // Show if POIs or Regions exist
+            searchControlContainer.style.display = hasPOIs ? 'block' : 'none'; // Search for POIs
 
             const hasValidScale = typeof selectedMap.scalePixels === 'number' && selectedMap.scalePixels > 0 &&
                                 typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
             measureToolBtn.style.display = hasValidScale ? 'block' : 'none';
 
-            // Filter button visibility handled by populateFilters
 
-
-            // Filter button visibility handled by populateFilters
-
-            // Set initial state for marker toggle
             toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
             toggleMarkersBtn.title = markersVisible ? "Hide Markers & Regions" : "Show Markers & Regions";
 
-            // Update Map Blurb
-            // Update Map Blurb
             if (selectedMap.blurb) {
                 mapBlurbElement.innerHTML = selectedMap.blurb;
                 mapBlurbElement.classList.add('visible');
@@ -1603,8 +1687,6 @@
                 mapBlurbElement.classList.remove('visible');
             }
 
-
-            // Update Sidebar Active State
             document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
             const activeMapItem = document.querySelector(`#map-list .map-item[data-map-id="${mapId}"]`);
             const activeFolderHeader = document.querySelector(`#map-list .folder-header[data-map-id="${mapId}"]`);
@@ -1699,7 +1781,7 @@
                 console.log(`- Region "${region.name}" (${region.type}): typeMatch=${typeMatch}`);
 
                 // Apply visibility based on *both* the overall toggle AND the type filter match
-                if (regionsVisible && typeMatch) {
+                if (regionsVisible && typeMatch) { // regionsVisible is synced with markersVisible
                     layer.setStyle({
                         opacity: 1, // Make border visible
                         fillOpacity: region.fillOpacity || 0.2 // Use defined fill opacity
@@ -1856,6 +1938,70 @@
             }
         }
 
+        // --- Function to add roads to map ---
+        function addRoadsToMap(mapId) {
+            if (!currentRoadGroup) {
+                currentRoadGroup = L.layerGroup().addTo(map);
+            } else {
+                currentRoadGroup.clearLayers();
+            }
+
+            const selectedMap = findMapRecursive(mapData, mapId);
+            if (!selectedMap || !selectedMap.roads || !Array.isArray(selectedMap.roads)) {
+                console.log(`No roads found for map: ${mapId}`);
+                return;
+            }
+
+            selectedMap.roads.forEach(road => {
+                if (!road.coordinates || road.coordinates.length < 2) {
+                    console.warn(`Invalid coordinates for road: ${road.name || road.id}`);
+                    return;
+                }
+                
+                const defaultOpacity = 0.8; // Define a default if not specified in JSON
+                const roadOptions = {
+                    color: road.color || '#808080', 
+                    weight: road.weight || 3,
+                    opacity: road.opacity === undefined ? defaultOpacity : road.opacity, // Use defined or default
+                    smoothFactor: road.smoothFactor || 1.0 
+                };
+
+                if (road.dashArray && road.dashArray.trim() !== "") {
+                    roadOptions.dashArray = road.dashArray;
+                }
+
+                const polyline = L.polyline(road.coordinates, roadOptions);
+
+                // Store original opacity and road data for filtering
+                polyline.originalOpacity = roadOptions.opacity; // Store the opacity used
+                polyline.roadData = road; 
+
+                let popupContent = '';
+                if (road.name) {
+                    if (road.wikiLink) {
+                        popupContent += `<h3><a href="${road.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${road.name}">${road.name}</a></h3>`;
+                    } else {
+                        popupContent += `<h3>${road.name}</h3>`;
+                    }
+                }
+                 if (road.type) {
+                    const typeString = road.type.charAt(0).toUpperCase() + road.type.slice(1);
+                    popupContent += `<p><em>Type: ${typeString}</em></p>`;
+                }
+                if (road.description) {
+                    popupContent += `<p>${road.description}</p>`;
+                }
+
+                if (popupContent.trim() !== "") {
+                    polyline.bindPopup(popupContent);
+                }
+
+                // Store road data with the layer if needed for future interactions
+                polyline.roadData = road;
+                currentRoadGroup.addLayer(polyline);
+            });
+        }
+
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
             localStorage.setItem('theme', newTheme);
@@ -2009,30 +2155,58 @@
         poiSearchInput.addEventListener('click', (e) => e.stopPropagation());
         searchResultsContainer.addEventListener('click', (e) => e.stopPropagation());
 
+        // --- Update line visibility based on filters ---
+        function updateVisibleLines() {
+            if (!currentRoadGroup) return;
+
+            const typeFilters = poiFilterContainer.querySelectorAll('.line-type-filter:checked');
+            const typeFilterValues = Array.from(typeFilters).map(cb => cb.value);
+            const allTypesChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
+
+            currentRoadGroup.eachLayer(layer => {
+                const road = layer.roadData;
+                if (!road) return;
+
+                const roadType = road.type || "Unnamed Road Type"; // Match the logic in populateFilters
+                const typeMatch = allTypesChecked || typeFilterValues.includes(roadType);
+                
+                // Lines are always "visible" in terms of the master toggle (markersVisible)
+                // Their appearance is solely based on type filters.
+                if (typeMatch) {
+                    layer.setStyle({
+                        opacity: layer.originalOpacity === undefined ? 0.8 : layer.originalOpacity // Restore original or default
+                    });
+                } else {
+                    layer.setStyle({
+                        opacity: 0 // Hide
+                    });
+                }
+            });
+        }
 
         // --- Combined Filter Panel Logic ---
         poiFilterContainer.addEventListener('change', (e) => {
             const target = e.target;
-            if (target.type !== 'checkbox') return; // Only handle checkbox changes
+            if (target.type !== 'checkbox') return; 
 
             if (target.id === 'filter-toggle-all') {
-                // Master toggle changed
                 const isChecked = target.checked;
-                poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter').forEach(checkbox => {
+                poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter, .line-type-filter').forEach(checkbox => {
                     checkbox.checked = isChecked;
                 });
                 filterToggleAllCheckbox.indeterminate = false;
             } else {
-                // Specific filter changed, update master toggle state
-                updateToggleAllCheckboxState();
+                updateToggleAllCheckboxState(); // This now needs to consider line filters too for indeterminate state
             }
 
-            // Update map based on which type of filter changed
             if (target.classList.contains('poi-filter-checkbox') || target.id === 'filter-toggle-all') {
                 updateVisibleMarkersAndSearch();
             }
             if (target.classList.contains('region-type-filter') || target.id === 'filter-toggle-all') {
                 updateVisibleRegions();
+            }
+            if (target.classList.contains('line-type-filter') || target.id === 'filter-toggle-all') { // New condition
+                updateVisibleLines();
             }
         });
         // Prevent map click when clicking inside filter panel
@@ -2719,8 +2893,9 @@ async function processChild(childId, level = 0) {
 
             // Load the determined map
             if (mapIdToLoad && mapToLoadData && mapToLoadData.status !== 'coming-soon') {
-                markersVisible = true; // Default to visible
-                loadMap(mapIdToLoad, false); // Load map, don't update hash yet
+                 markersVisible = true; // Default to visible
+                 regionsVisible = true;  // <--- ADD THIS LINE TO ENSURE REGIONS ARE ALSO VISIBLE BY DEFAULT
+                 loadMap(mapIdToLoad, false); // Load map, don't update hash yet
             } else {
                 console.error("No loadable map data found for initialization.");
                 sidebar.innerHTML = '<h2>Select Map</h2><p>No maps available.</p>';
