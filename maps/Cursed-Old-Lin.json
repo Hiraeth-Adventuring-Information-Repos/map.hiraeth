@@ -949,8 +949,8 @@
     {
       "id": "road-Cursed-Old-Lin-1748402606540-rd6yt",
       "name": "Road",
-      "type": "Party Route",
-      "color": "#aa7942",
+      "type": "",
+      "color": "#ff2600",
       "weight": 3,
       "dashArray": "",
       "description": "",
@@ -997,8 +997,8 @@
           5612
         ],
         [
-          2592,
-          5644
+          2588,
+          5638
         ],
         [
           2574,

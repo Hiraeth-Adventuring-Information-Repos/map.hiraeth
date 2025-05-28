@@ -877,7 +877,7 @@
                 let pointsImported = 0, regionsImported = 0, linesImported = 0; 
                 if (mapData.pointsOfInterest) { importPoints(mapData.pointsOfInterest, true); pointsImported = mapData.pointsOfInterest.length; }
                 if (mapData.regions) { importRegions(mapData.regions, true); regionsImported = mapData.regions.length; }
-                if (mapData.lines) { importLines(mapData.lines, true); linesImported = mapData.lines.length; } 
+                if (mapData.roads) { importLines(mapData.roads, true); linesImported = mapData.roads.length; } 
                 let finalStatus = `Loaded: ${selectedFilename}. `;
                 if (jsonLoadError) finalStatus += `Error loading data: ${jsonLoadError.message}. Starting fresh. `;
                 else finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions, ${linesImported} lines. `; 
@@ -1442,7 +1442,7 @@
                 blurb: mapBlurbInput.value || "",
                 pointsOfInterest: sortedPoints.map(p => ({ coords: p.coords, name: p.name || "", type: p.type || "Unknown", description: p.description || "", wikiLink: p.wikiLink || "" })),
                 regions: sortedRegions.map(r => ({ id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "", description: r.description || "", type: r.type || "", color: r.color || "#3388ff", fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity || 0.2, wikiLink: r.wikiLink || "", coordinates: r.coordinates || [] })),
-                lines: sortedLines.map(l => ({ 
+                roads: sortedLines.map(l => ({ 
                     id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
                     weight: l.weight || 3, dashArray: l.dashArray || "", description: l.description || "",
                     wikiLink: l.wikiLink || "", coordinates: l.coordinates || []
