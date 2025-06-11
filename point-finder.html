@@ -51,6 +51,25 @@
             color: #000000; font-family: inherit; font-size: 1em; flex-grow: 1;
             box-shadow: inset 1px 1px 1px #404040; box-sizing: border-box;
         }
+        .controls input[type="checkbox"] {
+            /* Custom styling for checkbox to match the retro theme */
+            appearance: none; -webkit-appearance: none;
+            width: 13px; height: 13px;
+            background-color: #ffffff;
+            border: 1px solid #808080;
+            box-shadow: inset 1px 1px 1px #404040;
+            margin: 0;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .controls input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            top: -2px; left: 1px;
+            font-size: 12px;
+            color: #000000;
+        }
         .controls input[type="color"] {
             width: 40px; height: 24px; padding: 0; cursor: pointer;
         }
@@ -289,6 +308,12 @@
                 <button id="editVerticesBtn" class="hidden">Edit Vertices</button>
                 <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
             </div>
+            <!-- ADDED: Toggle for showing other regions during an edit -->
+            <div class="control-row">
+                 <label for="showAllRegionsToggle">Show Others:</label>
+                 <input type="checkbox" id="showAllRegionsToggle">
+                 <span style="font-size: 0.9em; flex-grow: 1; text-align: left;">Show other regions while editing</span>
+            </div>
         </div>
 
         <div class="control-group line-controls hidden">
@@ -450,6 +475,8 @@
         const editRegionSelect = document.getElementById('editRegionSelect');
         const regionVerticesCount = document.getElementById('region-vertices-count');
         const clearRegionsBtn = document.getElementById('clearRegionsBtn');
+        // ADDED: Reference to the new toggle
+        const showAllRegionsToggle = document.getElementById('showAllRegionsToggle');
 
         // Line Elements (Renamed from Road)
         const lineNameInput = document.getElementById('lineName');
@@ -519,6 +546,10 @@
         let isEditingLineVertices = false; 
         let editingLineVisualsLayerGroup = null; 
         let editingLinePolylineLayer = null; 
+        
+        // ADDED: State for showing/hiding other regions
+        let showAllRegionsWhileEditing = false;
+        let otherRegionsLayerGroup = null;
 
         // --- Hardcoded Map Files ---
         // To add more files, add a new line here following the format:
@@ -544,6 +575,31 @@
         };
 
         // --- Helper Functions ---
+        // ADDED: New function to show/hide other regions
+        function toggleOtherRegionsVisibility(show, exceptIndex = -1) {
+            if (otherRegionsLayerGroup) {
+                map.removeLayer(otherRegionsLayerGroup);
+                otherRegionsLayerGroup = null;
+            }
+
+            if (show) {
+                otherRegionsLayerGroup = L.layerGroup();
+                collectedRegions.forEach((region, index) => {
+                    if (index === exceptIndex) return; // Skip the one being edited
+
+                    const style = {
+                        color: region.color || '#3388ff',
+                        fillColor: region.fillColor || '#3388ff',
+                        fillOpacity: 0.05, // Very low opacity for background regions
+                        weight: 1,
+                        dashArray: '3, 5',
+                        interactive: false // Make them not clickable
+                    };
+                    L.polygon(region.coordinates, style).addTo(otherRegionsLayerGroup);
+                });
+                otherRegionsLayerGroup.addTo(map);
+            }
+        }
         function setMode(mode) {
             currentMode = mode;
             modeTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.mode === mode));
@@ -768,6 +824,8 @@
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
                 }
                 startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
+                // MODIFIED: Clear background regions when editing stops
+                toggleOtherRegionsVisibility(false);
             } else { startRegionBtn.disabled = true; }
             updateStatus();
         }
@@ -1098,6 +1156,10 @@
             editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity || 0.2, weight: 3, dashArray: "5, 5" });
             editingVisualsLayerGroup.addLayer(editingPolygonLayer);
             map.fitBounds(editingPolygonLayer.getBounds().pad(0.1));
+            // MODIFIED: Show other regions if the toggle is checked
+            if (showAllRegionsWhileEditing) {
+                toggleOtherRegionsVisibility(true, index);
+            }
             setRegionEditingState(true, region.name);
         }
         function loadLineEdit(lineIdOrName) { 
@@ -1818,6 +1880,15 @@
             lineColorInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ color: lineColorInput.value }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({color: lineColorInput.value}); });
             lineWeightInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ weight: parseInt(lineWeightInput.value) || 3 }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({weight: parseInt(lineWeightInput.value) || 3 }); });
             lineDashArrayInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ dashArray: lineDashArrayInput.value.trim() || null }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({dashArray: lineDashArrayInput.value.trim() || null}); });
+            
+            // ADDED: Listener for the new toggle
+            showAllRegionsToggle.addEventListener('change', (e) => {
+                showAllRegionsWhileEditing = e.target.checked;
+                // If we are currently editing a region, update the view immediately
+                if (isEditingRegion) {
+                    toggleOtherRegionsVisibility(showAllRegionsWhileEditing, currentlyEditingRegionIndex);
+                }
+            });
 
             viewJsonBtn.addEventListener('click', exportMapData);
             copyJsonBtn.addEventListener('click', copyCompleteJson);
