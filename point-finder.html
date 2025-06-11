@@ -63,7 +63,7 @@
              background-repeat: no-repeat; background-position: right 5px top 50%;
              background-size: .65em auto; padding-right: 1.5em;
         }
-        #mapSelect { min-width: 200px; }
+        #fileLoader { min-width: 200px; }
         #pointDescription, #regionDescription, #mapBlurb, #lineDescription { height: 4.5em; resize: vertical; } /* Renamed roadDescription */
         .controls button, .output-buttons button, .summary-actions button, .json-modal-copy, .json-modal-close {
             padding: 4px 10px; cursor: pointer; color: #000000;
@@ -185,15 +185,23 @@
                 <div class="mode-tab" data-mode="regions">Regions</div>
                 <div class="mode-tab" data-mode="lines">Lines</div> </div>
             <div class="control-row">
-                <label for="mapSelect">Select Map:</label>
-                <select id="mapSelect">
-                    <option value="">-- Choose a map --</option>
+                 <label for="mapFileSelect">Load Map File:</label>
+                 <select id="mapFileSelect"></select>
+            </div>
+            <div class="control-row">
+                <label for="subMapSelect">Select Map:</label>
+                <select id="subMapSelect" disabled>
+                    <option value="">-- Load a file first --</option>
                 </select>
             </div>
             <div class="control-row">
-                <button id="loadMapBtn">Load Map & Data</button>
+                <button id="loadSubMapBtn" disabled>Load Selected Map</button>
             </div>
-            <div class="control-row">
+             <div class="control-row">
+                <label for="mapBlurb">Map Blurb:</label>
+                <textarea id="mapBlurb" placeholder="Brief description (HTML allowed)"></textarea>
+            </div>
+             <div class="control-row">
                 <label for="scalePixels">Scale (Pixels):</label>
                 <input type="number" id="scalePixels" value="3" min="1">
             </div>
@@ -202,11 +210,7 @@
                 <input type="number" id="scaleKilometers" value="1" min="0.1" step="0.1">
             </div>
             <div class="control-row">
-                <label for="mapBlurb">Map Blurb:</label>
-                <textarea id="mapBlurb" placeholder="Brief description (HTML allowed)"></textarea>
-            </div>
-            <div class="control-row">
-                 <button id="exportMapDataBtn" disabled>View/Export Map Data (JSON)</button>
+                 <button id="exportMapDataBtn" disabled>View/Export All Data (JSON)</button>
             </div>
         </div>
 
@@ -341,7 +345,7 @@
                 <button id="cancelLineEditBtn" class="hidden">Cancel Edit</button>
             </div>
         </div>
-        <span id="status">Select and load a map image first.</span>
+        <span id="status">Load a maps.json file to begin.</span>
     </div>
 
     <div id="map"></div>
@@ -407,8 +411,9 @@
     <script>
         // --- DOM Element References ---
         const mapElement = document.getElementById('map');
-        const mapSelect = document.getElementById('mapSelect');
-        const loadMapBtn = document.getElementById('loadMapBtn');
+        const mapFileSelect = document.getElementById('mapFileSelect');
+        const subMapSelect = document.getElementById('subMapSelect');
+        const loadSubMapBtn = document.getElementById('loadSubMapBtn');
         const exportMapDataBtn = document.getElementById('exportMapDataBtn');
         const statusDisplay = document.getElementById('status');
         const modeTabs = document.querySelectorAll('.mode-tab');
@@ -482,6 +487,8 @@
         // --- State Variables ---
         let map = null;
         let imageLayer = null;
+        let masterMapData = []; // Will hold the entire maps.json content
+        let currentMapObject = null; // The specific map object being edited
         let currentBounds = null;
         let lastClickedCoordsArray = null;
         let collectedPoints = [];
@@ -495,7 +502,6 @@
         let currentlyEditingRegionIndex = -1;
         let currentlyEditingLineIndex = -1; 
         let currentMode = 'points';
-        let currentMapId = null;
 
         let isCreatingRegion = false;
         let tempRegionVertices = [];
@@ -514,9 +520,15 @@
         let editingLineVisualsLayerGroup = null; 
         let editingLinePolylineLayer = null; 
 
+        // --- Hardcoded Map Files ---
+        // To add more files, add a new line here following the format:
+        // "Display Name": "path/to/your/file.json"
+        const HARDCODED_MAP_FILES = {
+            "All Maps (Manifest)": "maps/maps.json",
+            "Icebeach": "maps/icebeach.json",
+            "Cursed Old-Lin": "maps/Cursed-Old-Lin.json"
+        };
 
-        const availableMaps = ["Fair-Content.webp", "IceBeach.webp", "Cursed-Old-Lin.webp"];
-        const mapDirectory = "maps/";
 
         const poiTypeGroups = {
             "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
@@ -552,16 +564,38 @@
             }
             updateStatus();
         }
+        
+        function populateSubMapSelector(mapData) {
+            subMapSelect.innerHTML = '<option value="">-- Choose a map --</option>';
+            const foundMaps = [];
 
-        function populateMapSelector() {
-            mapSelect.innerHTML = '<option value="">-- Choose a map --</option>';
-            availableMaps.forEach(filename => {
-                const option = document.createElement('option');
-                option.value = filename;
-                option.textContent = filename;
-                mapSelect.appendChild(option);
+            function findMapsRecursive(items) {
+                if (!items || !Array.isArray(items)) return;
+                items.forEach(item => {
+                    if (item && typeof item === 'object') {
+                        if (item.imageUrl) {
+                            foundMaps.push({ id: item.id, name: item.name });
+                        }
+                        if (item.children && Array.isArray(item.children)) {
+                           findMapsRecursive(item.children);
+                        }
+                    }
+                });
+            }
+
+            findMapsRecursive(mapData);
+
+            foundMaps.sort((a,b) => a.name.localeCompare(b.name)).forEach(mapInfo => {
+                 const option = document.createElement('option');
+                 option.value = mapInfo.id;
+                 option.textContent = mapInfo.name;
+                 subMapSelect.appendChild(option);
             });
+            
+            subMapSelect.disabled = false;
+            loadSubMapBtn.disabled = false;
         }
+
         function populateTypeDropdown() {
             poiTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
             for (const groupName in poiTypeGroups) {
@@ -644,7 +678,7 @@
         function setStatus(message, type = 'info') { statusDisplay.textContent = message; statusDisplay.className = type; }
 
         function updateStatus() {
-            if (!imageLayer) { setStatus('Select and load a map image first.'); return; }
+            if (!currentMapObject) { setStatus('Select a map file from the top dropdown to start.'); return; }
             if (currentMode === 'points') {
                 setStatus(isEditingPoint ? 'Editing point. Drag marker or click map to move. Modify details and Save or Cancel.' : 'Click map for new point or select existing point to edit.');
             } else if (currentMode === 'regions') {
@@ -703,13 +737,12 @@
             savePointChangesBtn.classList.toggle('hidden', !editing);
             cancelPointEditBtn.classList.toggle('hidden', !editing);
             clearPointsBtn.classList.toggle('hidden', editing);
-            // mapElement.classList.remove('disabled-map'); // Ensure map is always clickable for points
 
             if (!editing) {
                 pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                 coordsDisplay.textContent = '[Y, X]';
                 lastClickedCoordsArray = null;
-                addPointBtn.disabled = !imageLayer; 
+                addPointBtn.disabled = !currentMapObject; 
                 editPointSelect.value = "";
             } else {
                 addPointBtn.disabled = true; 
@@ -734,7 +767,7 @@
                     regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
                 }
-                startRegionBtn.disabled = !imageLayer; editRegionSelect.value = ""; clearEditingVisuals();
+                startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
             } else { startRegionBtn.disabled = true; }
             updateStatus();
         }
@@ -763,7 +796,7 @@
             if (!editing) {
                 lineNameInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
                 lineWeightInput.value = '3'; lineDashArrayInput.value = ''; lineDescriptionInput.value = '';
-                lineWikiLinkInput.value = ''; startLineBtn.disabled = !imageLayer; editLineSelect.value = "";
+                lineWikiLinkInput.value = ''; startLineBtn.disabled = !currentMapObject; editLineSelect.value = "";
                 if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
                 clearLineEditingVisuals();
             } else {
@@ -812,81 +845,171 @@
         }
 
 
-        function resetUIState() {
-            setStatus('Select and load a map image first.');
+        function resetUIForNewMap() {
+            setStatus('Select a map and click Load.');
             coordsDisplay.textContent = '[Y, X]';
             pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
             regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
-            regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
-            lineNameInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080'; lineWeightInput.value = '3';
-            lineDashArrayInput.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
-
+            lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
             scalePixelsInput.value = '3'; scaleKilometersInput.value = '1'; mapBlurbInput.value = '';
+            
             addPointBtn.disabled = true; startRegionBtn.disabled = true; startLineBtn.disabled = true;
             clearPointsBtn.disabled = true; clearRegionsBtn.disabled = true; clearLinesBtn.disabled = true;
             exportMapDataBtn.disabled = true; viewJsonBtn.disabled = true; copyJsonBtn.disabled = true;
+            
             pointsCountDisplay.textContent = '0'; regionsCountDisplay.textContent = '0'; linesCountDisplay.textContent = '0';
+            
             lastClickedCoordsArray = null;
             collectedPoints = []; collectedRegions = []; collectedLines = [];
-            if (imageLayer && map && map.hasLayer(imageLayer)) map.removeLayer(imageLayer);
-            if (editingPointMarker) { map.removeLayer(editingPointMarker); editingPointMarker = null; }
-            imageLayer = null; currentBounds = null; currentMapId = null;
+            
+            if (imageLayer && map) {
+                map.eachLayer(layer => {
+                    if (layer !== imageLayer && layer !== map) { 
+                        map.removeLayer(layer);
+                    }
+                });
+                map.removeLayer(imageLayer);
+                imageLayer = null;
+            }
+
+            currentMapObject = null; currentBounds = null; 
+            
             setPointEditingState(false); setRegionEditingState(false); setRegionCreationState(false);
             setLineEditState(false); setLineCreationState(false);
+            
             populatePointEditDropdown(); populateRegionEditDropdown(); populateLineEditDropdown();
             updateRegionVerticesCount(); updateLineVerticesCount();
-            mapSelect.value = "";
         }
 
-        async function loadImage() {
-            const selectedFilename = mapSelect.value;
-            if (!selectedFilename) { alert("Please select a map from the dropdown."); return; }
-            const imageUrl = mapDirectory + selectedFilename;
-            const jsonFilename = selectedFilename.replace(/\.(webp|png|jpg|jpeg)$/i, '.json');
-            const jsonUrl = mapDirectory + jsonFilename;
-            resetUIState();
-            loadMapBtn.disabled = true; setStatus('Loading image and map data...');
+        async function handleMapFileSelection(event) {
+            const filePath = event.target.value;
+            if (!filePath) {
+                resetUIForNewMap();
+                subMapSelect.innerHTML = '<option value="">-- Load a file first --</option>';
+                subMapSelect.disabled = true;
+                loadSubMapBtn.disabled = true;
+                return;
+            }
+
+            try {
+                setStatus(`Loading ${filePath}...`, 'info');
+                const response = await fetch(filePath);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const jsonObject = await response.json();
+                
+                if (Array.isArray(jsonObject)) {
+                    // This is a manifest file like maps.json
+                    masterMapData = jsonObject;
+                    populateSubMapSelector(masterMapData);
+                    setStatus("Manifest file loaded. Select a map from the dropdown.", "success");
+                    resetUIForNewMap();
+                    subMapSelect.disabled = false;
+                    loadSubMapBtn.disabled = false;
+                } else if (typeof jsonObject === 'object' && jsonObject !== null && jsonObject.imageUrl) {
+                    // This is a single map object file
+                    masterMapData = [jsonObject]; // Store as an array of one for consistent export
+                    subMapSelect.innerHTML = `<option value="${jsonObject.id || ''}">${jsonObject.name || 'Single Map'}</option>`;
+                    subMapSelect.disabled = true;
+                    loadSubMapBtn.disabled = true;
+                    await loadMap(jsonObject); // Load the single map immediately
+                } else {
+                    throw new Error("Invalid JSON format. Must be an array of map objects or a single map object with an 'imageUrl' property.");
+                }
+            } catch(error) {
+                setStatus(`Error loading map file '${filePath}': ${error.message}`, 'error');
+                console.error(error);
+                masterMapData = [];
+                subMapSelect.innerHTML = '<option value="">-- Load failed --</option>';
+                subMapSelect.disabled = true;
+                loadSubMapBtn.disabled = true;
+                resetUIForNewMap();
+            }
+        }
+
+        async function loadMapFromSelector() {
+            const selectedMapId = subMapSelect.value;
+            if (!selectedMapId) { alert("Please select a map from the dropdown."); return; }
+            
+            let mapData = null;
+            function findMapById(items, id) {
+                for (const item of items) {
+                    if (item.id === id) return item;
+                     if (item.children && Array.isArray(item.children)) {
+                        const found = findMapById(item.children, id);
+                        if(found) return found;
+                    }
+                }
+                return null;
+            }
+            mapData = findMapById(masterMapData, selectedMapId);
+
+            if (mapData) {
+                await loadMap(mapData);
+            } else {
+                alert(`Could not find map data in the manifest for ID: ${selectedMapId}`);
+            }
+        }
+
+        async function loadMap(mapData) {
+            if (!mapData || !mapData.imageUrl) {
+                alert(`Cannot load map: the provided data is missing an 'imageUrl'.`);
+                return;
+            }
+            
+            resetUIForNewMap();
+            currentMapObject = mapData; // Set the current map context
+
+            loadSubMapBtn.disabled = true; setStatus('Loading image and map data...');
+            
             try {
                 const img = new Image();
                 await new Promise((resolve, reject) => {
-                    img.onload = resolve; img.onerror = () => reject(new Error(`Could not load image file: ${imageUrl}`));
-                    img.src = imageUrl;
+                    img.onload = resolve; img.onerror = () => reject(new Error(`Could not load image file: ${mapData.imageUrl}`));
+                    img.src = mapData.imageUrl;
                 });
-                const mapWidth = img.naturalWidth, mapHeight = img.naturalHeight;
+
+                const mapWidth = mapData.width || img.naturalWidth;
+                const mapHeight = mapData.height || img.naturalHeight;
                 if (mapWidth === 0 || mapHeight === 0) throw new Error('Image has zero dimensions.');
-                setStatus(`Image loaded (${mapWidth}x${mapHeight}). Loading map data...`);
+                
                 currentBounds = [[0, 0], [mapHeight, mapWidth]];
-                let mapData = {}, jsonLoadError = null;
-                try {
-                    const response = await fetch(jsonUrl);
-                    if (response.ok) mapData = await response.json();
-                    else if (response.status === 404) console.warn(`JSON file not found: ${jsonUrl}. Starting with empty data.`);
-                    else throw new Error(`Failed to load JSON: ${response.status} ${response.statusText}`);
-                } catch (fetchError) { jsonLoadError = fetchError; console.error(`Error fetching or parsing JSON: ${jsonUrl}`, fetchError); }
                 if (!map) throw new Error("Map object not initialized.");
-                imageLayer = L.imageOverlay(imageUrl, currentBounds);
-                imageLayer.on('error', (e) => {
-                    setStatus(`Error displaying image overlay.`, 'error');
-                    if(imageLayer && map.hasLayer(imageLayer)) map.removeLayer(imageLayer);
-                    imageLayer = null; loadMapBtn.disabled = false; exportMapDataBtn.disabled = true; viewJsonBtn.disabled = true; copyJsonBtn.disabled = true;
-                });
-                imageLayer.addTo(map); map.fitBounds(currentBounds);
-                currentMapId = jsonFilename.replace('.json', '');
-                scalePixelsInput.value = mapData.scalePixels || 3; scaleKilometersInput.value = mapData.scaleKilometers || 1;
-                mapBlurbInput.value = mapData.blurb || "";
+                
+                imageLayer = L.imageOverlay(mapData.imageUrl, currentBounds).addTo(map);
+                map.fitBounds(currentBounds);
+                
+                scalePixelsInput.value = currentMapObject.scalePixels || 3;
+                scaleKilometersInput.value = currentMapObject.scaleKilometers || 1;
+                mapBlurbInput.value = currentMapObject.blurb || "";
+                
                 let pointsImported = 0, regionsImported = 0, linesImported = 0; 
-                if (mapData.pointsOfInterest) { importPoints(mapData.pointsOfInterest, true); pointsImported = mapData.pointsOfInterest.length; }
-                if (mapData.regions) { importRegions(mapData.regions, true); regionsImported = mapData.regions.length; }
-                if (mapData.roads) { importLines(mapData.roads, true); linesImported = mapData.roads.length; } 
-                let finalStatus = `Loaded: ${selectedFilename}. `;
-                if (jsonLoadError) finalStatus += `Error loading data: ${jsonLoadError.message}. Starting fresh. `;
-                else finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions, ${linesImported} lines. `; 
+                if (currentMapObject.pointsOfInterest) { importPoints(currentMapObject.pointsOfInterest, true); pointsImported = currentMapObject.pointsOfInterest.length; }
+                if (currentMapObject.regions) { importRegions(currentMapObject.regions, true); regionsImported = currentMapObject.regions.length; }
+                if (currentMapObject.roads) { importLines(currentMapObject.roads, true); linesImported = currentMapObject.roads.length; } 
+
+                let finalStatus = `Loaded: ${currentMapObject.name}. `;
+                finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions, ${linesImported} lines. `; 
                 finalStatus += `${currentMode === 'points' ? 'Click map for new point' : (currentMode === 'regions' ? 'Fill in region details' : 'Fill in line details')}.`; 
-                setStatus(finalStatus, jsonLoadError ? 'error' : 'success');
+                setStatus(finalStatus, 'success');
+                
                 addPointBtn.disabled = false; startRegionBtn.disabled = false; startLineBtn.disabled = false; 
                 exportMapDataBtn.disabled = false; viewJsonBtn.disabled = false; copyJsonBtn.disabled = false;
-            } catch (error) { setStatus(`Error loading map: ${error.message}`, 'error'); console.error("Map Loading Error:", error); resetUIState();
-            } finally { loadMapBtn.disabled = false; }
+
+            } catch (error) { 
+                setStatus(`Error loading map: ${error.message}`, 'error'); 
+                console.error("Map Loading Error:", error); 
+                resetUIForNewMap();
+                if (masterMapData.length > 1) { // If it was a manifest, re-enable selector
+                    subMapSelect.disabled = false;
+                    loadSubMapBtn.disabled = false;
+                }
+            } finally { 
+                if (masterMapData.length > 1) {
+                    loadSubMapBtn.disabled = false;
+                }
+            }
         }
 
         function importPoints(dataToImport, suppressStatus = false) { 
@@ -1060,12 +1183,12 @@
 
 
         function startRegionCreation() { 
-             if (!imageLayer) { alert("Load a map first!"); return; }
+             if (!currentMapObject) { alert("Load a map first!"); return; }
             if (isEditingRegion) { alert("Finish editing the current region first."); return; }
             setRegionCreationState(true);
         }
         function startLineCreation() { 
-            if (!imageLayer) { alert("Load a map first!"); return; }
+            if (!currentMapObject) { alert("Load a map first!"); return; }
             if (isEditingLine) { alert("Finish editing current line first."); return; }
             setLineCreationState(true);
         }
@@ -1122,7 +1245,7 @@
             const lineDashArray = lineDashArrayInput.value.trim();
             const lineDescription = lineDescriptionInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(lineWeight) || lineWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
-            const lineId = `line-${currentMapId || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
+            const lineId = `line-${currentMapObject.id || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
             collectedLines.push({ id: lineId, name: lineName, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices] });
             updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success'); 
             setLineCreationState(false);
@@ -1250,6 +1373,46 @@
         }
 
         // --- Line Vertex Editing Logic ---
+        function setVertexEditingState(editing) {
+            isEditingVertices = editing;
+            editVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
+            addVerticesBtn.textContent = isAddingVerticesToRegion ? 'Stop Adding Vertices' : 'Add Vertices';
+            mapElement.classList.toggle('vertex-editing-mode', editing);
+            mapElement.classList.toggle('disabled-map', !editing && isEditingRegion && !isAddingVerticesToRegion);
+            
+            saveRegionChangesBtn.disabled = editing || isAddingVerticesToRegion;
+            cancelRegionEditBtn.disabled = editing || isAddingVerticesToRegion;
+            regionNameInput.disabled = editing || isAddingVerticesToRegion;
+            regionTypeSelect.disabled = editing || isAddingVerticesToRegion;
+            editRegionSelect.disabled = editing || isAddingVerticesToRegion;
+            startRegionBtn.disabled = true;
+
+            if (editingVisualsLayerGroup) {
+                editingVisualsLayerGroup.eachLayer(layer => {
+                    if (layer.options.isVertexMarker && layer.dragging) {
+                        if (editing) layer.dragging.enable();
+                        else layer.dragging.disable();
+                    }
+                });
+            }
+            updateStatus();
+        }
+        function setVertexAddingState(adding) {
+            isAddingVerticesToRegion = adding;
+            addVerticesBtn.textContent = adding ? 'Stop Adding Vertices' : 'Add Vertices';
+            mapElement.classList.toggle('vertex-adding-mode', adding);
+            mapElement.classList.toggle('disabled-map', !adding && isEditingRegion && !isEditingVertices);
+            
+            saveRegionChangesBtn.disabled = adding || isEditingVertices;
+            cancelRegionEditBtn.disabled = adding || isEditingVertices;
+            editVerticesBtn.disabled = adding;
+            regionNameInput.disabled = adding || isEditingVertices;
+            regionTypeSelect.disabled = adding || isEditingVertices;
+            editRegionSelect.disabled = adding || isEditingVertices;
+            startRegionBtn.disabled = true;
+
+            updateStatus();
+        }
         function setLineVertexEditingState(editing) {
             isEditingLineVertices = editing;
             editLineVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
@@ -1417,45 +1580,83 @@
 
 
         function generateCompleteMapData() {
-            let selectedFilename = mapSelect.value;
-            if (!selectedFilename && imageLayer && currentMapId) {
-                for (const option of mapSelect.options) {
-                    if (option.value && option.value.toLowerCase().includes(currentMapId.toLowerCase())) {
-                        mapSelect.value = option.value; selectedFilename = mapSelect.value; break;
+             if (!currentMapObject) {
+                alert("No map is currently loaded for saving.");
+                return null;
+            }
+            // Deep clone the master data to avoid modifying it directly before export
+            const updatedMasterData = JSON.parse(JSON.stringify(masterMapData));
+
+            // Find the map object we were editing in the cloned data.
+            // This works whether masterMapData has one or many maps.
+            let mapToUpdate = null;
+            function findMapByIdRecursive(items, id) {
+                 for (const item of items) {
+                    if (item.id === id) return item;
+                    if (item.children && Array.isArray(item.children)) {
+                        const found = findMapByIdRecursive(item.children, id);
+                        if(found) return found;
                     }
                 }
+                return null;
             }
-            if (!selectedFilename || !imageLayer || !currentMapId || !currentBounds) {
-                console.error("generateCompleteMapData failed: Map state incomplete."); return null;
+            mapToUpdate = findMapByIdRecursive(updatedMasterData, currentMapObject.id);
+
+            if (!mapToUpdate) {
+                // If we loaded a single file, the `updatedMasterData` is an array with one item.
+                // And `currentMapObject.id` should match its id. If not, something is wrong.
+                if (updatedMasterData.length === 1 && updatedMasterData[0].id === currentMapObject.id) {
+                     mapToUpdate = updatedMasterData[0];
+                } else {
+                     alert("Could not find the edited map in the master data structure. This is an unexpected error.");
+                     return null;
+                }
             }
+            
+            // Update the found map object with the collected data and settings
             const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
             const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
-            const sortedLines = [...collectedLines].sort((a,b) => (a.name || a.id).localeCompare(b.name || b.id)); 
+            const sortedLines = [...collectedLines].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
 
-            const mapData = {
-                id: currentMapId,
-                name: currentMapId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                width: currentBounds[1][1], height: currentBounds[1][0],
-                imageUrl: mapDirectory + selectedFilename,
-                scalePixels: parseInt(scalePixelsInput.value) || 3,
-                scaleKilometers: parseFloat(scaleKilometersInput.value) || 1,
-                blurb: mapBlurbInput.value || "",
-                pointsOfInterest: sortedPoints.map(p => ({ coords: p.coords, name: p.name || "", type: p.type || "Unknown", description: p.description || "", wikiLink: p.wikiLink || "" })),
-                regions: sortedRegions.map(r => ({ id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "", description: r.description || "", type: r.type || "", color: r.color || "#3388ff", fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity || 0.2, wikiLink: r.wikiLink || "", coordinates: r.coordinates || [] })),
-                roads: sortedLines.map(l => ({ 
-                    id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
-                    weight: l.weight || 3, dashArray: l.dashArray || "", description: l.description || "",
-                    wikiLink: l.wikiLink || "", coordinates: l.coordinates || []
-                }))
-            };
-            return mapData;
+            mapToUpdate.scalePixels = parseInt(scalePixelsInput.value) || 3;
+            mapToUpdate.scaleKilometers = parseFloat(scaleKilometersInput.value) || 1;
+            mapToUpdate.blurb = mapBlurbInput.value || "";
+
+            mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
+                coords: p.coords, name: p.name || "", type: p.type || "Unknown",
+                description: p.description || "", wikiLink: p.wikiLink || ""
+            }));
+
+            mapToUpdate.regions = sortedRegions.map(r => ({
+                id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
+                description: r.description || "", type: r.type || "", color: r.color || "#3388ff",
+                fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
+                wikiLink: r.wikiLink || "", coordinates: r.coordinates || []
+            }));
+            
+            mapToUpdate.roads = sortedLines.map(l => ({
+                id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
+                weight: l.weight || 3, dashArray: l.dashArray || "",
+                description: l.description || "", wikiLink: l.wikiLink || "",
+                coordinates: l.coordinates || []
+            }));
+            
+            // If we loaded a single map file, we should return an object, not an array.
+            if (masterMapData.length === 1 && updatedMasterData.length === 1 && masterMapData[0].id === mapToUpdate.id) {
+                return mapToUpdate;
+            }
+
+            return updatedMasterData;
         }
+
         function exportMapData() { 
-            const mapData = generateCompleteMapData();
-            if (!mapData) { alert("Export failed: Map state is incomplete. Check console."); setStatus('Export failed.', 'error'); return; }
-            const jsonString = JSON.stringify(mapData, null, 2);
-            showJsonModal(jsonString, mapData.id + '.json');
-            setStatus('Map data ready to copy from the modal.', 'success');
+            const finalData = generateCompleteMapData();
+            if (!finalData) { 
+                setStatus('Export failed.', 'error'); return; 
+            }
+            const jsonString = JSON.stringify(finalData, null, 2);
+            showJsonModal(jsonString, 'maps.json');
+            setStatus('Complete map data ready to copy from the modal.', 'success');
         }
         function showJsonModal(jsonContent, filename) { 
             const existingModal = document.querySelector('.json-modal');
@@ -1480,9 +1681,9 @@
             modal.appendChild(modalContent); document.body.appendChild(modal); textarea.focus(); textarea.select();
         }
         function copyCompleteJson() { 
-            const mapData = generateCompleteMapData();
-            if (!mapData) { alert("Copy failed: Map state incomplete."); setStatus('Copy failed.', 'error'); return; }
-            const jsonString = JSON.stringify(mapData, null, 2);
+            const finalData = generateCompleteMapData();
+            if (!finalData) { setStatus('Copy failed.', 'error'); return; }
+            const jsonString = JSON.stringify(finalData, null, 2);
             navigator.clipboard.writeText(jsonString)
                 .then(() => setStatus('Complete map JSON copied!', 'success'))
                 .catch(err => { setStatus('Failed to copy JSON.', 'error'); console.error("Copy JSON error:", err); });
@@ -1493,6 +1694,8 @@
             map = L.map('map', { crs: L.CRS.Simple, minZoom: -5, maxZoom: 5, center: [0, 0], zoom: 0, doubleClickZoom: false });
             
             map.on('click', (e) => {
+                if (!currentMapObject) return; // Don't do anything if no map is loaded
+
                 // This outer if handles ALL editing/creation modes to prevent fall-through to new item creation.
                 if (isEditingPoint || 
                     (currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) ||
@@ -1514,18 +1717,14 @@
                     else if (currentMode === 'lines' && isCreatingLine) { 
                         handleMapClickForLineCreation(e);
                     }
-                    // Note: Click handling for isEditingVertices (regions) or isEditingLineVertices (lines)
-                    // is usually managed by the vertex markers themselves (or their midpoints), not general map clicks.
-                    
-                    return; // IMPORTANT: Prevent fall-through after handling an editing/creation click.
+                    return; 
                 }
 
-                // If NOT in any editing/creation mode, proceed to logic for creating NEW items.
-                if (currentMode === 'points') { // No need for !isEditingPoint here due to the block above
+                if (currentMode === 'points') {
                     lastClickedCoordsArray = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
                     coordsDisplay.textContent = `[${lastClickedCoordsArray[0]}, ${lastClickedCoordsArray[1]}]`;
                     pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
-                    addPointBtn.disabled = !imageLayer; // Enable only if map is loaded
+                    addPointBtn.disabled = !currentMapObject;
                     setStatus('Coordinates captured. Enter point details and Add.'); pointNameInput.focus();
                 }
             });
@@ -1540,12 +1739,28 @@
             });
         }
 
+        function populateMapFileSelector() {
+            mapFileSelect.innerHTML = '<option value="">-- Select a map file --</option>';
+            for (const [name, path] of Object.entries(HARDCODED_MAP_FILES)) {
+                const option = document.createElement('option');
+                option.value = path;
+                option.textContent = name;
+                mapFileSelect.appendChild(option);
+            }
+        }
+
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            initMap(); populateMapSelector(); populateTypeDropdown();
-            resetUIState(); setMode('points');
+            initMap(); 
+            populateTypeDropdown();
+            populateMapFileSelector();
+            setMode('points');
+            resetUIForNewMap(); // Start with a clean slate
+            setStatus('Select a map file from the top dropdown to start.');
 
-            loadMapBtn.addEventListener('click', loadImage);
+
+            mapFileSelect.addEventListener('change', handleMapFileSelection);
+            loadSubMapBtn.addEventListener('click', loadMapFromSelector);
             exportMapDataBtn.addEventListener('click', exportMapData);
 
             modeTabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
@@ -1570,7 +1785,7 @@
             savePointChangesBtn.addEventListener('click', savePointChanges);
             cancelPointEditBtn.addEventListener('click', cancelPointEditing);
             clearPointsBtn.addEventListener('click', () => {
-                if (confirm('Clear all points?')) { collectedPoints = []; updatePointsOutput(); setPointEditingState(false); setStatus('All points cleared.'); }
+                if (confirm('Clear all points for this map?')) { collectedPoints = []; updatePointsOutput(); setPointEditingState(false); setStatus('All points cleared.'); }
             });
 
             startRegionBtn.addEventListener('click', startRegionCreation);
@@ -1582,7 +1797,7 @@
             addVerticesBtn.addEventListener('click', startAddingVertices);
             editVerticesBtn.addEventListener('click', startEditingVertices);
             clearRegionsBtn.addEventListener('click', () => {
-                if (confirm('Clear all regions?')) { collectedRegions = []; updateRegionsOutput(); setRegionEditingState(false); setRegionCreationState(false); setStatus('All regions cleared.'); }
+                if (confirm('Clear all regions for this map?')) { collectedRegions = []; updateRegionsOutput(); setRegionEditingState(false); setRegionCreationState(false); setStatus('All regions cleared.'); }
             });
             regionColorInput.addEventListener('input', () => { const c = regionColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ color: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ color: c }); });
             regionFillColorInput.addEventListener('input', () => { const c = regionFillColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillColor: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillColor: c }); });
@@ -1598,7 +1813,7 @@
             editLineVerticesBtn.addEventListener('click', startEditingLineVertices);
             cancelLineEditBtn.addEventListener('click', cancelLineEdit);
             clearLinesBtn.addEventListener('click', () => {
-                if (confirm('Clear all lines?')) { collectedLines = []; updateLinesOutput(); setLineEditState(false); setLineCreationState(false); setStatus('All lines cleared.'); }
+                if (confirm('Clear all lines for this map?')) { collectedLines = []; updateLinesOutput(); setLineEditState(false); setLineCreationState(false); setStatus('All lines cleared.'); }
             });
             lineColorInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ color: lineColorInput.value }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({color: lineColorInput.value}); });
             lineWeightInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ weight: parseInt(lineWeightInput.value) || 3 }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({weight: parseInt(lineWeightInput.value) || 3 }); });
