@@ -591,8 +591,8 @@
     {
       "id": "region-druids-grove",
       "name": "Druids Grove",
-      "description": "",
-      "type": "region",
+      "description": "Ran by an old group of druids who are devided by those who worship the old way of Pythia and those who see Strahd as a god sent to them.",
+      "type": "Political",
       "color": "#3388ff",
       "fillColor": "#3388ff",
       "fillOpacity": 0.2,
@@ -671,7 +671,7 @@
     {
       "id": "region-fingerling-vallies",
       "name": "Fingerling Vallies",
-      "description": "",
+      "description": "These vallies are like fingers that all lead to Zmeino Ozero. These tight vallies are said to be home to fearal folk.",
       "type": "region",
       "color": "#3388ff",
       "fillColor": "#3388ff",
@@ -1437,58 +1437,6 @@
         [
           2701,
           3345
-        ]
-      ]
-    },
-    {
-      "id": "region-lake-8",
-      "name": "Lake 8",
-      "description": "",
-      "type": "region",
-      "color": "#3388ff",
-      "fillColor": "#3388ff",
-      "fillOpacity": 0.2,
-      "wikiLink": "",
-      "coordinates": [
-        [
-          2728,
-          4625
-        ],
-        [
-          2679,
-          4641
-        ],
-        [
-          2653,
-          4660
-        ],
-        [
-          2627,
-          4775
-        ],
-        [
-          2648,
-          4800
-        ],
-        [
-          2679,
-          4793
-        ],
-        [
-          2698,
-          4760
-        ],
-        [
-          2746,
-          4735
-        ],
-        [
-          2752,
-          4685
-        ],
-        [
-          2741,
-          4636
         ]
       ]
     },
