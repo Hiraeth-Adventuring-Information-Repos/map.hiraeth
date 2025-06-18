@@ -8,12 +8,10 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin=""/>
 
-    <!-- Google Font: EB Garamond -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
@@ -841,14 +839,11 @@
 </style>
 </head>
 <body>
-    <!-- Container and Map Structure -->
     <div class="container">
         <div id="sidebar">
             <h2>Select Map</h2>
-            <!-- Search and Filter Section REMOVED from here -->
             <ul id="map-list">
-                <!-- Populated by JS after data load -->
-            </ul>
+                </ul>
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="theme-checkbox">
                     <input type="checkbox" id="theme-checkbox" />
@@ -861,7 +856,6 @@
             <button id="toggle-sidebar-btn" title="Collapse Sidebar">&laquo;</button>
             <div id="map"></div>
 
-            <!-- Map Blurb Display -->
             <div id="map-blurb"></div>
 
             <div id="loading-indicator" style="display: none;">
@@ -872,43 +866,24 @@
                 </div>
             </div>
 
-            <!-- Map Control Buttons -->
             <button id="toggle-markers-btn" title="Toggle Markers" class="map-control-button leaflet-control"></button>
             <button id="toggle-filters-btn" title="Toggle Filters" class="map-control-button leaflet-control"></button>
             <button id="measure-tool-btn" title="Measure Distance" class="map-control-button leaflet-control"></button>
             <button id="toggle-sound-btn" title="Toggle Sound" class="map-control-button leaflet-control">
-                <span id="sound-icon">🔇</span> <!-- Start muted -->
-            </button>
+                <span id="sound-icon">🔇</span> </button>
 
-            <!-- Region Filter Panel (REMOVED - Merged into POI Filter Panel) -->
-            <!-- <div id="region-filter-container" class="leaflet-control"> ... </div> -->
-
-            <!-- Combined Filter Panel -->
             <div id="poi-filter-container" class="leaflet-control">
                  <h3>Filter by Type:</h3>
-                 <!-- Checkboxes will be populated by JS -->
                  <div class="filter-item">
                      <input type="checkbox" id="filter-toggle-all" checked>
                      <label for="filter-toggle-all">Show All / Hide All</label>
                  </div>
-                 <!-- Region filters will be added here under a new h3 if needed -->
-            </div>
-            <!-- END: Filter Panel -->
-
-            <!-- Search Control Container -->
+                 </div>
             <div id="search-control-container" class="leaflet-control">
                 <input type="search" id="poi-search-input" placeholder="Search locations...">
             </div>
-            <!-- END: Search Control Container -->
-
-            <!-- Search Results Container -->
             <div id="search-results-container" class="leaflet-control">
-                <!-- Results populated by JS -->
-            </div>
-            <!-- END: Search Results Container -->
-
-
-            <!-- Bottom Link Bar -->
+                </div>
             <div id="bottom-link-bar">
                 <a href="https://jsnj.link/maps-to-wiki" target="_blank">Wiki</a> |
                 <a href="https://jsnj.link/maps-blog-post" target="_blank">Blog</a> |
@@ -918,22 +893,17 @@
         </div>
     </div>
 
-    <!-- Audio Elements -->
-    <audio id="light-ambient" loop preload="auto"> <!-- Use preload="auto" -->
-      <source src="sounds/gentle-winds.mp3" type="audio/mpeg">
+    <audio id="light-ambient" loop preload="auto"> <source src="sounds/gentle-winds.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
-    <audio id="dark-ambient" loop preload="auto"> <!-- Use preload="auto" -->
-      <source src="sounds/night-ambient.mp3" type="audio/mpeg">
+    <audio id="dark-ambient" loop preload="auto"> <source src="sounds/night-ambient.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
 
-    <!-- Main Application JS -->
     <script>
         // --- Global Variables ---
         let mapData = []; // Will be populated by loadMapData
@@ -1651,7 +1621,7 @@
                                                // For now, let's assume default pane; this will place roads at the bottom, then regions above them (if also sent to back).
                                                // If you want roads ON TOP of regions:
                                                // currentRegionGroup.bringToBack();
-                                               // (roads are already added, they will be above regions unless also sent back AFTER regions)
+                                               // (roads are already added, they will be above regions unless also sent to back AFTER regions)
             } else {
                 console.error("loadMap: currentRoadGroup.bringToBack is not a function!", currentRoadGroup);
             }
@@ -1769,8 +1739,6 @@
             // Check the master toggle state
             const allTypesChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
 
-            console.log("Region visibility update:", { regionsVisible, typeFilterValues, allTypesChecked });
-
             currentRegionGroup.eachLayer(layer => {
                 const region = layer.regionData;
                 if (!region) return;
@@ -1778,19 +1746,19 @@
                 // A region's type matches if the master toggle is checked OR its specific type is checked
                 const typeMatch = allTypesChecked || typeFilterValues.includes(region.type);
 
-                console.log(`- Region "${region.name}" (${region.type}): typeMatch=${typeMatch}`);
-
-                // Apply visibility based on *both* the overall toggle AND the type filter match
+                // Apply visibility and interactivity based on *both* the overall toggle AND the type filter match
                 if (regionsVisible && typeMatch) { // regionsVisible is synced with markersVisible
                     layer.setStyle({
-                        opacity: 1, // Make border visible
-                        fillOpacity: region.fillOpacity || 0.2 // Use defined fill opacity
+                        stroke: true, // Make path stroke visible and interactive
+                        fill: true,   // Make path fill visible and interactive
+                        opacity: 1,
+                        fillOpacity: region.fillOpacity || 0.2
                     });
                     layer.bringToBack(); // Ensure regions stay behind markers
                 } else {
                     layer.setStyle({
-                        opacity: 0, // Hide border
-                        fillOpacity: 0 // Hide fill
+                        stroke: false, // Make path stroke invisible and non-interactive
+                        fill: false    // Make path fill invisible and non-interactive
                     });
                 }
             });
@@ -1810,7 +1778,7 @@
 
         if (item.type === 'folder') {
             // Add this log for folders
-            console.log(`-- It's a Folder. Name: '<span class="math-inline">\{item\.name\}', Status\: '</span>{item.status}'`);
+            console.log(`-- It's a Folder. Name: '${item.name}', Status: '${item.status}'`);
 
             listItem.classList.add('folder', 'closed');
             const header = document.createElement('div');
@@ -1858,7 +1826,7 @@
 
         } else { // Map Item
             // Add this log for map items
-            console.log(`-- It's a Map Item. Name: '<span class="math-inline">\{item\.name\}', Status\: '</span>{item.status}'`);
+            console.log(`-- It's a Map Item. Name: '${item.name}', Status: '${item.status}'`);
 
             listItem.classList.add('map-item');
             listItem.textContent = item.name || 'Unnamed Map!'; // Add fallback text
@@ -2922,7 +2890,6 @@ async function processChild(childId, level = 0) {
 
     </script>
 
-    <!-- Work in Progress Popup -->
     <div id="wip-popup">
         <p>This site is a Work in Progress</p>
         <p>Markers, Names, and Map May Not Be Acurate</p>
@@ -2942,8 +2909,7 @@ async function processChild(childId, level = 0) {
                 <li style="margin-bottom: 8px;"><kbd>/</kbd> : Focus Search Bar</li>
                 <li style="margin-bottom: 8px;"><kbd>Esc</kbd> : Close Popup / Panel / Cancel Measurement</li>
                 <li style="margin-bottom: 8px;"><kbd>?</kbd> : Show/Hide this Help</li>
-                <!-- Add more as you implement them -->
-            </ul>
+                </ul>
         </div>
     </div>
 
