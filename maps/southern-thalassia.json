@@ -1,0 +1,12 @@
+{
+    "id": "southern-thalassia",
+    "name": "Southern Thalassia",
+    "width": 4096,
+    "height": 3072,
+    "imageUrl": "maps/southern-thalassia.webp",
+    "scalePixels": 53,
+    "scaleKilometers": 19.31213,
+    "blurb": "This map is still under devlopment.",
+    "pointsOfInterest": [],
+    "regions": []
+}
