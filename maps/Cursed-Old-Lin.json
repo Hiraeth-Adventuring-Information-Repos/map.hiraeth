@@ -439,8 +439,8 @@
     {
       "id": "region-central-mountains",
       "name": "Central Mountains",
-      "description": "",
-      "type": "region",
+      "description": "These mountains are tall and cold and tretrious.  Groups of Goliath nomads wander these mountains, rumors say of tressure or gold up here but few are brave enough to go looking.",
+      "type": "Terrain",
       "color": "#3388ff",
       "fillColor": "#3388ff",
       "fillOpacity": 0.2,
@@ -527,8 +527,8 @@
     {
       "id": "region-damned-woods",
       "name": "Damned Woods",
-      "description": "",
-      "type": "region",
+      "description": "This forest is near the nexus of the vile evil of this land.  It is full of cursed creatures, allies of Strahd, and horrors best left alone.  Some are just those lost who want to plead with the Count for mercy or those gripping for more power.",
+      "type": "Forest",
       "color": "#3388ff",
       "fillColor": "#3388ff",
       "fillOpacity": 0.2,
