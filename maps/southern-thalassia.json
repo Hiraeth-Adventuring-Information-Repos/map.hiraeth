@@ -1,8 +1,8 @@
 {
     "id": "southern-thalassia",
     "name": "Southern Thalassia",
-    "width": 4096,
-    "height": 3072,
+    "width": 8192,
+    "height": 6144,
     "imageUrl": "maps/southern-thalassia.webp",
     "scalePixels": 53,
     "scaleKilometers": 19.31213,
