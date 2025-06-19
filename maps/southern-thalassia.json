@@ -6,8 +6,18 @@
     "imageUrl": "maps/southern-thalassia.webp",
     "scalePixels": 53,
     "scaleKilometers": 19.31213,
-    "blurb": "This map is still under devlopment.",
+    "blurb": "Southern Thalassia is a significant maritime region characterized by a series of islands formed and scared by the 'Night of Falling Stars,' an event wherein lunar and asteroidal fragments impacted the region, depositing exotic minerals and creating unique geological formations. This celestial deposition has resulted in altered atmospheric conditions, residual magical energies, and a notable biodiversity influenced by stellar radiation, making the region a focal point for historical study, resource acquisition (particularly rare minerals and energy concentrations), and contested maritime activity, including piracy, with various factions vying for control over these transformed territories.  This map is still under devlopment.",
     "pointsOfInterest": [
+      {
+        "coords": [
+          1623,
+          3647
+        ],
+        "name": "Cavaross",
+        "type": "City",
+        "description": "",
+        "wikiLink": ""
+      },
       {
         "coords": [
           4575,
@@ -20,11 +30,41 @@
       },
       {
         "coords": [
+          3928,
+          3306
+        ],
+        "name": "Fyllns Hold",
+        "type": "Town",
+        "description": "",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
           3394,
           4039
         ],
         "name": "Gales Rest",
         "type": "Town",
+        "description": "",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
+          2623,
+          2222
+        ],
+        "name": "Golden Sands",
+        "type": "Town",
+        "description": "",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
+          1840,
+          1184
+        ],
+        "name": "Moonshadow Cove",
+        "type": "Temple",
         "description": "",
         "wikiLink": ""
       },
@@ -47,13 +87,234 @@
         "type": "City",
         "description": "",
         "wikiLink": ""
+      },
+      {
+        "coords": [
+          3406,
+          3386
+        ],
+        "name": "Rusty Anchor",
+        "type": "Fort",
+        "description": "",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
+          3346,
+          3581
+        ],
+        "name": "Talking Stones",
+        "type": "Point of Interest",
+        "description": "",
+        "wikiLink": ""
       }
     ],
-    "regions": [],
+    "regions": [
+      {
+        "id": "region-last-elven-state",
+        "name": "Last Elven State",
+        "description": "",
+        "type": "Territory",
+        "color": "#5c0700",
+        "fillColor": "#ff2600",
+        "fillOpacity": 0.05,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            228,
+            228
+          ],
+          [
+            2228,
+            212
+          ],
+          [
+            2308,
+            1756
+          ],
+          [
+            2584,
+            2492
+          ],
+          [
+            2652,
+            3160
+          ],
+          [
+            3036,
+            3572
+          ],
+          [
+            3256,
+            4088
+          ],
+          [
+            3684,
+            5784
+          ],
+          [
+            3920,
+            6580
+          ],
+          [
+            4680,
+            7980
+          ],
+          [
+            224,
+            7968
+          ]
+        ]
+      },
+      {
+        "id": "region-mirror-way",
+        "name": "Mirror Way",
+        "description": "",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            1287,
+            2636
+          ],
+          [
+            1355,
+            2642
+          ],
+          [
+            1429,
+            2653
+          ],
+          [
+            1514,
+            2671
+          ],
+          [
+            1568,
+            2694
+          ],
+          [
+            1566,
+            2696
+          ],
+          [
+            1566,
+            2704
+          ],
+          [
+            1565,
+            2704
+          ],
+          [
+            1565,
+            2708
+          ],
+          [
+            1505,
+            2708
+          ],
+          [
+            1424,
+            2693
+          ],
+          [
+            1350,
+            2679
+          ],
+          [
+            1283,
+            2657
+          ],
+          [
+            1288,
+            2654
+          ],
+          [
+            1285,
+            2641
+          ],
+          [
+            1284,
+            2636
+          ]
+        ]
+      },
+      {
+        "id": "region-state-one",
+        "name": "State One",
+        "description": "",
+        "type": "Territory",
+        "color": "#001e57",
+        "fillColor": "#0433ff",
+        "fillOpacity": 0.05,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2256,
+            688
+          ],
+          [
+            2224,
+            264
+          ],
+          [
+            2312,
+            1736
+          ],
+          [
+            2592,
+            2480
+          ],
+          [
+            2656,
+            3136
+          ],
+          [
+            3048,
+            3584
+          ],
+          [
+            3304,
+            4192
+          ],
+          [
+            3624,
+            5544
+          ],
+          [
+            3928,
+            6560
+          ],
+          [
+            4544,
+            7672
+          ],
+          [
+            4664,
+            7952
+          ],
+          [
+            5936,
+            7984
+          ],
+          [
+            5944,
+            192
+          ],
+          [
+            2232,
+            216
+          ]
+        ]
+      }
+    ],
     "roads": [
       {
         "id": "line-southern-thalassia-1750291206653-ft4ff",
-        "name": "A Trade (Alt)",
+        "name": "Guilded Nations Alt Rout",
         "type": "",
         "color": "#485afe",
         "weight": 3,
@@ -137,7 +398,7 @@
       },
       {
         "id": "line-southern-thalassia-1750291168383-4k79l",
-        "name": "A Trade Route",
+        "name": "Guilded Nations Trade Route",
         "type": "",
         "color": "#0433ff",
         "weight": 3,
@@ -301,7 +562,7 @@
       },
       {
         "id": "line-southern-thalassia-1750291285737-rmki3",
-        "name": "B Trade",
+        "name": "Last Elven State Trade Route",
         "type": "",
         "color": "#ff2600",
         "weight": 3,
