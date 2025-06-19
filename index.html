@@ -314,9 +314,9 @@
         /* Map Blurb */
         #map-blurb {
             position: absolute;
-            top: 10px;
-            right: 10px; /* Back to default right */
-            z-index: 999; /* Below controls but above map */
+            top: 50px; 
+            right: 10px;
+            z-index: 999;
             background-color: var(--glass-bg-light);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -327,12 +327,15 @@
             max-width: 250px; /* Limit width */
             font-size: 0.9rem;
             box-shadow: 0 1px 5px var(--shadow-color);
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
             opacity: 0; /* Hidden by default */
-            pointer-events: none; /* Don't block map clicks */
+            pointer-events: none; /* Don't block map clicks when hidden */
+            transition: opacity 0.3s ease, transform 0.3s ease; /* Add transform to transition */
+            transform: scale(0.95); /* Start slightly smaller */
+            transform-origin: top right; /* Animate from the corner */
         }
         #map-blurb.visible {
             opacity: 1;
+            transform: scale(1); /* Scale to full size when visible */
             pointer-events: auto;
         }
         body.dark-theme #map-blurb {
@@ -428,6 +431,20 @@
         .map-control-button:hover {
             background-color: rgba(255, 255, 255, 0.75);
         }
+        
+        /* --- CORRECTED: Blurb Toggle Button --- */
+        #toggle-blurb-btn {
+            top: 10px;
+            right: 10px; /* Position in the top right corner */
+            left: auto; /* IMPORTANT: Override the 'left' from .map-control-button */
+            z-index: 1000; /* Ensure it's above the map */
+            display: none; /* Hide by default, JS will show it */
+        }
+        #toggle-blurb-btn.active {
+             background-color: var(--active-bg);
+        }
+        /* --- END CORRECTION --- */
+        
         body.dark-theme .map-control-button {
             background-color: var(--glass-bg-dark);
             border-color: var(--glass-border-dark);
@@ -754,9 +771,9 @@
             width: 200px; /* Example: Make sidebar narrower */
             /* Or you might hide it completely and use the toggle */
           }
-        .leaflet-control-zoom {
+         .leaflet-control-zoom {
             display: none;
-        }
+         }
 
           .map-control-button {
             /* Example: Make map buttons larger for touch */
@@ -776,9 +793,9 @@
             width: 180px; /* Example: Adjust search input width */
           }
           #search-control-container {
-             /* Maybe adjust padding or position */
-             padding: 5px;
-          }
+               /* Maybe adjust padding or position */
+               padding: 5px;
+           }
 
           #map-blurb {
             max-width: 150px;
@@ -787,52 +804,52 @@
           }
 
           .leaflet-popup-content {
-              font-size: 1rem; /* Slightly smaller popup text */
-          }
+               font-size: 1rem; /* Slightly smaller popup text */
+           }
 
           /* Add other adjustments as needed: font sizes, padding, margins */
         }
 
         @media (max-width: 480px) {
-           /* Styles for even smaller screens (optional) */
-           #sidebar {
+            /* Styles for even smaller screens (optional) */
+            #sidebar {
                /* Maybe hide it by default on very small screens */
                /* width: 0; */
                /* position: fixed; /* Example: make it an overlay */
                /* height: 100%; */
                /* left: -200px; /* Start off-screen */
                /* transition: left 0.3s ease; */
-           }
-           /* Add styles to show/hide overlay sidebar */
+            }
+            /* Add styles to show/hide overlay sidebar */
 
-           #bottom-link-bar {
+            #bottom-link-bar {
                font-size: 0.75rem; /* Smaller text on bottom bar */
                height: auto; /* Allow wrapping */
                padding: 5px;
                flex-wrap: wrap; /* Allow links to wrap */
                justify-content: space-around;
-           }
-            #bottom-link-bar a {
-                 margin: 2px 5px;
             }
+             #bottom-link-bar a {
+                 margin: 2px 5px;
+             }
         }
         @media (max-width: 600px) { /* Adjust breakpoint as needed */
             #wip-popup {
-                /* Center horizontally */
-                left: 50%;
-                transform: translateX(-50%);
-                /* Remove right positioning */
-                right: auto;
-                /* Position it above the search bar */
-                /* (search bar is bottom: 40px, estimate its height + spacing) */
-                bottom: 85px; /* Adjust this value as needed */
-                /* Ensure it doesn't overlap the toggle button */
-                max-width: calc(100% - 30px); /* Prevent full width */
+                 /* Center horizontally */
+                 left: 50%;
+                 transform: translateX(-50%);
+                 /* Remove right positioning */
+                 right: auto;
+                 /* Position it above the search bar */
+                 /* (search bar is bottom: 40px, estimate its height + spacing) */
+                 bottom: 85px; /* Adjust this value as needed */
+                 /* Ensure it doesn't overlap the toggle button */
+                 max-width: calc(100% - 30px); /* Prevent full width */
             }
             #wip-popup.fade-out {
-                opacity: 0;
-                transform: translateY(15px); /* Optional slide down */
-                pointer-events: none; /* Prevent interaction after fading */
+                 opacity: 0;
+                 transform: translateY(15px); /* Optional slide down */
+                 pointer-events: none; /* Prevent interaction after fading */
             }
         }
         
@@ -857,6 +874,7 @@
             <div id="map"></div>
 
             <div id="map-blurb"></div>
+            <button id="toggle-blurb-btn" class="map-control-button leaflet-control" title="Toggle Map Info">ℹ️</button>
 
             <div id="loading-indicator" style="display: none;">
                 <div class="spinner"></div>
@@ -995,6 +1013,7 @@
         const themeToggle = document.getElementById('theme-checkbox');
         const bodyElement = document.body;
         const mapElement = document.getElementById('map'); // Get map div
+        const toggleBlurbBtn = document.getElementById('toggle-blurb-btn');
         const mapBlurbElement = document.getElementById('map-blurb');
         const toggleMarkersBtn = document.getElementById('toggle-markers-btn');
         const searchControlContainer = document.getElementById('search-control-container');
@@ -1037,8 +1056,8 @@
             for (const item of items) {
                  if (item.id) return item.id;
                  if (item.type === 'folder' && item.children) {
-                     const foundId = findFirstLoadableIdRecursive(item.children); // Re-run without status check
-                     if (foundId) return foundId;
+                      const foundId = findFirstLoadableIdRecursive(item.children); // Re-run without status check
+                      if (foundId) return foundId;
                  }
             }
             return null;
@@ -1061,9 +1080,10 @@
                 sidebarState: sidebarState || 'o'
             };
         }
+        
+        // --- FIX: Corrected generateHash to only return the hash fragment ---
         function generateHash(mapId, sidebarState) {
-            const currentParams = window.location.search;
-            return `#${mapId || ''}-s=${sidebarState}${currentParams}`;
+            return `#${mapId || ''}-s=${sidebarState}`;
         }
 
         // --- Function to Set Sidebar State ---
@@ -1081,9 +1101,12 @@
 
                  currentSidebarState = state;
                  if (updateHash && currentlyLoadedMapId) {
-                     const newHash = generateHash(currentlyLoadedMapId, state);
-                     console.log("Updating hash from setSidebarState:", newHash);
-                     history.replaceState(null, '', newHash); // Use replaceState for sidebar toggle
+                    // --- FIX: Update history with search params and new hash ---
+                    const newHash = generateHash(currentlyLoadedMapId, state);
+                    const currentSearch = window.location.search;
+                    const newUrl = `${currentSearch}${newHash}`;
+                    console.log("Updating URL from setSidebarState:", newUrl);
+                    history.replaceState(null, '', newUrl); // Use replaceState for sidebar toggle
                  }
             } else {
                  currentSidebarState = state;
@@ -1411,7 +1434,12 @@
                 measureToolBtn.style.display = 'none';
                 toggleFiltersBtn.style.display = 'none';
                 searchControlContainer.style.display = 'none';
-                if (updateHash) history.pushState(null, '', generateHash('', currentSidebarState));
+                if (updateHash) {
+                    // --- FIX: Update history with search params and new hash ---
+                    const newHash = generateHash('', currentSidebarState);
+                    const currentSearch = window.location.search;
+                    history.pushState(null, '', `${currentSearch}${newHash}`);
+                }
 
                 if (loadingIndicator) {
                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
@@ -1419,24 +1447,18 @@
                 }
                 return;
             }
-
-            if (updateHash) {
-                const newHash = generateHash(mapId, currentSidebarState);
-                const currentPath = window.location.pathname;
-                const currentSearch = window.location.search;
-                history.pushState(
-                    { mapId: mapId, sidebarState: currentSidebarState },
-                    selectedMap.name,
-                    `${currentPath}${currentSearch}${newHash}`
-                );
-            }
+            
+            // --- This block was removed as the logic is now handled by the history.pushState below ---
 
             if (mapId === currentlyLoadedMapId) {
                  console.log(`Map ${mapId} is already loaded.`);
                  if (updateHash) {
-                     const currentHash = generateHash(mapId, currentSidebarState);
-                     if (window.location.hash !== currentHash) {
-                          history.replaceState(null, '', currentHash);
+                     // --- FIX: Ensure the full correct URL is in the history state ---
+                     const newHash = generateHash(mapId, currentSidebarState);
+                     const currentSearch = window.location.search;
+                     const newUrl = `${currentSearch}${newHash}`;
+                     if (window.location.href !== new URL(newUrl, window.location.href).href) {
+                          history.replaceState(null, '', newUrl);
                      }
                  }
                  if (loadingIndicator) {
@@ -1465,7 +1487,12 @@
                 toggleFiltersBtn.style.display = 'none';
                 searchControlContainer.style.display = 'none';
                 currentlyLoadedMapId = null;
-                if (updateHash) history.pushState(null, '', generateHash('', currentSidebarState));
+                if (updateHash) {
+                    // --- FIX: Update history with search params and new hash ---
+                    const newHash = generateHash('', currentSidebarState);
+                    const currentSearch = window.location.search;
+                    history.pushState(null, '', `${currentSearch}${newHash}`);
+                }
 
                 if (loadingIndicator) {
                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
@@ -1555,7 +1582,7 @@
                         // mapHeight and mapWidth are defined earlier in loadMap
                         if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) { //
                              const marker = L.marker(point.coords); //
-                             
+                            
                              // It's good practice to check if marker was created, though L.marker usually throws its own error if L is undefined.
                              // The ReferenceError for 'marker' is unusual here unless L.marker itself has an issue.
                              if (marker) {
@@ -1617,11 +1644,11 @@
 
             if (currentRoadGroup && typeof currentRoadGroup.bringToBack === 'function') {
                  currentRoadGroup.bringToBack(); // Roads will also go to back, potentially over regions if pane is same.
-                                               // To ensure roads are above regions, you might need separate panes or careful ordering.
-                                               // For now, let's assume default pane; this will place roads at the bottom, then regions above them (if also sent to back).
-                                               // If you want roads ON TOP of regions:
-                                               // currentRegionGroup.bringToBack();
-                                               // (roads are already added, they will be above regions unless also sent to back AFTER regions)
+                                                 // To ensure roads are above regions, you might need separate panes or careful ordering.
+                                                 // For now, let's assume default pane; this will place roads at the bottom, then regions above them (if also sent to back).
+                                                 // If you want roads ON TOP of regions:
+                                                 // currentRegionGroup.bringToBack();
+                                                 // (roads are already added, they will be above regions unless also sent to back AFTER regions)
             } else {
                 console.error("loadMap: currentRoadGroup.bringToBack is not a function!", currentRoadGroup);
             }
@@ -1629,7 +1656,7 @@
             // Markers are added to currentMarkerGroup which is then added to map. They usually appear on top by default.
             // If explicit control is needed:
             // if (currentMarkerGroup && typeof currentMarkerGroup.bringToFront === 'function') {
-            //    currentMarkerGroup.bringToFront();
+            //   currentMarkerGroup.bringToFront();
             // }
 
 
@@ -1642,19 +1669,25 @@
             searchControlContainer.style.display = hasPOIs ? 'block' : 'none'; // Search for POIs
 
             const hasValidScale = typeof selectedMap.scalePixels === 'number' && selectedMap.scalePixels > 0 &&
-                                typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
+                                 typeof selectedMap.scaleKilometers === 'number' && selectedMap.scaleKilometers > 0;
             measureToolBtn.style.display = hasValidScale ? 'block' : 'none';
 
 
             toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
             toggleMarkersBtn.title = markersVisible ? "Hide Markers & Regions" : "Show Markers & Regions";
 
+            // --- Blurb Handling ---
             if (selectedMap.blurb) {
                 mapBlurbElement.innerHTML = selectedMap.blurb;
-                mapBlurbElement.classList.add('visible');
+                toggleBlurbBtn.style.display = 'block'; // Show the button
+                // Ensure blurb is hidden on map load
+                mapBlurbElement.classList.remove('visible');
+                toggleBlurbBtn.classList.remove('active');
             } else {
                 mapBlurbElement.innerHTML = '';
+                toggleBlurbBtn.style.display = 'none'; // Hide the button
                 mapBlurbElement.classList.remove('visible');
+                toggleBlurbBtn.classList.remove('active');
             }
 
             document.querySelectorAll('#map-list .map-item, #map-list .folder-header').forEach(item => item.classList.remove('active'));
@@ -1676,8 +1709,14 @@
 
             currentlyLoadedMapId = mapId;
             if (updateHash) {
+                // --- FIX: Update history with search params and new hash ---
                 const newHash = generateHash(mapId, currentSidebarState);
-                history.pushState({ mapId: mapId, sidebarState: currentSidebarState }, selectedMap.name, newHash);
+                const currentSearch = window.location.search;
+                history.pushState(
+                    { mapId: mapId, sidebarState: currentSidebarState },
+                    selectedMap.name,
+                    `${currentSearch}${newHash}`
+                );
             }
             console.log(`Finished setting up map load for: ${selectedMap.name}`);
         }
@@ -1815,8 +1854,8 @@
                  header.innerHTML = `<span class="folder-toggle-icon"></span><span>${item.name || 'Unnamed Folder!'} (Soon)</span>`;
                  header.title = `${item.name || 'Coming Soon!'} - Coming Soon!`;
                  header.addEventListener('dblclick', (e) => {
-                     e.stopPropagation();
-                     alert(`The map "${item.name || 'this map'}" is coming soon!`);
+                      e.stopPropagation();
+                      alert(`The map "${item.name || 'this map'}" is coming soon!`);
                  });
             } else {
                  header.title = `Click to toggle '${item.name || 'Unnamed Folder!'}'.`;
@@ -2037,9 +2076,9 @@
                 // Start playing the correct track based on the current theme
                 const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
                  if (currentTheme === 'dark') {
-                    fadeAudio(darkAmbient, 0.3);
+                     fadeAudio(darkAmbient, 0.3);
                 } else {
-                    fadeAudio(lightAmbient, 0.3);
+                     fadeAudio(lightAmbient, 0.3);
                 }
             } else {
                 soundIcon.textContent = '🔇';
@@ -2068,7 +2107,15 @@
                 searchResultsContainer.style.display = 'none';
             }
             // Measurement logic handled separately
+            // --- Hide Blurb on Map Click ---
+            if (mapBlurbElement.classList.contains('visible')) {
+                mapBlurbElement.classList.remove('visible');
+                toggleBlurbBtn.classList.remove('active');
+            }
         });
+
+        // --- Blurb Element Click Stop ---
+        mapBlurbElement.addEventListener('click', (e) => e.stopPropagation());
 
 
         // --- Handle Hash Changes / Back/Forward Navigation ---
@@ -2104,6 +2151,12 @@
             updateVisibleMarkersAndSearch(); // Update marker visibility
 
             console.log(`Markers and regions toggled. Visible: ${markersVisible}`);
+        });
+        // --- Blurb Toggle Button Logic ---
+        toggleBlurbBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent map click event
+            mapBlurbElement.classList.toggle('visible');
+            toggleBlurbBtn.classList.toggle('active');
         });
 
         // --- Filter Panel Toggle Logic ---
@@ -2219,7 +2272,7 @@
                 // const scalePx = currentMapInfo?.scalePixels;
                 // const scaleKm = currentMapInfo?.scaleKilometers; // Represents the unit value for scale, e.g., km, miles
                 // const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
-                //                       typeof scaleKm === 'number' && scaleKm > 0;
+                //                         typeof scaleKm === 'number' && scaleKm > 0;
 
                 if (hasValidScale) {
                     kmDistance = (pixelDistance / scalePx) * scaleKm;
@@ -2360,94 +2413,94 @@
         }
 
         function updateMeasurementTooltips() {
-                    // Ensure the function doesn't run if not measuring or no path exists
-                    if (!currentlyLoadedMapId || multiPointPath.length < 1) {
-                        // Clean up any leftover tooltip if the path becomes empty
-                        if (multiPointTotalTooltip) {
-                            map.removeLayer(multiPointTotalTooltip);
-                            multiPointTotalTooltip = null;
-                        }
-                        return;
-                    }
+                         // Ensure the function doesn't run if not measuring or no path exists
+                         if (!currentlyLoadedMapId || multiPointPath.length < 1) {
+                             // Clean up any leftover tooltip if the path becomes empty
+                             if (multiPointTotalTooltip) {
+                                 map.removeLayer(multiPointTotalTooltip);
+                                 multiPointTotalTooltip = null;
+                             }
+                             return;
+                         }
 
-                    // Get map scale information
-                    const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
-                    const scalePx = currentMapInfo?.scalePixels;
-                    // Assuming scaleKilometers in JSON truly represents kilometers for this calculation
-                    const scaleKmValue = currentMapInfo?.scaleKilometers;
-                    // Use 'km' as the unit name if scaleUnitName is not set or is generic,
-                    // but prefer scaleUnitName if it's specific (e.g. "miles" and you adjusted paces accordingly)
-                    const scaleUnitName = (currentMapInfo?.scaleUnitName && currentMapInfo.scaleUnitName !== 'units') ? currentMapInfo.scaleUnitName : 'km';
+                         // Get map scale information
+                         const currentMapInfo = findMapRecursive(mapData, currentlyLoadedMapId);
+                         const scalePx = currentMapInfo?.scalePixels;
+                         // Assuming scaleKilometers in JSON truly represents kilometers for this calculation
+                         const scaleKmValue = currentMapInfo?.scaleKilometers;
+                         // Use 'km' as the unit name if scaleUnitName is not set or is generic,
+                         // but prefer scaleUnitName if it's specific (e.g. "miles" and you adjusted paces accordingly)
+                         const scaleUnitName = (currentMapInfo?.scaleUnitName && currentMapInfo.scaleUnitName !== 'units') ? currentMapInfo.scaleUnitName : 'km';
 
-                    const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
-                                        typeof scaleKmValue === 'number' && scaleKmValue > 0;
+                         const hasValidScale = typeof scalePx === 'number' && scalePx > 0 &&
+                                              typeof scaleKmValue === 'number' && scaleKmValue > 0;
 
-                    // Calculate total pixel distance
-                    let totalPixelDistance = 0;
-                    if (multiPointPath.length >= 2) {
-                        for (let i = 0; i < multiPointPath.length - 1; i++) {
-                            totalPixelDistance += map.distance(multiPointPath[i], multiPointPath[i + 1]);
-                        }
-                    }
+                         // Calculate total pixel distance
+                         let totalPixelDistance = 0;
+                         if (multiPointPath.length >= 2) {
+                             for (let i = 0; i < multiPointPath.length - 1; i++) {
+                                 totalPixelDistance += map.distance(multiPointPath[i], multiPointPath[i + 1]);
+                             }
+                         }
 
-                    // --- Build the Tooltip Content String ---
-                    let tooltipContent = '';
-                    let displayDistanceString = '';
+                         // --- Build the Tooltip Content String ---
+                         let tooltipContent = '';
+                         let displayDistanceString = '';
 
-                    if (hasValidScale) {
-                        // Calculate distance in kilometers (or the unit defined by scaleKmValue)
-                        const totalDistanceInKm = (totalPixelDistance / scalePx) * scaleKmValue;
-                        displayDistanceString = `${totalDistanceInKm.toFixed(2)} ${scaleUnitName}`;
+                         if (hasValidScale) {
+                             // Calculate distance in kilometers (or the unit defined by scaleKmValue)
+                             const totalDistanceInKm = (totalPixelDistance / scalePx) * scaleKmValue;
+                             displayDistanceString = `${totalDistanceInKm.toFixed(2)} ${scaleUnitName}`;
 
-                        // --- Updated Pace Values in Kilometers per Day ---
-                        const fastPaceKmPerDay = 48.28;
-                        const normalPaceKmPerDay = 38.62;
-                        const slowPaceKmPerDay = 28.97;
-                        // ---
+                             // --- Updated Pace Values in Kilometers per Day ---
+                             const fastPaceKmPerDay = 48.28;
+                             const normalPaceKmPerDay = 38.62;
+                             const slowPaceKmPerDay = 28.97;
+                             // ---
 
-                        // Calculate days for each pace
-                        const daysFastPace = (totalDistanceInKm / fastPaceKmPerDay).toFixed(1);
-                        const daysNormalPace = (totalDistanceInKm / normalPaceKmPerDay).toFixed(1);
-                        const daysSlowPace = (totalDistanceInKm / slowPaceKmPerDay).toFixed(1);
+                             // Calculate days for each pace
+                             const daysFastPace = (totalDistanceInKm / fastPaceKmPerDay).toFixed(1);
+                             const daysNormalPace = (totalDistanceInKm / normalPaceKmPerDay).toFixed(1);
+                             const daysSlowPace = (totalDistanceInKm / slowPaceKmPerDay).toFixed(1);
 
-                        // Construct the multi-line tooltip content
-                        tooltipContent = `Total ≈ ${displayDistanceString}<br>Fast ≈ ${daysFastPace} Day(s)<br>Normal ≈ ${daysNormalPace} Day(s)<br>Slow ≈ ${daysSlowPace} Day(s)`;
+                             // Construct the multi-line tooltip content
+                             tooltipContent = `Total ≈ ${displayDistanceString}<br>Fast ≈ ${daysFastPace} Day(s)<br>Normal ≈ ${daysNormalPace} Day(s)<br>Slow ≈ ${daysSlowPace} Day(s)`;
 
-                    } else {
-                        // Scale is unknown or distance is zero
-                        if (totalPixelDistance > 0) {
-                            displayDistanceString = `${totalPixelDistance.toFixed(0)} pixels (Scale unknown)`;
-                            tooltipContent = `Total: ${displayDistanceString}<br>Days at Fast Pace: N/A<br>Days at Normal Pace: N/A<br>Days at Slow Pace: N/A`;
-                        } else if (multiPointPath.length === 1) {
-                            displayDistanceString = "Start point";
-                            tooltipContent = displayDistanceString; // Only show "Start point"
-                        } else {
-                            displayDistanceString = "0 pixels";
-                            tooltipContent = `Total: ${displayDistanceString}<br>Days at Fast Pace: N/A<br>Days at Normal Pace: N/A<br>Days at Slow Pace: N/A`;
-                        }
-                    }
-                    // --- Tooltip Content String is now built ---
+                         } else {
+                             // Scale is unknown or distance is zero
+                             if (totalPixelDistance > 0) {
+                                 displayDistanceString = `${totalPixelDistance.toFixed(0)} pixels (Scale unknown)`;
+                                 tooltipContent = `Total: ${displayDistanceString}<br>Days at Fast Pace: N/A<br>Days at Normal Pace: N/A<br>Days at Slow Pace: N/A`;
+                             } else if (multiPointPath.length === 1) {
+                                 displayDistanceString = "Start point";
+                                 tooltipContent = displayDistanceString; // Only show "Start point"
+                             } else {
+                                 displayDistanceString = "0 pixels";
+                                 tooltipContent = `Total: ${displayDistanceString}<br>Days at Fast Pace: N/A<br>Days at Normal Pace: N/A<br>Days at Slow Pace: N/A`;
+                             }
+                         }
+                         // --- Tooltip Content String is now built ---
 
-                    // Remove the previous total tooltip (if it exists)
-                    if (multiPointTotalTooltip) {
-                        map.removeLayer(multiPointTotalTooltip);
-                    }
+                         // Remove the previous total tooltip (if it exists)
+                         if (multiPointTotalTooltip) {
+                             map.removeLayer(multiPointTotalTooltip);
+                         }
 
-                    // Create and add the new total tooltip using the constructed content
-                    if (multiPointPath.length > 0) {
-                        multiPointTotalTooltip = L.tooltip({
-                            permanent: true,
-                            direction: 'right',
-                            className: 'measure-tooltip',
-                            offset: L.point(10, 0) // Position offset from the point
-                        })
-                        .setLatLng(multiPointPath[multiPointPath.length - 1]) // Position at the last point
-                        .setContent(tooltipContent) // Use the full tooltipContent string
-                        .addTo(map);
-                    } else {
-                        multiPointTotalTooltip = null; // Ensure it's null if path is empty
-                    }
-                }
+                         // Create and add the new total tooltip using the constructed content
+                         if (multiPointPath.length > 0) {
+                             multiPointTotalTooltip = L.tooltip({
+                                 permanent: true,
+                                 direction: 'right',
+                                 className: 'measure-tooltip',
+                                 offset: L.point(10, 0) // Position offset from the point
+                             })
+                             .setLatLng(multiPointPath[multiPointPath.length - 1]) // Position at the last point
+                             .setContent(tooltipContent) // Use the full tooltipContent string
+                             .addTo(map);
+                         } else {
+                             multiPointTotalTooltip = null; // Ensure it's null if path is empty
+                         }
+                     }
 
         function finalizeMultiPointMeasure(makePermanent = true) {
             if (!isMeasuringMultiPoint && !makePermanent) { // If called to just clean up
@@ -2577,123 +2630,123 @@
                 }
 
                 // --- Keyboard Shortcut Logic ---
-            const keyboardHelpModal = document.getElementById('keyboard-help-modal');
-            const closeKeyboardHelpBtn = document.getElementById('close-keyboard-help-btn');
+                const keyboardHelpModal = document.getElementById('keyboard-help-modal');
+                const closeKeyboardHelpBtn = document.getElementById('close-keyboard-help-btn');
 
-            if (closeKeyboardHelpBtn) { // Check if modal exists
-                closeKeyboardHelpBtn.addEventListener('click', () => {
-                    if (keyboardHelpModal) keyboardHelpModal.style.display = 'none';
-                });
-            }
+                if (closeKeyboardHelpBtn) { // Check if modal exists
+                    closeKeyboardHelpBtn.addEventListener('click', () => {
+                        if (keyboardHelpModal) keyboardHelpModal.style.display = 'none';
+                    });
+                }
 
-            function isInputFocused() {
-                const activeElement = document.activeElement;
-                return activeElement && (activeElement.tagName === 'INPUT' ||
-                    activeElement.tagName === 'TEXTAREA' ||
-                    activeElement.isContentEditable);
-            }
+                function isInputFocused() {
+                    const activeElement = document.activeElement;
+                    return activeElement && (activeElement.tagName === 'INPUT' ||
+                           activeElement.tagName === 'TEXTAREA' ||
+                           activeElement.isContentEditable);
+                }
 
-            document.addEventListener('keydown', function(e) {
-                // Handle modal display first
-                if (e.key === '?') {
-                    if (!isInputFocused()) { // Don't trigger if typing '?' in search
-                        e.preventDefault();
-                        if (keyboardHelpModal) {
-                            keyboardHelpModal.style.display = keyboardHelpModal.style.display === 'none' ? 'flex' : 'none';
+                document.addEventListener('keydown', function(e) {
+                    // Handle modal display first
+                    if (e.key === '?') {
+                        if (!isInputFocused()) { // Don't trigger if typing '?' in search
+                            e.preventDefault();
+                            if (keyboardHelpModal) {
+                                keyboardHelpModal.style.display = keyboardHelpModal.style.display === 'none' ? 'flex' : 'none';
+                            }
+                            return;
                         }
+                    }
+
+                    // If help modal is open, Esc should close it
+                    if (keyboardHelpModal && keyboardHelpModal.style.display !== 'none' && e.key === 'Escape') {
+                        e.preventDefault();
+                        keyboardHelpModal.style.display = 'none';
                         return;
                     }
-                }
 
-                // If help modal is open, Esc should close it
-                if (keyboardHelpModal && keyboardHelpModal.style.display !== 'none' && e.key === 'Escape') {
-                    e.preventDefault();
-                    keyboardHelpModal.style.display = 'none';
-                    return;
-                }
-
-                // Handle Escape for other UI elements
-                if (e.key === 'Escape') {
-                    if (map.getPanes().popupPane.firstChild) { // Check if a Leaflet popup is open
-                        map.closePopup();
-                        e.preventDefault();
-                    } else if (filtersPanelVisible) {
-                        toggleFilterPanel(); // Your existing function
-                        e.preventDefault();
-                    } else if (searchResultsContainer.style.display === 'block') {
-                        searchResultsContainer.style.display = 'none';
-                        if (poiSearchInput) poiSearchInput.blur();
-                        e.preventDefault();
-                    } else if (isMeasuringMultiPoint) { // For the new measurement tool
-                        finalizeMultiPointMeasure(false); // Cancel measurement
-                        e.preventDefault();
+                    // Handle Escape for other UI elements
+                    if (e.key === 'Escape') {
+                        if (map.getPanes().popupPane.firstChild) { // Check if a Leaflet popup is open
+                            map.closePopup();
+                            e.preventDefault();
+                        } else if (filtersPanelVisible) {
+                            toggleFilterPanel(); // Your existing function
+                            e.preventDefault();
+                        } else if (searchResultsContainer.style.display === 'block') {
+                            searchResultsContainer.style.display = 'none';
+                            if (poiSearchInput) poiSearchInput.blur();
+                            e.preventDefault();
+                        } else if (isMeasuringMultiPoint) { // For the new measurement tool
+                            finalizeMultiPointMeasure(false); // Cancel measurement
+                            e.preventDefault();
+                        }
+                        // Add other Escape handlers here if needed
+                        return; // Processed Escape, no further checks for this key press
                     }
-                    // Add other Escape handlers here if needed
-                    return; // Processed Escape, no further checks for this key press
-                }
 
-                // For other shortcuts, don't act if an input is focused or help modal is open
-                if (isInputFocused() || (keyboardHelpModal && keyboardHelpModal.style.display !== 'none')) {
-                    return;
-                }
+                    // For other shortcuts, don't act if an input is focused or help modal is open
+                    if (isInputFocused() || (keyboardHelpModal && keyboardHelpModal.style.display !== 'none')) {
+                        return;
+                    }
 
-                // Non-input-focused shortcuts
-                switch (e.key.toLowerCase()) {
-                    case '+':
-                    case '=':
-                        if (map) map.zoomIn();
-                        e.preventDefault();
-                        break;
-                    case '-':
-                        if (map) map.zoomOut();
-                        e.preventDefault();
-                        break;
-                    case 's':
-                        if (toggleBtn) toggleBtn.click(); // Toggle Sidebar
-                        e.preventDefault();
-                        break;
-                    case 't':
-                        if (themeToggle) themeToggle.click(); // Toggle Theme
-                        e.preventDefault();
-                        break;
-                    case 'm':
-                        if (measureToolBtn && measureToolBtn.style.display !== 'none') {
-                            measureToolBtn.click();
+                    // Non-input-focused shortcuts
+                    switch (e.key.toLowerCase()) {
+                        case '+':
+                        case '=':
+                            if (map) map.zoomIn();
                             e.preventDefault();
-                        }
-                        break;
-                    case 'h': // Toggle Markers/Regions
-                        if (toggleMarkersBtn && toggleMarkersBtn.style.display !== 'none') {
-                            toggleMarkersBtn.click();
+                            break;
+                        case '-':
+                            if (map) map.zoomOut();
                             e.preventDefault();
-                        }
-                        break;
-                    case 'f': // Toggle Filters Panel
-                        if (toggleFiltersBtn && toggleFiltersBtn.style.display !== 'none') {
-                            toggleFiltersBtn.click();
+                            break;
+                        case 's':
+                            if (toggleBtn) toggleBtn.click(); // Toggle Sidebar
                             e.preventDefault();
-                        }
-                        break;
-                    case '/':
+                            break;
+                        case 't':
+                            if (themeToggle) themeToggle.click(); // Toggle Theme
+                            e.preventDefault();
+                            break;
+                        case 'm':
+                            if (measureToolBtn && measureToolBtn.style.display !== 'none') {
+                                measureToolBtn.click();
+                                e.preventDefault();
+                            }
+                            break;
+                        case 'h': // Toggle Markers/Regions
+                            if (toggleMarkersBtn && toggleMarkersBtn.style.display !== 'none') {
+                                toggleMarkersBtn.click();
+                                e.preventDefault();
+                            }
+                            break;
+                        case 'f': // Toggle Filters Panel
+                            if (toggleFiltersBtn && toggleFiltersBtn.style.display !== 'none') {
+                                toggleFiltersBtn.click();
+                                e.preventDefault();
+                            }
+                            break;
+                        case '/':
+                            if (searchControlContainer && searchControlContainer.style.display !== 'none' && poiSearchInput) {
+                                poiSearchInput.focus();
+                                e.preventDefault();
+                            }
+                            break;
+                    }
+
+                    // Example for Ctrl/Cmd + F (if you want to override browser find for your search)
+                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
                         if (searchControlContainer && searchControlContainer.style.display !== 'none' && poiSearchInput) {
                             poiSearchInput.focus();
-                            e.preventDefault();
+                            e.preventDefault(); // Prevent browser's default find
                         }
-                        break;
-                }
-
-                // Example for Ctrl/Cmd + F (if you want to override browser find for your search)
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
-                    if (searchControlContainer && searchControlContainer.style.display !== 'none' && poiSearchInput) {
-                        poiSearchInput.focus();
-                        e.preventDefault(); // Prevent browser's default find
                     }
-                }
-            });
+                });
 
 
-                // Now that data is loaded, initialize the application
-                initializeApp();
+                    // Now that data is loaded, initialize the application
+                    initializeApp();
 
             } catch (error) {
                 console.error('Error loading map data:', error);
@@ -2797,6 +2850,9 @@ async function processChild(childId, level = 0) {
                 const bottomLinkBar = document.getElementById('bottom-link-bar');
                 if (bottomLinkBar) bottomLinkBar.style.display = 'none';
 
+                if (toggleBlurbBtn) toggleBlurbBtn.style.display = 'none';
+                if (mapBlurbElement) mapBlurbElement.classList.remove('visible');
+
                 // Hide the sidebar toggle button
                 const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
                 if (toggleSidebarBtn) toggleSidebarBtn.style.display = 'none';
@@ -2881,8 +2937,10 @@ async function processChild(childId, level = 0) {
 
             // Set the correct initial history state *after* loading the map
             const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState);
-            console.log("Replacing initial history state with:", correctInitialHash);
-            history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', correctInitialHash);
+            const currentSearch = window.location.search; // Get current search params like ?embed=true
+            const finalUrl = `${currentSearch}${correctInitialHash}`;
+            console.log("Replacing initial history state with:", finalUrl);
+            history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', finalUrl);
         }
 
         // --- Start the application by loading data ---
