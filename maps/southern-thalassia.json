@@ -15,7 +15,7 @@
         ],
         "name": "Cavaross",
         "type": "City",
-        "description": "",
+        "description": "Once a simple fishing village, Cavaross was reshaped into the fortified harbor for the Beccin Empire's main fleet. In the wake of a swift rebellion against its tyrannical governor, the city now breathes a cautious and uncertain air of newfound freedom.",
         "wikiLink": ""
       },
       {
@@ -25,7 +25,7 @@
         ],
         "name": "Eastwatch",
         "type": "Town",
-        "description": "",
+        "description": "Originally founded as a strategic trading post and lookout, this seaside haven now hosts a naval academy for the Argentum Compact with the quiet readiness of the Gilded Nation forces stationed there.",
         "wikiLink": ""
       },
       {
@@ -35,7 +35,7 @@
         ],
         "name": "Fyllns Hold",
         "type": "Town",
-        "description": "",
+        "description": "An old coastal town whose very name whispers of a legendary adventurer's hidden riches from a time before the Falling Stars. While it serves as a simple rest stop for traders today, a persistent undercurrent of treasure hunting ensures the legend never dies.",
         "wikiLink": ""
       },
       {
@@ -44,8 +44,8 @@
           4039
         ],
         "name": "Gales Rest",
-        "type": "Town",
-        "description": "",
+        "type": "Hamlet",
+        "description": "Named for the unnatural calm of its cove, which offers a perfect haven from any storm, this town began as a simple resupply settlement. Today, it remains a vital sanctuary where even pirates find temporary, if uneasy, anchor.",
         "wikiLink": ""
       },
       {
@@ -55,7 +55,7 @@
         ],
         "name": "Golden Sands",
         "type": "Town",
-        "description": "",
+        "description": "The island's orignal name is now lost to time, and is a private paradise of soft beaches and rich plantations. It is an exclusive resort where even the field workers move with a leisurely swagger, serving as a sun-drenched playground for the elite of the Athenaeum.",
         "wikiLink": ""
       },
       {
@@ -65,7 +65,7 @@
         ],
         "name": "Moonshadow Cove",
         "type": "Temple",
-        "description": "",
+        "description": "Carved into the island in the shape of a perfect crescent, this ancient temple aligns with the moon. Though the resident cloister has dwindled, pilgrims and wanderers still navigate its labyrinthine halls, seeking the quiet divinity of the moon god Loron.",
         "wikiLink": ""
       },
       {
@@ -75,7 +75,7 @@
         ],
         "name": "New Gate",
         "type": "Town",
-        "description": "",
+        "description": "Built on one of the largest and most fertile islands in the region, this town grew from ambitious plantations into a bustling trade hub. The air is thick with the business of industry and the sweet smell of tropical fruits and sugar, all bound for the holds of waiting trade ships.",
         "wikiLink": ""
       },
       {
@@ -85,7 +85,7 @@
         ],
         "name": "Pyrthia",
         "type": "City",
-        "description": "",
+        "description": "Purpose-built from the ground up to be the Athenaeum's regional seat of power, this city of stark marble was designed to project authority. The air is heavy with an attitude of superiority, where 'magic is might' is not just a motto, but the foundation of the city's trade, research, lesiur, and culture.",
         "wikiLink": ""
       },
       {
@@ -95,7 +95,7 @@
         ],
         "name": "Rusty Anchor",
         "type": "Fort",
-        "description": "",
+        "description": "Known only to pirates, this haven is built within the colossal, grounded hull of a legendary ironside and a surrounding patchwork of lashed-together ships. Beyond its notorious fighting pits, whispers draw the desperate to a merchant named 'Ink,' rumored to grant any desire... for a price.",
         "wikiLink": ""
       },
       {
@@ -105,7 +105,7 @@
         ],
         "name": "Talking Stones",
         "type": "Point of Interest",
-        "description": "",
+        "description": "More a legend than a landmark, this remote beach is scattered with stones that are said to whisper when no one is listening. Scholars and lonely folk are drawn here, hoping to find a reseach buddy or a rock to talk to.  Some say the rocks here are more of smart pets then friends but still act as wonderful comapnions.",
         "wikiLink": ""
       }
     ],
