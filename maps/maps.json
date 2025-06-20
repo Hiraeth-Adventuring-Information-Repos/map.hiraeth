@@ -12,7 +12,7 @@
       {
         "id": "region-ferendel",
         "name": "Ferendel",
-        "description": "",
+        "description": "Nestled within a dramatic fjord, this kingdom was for a generation shrouded in a mysterious, self-imposed isolation. Today, its bustling port has reopened to the world, yet the nation retains an atmosphere of guarded secrets and quiet resilience.",
         "type": "political",
         "color": "#3388ff",
         "fillColor": "#3388ff",
@@ -68,7 +68,7 @@
       {
         "id": "region-goldwind",
         "name": "Goldwind",
-        "description": "",
+        "description": "In this sun-scorched expanse, where glittering sands whisper tales of easily won fortunes and powerful dust devils carve canyons, a rough-and-tumble society thrives. Here, beneath the vast, unforgiving sky, disputes are settled with a blend of frontier justice and arcane arts.",
         "type": "political",
         "color": "#a77b00",
         "fillColor": "#fff76b",
@@ -208,7 +208,7 @@
       {
         "id": "region-harold-ford",
         "name": "Harold Ford",
-        "description": "",
+        "description": "An ancient kingdom forged from the union of proud and culturally distinct peoples, its rolling green hills and rugged highlands are often shrouded in mist. From the sprawling, historic capital that shares the nation's name, a single crown now governs the formerly warring lands, navigating a delicate peace built on a shared, yet often contested, history.",
         "type": "political",
         "color": "#DA2125",
         "fillColor": "#E66E6F",
@@ -928,7 +928,7 @@
       {
         "id": "region-icebeach",
         "name": "Icebeach",
-        "description": "",
+        "description": "This brutal, frozen frontier is a land of hardy survivors and terrifying beasts, where scattered settlements cling to life like flickering candles against an oppressive and isolating terrain. Legends of a lich's forgotten fortress and secrets buried within the great glacier's sunless heart lend a palpable sense of terror to the landscape.",
         "type": "political",
         "color": "#00364a",
         "fillColor": "#00c7fc",
@@ -1260,7 +1260,7 @@
       {
         "id": "region-the-last-elven-state",
         "name": "The Last Elven State",
-        "description": "",
+        "description": "As the oldest continuous government on the continent, this ancient and verdant elven democratic republic is a land of deep history and living memory. Though it thrives, its splendor is shadowed by its status as a satellite state, a beautiful but captive jewel in the Beccin Empire's imperial crown.",
         "type": "political",
         "color": "#5a1c00",
         "fillColor": "#ff6a00",
@@ -1374,7 +1374,7 @@
         ]
       }
     ],
-    "blurb": "The main continent, featuring diverse regions from frozen peaks to bustling capitals.",
+    "blurb": "From the gold-laced dust of its western canyons to the haunted glaciers of the far north, Fair is a land of adventure and antiquity. Chart a course through newly-opened fjord kingdoms, navigate the politics of ancient empires, and unearth the secrets of a world shaped by heroes and forgotten evils.",
     "children": [
       "icebeach",
       "southern-thalassia",
