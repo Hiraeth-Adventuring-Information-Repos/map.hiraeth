@@ -20,7 +20,7 @@
       ],
       "name": "Castgate",
       "type": "City",
-      "description": "Renowned for its picturesque beauty and protective magical dome, this town thrives on fishing, shipbuilding, and gemstone mining, serving as a hub influenced by the Athenaeum and marked by historical battles.",
+      "description": "Encased within a dome that holds the winter at bay, Castgate's picturesque beauty was earned through legendary battles against a goddess and an undead horde. Though its streets bustle with prosperity from gems and ships, the common folk work in the shadow of the very magic that shelters them.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate"
     },
     {
@@ -30,7 +30,7 @@
       ],
       "name": "Flamore",
       "type": "Ruin",
-      "description": "This now ruined Wizard's college was a blacksite training ground.",
+      "description": "Once a secret college where forbidden magic summoned angels and raised the dead, Flamore was annihilated in a necromantic cataclysm of its own making. Now, its crumbling ruins radiate a palpable corruption, twisting any creature who strays too close into a monstrous thing that craves only flesh and warmth.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/flamores-school-of-experimental-wizardry"
     },
     {
@@ -40,7 +40,7 @@
       ],
       "name": "Fractured Point",
       "type": "Capital",
-      "description": "Perched on a rocky crag, this walled town often serves as the first stop for visitors, acting as a lighthouse and beacon where traders find ways to prosper despite the harsh conditions.",
+      "description": "Perched on a wind-scoured spike of rock, Fractured Point greets visitors with the festive dance of colored lanterns. Yet this light is a fleeting warmth in a town where the ceaseless gales have eroded all friendliness, leaving only a grim haven for opportunistic traders who bar the gates at sundown.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-fractured-point"
     },
     {
@@ -50,7 +50,7 @@
       ],
       "name": "Gernerum",
       "type": "Village",
-      "description": "Now destroyed after a battle with a mechanical dragon, this former town was once home to several notable figures from Icebeach history, with only a hag rumored to have survived.",
+      "description": "The scorched wreckage of Gernerum is a monument to its fiery end, a tragic grave for a town that once birthed heroes. Locals now shun the ruins, whispering that the only survivor is a timeless hag who wanders the ash, bearing a fragile-looking form that conceals a truly catastrophic power.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/gernerum"
     },
     {
@@ -60,7 +60,7 @@
       ],
       "name": "Houlen Top",
       "type": "Town",
-      "description": "Known as the \"breadbasket of the north,\" this southernmost town cultivates grains and root vegetables in its valley, though its inhabitants are notably guarded against outsiders.",
+      "description": "The fertile valley of Houlen Top serves as the breadbasket of the north, but its farmers are a guarded people who shun outsiders. A primal, territorial instinct lies just beneath their civilized surface, suggesting the town's name is a warning as much as a label.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/howlentop"
     },
     {
@@ -70,7 +70,7 @@
       ],
       "name": "Icemoor",
       "type": "Settlement",
-      "description": "Once tasked with watching the Winrich Glacier from its tall tower, this settlement is now mostly abandoned, left with only a few older men maintaining the vigil after the endless winter.",
+      "description": "From its lonely tower, the watchmen of Icemoor once guarded against horrors seeping from the Winrich Glacier. Now, with the settlement all but abandoned, a few grim, half-mad old men remain, their prophetic whispers lost on the wind as they maintain a forgotten vigil against the whispering, soul-filled waters.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/icemoor"
     },
     {
@@ -80,7 +80,7 @@
       ],
       "name": "Little Rock Mentle Asylam",
       "type": "Asylum",
-      "description": "This small institution holds some of the most hardened crimnals of the Gilded Nations.",
+      "description": "Carved into an isolated shard of rock, this asylum is where the Gilded Nations dispose of their most hardened criminals. Whispers persist of inmates suspended in pocket dimensions of pure void, a fate perhaps inspired by the one prisoner said to have simply unwoven reality to escape.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/little-rock-mental-asylum"
     },
     {
@@ -90,7 +90,7 @@
       ],
       "name": "Morana's Fang",
       "type": "Mountain",
-      "description": "The tallest point in the world.",
+      "description": "Claimed by the Goddess of Winter herself, this jagged peak is the tallest point in the world, a place where the veil to the divine thins to a whisper. Those few who survive the brutal, sentinel-guarded ascent return forever changed, haunted by the mountain's crushing silence and the cryptic visions granted at its summit.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/moranas-fang"
     },
     {
@@ -100,7 +100,7 @@
       ],
       "name": "Mt. Solaria",
       "type": "Mountain",
-      "description": "A large mountian said to be inhabited by a dragon.",
+      "description": "Ironically named Mt. Solaria vents geothermal steam, believed to be the slumbering breath of the destructive dragon that claims tribute from the lands below. This strange warmth creates a perilous allure, drawing the desperate to its slopes, which are littered with the failed mines and forgotten tombs of those who previously challenged its master(s).",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/mt-solaria"
     },
     {
@@ -110,7 +110,7 @@
       ],
       "name": "Ottiker",
       "type": "Town",
-      "description": "Founded by immigrants on the shores of Sleetmond Lake, this town is recognized for its winery, despite recent conflicts with local druids halting deliveries.",
+      "description": "The immigrant town of Ottiker defies the ice, using geothermal waters to produce renowned wine on the shores of Sleetmond Lake. Yet this fragile prosperity, born from a distant homeland, has angered local druids, and now the flow of wine has stopped as the town prepares for a fight.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/niror"
     },
     {
@@ -120,7 +120,7 @@
       ],
       "name": "Quilt",
       "type": "Hamlet",
-      "description": "Situated on the Foaming Loch, this small community practices fish farming and is named for the distinctive dyed quilts crafted from local Icesheep wool.",
+      "description": "The tiny hamlet of Quilt weaves its history into its namesake craft, with intricate patterns telling stories of survival against the endless winter. This hardy community owes its existence to the geothermal 'Foaming Burrow,' which churns the loch's waters, allowing them to farm fish.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/quilt"
     },
     {
@@ -130,7 +130,7 @@
       ],
       "name": "Shiverwallow",
       "type": "Village",
-      "description": "Protected by a wooden wall extending into the now-frozen harbor, this town boasts the largest fishing fleet, adapting its industry to ice fishing during the eternal winter.",
+      "description": "The largest fishing fleet in the north now sits frozen in its own harbor, the ships trapped like flies in amber. A great wooden wall, once meant to guard against sea threats, now seems to mock the town's grim resilience as its fishers abandon their useless vessels to huddle over holes in the ice.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/shiverwallow"
     },
     {
@@ -140,7 +140,7 @@
       ],
       "name": "Sleetmond",
       "type": "Settlement",
-      "description": "Home to druidic practices centered around The Hope Tree and a Sugar Maple orchard, this small lakeside town supplements its diet with fish and unique Icebeach sheep, though its ways are sometimes distrusted.",
+      "description": "Centered around the Hope Tree, whose power holds the winters at bay, Sleetmond is a place of unsettling druidic ways. Its people, seemingly immune to the cold, harvest from an impossible sugar maple orchard, their strange resilience making them an object of deep distrust to the frozen world outside.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/sleetmond"
     },
     {
@@ -150,8 +150,8 @@
       ],
       "name": "The Foaming Burrow",
       "type": "Cavern",
-      "description": "The origin of the river, how water bubbles forth outo of this cave.",
-      "wikiLink": "TBDs"
+      "description": "A network of steam vents and geysers, the Foaming Burrow is the geothermal heart that keeps the surrounding lands and river and downstream lakes from freezing solid. Legends claim elemental guardians protect this lush, snow-free oasis.",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-foaming-burrow"
     },
     {
       "coords": [
@@ -160,7 +160,7 @@
       ],
       "name": "The Hope Tree",
       "type": "Natural Landmark",
-      "description": "A tall tree provides shelter and wamth in the surrounding area.  It is said the tree is super magical and its leaves can make a healing tea.",
+      "description": "A defiant miracle, this impossibly massive tree radiates a divine warmth, creating a sanctuary the Frostmaiden's chill cannot penetrate. Believed to be a blessing from a rival god, its magical leaves can heal the sick, making it a vital symbol of hope that is now threatened by factions seeking to control its power.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/the-hope-tree"
     },
     {
@@ -170,7 +170,7 @@
       ],
       "name": "Thrawbreak",
       "type": "Hamlet",
-      "description": "Nestled below the Auruan mountains, this quiet, isolated town originated as a mountaineering camp and is now known for its resilient tavern culture amidst surrounding ruins.",
+      "description": "Buried in the shadow of the Auruan mountains and surrounded by the ruins of failed fortifications, Thrawbreak is a town pickled in bitterness and beer. Its people, stubborn trappers cut off from the world, endure their isolation fueled by a tavern that never runs dry and the haunting tavern song, 'The Ferryman's Coin,' a dirge for the world that abandoned them.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/thrawbreak"
     },
     {
@@ -180,7 +180,7 @@
       ],
       "name": "Whitedrift",
       "type": "Settlement",
-      "description": "Located at the mouth of the Curse Run near the Winrich glacier, this small town houses an unstable population tasked with monitoring the glacier, including some former asylum inmates.",
+      "description": "Clinging to the mouth of the Curse Run, this unstable town is a dumping ground for former asylum inmates and other exiles. Paranoia is the local currency, and the tense peace is often broken by the sight of townsfolk arguing with a percived ghosts of their dead loved ones who whisper from the foul, glacial waters.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/whitedrift"
     },
     {
@@ -190,7 +190,7 @@
       ],
       "name": "Winrich Fortress",
       "type": "Fortress",
-      "description": "The Ancient fortress of a long dead and powerful Lich",
+      "description": "Hewn from stone that drinks the light, this is the infamous seat of Winrich, the first mortal to achieve lichdom. Though heroes are said to have destroyed his echo, the fortress remains, its black walls glowing with a sickly, spectral light on moonless nights, a silent testament to the ancient evil born within.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/winrich-fortress"
     },
     {
@@ -200,7 +200,7 @@
       ],
       "name": "Wynwood Peak",
       "type": "Mountain",
-      "description": "This smaller mountian is said to be a place were the...",
+      "description": "Choked by a forest of iron-hard wood, this peak's unnatural resilience is said to spring from an ancient dragon's grave. The crumbling tower of a wizard who went mad trying to master this power now haunts its slopes, a testament to the peak's untamed spirit.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/wynwood-peak"
     }
   ],
