@@ -12,7 +12,7 @@
       {
         "id": "region-arfordir",
         "name": "Arfordir",
-        "description": "",
+        "description": "Famed for its fertile valleys and fragrant lavender fields, this kingdom is breathing a collective sigh of relief. It has only recently cast down a usurper to welcome its rightful Queen Eloise I, and a sense of hard-won peace now settles over the land.",
         "type": "political",
         "color": "#001e57",
         "fillColor": "#74a7fe",
@@ -48,76 +48,92 @@
             1232
           ],
           [
-            2210,
-            1262
+            2185,
+            1268
           ],
           [
-            2172,
-            1172
+            2146,
+            1183
           ],
           [
-            2150,
-            1170
+            2128,
+            1144
           ],
           [
-            2134,
-            1116
+            1948,
+            1216
           ],
           [
-            2042,
-            1146
-          ],
-          [
-            2036,
-            1166
-          ],
-          [
-            2012,
-            1162
-          ],
-          [
-            1960,
-            1194
-          ],
-          [
-            1954,
-            1218
-          ],
-          [
-            1924,
-            1218
-          ],
-          [
-            1920,
+            1832,
             1204
           ],
           [
-            1880,
-            1220
+            1796,
+            1116
           ],
           [
-            1826,
-            1178
+            1616,
+            1120
           ],
           [
-            1810,
-            1132
+            1621,
+            1116
           ],
           [
-            1768,
-            1098
+            1623,
+            1111
           ],
           [
-            1728,
-            1110
+            1633,
+            1102
           ],
           [
-            1622,
-            1114
+            1633,
+            1093
           ],
           [
-            1656,
-            1020
+            1633,
+            1086
+          ],
+          [
+            1638,
+            1078
+          ],
+          [
+            1643,
+            1073
+          ],
+          [
+            1644,
+            1069
+          ],
+          [
+            1646,
+            1067
+          ],
+          [
+            1646,
+            1057
+          ],
+          [
+            1642,
+            1052
+          ],
+          [
+            1640,
+            1043
+          ],
+          [
+            1645,
+            1043
+          ],
+          [
+            1647,
+            1041
+          ],
+          [
+            1647,
+            1036
           ],
           [
             1744,
@@ -140,7 +156,7 @@
       {
         "id": "region-blū",
         "name": "Blū",
-        "description": "",
+        "description": "A nation of humming factory-cities and alchemical ingenuity, where every citizen is a vital cog in a grand, well-oiled machine. Generations of gnomish innovation have forged a society of relentless progress and unparalleled collective welfare, making the state itself their greatest invention.",
         "type": "",
         "color": "#8e258f",
         "fillColor": "#ffb5f8",
@@ -148,8 +164,8 @@
         "wikiLink": "",
         "coordinates": [
           [
-            2488,
-            1198
+            2500,
+            1190
           ],
           [
             2390,
@@ -160,24 +176,24 @@
             1232
           ],
           [
+            2186,
+            1268
+          ],
+          [
             2206,
-            1272
+            1312
           ],
           [
-            2210,
-            1318
+            2224,
+            1351
           ],
           [
-            2230,
-            1320
+            2193,
+            1437
           ],
           [
-            2194,
-            1412
-          ],
-          [
-            2404,
-            1578
+            2370,
+            1564
           ],
           [
             2516,
@@ -196,20 +212,96 @@
             1466
           ],
           [
-            2662,
-            1462
+            2664,
+            1455
           ],
           [
-            2620,
+            2655,
+            1448
+          ],
+          [
+            2643,
+            1443
+          ],
+          [
+            2633,
+            1435
+          ],
+          [
+            2628,
+            1417
+          ],
+          [
+            2628,
+            1408
+          ],
+          [
+            2625,
+            1402
+          ],
+          [
+            2621,
             1390
           ],
           [
-            2576,
-            1370
+            2614,
+            1384
           ],
           [
-            2544,
-            1278
+            2601,
+            1382
+          ],
+          [
+            2599,
+            1380
+          ],
+          [
+            2599,
+            1374
+          ],
+          [
+            2590,
+            1368
+          ],
+          [
+            2577,
+            1366
+          ],
+          [
+            2575,
+            1362
+          ],
+          [
+            2565,
+            1318
+          ],
+          [
+            2551,
+            1297
+          ],
+          [
+            2547,
+            1285
+          ],
+          [
+            2545,
+            1271
+          ],
+          [
+            2529,
+            1243
+          ],
+          [
+            2517,
+            1241
+          ],
+          [
+            2508,
+            1233
+          ],
+          [
+            2509,
+            1213
           ]
         ]
       },
@@ -1580,7 +1672,7 @@
       {
         "id": "region-the-southern-state-of-fair",
         "name": "The Southern State of Fair",
-        "description": "",
+        "description": "Sprawling across the continent's heartland, this vast republic stands as a monument to unity and a crossroads for all peoples. Once a collection of disparate territories, it is now the humming epicenter of culture and governance, where the continent's future is forged in the grand theater of its politics.",
         "type": "political",
         "color": "#38571a",
         "fillColor": "#00f900",
