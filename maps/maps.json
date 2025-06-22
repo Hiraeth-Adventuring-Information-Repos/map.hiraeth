@@ -44,15 +44,51 @@
             936
           ],
           [
-            2464,
-            1098
+            2450,
+            1077
           ],
           [
-            2482,
-            1196
+            2469,
+            1133
           ],
           [
-            2382,
+            2472,
+            1141
+          ],
+          [
+            2479,
+            1153
+          ],
+          [
+            2484,
+            1165
+          ],
+          [
+            2483,
+            1175
+          ],
+          [
+            2475,
+            1183
+          ],
+          [
+            2475,
+            1185
+          ],
+          [
+            2480,
+            1185
+          ],
+          [
+            2488,
+            1187
+          ],
+          [
+            2500,
+            1190
+          ],
+          [
+            2390,
             1248
           ],
           [
@@ -168,7 +204,7 @@
       {
         "id": "region-athenaeum",
         "name": "Athenaeum",
-        "description": "",
+        "description": "Born from the hubris of post-war treaties, this league of city-states is ruled from the sacred lake where the God of Magic died. A tense quiet now hangs over its marble halls after a shadowy cataclysm nearly tore the capital apart, leaving the nation's fate in the hands of a single, powerful archivist.",
         "type": "political",
         "color": "#942192",
         "fillColor": "#e392fe",
@@ -1720,7 +1756,7 @@
       {
         "id": "region-the-grate-basin",
         "name": "The Grate Basin",
-        "description": "",
+        "description": "Breathtaking and expansive, the deep canyon the stape of the desert. This canyon system vast and dangious, lots of hidden side passages and and uncharted areas.  Only the bravest prospectors or adventures would venture into its sun-scorched depths.",
         "type": "terrain",
         "color": "#aa7942",
         "fillColor": "#aa7942",
