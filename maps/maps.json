@@ -1800,7 +1800,7 @@
       {
         "id": "region-iron-bash",
         "name": "Iron Bash",
-        "description": "",
+        "description": "In the stark mountains of the Iron Bash, citizens learn to live by the mercurial whims of their Empress's law. They are grateful for the ruthless protection the throne provides, but live in constant fear of a government whose favor can turn to fury without warning.",
         "type": "political",
         "color": "#919191",
         "fillColor": "#d6d6d6",
