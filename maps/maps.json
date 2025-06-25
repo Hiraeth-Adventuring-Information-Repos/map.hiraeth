@@ -2751,6 +2751,26 @@
       },
       {
         "coords": [
+          5302,
+          3149
+        ],
+        "name": "Morana's Fang",
+        "type": "Mountain",
+        "description": "This jagged peak is the tallest point in the world.",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
+          2544,
+          4891
+        ],
+        "name": "Mt. Primo",
+        "type": "Mountain",
+        "description": "The seat of magical power and the death place of Arcana.",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
           2300,
           661
         ],
