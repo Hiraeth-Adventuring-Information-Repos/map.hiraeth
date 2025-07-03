@@ -548,8 +548,8 @@
       {
         "id": "region-cursed-oldlin",
         "name": "Cursed Oldlin",
-        "description": "Imprisoned by mist and a tyrant's shadow. Castle Ravenloft looms, a monument to sorrow.",
-        "type": "",
+        "description": "This land was once a sun-kissed jewel, a vibrant valley whose people knew only bountiful harvests and bright horizons. That was before the arrival of him, Strahd. He took the valley first by the niceness think himself freed from damnation, then the cycle started a new and his dark pact poisoned the very soil, bleeding the life and color from the world. Now the land is a twisted reflection of its master's tormented soul: the sun is a stranger, the forests have grown teeth, and the entire valley is caged in a ghostly mist—a monument not to a kingdom, but to one man's tragic and eternal damnation.",
+        "type": "political",
         "color": "#000000",
         "fillColor": "#c0c0c0",
         "fillOpacity": 0.2,
