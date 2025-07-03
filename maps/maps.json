@@ -546,6 +546,66 @@
         ]
       },
       {
+        "id": "region-cursed-oldlin",
+        "name": "Cursed Oldlin",
+        "description": "Imprisoned by mist and a tyrant's shadow. Castle Ravenloft looms, a monument to sorrow.",
+        "type": "",
+        "color": "#000000",
+        "fillColor": "#c0c0c0",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            4478,
+            2946
+          ],
+          [
+            4457,
+            3158
+          ],
+          [
+            4427,
+            3114
+          ],
+          [
+            4369,
+            3252
+          ],
+          [
+            4330,
+            3239
+          ],
+          [
+            4266,
+            3240
+          ],
+          [
+            4257,
+            3138
+          ],
+          [
+            4261,
+            3065
+          ],
+          [
+            4287,
+            3027
+          ],
+          [
+            4277,
+            2975
+          ],
+          [
+            4297,
+            2917
+          ],
+          [
+            4405,
+            2901
+          ]
+        ]
+      },
+      {
         "id": "region-ferendel",
         "name": "Ferendel",
         "description": "Nestled within a dramatic fjord, this kingdom was for a generation shrouded in a mysterious, self-imposed isolation. Today, its bustling port has reopened to the world, yet the nation retains an atmosphere of guarded secrets and quiet resilience.",
@@ -1524,8 +1584,12 @@
             2138
           ],
           [
-            4545,
-            3150
+            4478,
+            2946
+          ],
+          [
+            4457,
+            3158
           ],
           [
             4592,
