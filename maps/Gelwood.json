@@ -12,11 +12,11 @@
       {
         "id": "region-barthan's-traders",
         "name": "Barthan's Traders",
-        "description": "",
+        "description": "Ran by a nice older Dwarf, Barthan's is the general store of the town.",
         "type": "",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
-        "fillOpacity": 0.2,
+        "color": "#583400",
+        "fillColor": "#ffd9a8",
+        "fillOpacity": 0.1,
         "wikiLink": "",
         "coordinates": [
           [
@@ -52,11 +52,11 @@
       {
         "id": "region-edermath-orchard",
         "name": "Edermath Orchard",
-        "description": "",
+        "description": "A nice orchard.",
         "type": "",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
-        "fillOpacity": 0.2,
+        "color": "#ff2600",
+        "fillColor": "#ffb5af",
+        "fillOpacity": 0.1,
         "wikiLink": "",
         "coordinates": [
           [
@@ -116,11 +116,11 @@
       {
         "id": "region-shrine-to-all",
         "name": "Shrine To All",
-        "description": "",
+        "description": "The gods should be venerated.  This shrine, rundown, has many shrines here.",
         "type": "",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
-        "fillOpacity": 0.2,
+        "color": "#fffb00",
+        "fillColor": "#fefcdd",
+        "fillOpacity": 0.1,
         "wikiLink": "",
         "coordinates": [
           [
@@ -156,11 +156,11 @@
       {
         "id": "region-sleeping-giant",
         "name": "Sleeping Giant",
-        "description": "",
+        "description": "Ale, and plenty of chatter.",
         "type": "",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
-        "fillOpacity": 0.2,
+        "color": "#553d00",
+        "fillColor": "#fff2d5",
+        "fillOpacity": 0.1,
         "wikiLink": "",
         "coordinates": [
           [
@@ -216,11 +216,11 @@
       {
         "id": "region-smithy",
         "name": "Smithy",
-        "description": "",
+        "description": "A small smithy.",
         "type": "",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
-        "fillOpacity": 0.2,
+        "color": "#371a94",
+        "fillColor": "#d9cafe",
+        "fillOpacity": 0.1,
         "wikiLink": "",
         "coordinates": [
           [
@@ -268,11 +268,11 @@
       {
         "id": "region-stonehill-inn",
         "name": "Stonehill Inn",
-        "description": "",
+        "description": "The only inn in this town.",
         "type": "",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
-        "fillOpacity": 0.2,
+        "color": "#5c0700",
+        "fillColor": "#ff8c82",
+        "fillOpacity": 0.1,
         "wikiLink": "",
         "coordinates": [
           [
