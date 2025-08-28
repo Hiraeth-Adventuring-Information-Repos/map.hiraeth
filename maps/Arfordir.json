@@ -1,8 +1,14 @@
 {
-    "type": "folder",
-    "id": "Arfordir",
-    "name": "Arfordir",
-    "children": [
+  "type": "folder",
+  "id": "Arfordir",
+  "name": "Arfordir",
+  "children": [
       "Gelwood"
-    ]
+    ],
+  "width": 7456,
+  "height": 8192,
+  "imageUrl": "maps/Arfordir.webp",
+  "scalePixels": 3,
+  "scaleKilometers": 0.1225,
+  "blurb": "This map is still a work in progress."
 }
