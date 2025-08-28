@@ -9,8 +9,29 @@
   "width": 7016,
   "height": 4960,
   "imageUrl": "maps/IceBeach.webp",
-  "scalePixels": 3,
-  "scaleKilometers": 1,
+  "scale": {
+    "pixels": 3,
+    "units": "km",
+    "value": 1
+  },
+  "paces": [
+    {
+      "name": "Normal",
+      "speed": 38.62
+    },
+    {
+      "name": "Fast",
+      "speed": 48.28
+    },
+    {
+      "name": "Slow",
+      "speed": 28.97
+    },
+    {
+       "name": "Naval",
+       "speed": 50
+    }
+  ],
   "blurb": "A detailed view of the <a href='https://www.hiraeth.wiki/books/players-guide-to-icebeach' target='_blank' rel='noopener noreferrer'>Icebeach region</a>, known for its harsh climate and resilient settlements.",
   "pointsOfInterest": [
     {
