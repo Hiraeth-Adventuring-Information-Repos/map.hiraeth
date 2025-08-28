@@ -1,334 +1,104 @@
 {
-    "id": "Gelwood",
-    "name": "Gelwood",
-    "width": 8192,
-    "height": 6144,
-    "imageUrl": "maps/Gelwood.webp",
-    "scalePixels": 50,
-    "scaleKilometers": 3600,
-    "blurb": "TBD",
-    "pointsOfInterest": [],
-    "regions": [
-      {
-        "id": "region-barthan's-traders",
-        "name": "Barthan's Traders",
-        "description": "Ran by a nice older Dwarf, Barthan's is the general store of the town.",
-        "type": "",
-        "color": "#583400",
-        "fillColor": "#ffd9a8",
-        "fillOpacity": 0.1,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            4121,
-            4040
-          ],
-          [
-            4200,
-            4054
-          ],
-          [
-            4350,
-            4165
-          ],
-          [
-            4390,
-            4220
-          ],
-          [
-            4389,
-            4267
-          ],
-          [
-            4232,
-            4470
-          ],
-          [
-            3958,
-            4289
-          ]
-        ]
-      },
-      {
-        "id": "region-edermath-orchard",
-        "name": "Edermath Orchard",
-        "description": "A nice orchard.",
-        "type": "",
-        "color": "#ff2600",
-        "fillColor": "#ffb5af",
-        "fillOpacity": 0.1,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            4528,
-            2232
-          ],
-          [
-            4808,
-            2192
-          ],
-          [
-            4828,
-            1916
-          ],
-          [
-            4716,
-            1756
-          ],
-          [
-            4744,
-            1528
-          ],
-          [
-            4344,
-            1360
-          ],
-          [
-            4236,
-            1428
-          ],
-          [
-            4140,
-            1272
-          ],
-          [
-            3860,
-            1484
-          ],
-          [
-            3688,
-            1732
-          ],
-          [
-            3840,
-            2044
-          ],
-          [
-            4008,
-            2336
-          ],
-          [
-            4428,
-            2180
-          ]
-        ]
-      },
-      {
-        "id": "region-shrine-to-all",
-        "name": "Shrine To All",
-        "description": "The gods should be venerated.  This shrine, rundown, has many shrines here.",
-        "type": "",
-        "color": "#fffb00",
-        "fillColor": "#fefcdd",
-        "fillOpacity": 0.1,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            3526,
-            3016
-          ],
-          [
-            3746,
-            3084
-          ],
-          [
-            3780,
-            3134
-          ],
-          [
-            3768,
-            3208
-          ],
-          [
-            3688,
-            3252
-          ],
-          [
-            3480,
-            3212
-          ],
-          [
-            3488,
-            3106
-          ]
-        ]
-      },
-      {
-        "id": "region-sleeping-giant",
-        "name": "Sleeping Giant",
-        "description": "Ale, and plenty of chatter.",
-        "type": "",
-        "color": "#553d00",
-        "fillColor": "#fff2d5",
-        "fillOpacity": 0.1,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            3352,
-            4806
-          ],
-          [
-            3570,
-            4784
-          ],
-          [
-            3714,
-            4802
-          ],
-          [
-            3754,
-            4822
-          ],
-          [
-            3832,
-            4926
-          ],
-          [
-            3872,
-            5040
-          ],
-          [
-            3846,
-            5206
-          ],
-          [
-            3800,
-            5268
-          ],
-          [
-            3682,
-            5304
-          ],
-          [
-            3610,
-            5284
-          ],
-          [
-            3328,
-            5156
-          ],
-          [
-            3364,
-            4974
-          ]
-        ]
-      },
-      {
-        "id": "region-smithy",
-        "name": "Smithy",
-        "description": "A small smithy.",
-        "type": "",
-        "color": "#371a94",
-        "fillColor": "#d9cafe",
-        "fillOpacity": 0.1,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            3998,
-            3410
-          ],
-          [
-            4250,
-            3402
-          ],
-          [
-            4318,
-            3410
-          ],
-          [
-            4358,
-            3440
-          ],
-          [
-            4368,
-            3506
-          ],
-          [
-            4380,
-            3636
-          ],
-          [
-            4276,
-            3782
-          ],
-          [
-            4168,
-            3806
-          ],
-          [
-            3890,
-            3628
-          ],
-          [
-            3924,
-            3452
-          ]
-        ]
-      },
-      {
-        "id": "region-stonehill-inn",
-        "name": "Stonehill Inn",
-        "description": "The only inn in this town.",
-        "type": "",
-        "color": "#5c0700",
-        "fillColor": "#ff8c82",
-        "fillOpacity": 0.1,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            3550,
-            3448
-          ],
-          [
-            3784,
-            3580
-          ],
-          [
-            3816,
-            3694
-          ],
-          [
-            3816,
-            3744
-          ],
-          [
-            3720,
-            3920
-          ],
-          [
-            3680,
-            3950
-          ],
-          [
-            3614,
-            3976
-          ],
-          [
-            3550,
-            3974
-          ],
-          [
-            3494,
-            3948
-          ],
-          [
-            3452,
-            3890
-          ],
-          [
-            3412,
-            3774
-          ],
-          [
-            3424,
-            3672
-          ],
-          [
-            3502,
-            3514
-          ]
-        ]
-      }
-    ],
-    "roads": []
-  }
+  "id": "Gelwood",
+  "name": "Gelwood",
+  "width": 8192,
+  "height": 6144,
+  "imageUrl": "maps/Gelwood.webp",
+  "scalePixels": 50,
+  "scaleKilometers": 3600,
+  "blurb": "Located on the southern side of the Ardoise Mountains and just off the old Chemin de Ronceval (Ronceval Road), Gelwood is a town defined by resilience. This revived frontier settlement is built upon the moss-covered stone foundations of a much older, forgotten settlement. In the last handful of years, hardy settlers from Rockdrift and Ironstream have begun to reclaim the ruins, building their homes and livelihoods amidst the ghosts of the past. It is now a burgeoning community of farmers, woodcutters, fur traders, and ambitious prospectors, all drawn by persistent tales of gold, platinum, and even diamonds hidden in the nearby mountains.",
+  "pointsOfInterest": [],
+  "regions": [
+    {
+      "id": "region-barthan's-traders",
+      "name": "Barthan's Traders",
+      "description": "Run by Barthan Ironhand, a retired dwarven prospector with a kindly smile and hands like worn stone, this shop is the heart of Gelwood's commerce. The air within smells of sawdust, cured leather, and pickling spices. Barthan's stocks everything a settler could need, from sturdy axes and mining equipment to bolts of wool cloth, dried rations, and medicinal herbs. He is a font of local knowledge and is always willing to share a bit of news or a useful rumor with his customers.",
+      "type": "General Store",
+      "color": "#583400",
+      "fillColor": "#ffd9a8",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [4121, 4040], [4200, 4054], [4350, 4165], [4390, 4220],
+        [4389, 4267], [4232, 4470], [3958, 4289]
+      ]
+    },
+    {
+      "id": "region-edermath-orchard",
+      "name": "Edermath Orchard",
+      "description": "This beautiful orchard is tended by the Edermath family, a quiet half-elven clan who claim their ancestors planted the original trees centuries ago. The orchard miraculously survived the downfall of the previous settlement and was reclaimed from the wild by the family. They cultivate exceptionally crisp, tart apples and produce a famously potent cider that is a favorite at the Sleeping Giant tavern. The grove is known for its serene, almost unnaturally peaceful atmosphere.",
+      "type": "Orchard",
+      "color": "#ff2600",
+      "fillColor": "#ffb5af",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [4528, 2232], [4808, 2192], [4828, 1916], [4716, 1756],
+        [4744, 1528], [4344, 1360], [4236, 1428], [4140, 1272],
+        [3860, 1484], [3688, 1732], [3840, 2044], [4008, 2336],
+        [4428, 2180]
+      ]
+    },
+    {
+      "id": "region-shrine-to-all",
+      "name": "Shrine To All",
+      "description": "Rather than a single temple, this sacred space is an open-air collection of small, hand-built shrines nestled within the crumbling stone walls of an ancient ruin. Each alcove is dedicated to a different deity, reflecting the diverse faiths of the settlers who came seeking a new life. Offerings of wildflowers, carved wooden figures, and coins are left by the hopeful. The shrine is quietly maintained by an elderly woman named Lena, who ensures that all gods, great and small, are shown their due respect.",
+      "type": "Temple",
+      "color": "#fffb00",
+      "fillColor": "#fefcdd",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [3526, 3016], [3746, 3084], [3780, 3134], [3768, 3208],
+        [3688, 3252], [3480, 3212], [3488, 3106]
+      ]
+    },
+    {
+      "id": "region-sleeping-giant",
+      "name": "Sleeping Giant",
+      "description": "Named for the massive, dormant mountain peak visible from its front door, this ale house is Gelwood's rowdiest establishment. Run by a boisterous and sharp-witted retired sellsword named Grelka, it is the favored haunt of prospectors, trappers, and traders. The air is thick with pipe smoke, the smell of spilled ale, and the sound of tall tales being spun. The 'Giant's Brew,' a dark and deceptively strong ale, is the tavern's signature drink and the cause of many morning regrets.",
+      "type": "Ale House",
+      "color": "#553d00",
+      "fillColor": "#fff2d5",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [3352, 4806], [3570, 4784], [3714, 4802], [3754, 4822],
+        [3832, 4926], [3872, 5040], [3846, 5206], [3800, 5268],
+        [3682, 5304], [3610, 5284], [3328, 5156], [3364, 4974]
+      ]
+    },
+    {
+      "id": "region-smithy",
+      "name": "Smithy",
+      "description": "The constant, rhythmic clang of a hammer on steel is the heartbeat of Gelwood, emanating from this open-air smithy built into the sturdy foundation of an old watchtower. The smith is a powerfully built and taciturn woman named Brynn. She specializes in crafting and repairing the tools of the trade: sharp axes, durable pickaxes, and reliable shovel heads. While she can mend a sword or forge a helmet, her true passion lies in creating practical, long-lasting tools for the hardworking folk of the town.",
+      "type": "Smithy",
+      "color": "#371a94",
+      "fillColor": "#d9cafe",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [3998, 3410], [4250, 3402], [4318, 3410], [4358, 3440],
+        [4368, 3506], [4380, 3636], [4276, 3782], [4168, 3806],
+        [3890, 3628], [3924, 3452]
+      ]
+    },
+    {
+      "id": "region-stonehill-inn",
+      "name": "Stonehill Inn",
+      "description": "As the only inn in Gelwood, Stonehill provides a much-needed respite for weary travelers and a quieter social hub for the locals. It is run by a warm and welcoming halfling couple, Erion and Miri Stonehill. The rooms are modest but always impeccably clean, and Miri's hearty rabbit stew is renowned along the Ronceval Road. The common room, with its crackling hearth, is a more family-friendly alternative to the Sleeping Giant, offering warm meals and softer conversation.",
+      "type": "Inn",
+      "color": "#5c0700",
+      "fillColor": "#ff8c82",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [3550, 3448], [3784, 3580], [3816, 3694], [3816, 3744],
+        [3720, 3920], [3680, 3950], [3614, 3976], [3550, 3974],
+        [3494, 3948], [3452, 3890], [3412, 3774], [3424, 3672],
+        [3502, 3514]
+      ]
+    }
+  ],
+  "roads": []
+}
