@@ -3,12 +3,564 @@
   "id": "Arfordir",
   "name": "Arfordir",
   "children": [
-      "Gelwood"
-    ],
+    "Gelwood"
+  ],
   "width": 7456,
   "height": 8192,
   "imageUrl": "maps/Arfordir.webp",
   "scalePixels": 3,
   "scaleKilometers": 0.1225,
-  "blurb": "This map is still a work in progress."
+  "blurb": "This map is still a work in progress.",
+  "pointsOfInterest": [],
+  "regions": [
+    {
+      "id": "region-barony-of-fôret",
+      "name": "Barony of Fôret",
+      "description": "A barony known for its exceptional hunters, fishers, and miners, who are fierce independence.",
+      "type": "barony",
+      "color": "#228b22",
+      "fillColor": "#d6d6d6",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          1468,
+          2536
+        ],
+        [
+          1728,
+          2784
+        ],
+        [
+          1736,
+          3052
+        ],
+        [
+          1924,
+          2880
+        ],
+        [
+          1980,
+          2952
+        ],
+        [
+          1992,
+          3184
+        ],
+        [
+          2164,
+          3072
+        ],
+        [
+          2244,
+          3632
+        ],
+        [
+          2324,
+          4208
+        ],
+        [
+          2112,
+          4020
+        ],
+        [
+          2084,
+          4256
+        ],
+        [
+          1996,
+          4288
+        ],
+        [
+          1856,
+          4108
+        ],
+        [
+          1824,
+          4312
+        ],
+        [
+          1716,
+          4548
+        ],
+        [
+          1620,
+          4468
+        ],
+        [
+          1660,
+          4228
+        ],
+        [
+          1484,
+          3980
+        ],
+        [
+          1256,
+          3904
+        ],
+        [
+          1248,
+          3560
+        ],
+        [
+          1324,
+          3392
+        ],
+        [
+          1548,
+          3228
+        ],
+        [
+          1596,
+          3152
+        ],
+        [
+          1392,
+          2908
+        ],
+        [
+          1412,
+          2620
+        ]
+      ]
+    },
+    {
+      "id": "region-barony-of-pierrefond",
+      "name": "Barony of Pierrefond",
+      "description": "A pragmatic industrial barony, the House du Rocher's quiet power comes from its control over the kingdom's vital manufacturing, production, and mining.",
+      "type": "barony",
+      "color": "#b7410e",
+      "fillColor": "#a17a4a",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          1616,
+          4480
+        ],
+        [
+          1708,
+          4584
+        ],
+        [
+          2360,
+          4496
+        ],
+        [
+          2364,
+          5368
+        ],
+        [
+          1948,
+          6208
+        ],
+        [
+          1288,
+          6504
+        ],
+        [
+          1252,
+          6792
+        ],
+        [
+          808,
+          6596
+        ],
+        [
+          688,
+          6652
+        ],
+        [
+          476,
+          6580
+        ],
+        [
+          676,
+          5908
+        ],
+        [
+          1084,
+          4628
+        ],
+        [
+          1524,
+          4412
+        ]
+      ]
+    },
+    {
+      "id": "region-the-barony-of-aquitaine",
+      "name": "The Barony of Aquitaine",
+      "description": "The Barony of Aquitaine is a wealthy and opportunistic barony that gains its power from commerce, trade guilds, its powerful merchant fleet, the capital being within its lands, and its loyalty to Queen Eloise I.",
+      "type": "barony",
+      "color": "#00008b",
+      "fillColor": "#cd7f32",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          7152,
+          3484
+        ],
+        [
+          7080,
+          2684
+        ],
+        [
+          6796,
+          2160
+        ],
+        [
+          6540,
+          2048
+        ],
+        [
+          6476,
+          3592
+        ],
+        [
+          6292,
+          4620
+        ],
+        [
+          6000,
+          5656
+        ],
+        [
+          6052,
+          6040
+        ],
+        [
+          7092,
+          6248
+        ],
+        [
+          7192,
+          3700
+        ]
+      ]
+    },
+    {
+      "id": "region-the-barony-of-lac",
+      "name": "The Barony of Lac",
+      "description": "The Barony of Lac is an enigmatic and reclusive region ruled by the mystical House du Lac, who are deeply connected to the land's ancient secrets.",
+      "type": "barony",
+      "color": "#8a9a5b",
+      "fillColor": "#c0c0c0",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          6220,
+          4828
+        ],
+        [
+          6320,
+          4436
+        ],
+        [
+          5352,
+          4008
+        ],
+        [
+          5176,
+          4112
+        ],
+        [
+          5036,
+          3832
+        ],
+        [
+          4860,
+          3748
+        ],
+        [
+          4608,
+          3744
+        ],
+        [
+          4464,
+          3624
+        ],
+        [
+          4518,
+          4006
+        ],
+        [
+          4700,
+          4584
+        ],
+        [
+          4656,
+          4856
+        ],
+        [
+          4664,
+          5200
+        ],
+        [
+          4576,
+          5536
+        ],
+        [
+          4890,
+          5772
+        ],
+        [
+          5036,
+          6176
+        ],
+        [
+          5444,
+          6044
+        ],
+        [
+          5478,
+          5680
+        ],
+        [
+          5660,
+          5818
+        ],
+        [
+          5510,
+          6060
+        ],
+        [
+          5694,
+          6348
+        ],
+        [
+          5908,
+          6096
+        ],
+        [
+          5900,
+          5704
+        ],
+        [
+          6012,
+          5700
+        ]
+      ]
+    },
+    {
+      "id": "region-the-barony-of-lorraine",
+      "name": "The Barony of Lorraine",
+      "description": "A proud region, the House de Lorraine is called the homeland of Kings as acient kings were born here and the current Queen hid here during he hiding.",
+      "type": "barony",
+      "color": "#dc143c",
+      "fillColor": "#b4b4b4",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          6456,
+          2032
+        ],
+        [
+          6332,
+          3692
+        ],
+        [
+          6244,
+          4224
+        ],
+        [
+          4512,
+          3432
+        ],
+        [
+          4420,
+          2440
+        ]
+      ]
+    },
+    {
+      "id": "region-the-barony-of-montaigne",
+      "name": "The Barony of Montaigne",
+      "description": "A fiercely militaristic mountain people, the House de Montfort values strength and discipline above all else.  They see themselves as the line between Arfordir and other.",
+      "type": "barony",
+      "color": "#808080",
+      "fillColor": "#4f7942",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          5896,
+          5728
+        ],
+        [
+          6320,
+          5672
+        ],
+        [
+          6296,
+          5920
+        ],
+        [
+          7088,
+          6216
+        ],
+        [
+          6600,
+          6864
+        ],
+        [
+          6472,
+          6344
+        ],
+        [
+          6024,
+          6576
+        ],
+        [
+          5984,
+          6912
+        ],
+        [
+          5640,
+          7152
+        ],
+        [
+          5560,
+          6800
+        ],
+        [
+          5344,
+          6408
+        ],
+        [
+          5192,
+          6712
+        ],
+        [
+          5104,
+          6520
+        ],
+        [
+          4976,
+          6640
+        ],
+        [
+          4872,
+          6464
+        ],
+        [
+          4744,
+          6864
+        ],
+        [
+          4640,
+          6528
+        ],
+        [
+          3800,
+          6784
+        ],
+        [
+          3888,
+          6920
+        ],
+        [
+          3488,
+          7248
+        ],
+        [
+          3384,
+          7016
+        ],
+        [
+          2616,
+          7304
+        ],
+        [
+          2024,
+          7344
+        ],
+        [
+          1008,
+          7000
+        ],
+        [
+          760,
+          6736
+        ],
+        [
+          1376,
+          6536
+        ],
+        [
+          1968,
+          6168
+        ],
+        [
+          2248,
+          6376
+        ],
+        [
+          1696,
+          6752
+        ],
+        [
+          2408,
+          6888
+        ],
+        [
+          3216,
+          6744
+        ],
+        [
+          3720,
+          6328
+        ],
+        [
+          3872,
+          6016
+        ],
+        [
+          4168,
+          6264
+        ],
+        [
+          4768,
+          6088
+        ],
+        [
+          4888,
+          5784
+        ],
+        [
+          5040,
+          6168
+        ],
+        [
+          5440,
+          6040
+        ],
+        [
+          5472,
+          5672
+        ],
+        [
+          5656,
+          5816
+        ],
+        [
+          5512,
+          6064
+        ],
+        [
+          5696,
+          6352
+        ],
+        [
+          5904,
+          6104
+        ]
+      ]
+    }
+  ],
+  "roads": []
 }
