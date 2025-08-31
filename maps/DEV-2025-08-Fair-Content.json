@@ -1,0 +1,12 @@
+{
+    "id": "DEV-2025-08-Fair-Content",
+    "name": "DEV-2025-08-Fair-Content",
+    "width": 1024,
+    "height": 768,
+    "imageUrl": "maps/DEV-2025-08-Fair-Content.webp",
+    "scalePixels": 1,
+    "scaleKilometers": 1,
+    "blurb": "TEST",
+    "pointsOfInterest": [],
+    "regions": []
+}

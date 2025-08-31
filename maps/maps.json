@@ -2906,6 +2906,7 @@
     "id": "IRL Old Maps",
     "name": "Old Dev Maps",
     "children": [
+      "DEV-2025-08-Fair-Content",
       "OLD-Oldlins",
       "OLD-Fair",
       "OLD-CONT",
