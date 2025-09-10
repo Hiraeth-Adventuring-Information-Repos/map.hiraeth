@@ -162,6 +162,12 @@
             border-radius: 50%;
             box-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
+        /* ADDED: Style for the active/selected vertex marker */
+        .vertex-marker.active, .line-vertex-marker.active {
+            background-color: #00ffff; /* Cyan */
+            border: 2px solid #0000ff; /* Blue */
+            box-sizing: border-box;
+        }
         /* .editing-poi-marker class is not strictly needed if using L.circleMarker with specific styles */
 
 
@@ -202,7 +208,8 @@
             <div class="mode-selector">
                 <div class="mode-tab active" data-mode="points">Points</div>
                 <div class="mode-tab" data-mode="regions">Regions</div>
-                <div class="mode-tab" data-mode="lines">Lines</div> </div>
+                <div class="mode-tab" data-mode="lines">Lines</div>
+            </div>
             <div class="control-row">
                  <label for="mapFileSelect">Load Map File:</label>
                  <select id="mapFileSelect"></select>
@@ -402,11 +409,14 @@
                         </select>
                     </div>
                 </div>
-                <div class="line-info hidden"> <span class="instructions">Click map to place line vertices:</span>
+                <div class="line-info hidden">
+                    <span class="instructions">Click map to place line vertices:</span>
                     <div class="coords-section">
-                        <span id="line-vertices-count">0 vertices</span> </div>
+                        <span id="line-vertices-count">0 vertices</span>
+                    </div>
                     <div class="edit-selection">
-                        <label for="editLineSelect">Edit Existing Line:</label> <select id="editLineSelect">
+                        <label for="editLineSelect">Edit Existing Line:</label>
+                        <select id="editLineSelect">
                             <option value="">--Select Line to Edit--</option>
                         </select>
                     </div>
@@ -418,7 +428,8 @@
                 <div class="summary-stats">
                     <p>Points: <span id="points-count">0</span></p>
                     <p>Regions: <span id="regions-count">0</span></p>
-                    <p>Lines: <span id="lines-count">0</span></p> </div>
+                    <p>Lines: <span id="lines-count">0</span></p>
+                </div>
                 <div class="summary-actions">
                     <button id="viewJsonBtn" disabled>View Complete JSON</button>
                     <button id="copyJsonBtn" disabled>Copy Complete JSON</button>
@@ -542,10 +553,11 @@
 
         let isCreatingLine = false; 
         let tempLineVertices = [];  
-        let tempLineLayer = null;   
+        let tempLineLayer = null;    
         let isEditingLineVertices = false; 
         let editingLineVisualsLayerGroup = null; 
         let editingLinePolylineLayer = null; 
+        let activeVertexMarker = null; // ADDED: To track the selected vertex for deletion
         
         // ADDED: State for showing/hiding other regions
         let showAllRegionsWhileEditing = false;
@@ -645,10 +657,10 @@
             findMapsRecursive(mapData);
 
             foundMaps.sort((a,b) => a.name.localeCompare(b.name)).forEach(mapInfo => {
-                 const option = document.createElement('option');
-                 option.value = mapInfo.id;
-                 option.textContent = mapInfo.name;
-                 subMapSelect.appendChild(option);
+               const option = document.createElement('option');
+               option.value = mapInfo.id;
+               option.textContent = mapInfo.name;
+               subMapSelect.appendChild(option);
             });
             
             subMapSelect.disabled = false;
@@ -743,12 +755,18 @@
             } else if (currentMode === 'regions') {
                 if (isCreatingRegion) setStatus('Creating region. Click map to add vertices. Click Finish when done.');
                 else if (isAddingVerticesToRegion) setStatus(`Adding vertices to region '${collectedRegions[addingVerticesData.index].name}'. Click map to add, or click Stop.`);
-                else if (isEditingVertices) setStatus(`Editing vertices for region '${collectedRegions[currentlyEditingRegionIndex].name}'. Drag vertices to move, or click Stop.`);
+                else if (isEditingVertices) {
+                    if (activeVertexMarker) setStatus(`Vertex selected. Drag to move, or press Delete/Backspace to remove.`);
+                    else setStatus(`Editing vertices for region '${collectedRegions[currentlyEditingRegionIndex].name}'. Drag vertices, click one to select for deletion, or click Stop.`);
+                }
                 else if (isEditingRegion) setStatus('Editing region. Modify details, Save Changes, Add Vertices, Edit Vertices, or Cancel.');
                 else setStatus('Fill in region details and click Start Region, or select existing region to edit.');
             } else if (currentMode === 'lines') { 
                 if (isCreatingLine) setStatus('Creating line. Click map to add vertices. Click Finish Line when done.');
-                else if (isEditingLineVertices) setStatus(`Editing line vertices for '${collectedLines[currentlyEditingLineIndex].name || collectedLines[currentlyEditingLineIndex].id}'. Drag vertices or click Stop.`);
+                else if (isEditingLineVertices) {
+                    if (activeVertexMarker) setStatus(`Vertex selected. Drag to move, or press Delete/Backspace to remove.`);
+                    else setStatus(`Editing line vertices for '${collectedLines[currentlyEditingLineIndex].name || collectedLines[currentlyEditingLineIndex].id}'. Drag vertices, click one to select for deletion, or click Stop.`);
+                }
                 else if (isEditingLine) setStatus('Editing line. Modify details, Save Changes, Edit Vertices, or Cancel.');
                 else setStatus('Fill in line details and click Start Line, or select existing line to edit.');
             }
@@ -998,9 +1016,9 @@
                 for (const item of items) {
                     if (item.id === id) return item;
                      if (item.children && Array.isArray(item.children)) {
-                        const found = findMapById(item.children, id);
-                        if(found) return found;
-                    }
+                         const found = findMapById(item.children, id);
+                         if(found) return found;
+                     }
                 }
                 return null;
             }
@@ -1394,9 +1412,17 @@
             addMidpointMarkers();
         }
         function addVertexMarker(latLng, index) { 
-             const marker = L.marker(latLng, { draggable: true, icon: L.divIcon({ className: 'vertex-marker', iconSize: [10, 10], iconAnchor: [5, 5] }), isVertexMarker: true, vertexIndex: index }).addTo(editingVisualsLayerGroup);
+             const marker = L.marker(latLng, { draggable: true, icon: L.divIcon({ className: 'vertex-marker', iconSize: [12, 12], iconAnchor: [6, 6] }), isVertexMarker: true, vertexIndex: index }).addTo(editingVisualsLayerGroup);
              marker.on('drag', updatePolygonFromMarkers);
              marker.on('dragend', () => { const newLatLng = marker.getLatLng(); marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]); updatePolygonFromMarkers(); });
+             // ADDED: Click handler for selection/deselection
+             marker.on('click', (e) => {
+                 L.DomEvent.stopPropagation(e); // Prevent map click from firing
+                 if (activeVertexMarker && activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
+                 activeVertexMarker = marker;
+                 if (marker._icon) marker._icon.classList.add('active');
+                 updateStatus();
+             });
              return marker;
         }
         function addMidpointMarkers() { 
@@ -1435,6 +1461,7 @@
         }
         function clearEditingVisuals() { 
             if (editingVisualsLayerGroup) { map.removeLayer(editingVisualsLayerGroup); editingVisualsLayerGroup = null; editingPolygonLayer = null; }
+            activeVertexMarker = null; // MODIFIED: Ensure active marker is cleared
         }
 
         // --- Line Vertex Editing Logic ---
@@ -1460,6 +1487,7 @@
                     }
                 });
             }
+            if(!editing) activeVertexMarker = null; // Clear active marker on state change
             updateStatus();
         }
         function setVertexAddingState(adding) {
@@ -1501,6 +1529,7 @@
                     }
                 });
             }
+            if(!editing) activeVertexMarker = null; // Clear active marker on state change
             updateStatus();
         }
 
@@ -1571,7 +1600,7 @@
         function addLineVertexMarker(latLng, index) {
             const marker = L.marker(latLng, {
                 draggable: true,
-                icon: L.divIcon({ className: 'line-vertex-marker', iconSize: [10, 10], iconAnchor: [5, 5] }),
+                icon: L.divIcon({ className: 'line-vertex-marker', iconSize: [12, 12], iconAnchor: [6, 6] }),
                 isLineVertexMarker: true, vertexIndex: index
             }).addTo(editingLineVisualsLayerGroup);
             marker.on('drag', updateLinePolylineFromMarkers);
@@ -1579,6 +1608,14 @@
                 const newLatLng = marker.getLatLng();
                 marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]);
                 updateLinePolylineFromMarkers();
+            });
+            // ADDED: Click handler for selection/deselection
+            marker.on('click', (e) => {
+                L.DomEvent.stopPropagation(e); // Prevent map click from firing
+                if (activeVertexMarker && activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
+                activeVertexMarker = marker;
+                if (marker._icon) marker._icon.classList.add('active');
+                updateStatus();
             });
             return marker;
         }
@@ -1641,14 +1678,15 @@
                 editingLineVisualsLayerGroup = null;
                 editingLinePolylineLayer = null;
             }
+            activeVertexMarker = null; // MODIFIED: Ensure active marker is cleared
         }
 
 
         function generateCompleteMapData() {
              if (!currentMapObject) {
-                alert("No map is currently loaded for saving.");
-                return null;
-            }
+                 alert("No map is currently loaded for saving.");
+                 return null;
+             }
             // Deep clone the master data to avoid modifying it directly before export
             const updatedMasterData = JSON.parse(JSON.stringify(masterMapData));
 
@@ -1657,13 +1695,13 @@
             let mapToUpdate = null;
             function findMapByIdRecursive(items, id) {
                  for (const item of items) {
-                    if (item.id === id) return item;
-                    if (item.children && Array.isArray(item.children)) {
-                        const found = findMapByIdRecursive(item.children, id);
-                        if(found) return found;
-                    }
-                }
-                return null;
+                     if (item.id === id) return item;
+                     if (item.children && Array.isArray(item.children)) {
+                         const found = findMapByIdRecursive(item.children, id);
+                         if(found) return found;
+                     }
+                 }
+                 return null;
             }
             mapToUpdate = findMapByIdRecursive(updatedMasterData, currentMapObject.id);
 
@@ -1759,6 +1797,13 @@
             map = L.map('map', { crs: L.CRS.Simple, minZoom: -5, maxZoom: 5, center: [0, 0], zoom: 0, doubleClickZoom: false });
             
             map.on('click', (e) => {
+                // ADDED: Deselect active vertex if clicking on the map background
+                if (activeVertexMarker) {
+                    if (activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
+                    activeVertexMarker = null;
+                    updateStatus();
+                }
+
                 if (!currentMapObject) return; // Don't do anything if no map is loaded
 
                 // This outer if handles ALL editing/creation modes to prevent fall-through to new item creation.
@@ -1796,8 +1841,8 @@
 
             map.on('mousemove', (e) => {
                  if (!isEditingPoint && 
-                    !(currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) && 
-                    !(currentMode === 'lines' && (isCreatingLine || isEditingLineVertices)) 
+                     !(currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) && 
+                     !(currentMode === 'lines' && (isCreatingLine || isEditingLineVertices)) 
                  ) {
                     coordsDisplay.textContent = `[${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}]`;
                 }
@@ -1813,6 +1858,35 @@
                 mapFileSelect.appendChild(option);
             }
         }
+        
+        // ADDED: Handle vertex deletion
+        function handleVertexDelete() {
+            if (!activeVertexMarker) return;
+
+            if (currentMode === 'regions' && isEditingVertices && editingPolygonLayer) {
+                const latLngs = editingPolygonLayer.getLatLngs()[0];
+                if (latLngs.length <= 3) {
+                    alert("A region must have at least 3 vertices.");
+                    return;
+                }
+                latLngs.splice(activeVertexMarker.options.vertexIndex, 1);
+                editingPolygonLayer.setLatLngs(latLngs);
+                activeVertexMarker = null;
+                recreateAllVertexMarkers();
+                setStatus('Vertex deleted.', 'info');
+            } else if (currentMode === 'lines' && isEditingLineVertices && editingLinePolylineLayer) {
+                const latLngs = editingLinePolylineLayer.getLatLngs();
+                if (latLngs.length <= 2) {
+                    alert("A line must have at least 2 vertices.");
+                    return;
+                }
+                latLngs.splice(activeVertexMarker.options.vertexIndex, 1);
+                editingLinePolylineLayer.setLatLngs(latLngs);
+                activeVertexMarker = null;
+                recreateAllLineVertexMarkers();
+                setStatus('Vertex deleted.', 'info');
+            }
+        }
 
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1823,6 +1897,13 @@
             resetUIForNewMap(); // Start with a clean slate
             setStatus('Select a map file from the top dropdown to start.');
 
+            // ADDED: Global keydown listener for deleting vertices
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === 'Delete' || e.key === 'Backspace') && activeVertexMarker) {
+                    e.preventDefault();
+                    handleVertexDelete();
+                }
+            });
 
             mapFileSelect.addEventListener('change', handleMapFileSelection);
             loadSubMapBtn.addEventListener('click', loadMapFromSelector);
