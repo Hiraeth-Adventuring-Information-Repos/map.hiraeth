@@ -3016,6 +3016,82 @@
             2812
           ]
         ]
+      },
+      {
+        "id": "region-zafra",
+        "name": "Zafra",
+        "description": "Known as the Scorched Jewel of the Beccin Empire, the coastal nation of Zafra is a land of simmering resentment. Once a proud maritime kingdom whose fleets ruled the eastern seas, its skilled sailors now serve imperial masters. Beneath the veneer of imperial order, however, the old ways persist in port towns and hidden coves, where smugglers plot and the spirit of piracy waits for the tide to turn against their conquerors.",
+        "type": "political",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            3354,
+            7167
+          ],
+          [
+            3403,
+            7127
+          ],
+          [
+            3526,
+            7269
+          ],
+          [
+            3525,
+            7301
+          ],
+          [
+            3394,
+            7299
+          ],
+          [
+            3331,
+            7241
+          ],
+          [
+            3225,
+            7246
+          ],
+          [
+            3196,
+            7320
+          ],
+          [
+            3285,
+            7473
+          ],
+          [
+            3234,
+            7568
+          ],
+          [
+            3231,
+            7662
+          ],
+          [
+            3196,
+            7698
+          ],
+          [
+            3096,
+            7669
+          ],
+          [
+            3048,
+            7612
+          ],
+          [
+            3081,
+            7414
+          ],
+          [
+            3072,
+            7181
+          ]
+        ]
       }
     ],
     "blurb": "From the gold-laced dust of its western canyons to the haunted glaciers of the far north, Fair is a land of adventure and antiquity. Chart a course through newly-opened fjord kingdoms, navigate the politics of ancient empires, and unearth the secrets of a world shaped by heroes and forgotten evils.",
