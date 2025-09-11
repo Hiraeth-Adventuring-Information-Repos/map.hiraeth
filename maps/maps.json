@@ -1666,6 +1666,42 @@
         ]
       },
       {
+        "id": "region-pyralis",
+        "name": "Pyralis",
+        "description": "Sequestered from the world, Pyralis is a monastic society dedicated to a single purpose: watching the heavens. Warmed by the celestial fragment they call the Firesoul, the scholar-monks of Pyralis spend their lives charting cosmic movements and guarding the secrets of their orders. They are a reclusive people, rarely venturing out, but their eerily accurate prophecies—cautiously traded for rare books and knowledge—grant them a quiet influence that belies their profound isolation.",
+        "type": "political",
+        "color": "#7c2a00",
+        "fillColor": "#ffc4ab",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            3234,
+            7568
+          ],
+          [
+            3285,
+            7473
+          ],
+          [
+            3313,
+            7529
+          ],
+          [
+            3331,
+            7601
+          ],
+          [
+            3326,
+            7644
+          ],
+          [
+            3284,
+            7653
+          ]
+        ]
+      },
+      {
         "id": "region-roswin",
         "name": "RosWin",
         "description": "",
