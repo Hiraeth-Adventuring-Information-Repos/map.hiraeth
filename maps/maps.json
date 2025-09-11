@@ -3160,6 +3160,16 @@
       },
       {
         "coords": [
+          3382,
+          6357
+        ],
+        "name": "Gorá-Sirotá",
+        "type": "Mountain",
+        "description": "The Lonely mountain (The Orphan Mountain) is not the tallest point in the world.",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
           3678,
           1190
         ],
