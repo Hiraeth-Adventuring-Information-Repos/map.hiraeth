@@ -2064,7 +2064,7 @@
       {
         "id": "region-roswin",
         "name": "RosWin",
-        "description": "",
+        "description": "While newer nations practice agriculture on an industrial scale, the ancient kingdom of RosWin is the continent's traditional, gourmet heartland. Its name is believed to be a corruption of an old phrase for 'Red Wine,' hinting at the rolling, sun-drenched hills of vineyards that define its landscape. Here, heritage and quality are valued over mere quantity; power lies not in armies, but in the unique terroir of the soil and the prestige of a family's ancient vintage. Governed by noble houses whose passionate rivalries over their harvests are legendary, RosWin has long survived as a political crossroads, a neutral ground where treaties are often sealed over a bottle of its finest wine.",
         "type": "political",
         "color": "#ff6a00",
         "fillColor": "#ffc4ab",
