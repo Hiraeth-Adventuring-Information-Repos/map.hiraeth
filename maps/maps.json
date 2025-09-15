@@ -1806,6 +1806,70 @@
         ]
       },
       {
+        "id": "region-iron-mountain-dwarves",
+        "name": "Aethelumbra",
+        "description": "The ancient Aethelumbra, know as the home of the Iron Mountain Dwarves, have carved their kingdom into vast, honeycomb cities within the mountains, a realm governed by a monarch and a unique two-house parliament of commoners and guild masters. Their industrious society is deeply private, shaped by bitter experience with outsiders. They hold a weary suspicion of the elves since an incident involving a destroyed caffeine-fungus, but this pales before their outright hatred for the Athenaeum, who once turned the dwarven lands into a battleground for a human war the dwarves neither wanted nor cared for.",
+        "type": "political",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            3040,
+            4026
+          ],
+          [
+            3175,
+            4004
+          ],
+          [
+            3307,
+            3976
+          ],
+          [
+            3345,
+            4096
+          ],
+          [
+            3140,
+            4164
+          ],
+          [
+            2856,
+            4804
+          ],
+          [
+            2684,
+            5344
+          ],
+          [
+            2619,
+            5359
+          ],
+          [
+            2609,
+            5132
+          ],
+          [
+            2624,
+            4892
+          ],
+          [
+            2576,
+            4740
+          ],
+          [
+            2584,
+            4600
+          ],
+          [
+            2986,
+            4224
+          ]
+        ]
+      },
+      {
         "id": "region-oldlin",
         "name": "Oldlin",
         "description": "",
