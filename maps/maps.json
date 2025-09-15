@@ -1665,6 +1665,7 @@
         "id": "region-iron-bash",
         "name": "Iron Bash",
         "description": "In the stark mountains of the Iron Bash, citizens learn to live by the mercurial whims of their Empress's law. They are grateful for the ruthless protection the throne provides, but live in constant fear of a government whose favor can turn to fury without warning.",
+        "description": "Life in the Iron Bash is a delicate balancing act, dictated by the mercurial moods of the immortal Empress Mael Muire. Her subjects enjoy a security few other nations know; the Empress's iron will shields them from foreign threats and ensures the orderly function of the state. She is their protector and their provider. Yet, she is also their greatest source of fear. Her sanity is a tempest, and a sudden bout of madness can turn a minor offense into a capital crime, unleashing the terrifying wrath that gives the nation its name. The people of the Iron Bash offer their Empress both genuine gratitude and cautious obedience, ever-watchful for the signs of an approaching storm.",
         "type": "political",
         "color": "#919191",
         "fillColor": "#d6d6d6",
