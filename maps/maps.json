@@ -2564,7 +2564,6 @@
             5344
           ],
           [
-            2815,
             2856,
             4805
           ],
@@ -2630,6 +2629,32 @@
           ]
         ]
       },
+      {
+        "id": "region-krasnogory-krai",
+        "name": "The Krasnogory Krai",
+        "description": "Governed by a volatile council of jealous Boyars and grizzled Atamans, the people of the Krai are defined by stoykost', a grim fortitude that allows them to endure the unforgiving land and their own leaders' endless feuds. This fragile unity is forged in a shared reverence for the sacred, warmth-giving Solntsekamen they carve from the heart of their mountains, a resource that is both the source of their wealth and the cause of their eternal conflict.",
+        "type": "political",
+        "color": "#b51a00",
+        "fillColor": "#ffa57d",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2262,
+            6879
+          ],
+          [
+            2201,
+            6909
+          ],
+          [
+            2203,
+            7021
+          ],
+          [
+            2462,
+            7320
+          ],
           [
             2539,
             7134
@@ -2735,8 +2760,24 @@
             6879
           ],
           [
+            2201,
+            6909
+          ],
+          [
+            2167,
+            6886
+          ],
+          [
+            2011,
+            6879
+          ],
+          [
             1846,
             6830
+          ],
+          [
+            1790,
+            6776
           ],
           [
             1774,
@@ -2747,12 +2788,20 @@
             6392
           ],
           [
+            1506,
+            6258
+          ],
+          [
             1432,
             6156
           ],
           [
             1372,
             5960
+          ],
+          [
+            1463,
+            5573
           ],
           [
             1400,
@@ -3607,7 +3656,7 @@
             7127
           ],
           [
-            3526,
+            3525,
             7269
           ],
           [
@@ -3627,36 +3676,20 @@
             7246
           ],
           [
-            3196,
-            7320
+            3197,
+            7315
           ],
           [
             3285,
             7473
           ],
           [
-            3234,
-            7568
+            3261,
+            7520
           ],
           [
-            3231,
-            7662
-          ],
-          [
-            3196,
-            7698
-          ],
-          [
-            3096,
-            7669
-          ],
-          [
-            3048,
-            7612
-          ],
-          [
-            3081,
-            7414
+            3108,
+            7355
           ],
           [
             3072,
