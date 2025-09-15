@@ -2180,96 +2180,148 @@
             2842
           ],
           [
-            3011,
-            2815
+            3058,
+            2831
           ],
           [
-            2983,
-            2805
+            3062,
+            2806
           ],
           [
-            2863,
-            2729
+            3071,
+            2785
           ],
           [
-            2815,
-            2697
+            3079,
+            2776
           ],
           [
-            2762,
-            2706
+            3087,
+            2770
           ],
           [
-            2723,
-            2694
+            3097,
+            2765
           ],
           [
-            2660,
-            2468
+            3108,
+            2756
           ],
           [
-            2612,
-            2399
+            3129,
+            2720
           ],
           [
-            2583,
-            2396
+            3138,
+            2696
           ],
           [
-            2519,
-            2262
+            3140,
+            2678
           ],
           [
-            2484,
-            2120
+            3137,
+            2669
           ],
           [
-            2487,
-            1995
+            3130,
+            2664
           ],
           [
-            2464,
+            3117,
+            2659
+          ],
+          [
+            3101,
+            2651
+          ],
+          [
+            3079,
+            2637
+          ],
+          [
+            3057,
+            2616
+          ],
+          [
+            3040,
+            2596
+          ],
+          [
+            3020,
+            2562
+          ],
+          [
+            3006,
+            2525
+          ],
+          [
+            2998,
+            2490
+          ],
+          [
+            2995,
+            2454
+          ],
+          [
+            2989,
+            2402
+          ],
+          [
+            2981,
+            2375
+          ],
+          [
+            2970,
+            2358
+          ],
+          [
+            2953,
+            2341
+          ],
+          [
+            2955,
+            2328
+          ],
+          [
+            2963,
+            2302
+          ],
+          [
+            3018,
+            2136
+          ],
+          [
+            2998,
+            2050
+          ],
+          [
+            3021,
             1970
           ],
           [
-            2436,
-            1847
+            3054,
+            1953
           ],
           [
-            2400,
-            1792
+            3086,
+            1912
           ],
           [
-            2392,
-            1716
+            3101,
+            1855
           ],
           [
-            2370,
-            1644
+            3109,
+            1773
           ],
           [
-            2368,
-            1564
+            3129,
+            1677
           ],
           [
-            2517,
-            1568
-          ],
-          [
-            2548,
-            1550
-          ],
-          [
-            2596,
-            1556
-          ],
-          [
-            2664,
-            1455
-          ],
-          [
-            3012,
-            1440
+            3143,
+            1624
           ],
           [
             3160,
@@ -2278,6 +2330,66 @@
           [
             3386,
             1366
+          ]
+        ]
+      },
+      {
+        "id": "region-the-bulwark-command",
+        "name": "The Bulwark Command",
+        "description": "Officially, The Bulwark Command is a fortified military zone protecting the Beccin Empire's frontier. In truth, it is the empire's most brutal and profitable resource-extraction colony. The landscape is not one of natural beauty, but of colossal quarries and smoke-belching refineries that scar the earth. Under the watchful eyes of imperial legions, a populace of convicts, debtors, and conscripts toils to strip the land of its rare minerals. The entire operation is the personal fiefdom of the Emperor's apprentice Legate Crassus, a notoriously avaricious governor who measures the value of a mountain in ore and the value of a person in the labor they can provide to the imperial coffers.",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            3810,
+            5816
+          ],
+          [
+            3810,
+            5980
+          ],
+          [
+            3978,
+            6216
+          ],
+          [
+            3710,
+            6374
+          ],
+          [
+            3638,
+            6558
+          ],
+          [
+            3436,
+            6414
+          ],
+          [
+            3364,
+            6216
+          ],
+          [
+            3296,
+            6178
+          ],
+          [
+            3252,
+            6064
+          ],
+          [
+            3318,
+            5910
+          ],
+          [
+            3502,
+            5736
+          ],
+          [
+            3694,
+            5762
           ]
         ]
       },
