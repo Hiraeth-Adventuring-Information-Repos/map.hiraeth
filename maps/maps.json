@@ -2574,8 +2574,62 @@
           ]
         ]
       },
+      {
+        "id": "region-the-kamensky-coast",
+        "name": "The Kamensky Coast",
+        "description": "A stark, coastal land wind-carved rock and thin, stubborn soil. Known for its rich marble quarries and strategic ports, the land is sparsely populated. It is a rugged, resource-focused territory, defined more by its harsh geography than by its people.",
+        "type": "political",
+        "color": "#836C58",
+        "fillColor": "#D2C4B4",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2462,
+            7319
+          ],
+          [
+            2539,
+            7134
+          ],
+          [
+            2813,
             7183
           ],
+          [
+            3072,
+            7181
+          ],
+          [
+            3108,
+            7355
+          ],
+          [
+            3260,
+            7519
+          ],
+          [
+            3234,
+            7568
+          ],
+          [
+            3224,
+            7702
+          ],
+          [
+            3098,
+            7696
+          ],
+          [
+            2970,
+            7562
+          ],
+          [
+            2696,
+            7496
+          ]
+        ]
+      },
           [
             2539,
             7134
