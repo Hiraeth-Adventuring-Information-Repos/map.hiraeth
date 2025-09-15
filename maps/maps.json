@@ -2518,50 +2518,50 @@
         ]
       },
       {
-        "id": "region-krasnogory-krai",
-        "name": "The Krasnogory Krai",
-        "description": "Governed by a volatile council of jealous Boyars and grizzled Atamans, the people of the Krai are defined by stoykost', a grim fortitude that allows them to endure the unforgiving land and their own leaders' endless feuds. This fragile unity is forged in a shared reverence for the sacred, warmth-giving Solntsekamen they carve from the heart of their mountains, a resource that is both the source of their wealth and the cause of their eternal conflict.",
+        "id": "region-the-iron-duchy-of-vardenheim",
+        "name": "The Iron Duchy of Vardenheim",
+        "description": "To the outside world, the Iron Duchy of Vardenheim is a loyal Beccin vassal state, a windswept land of hardy folk on the imperial frontier, dutifully providing iron and soldiers. This official narrative is a carefully crafted lie. In truth, Vardenheim is the Empire's clandestine operations hub for the entire region. From its grim citadels, the Duke orchestrates a vast network of spies, while its remote location makes it the perfect site for the Empire's most secret and forbidden magical research. It is a paranoid land of watchful eyes, where the wind across the steppes carries whispers of the dark work being done for the glory of the empire.",
         "type": "political",
-        "color": "#b51a00",
-        "fillColor": "#ffa57d",
-        "fillOpacity": 0.1,
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
         "wikiLink": "",
         "coordinates": [
           [
-            2262,
-            6879
+            3345,
+            4096
           ],
           [
-            2201,
-            6909
+            3388,
+            4328
           ],
           [
-            2203,
-            7021
+            3408,
+            4760
           ],
           [
-            2564,
-            7450
+            3292,
+            5100
           ],
           [
-            2952,
-            7624
+            3188,
+            5362
           ],
           [
-            3042,
-            7638
+            3032,
+            5552
           ],
           [
-            3082,
-            7414
+            2692,
+            5551
           ],
           [
-            3073,
-            7181
+            2662,
+            5467
           ],
           [
-            2919,
-            7182
+            2684,
+            5344
           ],
           [
             2815,
