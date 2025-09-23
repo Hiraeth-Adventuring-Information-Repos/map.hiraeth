@@ -10,6 +10,70 @@
     "imageUrl": "maps/Fair-Content.webp",
     "regions": [
       {
+        "id": "region-iron-mountain-dwarves",
+        "name": "Aethelumbra",
+        "description": "The ancient Aethelumbra, know as the home of the Iron Mountain Dwarves, have carved their kingdom into vast, honeycomb cities within the mountains, a realm governed by a monarch and a unique two-house parliament of commoners and guild masters. Their industrious society is deeply private, shaped by bitter experience with outsiders. They hold a weary suspicion of the elves since an incident involving a destroyed caffeine-fungus, but this pales before their outright hatred for the Athenaeum, who once turned the dwarven lands into a battleground for a human war the dwarves neither wanted nor cared for.",
+        "type": "political",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            3040,
+            4026
+          ],
+          [
+            3175,
+            4004
+          ],
+          [
+            3307,
+            3976
+          ],
+          [
+            3345,
+            4096
+          ],
+          [
+            3140,
+            4164
+          ],
+          [
+            2856,
+            4804
+          ],
+          [
+            2684,
+            5344
+          ],
+          [
+            2619,
+            5359
+          ],
+          [
+            2609,
+            5132
+          ],
+          [
+            2624,
+            4892
+          ],
+          [
+            2576,
+            4740
+          ],
+          [
+            2584,
+            4600
+          ],
+          [
+            2986,
+            4224
+          ]
+        ]
+      },
+      {
         "id": "region-albynor",
         "name": "Albynor",
         "description": "Albynor is a realm ruled by clans, a people as stern and unyielding as the mountains and hills they inhabit. They are masters of stone and steel, their honor bound by oaths as old as the Highlands themselves.",
@@ -726,6 +790,142 @@
           [
             2509,
             1213
+          ]
+        ]
+      },
+      {
+        "id": "region-bugon-kingdom",
+        "name": "Bugon Kingdom",
+        "description": "Often Called \"Bugdom\" for the fact when people first found the people of this island they were dealing with a bad case of sea spiders.",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            614,
+            5398
+          ],
+          [
+            802,
+            5342
+          ],
+          [
+            958,
+            5370
+          ],
+          [
+            974,
+            5480
+          ],
+          [
+            706,
+            5624
+          ],
+          [
+            612,
+            5504
+          ]
+        ]
+      },
+      {
+        "id": "region-confederacy-of-half-hieghts",
+        "name": "Confederacy of Half Hieghts",
+        "description": "",
+        "type": "political",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            1506,
+            1228
+          ],
+          [
+            1535,
+            1353
+          ],
+          [
+            1563,
+            1596
+          ],
+          [
+            1585,
+            1345
+          ],
+          [
+            1637,
+            1381
+          ],
+          [
+            1688,
+            1538
+          ],
+          [
+            1697,
+            1675
+          ],
+          [
+            1695,
+            1852
+          ],
+          [
+            1659,
+            2002
+          ],
+          [
+            1632,
+            2065
+          ],
+          [
+            1583,
+            2080
+          ],
+          [
+            1576,
+            1782
+          ],
+          [
+            1561,
+            1719
+          ],
+          [
+            1536,
+            1799
+          ],
+          [
+            1545,
+            1863
+          ],
+          [
+            1504,
+            2102
+          ],
+          [
+            1421,
+            2053
+          ],
+          [
+            1354,
+            1833
+          ],
+          [
+            1421,
+            1712
+          ],
+          [
+            1402,
+            1494
+          ],
+          [
+            1405,
+            1390
+          ],
+          [
+            1435,
+            1309
           ]
         ]
       },
@@ -1662,9 +1862,9 @@
         ]
       },
       {
-        "id": "region-iron-bash",
+        "id": "island-iron-bash",
         "name": "Iron Bash",
-        "description": "Life in the Iron Bash is a delicate balancing act, dictated by the mercurial moods of the immortal Empress Mael Muire. Her subjects enjoy a security few other nations know; the Empress's iron will shields them from foreign threats and ensures the orderly function of the state. She is their protector and their provider. Yet, she is also their greatest source of fear. Her sanity is a tempest, and a sudden bout of madness can turn a minor offense into a capital crime, unleashing the terrifying wrath that gives the nation its name. The people of the Iron Bash offer their Empress both genuine gratitude and cautious obedience, ever-watchful for the signs of an approaching storm.",
+        "description": "Life on the islands of the Iron Bash is tethered to the tides of the immortal Empress Mael Muire. Her people enjoy a profound security; the Empress's will is the sea itself, forming a protective wall of storms and treacherous currents that no foreign navy dares to cross. She is their guardian and their sustainer, calming the waters for their fishing fleets and trade. Yet, the sea is also their greatest fear. Her sanity is a fickle ocean, and a sudden, deep swell of madness can turn a minor offense into a capital crime. This unleashes the terrifying wrath that gives the nation its name: the 'Bash' is the sound of a tidal wave of her own making, crashing against the cliffs with the force of hammered iron. The people of the Iron Bash offer their Empress both genuine gratitude and cautious obedience, forever reading the moods of the ocean for a sign of the storm within their queen.",
         "type": "political",
         "color": "#919191",
         "fillColor": "#d6d6d6",
@@ -1672,200 +1872,132 @@
         "wikiLink": "",
         "coordinates": [
           [
-            2818,
-            2812
+            1048,
+            1862
           ],
           [
-            2784,
-            2754
+            902,
+            1656
           ],
           [
-            2762,
-            2707
+            646,
+            1698
           ],
           [
-            2815,
-            2696
+            610,
+            1666
           ],
           [
-            2982,
-            2804
+            1050,
+            1298
           ],
           [
-            3088,
-            2842
+            1112,
+            1046
           ],
           [
-            3220,
-            2856
+            1144,
+            786
           ],
           [
-            3282,
-            3091
+            990,
+            714
           ],
           [
-            3369,
-            3134
+            802,
+            1182
           ],
           [
-            3397,
-            3179
+            662,
+            1214
           ],
           [
-            3328,
-            3322
+            454,
+            1660
           ],
           [
-            3325,
-            3429
+            402,
+            1866
           ],
           [
-            3381,
-            3480
+            622,
+            1874
           ],
           [
-            3301,
-            3627
+            670,
+            2044
           ],
           [
-            3298,
-            3734
+            802,
+            2216
           ],
           [
-            3346,
-            3790
+            952,
+            2238
           ],
           [
-            3294,
-            3879
-          ],
-          [
-            3307,
-            3976
-          ],
-          [
-            3166,
-            4006
-          ],
-          [
-            3040,
-            4026
-          ],
-          [
-            2986,
-            4224
-          ],
-          [
-            2584,
-            4599
-          ],
-          [
-            2569,
-            4515
-          ],
-          [
-            2554,
-            4526
-          ],
-          [
-            2588,
-            4258
-          ],
-          [
-            2618,
-            4118
-          ],
-          [
-            2654,
-            4118
-          ],
-          [
-            2632,
-            3934
-          ],
-          [
-            2662,
-            3818
-          ],
-          [
-            2628,
-            3662
-          ],
-          [
-            2648,
-            3426
-          ],
-          [
-            2783,
-            3157
-          ],
-          [
-            2812,
-            2843
+            1054,
+            2006
           ]
         ]
       },
       {
-        "id": "region-iron-mountain-dwarves",
-        "name": "Aethelumbra",
-        "description": "The ancient Aethelumbra, know as the home of the Iron Mountain Dwarves, have carved their kingdom into vast, honeycomb cities within the mountains, a realm governed by a monarch and a unique two-house parliament of commoners and guild masters. Their industrious society is deeply private, shaped by bitter experience with outsiders. They hold a weary suspicion of the elves since an incident involving a destroyed caffeine-fungus, but this pales before their outright hatred for the Athenaeum, who once turned the dwarven lands into a battleground for a human war the dwarves neither wanted nor cared for.",
+        "id": "region-the-raided-lands-of-the-mounted-ones",
+        "name": "Kargotha",
+        "description": "The full name is the Kargotha - The Ormakth Hegemony of the Kaliean Reach.  This land is not a nation but an area under the control of a warlord raiding party of goliaths.  They are a bunch of clans all ran by members of the Ormakth, said to be a line similar to the one that Beckarak forged.",
         "type": "political",
         "color": "#3388ff",
         "fillColor": "#3388ff",
-        "fillOpacity": 0.1,
+        "fillOpacity": 0.2,
         "wikiLink": "",
         "coordinates": [
           [
-            3040,
-            4026
+            4188,
+            4006
           ],
           [
-            3175,
-            4004
+            4192,
+            4168
           ],
           [
-            3307,
-            3976
+            4132,
+            4960
           ],
           [
-            3345,
-            4096
+            4050,
+            5068
           ],
           [
-            3140,
-            4164
+            4006,
+            5294
           ],
           [
-            2856,
-            4804
+            3813,
+            5813
           ],
           [
-            2684,
-            5344
+            3494,
+            5720
           ],
           [
-            2619,
-            5359
+            3224,
+            5322
           ],
           [
-            2609,
-            5132
+            3428,
+            4772
           ],
           [
-            2624,
-            4892
+            3352,
+            4094
           ],
           [
-            2576,
-            4740
+            3596,
+            4042
           ],
           [
-            2584,
-            4600
-          ],
-          [
-            2986,
-            4224
+            4220,
+            3734
           ]
         ]
       },
@@ -2022,6 +2154,42 @@
           [
             3987,
             2373
+          ]
+        ]
+      },
+      {
+        "id": "region-peris-dynasty",
+        "name": "Peris Dynasty",
+        "description": "",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            734,
+            4734
+          ],
+          [
+            654,
+            4612
+          ],
+          [
+            548,
+            4702
+          ],
+          [
+            530,
+            5120
+          ],
+          [
+            608,
+            5242
+          ],
+          [
+            702,
+            5166
           ]
         ]
       },
@@ -2334,6 +2502,258 @@
         ]
       },
       {
+        "id": "region-seaslinate-dynasty",
+        "name": "Seaslinate Dynasty",
+        "description": "",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            728,
+            4322
+          ],
+          [
+            598,
+            4510
+          ],
+          [
+            744,
+            4658
+          ],
+          [
+            754,
+            4794
+          ],
+          [
+            708,
+            4916
+          ],
+          [
+            814,
+            5072
+          ],
+          [
+            788,
+            5272
+          ],
+          [
+            918,
+            5308
+          ],
+          [
+            994,
+            5158
+          ],
+          [
+            1016,
+            4820
+          ],
+          [
+            868,
+            4632
+          ],
+          [
+            918,
+            4468
+          ],
+          [
+            900,
+            4372
+          ]
+        ]
+      },
+      {
+        "id": "region-Tewhal",
+        "name": "Tewhal",
+        "description": "A land that was under the control of the gnomes and wizards of the Athenaeum for manufacturing of the flying islands and other machines of war.  It is sparcerly populated now and the land is stained with the remnates of machines of war.  Some ranching farms and towns are up in the high, dry, and desolet dessert.",
+        "type": "political",
+        "color": "#919191",
+        "fillColor": "#d6d6d6",
+        "fillOpacity": 0.01,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2818,
+            2812
+          ],
+          [
+            2784,
+            2754
+          ],
+          [
+            2762,
+            2707
+          ],
+          [
+            2815,
+            2696
+          ],
+          [
+            2982,
+            2804
+          ],
+          [
+            3088,
+            2842
+          ],
+          [
+            3220,
+            2856
+          ],
+          [
+            3282,
+            3091
+          ],
+          [
+            3369,
+            3134
+          ],
+          [
+            3397,
+            3179
+          ],
+          [
+            3328,
+            3322
+          ],
+          [
+            3325,
+            3429
+          ],
+          [
+            3381,
+            3480
+          ],
+          [
+            3301,
+            3627
+          ],
+          [
+            3298,
+            3734
+          ],
+          [
+            3346,
+            3790
+          ],
+          [
+            3294,
+            3879
+          ],
+          [
+            3307,
+            3976
+          ],
+          [
+            3166,
+            4006
+          ],
+          [
+            3040,
+            4026
+          ],
+          [
+            2986,
+            4224
+          ],
+          [
+            2584,
+            4599
+          ],
+          [
+            2569,
+            4515
+          ],
+          [
+            2554,
+            4526
+          ],
+          [
+            2588,
+            4258
+          ],
+          [
+            2618,
+            4118
+          ],
+          [
+            2654,
+            4118
+          ],
+          [
+            2632,
+            3934
+          ],
+          [
+            2662,
+            3818
+          ],
+          [
+            2628,
+            3662
+          ],
+          [
+            2648,
+            3426
+          ],
+          [
+            2783,
+            3157
+          ],
+          [
+            2812,
+            2843
+          ]
+        ]
+      },
+      {
+        "id": "region-the-ashen-lands---egna",
+        "name": "The Ashen Lands - Egna",
+        "description": "",
+        "type": "",
+        "color": "#11053b",
+        "fillColor": "#f1c9fe",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            4916,
+            6292
+          ],
+          [
+            4700,
+            6712
+          ],
+          [
+            4724,
+            6988
+          ],
+          [
+            5308,
+            7448
+          ],
+          [
+            5724,
+            7204
+          ],
+          [
+            5876,
+            6936
+          ],
+          [
+            5784,
+            6592
+          ],
+          [
+            5456,
+            6440
+          ]
+        ]
+      },
+      {
         "id": "region-the-bulwark-command",
         "name": "The Bulwark Command",
         "description": "Officially, The Bulwark Command is a fortified military zone protecting the Beccin Empire's frontier. In truth, it is the empire's most brutal and profitable resource-extraction colony. The landscape is not one of natural beauty, but of colossal quarries and smoke-belching refineries that scar the earth. Under the watchful eyes of imperial legions, a populace of convicts, debtors, and conscripts toils to strip the land of its rare minerals. The entire operation is the personal fiefdom of the Emperor's apprentice Legate Crassus, a notoriously avaricious governor who measures the value of a mountain in ore and the value of a person in the labor they can provide to the imperial coffers.",
@@ -2626,6 +3046,90 @@
           [
             2696,
             7496
+          ]
+        ]
+      },
+      {
+        "id": "region-aurora-dwarves",
+        "name": "The Kingdom of the Auroran Dwarves",
+        "description": "This dwarf kingdom is very isolationist, not outright xenophobic but prides themselves in being independet and not involved in geopolitcs.",
+        "type": "political",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            4151,
+            3632
+          ],
+          [
+            4553,
+            3613
+          ],
+          [
+            4568,
+            3166
+          ],
+          [
+            4720,
+            3123
+          ],
+          [
+            4840,
+            3319
+          ],
+          [
+            5022,
+            3277
+          ],
+          [
+            4859,
+            3762
+          ],
+          [
+            4587,
+            3808
+          ],
+          [
+            4495,
+            3902
+          ],
+          [
+            4426,
+            3929
+          ],
+          [
+            4288,
+            4028
+          ],
+          [
+            4192,
+            4168
+          ],
+          [
+            4188,
+            4006
+          ],
+          [
+            4220,
+            3734
+          ],
+          [
+            3716,
+            4000
+          ],
+          [
+            3344,
+            4095
+          ],
+          [
+            3310,
+            3976
+          ],
+          [
+            3568,
+            3920
           ]
         ]
       },
@@ -3002,6 +3506,138 @@
           [
             4873,
             3783
+          ]
+        ]
+      },
+      {
+        "id": "region-the-sea-of-silver-tears",
+        "name": "The Sea of Silver Tears",
+        "description": "",
+        "type": "",
+        "color": "#666100",
+        "fillColor": "#fffb00",
+        "fillOpacity": 0.1,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            1846,
+            3106
+          ],
+          [
+            1988,
+            3378
+          ],
+          [
+            1992,
+            3534
+          ],
+          [
+            1858,
+            3488
+          ],
+          [
+            1768,
+            3422
+          ],
+          [
+            1788,
+            3376
+          ],
+          [
+            1762,
+            3338
+          ],
+          [
+            1746,
+            3214
+          ],
+          [
+            1694,
+            3194
+          ],
+          [
+            1570,
+            3114
+          ],
+          [
+            1328,
+            3008
+          ],
+          [
+            1146,
+            2962
+          ],
+          [
+            874,
+            2814
+          ],
+          [
+            796,
+            2710
+          ],
+          [
+            804,
+            2570
+          ],
+          [
+            890,
+            2500
+          ],
+          [
+            1000,
+            2510
+          ],
+          [
+            1080,
+            2608
+          ],
+          [
+            1176,
+            2672
+          ],
+          [
+            1244,
+            2764
+          ],
+          [
+            1314,
+            2736
+          ],
+          [
+            1444,
+            2718
+          ],
+          [
+            1534,
+            2788
+          ],
+          [
+            1544,
+            2866
+          ],
+          [
+            1596,
+            2916
+          ],
+          [
+            1672,
+            2908
+          ],
+          [
+            1786,
+            2940
+          ],
+          [
+            1810,
+            3032
+          ],
+          [
+            1806,
+            3084
+          ],
+          [
+            1830,
+            3110
           ]
         ]
       },
@@ -3638,6 +4274,170 @@
         ]
       },
       {
+        "id": "region-toppicaea-dynasty",
+        "name": "Toppicaea Dynasty",
+        "description": "",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            872,
+            4618
+          ],
+          [
+            990,
+            4678
+          ],
+          [
+            1004,
+            4612
+          ],
+          [
+            970,
+            4562
+          ],
+          [
+            910,
+            4570
+          ]
+        ]
+      },
+      {
+        "id": "region-unnamed1",
+        "name": "UNNAMED1",
+        "description": "",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2615,
+            5547
+          ],
+          [
+            2692,
+            5552
+          ],
+          [
+            3032,
+            5552
+          ],
+          [
+            3189,
+            5363
+          ],
+          [
+            3271,
+            5387
+          ],
+          [
+            3502,
+            5733
+          ],
+          [
+            3319,
+            5911
+          ],
+          [
+            3252,
+            6064
+          ],
+          [
+            3298,
+            6179
+          ],
+          [
+            3364,
+            6218
+          ],
+          [
+            3322,
+            6350
+          ],
+          [
+            3069,
+            6427
+          ],
+          [
+            2637,
+            6139
+          ],
+          [
+            2545,
+            6078
+          ]
+        ]
+      },
+      {
+        "id": "region-unnamed2",
+        "name": "UNNAMED2",
+        "description": "",
+        "type": "",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            3046,
+            6434
+          ],
+          [
+            3322,
+            6350
+          ],
+          [
+            3362,
+            6520
+          ],
+          [
+            3440,
+            6461
+          ],
+          [
+            3460,
+            6436
+          ],
+          [
+            3637,
+            6556
+          ],
+          [
+            3721,
+            6553
+          ],
+          [
+            3704,
+            6707
+          ],
+          [
+            3422,
+            6979
+          ],
+          [
+            3401,
+            7123
+          ],
+          [
+            3349,
+            7167
+          ],
+          [
+            3077,
+            7181
+          ],
+          [
+            2954,
+            7218
+          ]
+        ]
+      },
+      {
         "id": "region-zafra",
         "name": "Zafra",
         "description": "Known as the Scorched Jewel of the Beccin Empire, the coastal nation of Zafra is a land of simmering resentment. Once a proud maritime kingdom whose fleets ruled the eastern seas, its skilled sailors now serve imperial masters. Beneath the veneer of imperial order, however, the old ways persist in port towns and hidden coves, where smugglers plot and the spirit of piracy waits for the tide to turn against their conquerors.",
@@ -3728,6 +4528,16 @@
       },
       {
         "coords": [
+          3140,
+          1626
+        ],
+        "name": "Fook & Took",
+        "type": "City",
+        "description": "The twin city that is a city-state of its own.  The cities recently split.",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
           3382,
           6357
         ],
@@ -3797,7 +4607,104 @@
         "wikiLink": ""
       }
     ],
-    "roads": []
+    "roads": [
+      {
+        "id": "line-main_continent-1757961351595-21ron",
+        "name": "The Sheer",
+        "type": "cliff",
+        "color": "#000000",
+        "weight": 3,
+        "dashArray": "",
+        "description": "",
+        "wikiLink": "",
+        "coordinates": [
+          [
+            4060,
+            2312
+          ],
+          [
+            3984,
+            2372
+          ],
+          [
+            3922,
+            2384
+          ],
+          [
+            3862,
+            2456
+          ],
+          [
+            3862,
+            2512
+          ],
+          [
+            3744,
+            2588
+          ],
+          [
+            3722,
+            2694
+          ],
+          [
+            3568,
+            2776
+          ],
+          [
+            3502,
+            2848
+          ],
+          [
+            3516,
+            2928
+          ],
+          [
+            3390,
+            3042
+          ],
+          [
+            3364,
+            3164
+          ],
+          [
+            3404,
+            3174
+          ],
+          [
+            3320,
+            3322
+          ],
+          [
+            3326,
+            3450
+          ],
+          [
+            3384,
+            3482
+          ],
+          [
+            3308,
+            3600
+          ],
+          [
+            3300,
+            3736
+          ],
+          [
+            3338,
+            3798
+          ],
+          [
+            3280,
+            3900
+          ],
+          [
+            3304,
+            3982
+          ]
+        ]
+      }
+    ]
   },
   {
     "type": "folder",
