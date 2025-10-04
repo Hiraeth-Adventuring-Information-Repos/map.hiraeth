@@ -1,8 +1,8 @@
 {
   "id": "castgate",
   "name": "Castgate",
-  "width": 3359,
-  "height": 4555,
+  "width": 8192,
+  "height": 8192,
   "imageUrl": "maps/castgate.webp",
   "scalePixels": 50,
   "scaleKilometers": 3600,
@@ -10,8 +10,18 @@
   "pointsOfInterest": [
     {
       "coords": [
-        2424,
-        2178
+        5059,
+        5380
+      ],
+      "name": "Athenaeum Embasy & Minterals House",
+      "type": "Point of Interest",
+      "description": "",
+      "wikiLink": ""
+    },
+    {
+      "coords": [
+        4122,
+        5008
       ],
       "name": "Bleak's Stand",
       "type": "Landmark",
@@ -20,18 +30,18 @@
     },
     {
       "coords": [
-        2273,
-        2250
+        2256,
+        2892
       ],
       "name": "Chai en' Steep Inn",
-      "type": "Inn",
+      "type": "Landmark",
       "description": "Attached to the popular tea house, the Chai en' Steep Inn provides a cozy atmosphere for travelers, offering comfortable lodging with soft bedding and lantern-lit hallways.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-fireside-newt-%26-chai"
     },
     {
       "coords": [
-        3184,
-        836
+        3744,
+        7840
       ],
       "name": "Dwarf Brewery",
       "type": "Point of Interest",
@@ -40,8 +50,8 @@
     },
     {
       "coords": [
-        2246,
-        1929
+        4356,
+        4628
       ],
       "name": "Frostviel",
       "type": "Temple",
@@ -50,8 +60,8 @@
     },
     {
       "coords": [
-        741,
-        1185
+        6888,
+        4584
       ],
       "name": "School for Adventures",
       "type": "Point of Interest",
@@ -60,8 +70,8 @@
     },
     {
       "coords": [
-        3210,
-        1652
+        5569,
+        5906
       ],
       "name": "The Crystal Needle",
       "type": "Landmark",
@@ -80,18 +90,18 @@
     },
     {
       "coords": [
-        3127,
-        2034
+        1488,
+        4178
       ],
       "name": "The Frozen Rose",
-      "type": "Tavern",
+      "type": "Point of Interest",
       "description": "Once a derelict tavern, this building was revitalized by the adventuring party Sub Rosa and transformed into a thriving hub for adventurers and locals. Featuring frosted glass windows and a carved white rose emblem, the tavern is run by the quiet barkeep Thorn and serves as an informal guildhall for The Argentum Compact. Its walls are decorated with trophies from Sub Rosa’s adventures, making it a symbol of the town’s enduring resilience.",
       "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-the-frozen-rose"
     },
     {
       "coords": [
-        1804,
-        1337
+        2448,
+        2992
       ],
       "name": "The Mourning Arch",
       "type": "Landmark",
@@ -100,8 +110,8 @@
     },
     {
       "coords": [
-        2172,
-        1910
+        3435,
+        5829
       ],
       "name": "The Shrine of Hestia",
       "type": "Landmark",
@@ -111,102 +121,118 @@
   ],
   "regions": [
     {
-      "id": "region-atheism-embasy-&-minterals-house",
-      "name": "Atheism Embasy & Minterals House",
-      "description": "",
-      "type": "other",
-      "color": "#aa3333",
-      "fillColor": "#aa3333",
-      "fillOpacity": 0.2,
-      "wikiLink": "",
-      "coordinates": [
-        [
-          3593,
-          992
-        ],
-        [
-          3807,
-          1337
-        ],
-        [
-          3648,
-          1534
-        ],
-        [
-          3519,
-          1313
-        ],
-        [
-          3344,
-          1137
-        ]
-      ]
-    },
-    {
       "id": "region-devarin-&-docie-docks",
       "name": "Devarin & Docie Docks",
       "description": "These are the town's very nice docks, featuring many shops and places for visitors and residents to enjoy.",
       "type": "",
       "color": "#3388ff",
       "fillColor": "#3388ff",
-      "fillOpacity": 0.2,
+      "fillOpacity": 0.1,
       "wikiLink": "",
       "coordinates": [
         [
-          2372,
-          2000
+          4496,
+          4576
         ],
         [
-          2528,
-          2104
+          4512,
+          4904
         ],
         [
-          2528,
-          2208
+          4232,
+          4916
         ],
         [
-          2580,
-          2340
+          3788,
+          4916
         ],
         [
-          3032,
-          2632
+          3532,
+          4592
         ],
         [
-          3236,
-          2768
+          3440,
+          4444
         ],
         [
-          3104,
-          2972
+          3176,
+          4456
         ],
         [
-          2968,
-          3024
+          3180,
+          4078
         ],
         [
-          2100,
-          2404
+          2848,
+          4084
         ],
         [
-          1704,
-          2276
+          2382,
+          3458
         ],
         [
-          1860,
-          1900
+          2380,
+          3132
         ],
         [
-          2016,
-          1948
+          2510,
+          3134
         ],
         [
-          2192,
-          1916
+          3706,
+          3272
         ],
         [
-          2256,
-          1992
+          4058,
+          3868
+        ],
+        [
+          4296,
+          3856
+        ],
+        [
+          4576,
+          3536
+        ],
+        [
+          5112,
+          3256
+        ],
+        [
+          5976,
+          2792
+        ],
+        [
+          6144,
+          2912
+        ],
+        [
+          6128,
+          3352
+        ],
+        [
+          5744,
+          3368
+        ],
+        [
+          5520,
+          3712
+        ],
+        [
+          5328,
+          3856
+        ],
+        [
+          5312,
+          4216
+        ],
+        [
+          4864,
+          4208
+        ],
+        [
+          4872,
+          4568
         ]
       ]
     },
@@ -221,28 +247,20 @@
       "wikiLink": "",
       "coordinates": [
         [
-          3474,
-          1306
+          5312,
+          8032
         ],
         [
-          3336,
-          1164
+          5264,
+          7184
         ],
         [
-          3100,
-          1008
+          4160,
+          7504
         ],
         [
-          2928,
-          1516
-        ],
-        [
-          3208,
-          1634
-        ],
-        [
-          3376,
-          1456
+          4208,
+          8080
         ]
       ]
     }
