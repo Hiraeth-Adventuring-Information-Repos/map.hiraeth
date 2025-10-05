@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Arcana Atlas — Epic Fantasy Map Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Leaflet (no SRI to avoid integrity errors) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      crossorigin=""
+    ></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <style>
+      :root {
+        --ink: #e9e5d8;
+        --ink-2: #d9d5c6;
+        --bg: #0b0f14;
+        --gold: #d6a756;
+        --gold-2: #b98b3f;
+        --accent: #74a7fe;
+        --accent-2: #9bd0ff;
+        --muted: #7b8a99;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(1200px 800px at 75% 25%, #141a23, #0b0f14);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+          Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+
+      .arcane-border {
+        position: relative;
+        border: 1px solid rgba(214, 167, 86, 0.25);
+        box-shadow:
+          0 0 0 1px rgba(185, 139, 63, 0.06),
+          inset 0 0 80px rgba(116, 167, 254, 0.04);
+      }
+
+      .topbar {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: linear-gradient(
+          180deg,
+          rgba(18, 24, 32, 0.9),
+          rgba(11, 15, 20, 0.85)
+        );
+        backdrop-filter: blur(8px);
+        border-radius: 10px;
+        z-index: 1000;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        color: var(--ink);
+        letter-spacing: 1px;
+        border: 1px solid rgba(214, 167, 86, 0.18);
+      }
+      .brand .sigil {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: conic-gradient(
+          from 0deg,
+          rgba(214, 167, 86, 0.85),
+          rgba(116, 167, 254, 0.9),
+          rgba(214, 167, 86, 0.85)
+        );
+        box-shadow:
+          inset 0 0 10px rgba(0, 0, 0, 0.4),
+          0 0 14px rgba(116, 167, 254, 0.25);
+        border: 1px solid rgba(214, 167, 86, 0.4);
+      }
+      .brand .title {
+        font-family: "Cinzel Decorative", serif;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(28, 36, 46, 0.85),
+          rgba(22, 28, 36, 0.85)
+        );
+        color: var(--ink);
+        border: 1px solid rgba(116, 167, 254, 0.25);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 120ms ease-out;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(214, 167, 86, 0.35);
+        box-shadow: 0 0 12px rgba(214, 167, 86, 0.25);
+      }
+
+      .sidepanel {
+        position: fixed;
+        top: 74px;
+        left: 16px;
+        width: 360px;
+        bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 21, 28, 0.92),
+          rgba(12, 16, 22, 0.92)
+        );
+        backdrop-filter: blur(8px);
+        border-radius: 12px;
+        z-index: 900;
+        overflow: hidden;
+      }
+      .section {
+        padding: 10px;
+        border-radius: 10px;
+        background: linear-gradient(
+          180deg,
+          rgba(25, 34, 46, 0.7),
+          rgba(20, 26, 36, 0.6)
+        );
+      }
+      .section h3 {
+        margin: 0 0 8px;
+        font-family: "Cinzel Decorative", serif;
+        font-size: 16px;
+        color: var(--accent-2);
+      }
+      .layer-list,
+      .poi-list {
+        max-height: 220px;
+        overflow: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+      }
+      .layer-item,
+      .poi-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 10px;
+        background: rgba(14, 18, 26, 0.6);
+        border: 1px solid rgba(116, 167, 254, 0.15);
+        margin-bottom: 6px;
+        cursor: pointer;
+        transition: 120ms ease-out;
+      }
+      .layer-item:hover,
+      .poi-item:hover {
+        transform: translateX(2px);
+        border-color: rgba(214, 167, 86, 0.35);
+        box-shadow: 0 0 10px rgba(214, 167, 86, 0.15);
+      }
+      .tag {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 20px;
+        color: #0b0f14;
+        background: linear-gradient(90deg, var(--gold), var(--gold-2));
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+      }
+
+      #map {
+        position: absolute;
+        inset: 74px 16px 16px 392px;
+        border-radius: 12px;
+      }
+
+      .drawer {
+        position: fixed;
+        left: 392px;
+        right: 16px;
+        bottom: 16px;
+        height: 200px;
+        border-radius: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 21, 28, 0.92),
+          rgba(12, 16, 22, 0.92)
+        );
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 10px;
+        padding: 12px;
+        z-index: 950;
+        backdrop-filter: blur(6px);
+      }
+      .drawer .blurb {
+        overflow: auto;
+        padding-right: 8px;
+        color: var(--ink-2);
+      }
+      .drawer .meta {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(14, 18, 26, 0.6);
+        border: 1px solid rgba(116, 167, 254, 0.15);
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 26px;
+        transform: translateX(-50%);
+        padding: 10px 14px;
+        color: var(--ink);
+        background: linear-gradient(
+          180deg,
+          rgba(25, 34, 46, 0.9),
+          rgba(20, 26, 36, 0.9)
+        );
+        border: 1px solid rgba(116, 167, 254, 0.25);
+        border-radius: 10px;
+        z-index: 3000;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar arcane-border">
+      <div class="brand">
+        <div class="sigil"></div>
+        <div class="title">Arcana Atlas</div>
+      </div>
+      <div id="currentMapName" class="tag">No Map Loaded</div>
+
+      <div class="toolbar">
+        <button id="btnFit" class="btn" title="Fit to Map">
+          <i data-feather="maximize-2"></i>
+          Fit
+        </button>
+        <button id="btnToggleRegions" class="btn" title="Toggle Regions">
+          <i data-feather="layers"></i>
+          Regions
+        </button>
+        <button id="btnTogglePOI" class="btn" title="Toggle POI">
+          <i data-feather="map-pin"></i>
+          POI
+        </button>
+        <button id="btnExport" class="btn" title="Export State">
+          <i data-feather="share-2"></i>
+          Export
+        </button>
+        <button id="btnHelp" class="btn" title="Help">
+          <i data-feather="help-circle"></i>
+          Help
+        </button>
+      </div>
+    </div>
+
+    <div class="sidepanel arcane-border">
+      <div class="section arcane-border">
+        <h3>Load Maps</h3>
+        <div class="file-load">
+          <input
+            id="fileInput"
+            type="file"
+            multiple
+            accept=".json,application/json"
+          />
+          <button id="btnMaps" class="btn" title="Reload maps.json">
+            <i data-feather="folder"></i>
+            maps.json
+          </button>
+        </div>
+        <div id="mapList" class="layer-list" style="margin-top: 8px"></div>
+      </div>
+
+      <div class="section arcane-border">
+        <h3>Search</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Find city, region, or point…"
+            style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid rgba(116,167,254,.25);background:rgba(15,20,28,.85);color:var(--ink)"
+          />
+          <button id="btnSearch" class="btn"><i data-feather="search"></i></button>
+        </div>
+        <div id="searchResults" class="poi-list" style="margin-top: 8px"></div>
+      </div>
+
+      <div class="section arcane-border">
+        <h3>Layers</h3>
+        <div id="layerList" class="layer-list"></div>
+      </div>
+
+      <div class="section arcane-border">
+        <h3>Points of Interest</h3>
+        <div id="poiList" class="poi-list"></div>
+      </div>
+    </div>
+
+    <div id="map" class="arcane-border"></div>
+
+    <div class="drawer arcane-border">
+      <div class="blurb" id="mapBlurb">
+        Loading maps.json… If this message persists, ensure /maps.json exists
+        at your web root and is valid JSON. Coordinates are interpreted as
+        image-space pixels (x to the right, y downward); internally we flip y to
+        align with Leaflet CRS.Simple.
+      </div>
+      <div class="meta">
+        <div class="metric">
+          <span>Pixels</span>
+          <strong id="metaPixels">—</strong>
+        </div>
+        <div class="metric">
+          <span>Scale</span>
+          <strong id="metaScale">—</strong>
+        </div>
+        <div class="metric">
+          <span>Active Layers</span>
+          <strong id="metaLayers">0</strong>
+        </div>
+        <div class="metric">
+          <span>POI</span>
+          <strong id="metaPOI">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast arcane-border" id="toast"></div>
+
+    <script>
+      feather.replace();
+
+      // Use CRS.Simple so the image does not stretch and pixels match coords.
+      const map = L.map("map", {
+        crs: L.CRS.Simple,
+        zoomControl: false,
+        minZoom: -5,
+        maxZoom: 9
+      });
+      L.control.zoom({ position: "topright" }).addTo(map);
+
+      // Containers for layers per map id
+      const imageLayers = new Map();
+      const regionLayers = new Map();
+      const poiLayers = new Map();
+      const roadLayers = new Map();
+
+      // UI
+      const elMapList = document.getElementById("mapList");
+      const elLayerList = document.getElementById("layerList");
+      const elPoiList = document.getElementById("poiList");
+      const elSearchInput = document.getElementById("searchInput");
+      const elSearchResults = document.getElementById("searchResults");
+      const elBlurb = document.getElementById("mapBlurb");
+      const elMetaPixels = document.getElementById("metaPixels");
+      const elMetaScale = document.getElementById("metaScale");
+      const elMetaLayers = document.getElementById("metaLayers");
+      const elMetaPOI = document.getElementById("metaPOI");
+      const elCurrentMapName = document.getElementById("currentMapName");
+      const elToast = document.getElementById("toast");
+
+      const elBtnFit = document.getElementById("btnFit");
+      const elBtnToggleRegions = document.getElementById("btnToggleRegions");
+      const elBtnTogglePOI = document.getElementById("btnTogglePOI");
+      const elBtnExport = document.getElementById("btnExport");
+      const elBtnHelp = document.getElementById("btnHelp");
+      const elFileInput = document.getElementById("fileInput");
+      const elBtnMaps = document.getElementById("btnMaps");
+
+      // State
+      let loadedMaps = [];
+      let activeMapId = null;
+      let showRegions = true;
+      let showPOI = true;
+
+      // Helpers
+      function toast(msg, timeout = 2200) {
+        elToast.textContent = msg;
+        elToast.style.display = "block";
+        clearTimeout(elToast._timer);
+        elToast._timer = setTimeout(() => {
+          elToast.style.display = "none";
+        }, timeout);
+      }
+      function clearContainer(el) {
+        while (el.firstChild) el.removeChild(el.firstChild);
+      }
+      function makeEl(tag, attrs = {}, children = []) {
+        const el = document.createElement(tag);
+        Object.entries(attrs).forEach(([k, v]) => {
+          if (k === "class") el.className = v;
+          else if (k === "style") Object.assign(el.style, v);
+          else if (k.startsWith("on") && typeof v === "function")
+            el.addEventListener(k.substring(2), v);
+          else el.setAttribute(k, v);
+        });
+        if (!Array.isArray(children)) children = [children];
+        children.forEach((c) =>
+          el.appendChild(typeof c === "string" ? document.createTextNode(c) : c)
+        );
+        return el;
+      }
+      function pxToLatLng(x, y, height) {
+        // y increases downward in your JSON; flip to Leaflet's lat
+        return L.latLng(height - y, x);
+      }
+      function boundsFromSize(width, height) {
+        return L.latLngBounds(L.latLng(0, 0), L.latLng(height, width));
+      }
+
+      // Normalizer — accepts:
+      // • a single map object
+      // • a folder-like map object (has width/height/imageUrl plus children/regions)
+      // • an array of such objects
+      function normalizeMaps(input) {
+        const maps = [];
+        function walk(node) {
+          if (Array.isArray(node)) {
+            node.forEach(walk);
+            return;
+          }
+          if (!node || typeof node !== "object") return;
+
+          const looksLikeMap =
+            (typeof node.width === "number" &&
+              typeof node.height === "number" &&
+              typeof node.imageUrl === "string") ||
+            node.pointsOfInterest ||
+            node.regions ||
+            node.roads;
+
+          if (looksLikeMap) {
+            const id = node.id || `map-${Math.random().toString(36).slice(2)}`;
+            const scalePixels =
+              node.scalePixels ??
+              (node.scale && typeof node.scale.pixels === "number"
+                ? node.scale.pixels
+                : null);
+            const scaleKilometers =
+              node.scaleKilometers ??
+              (node.scale &&
+              (node.scale.units || "").toLowerCase().startsWith("km") &&
+              typeof node.scale.value === "number"
+                ? node.scale.value
+                : null);
+
+            maps.push({
+              id,
+              name: node.name || id,
+              width: node.width || 4096,
+              height: node.height || 3072,
+              imageUrl: node.imageUrl || "",
+              scalePixels,
+              scaleKilometers,
+              blurb: node.blurb || "",
+              regions: node.regions || [],
+              pointsOfInterest: node.pointsOfInterest || [],
+              roads: node.roads || []
+            });
+          }
+
+          // We ignore node.children strings here; maps.json should expand them itself
+        }
+        walk(input);
+        return maps;
+      }
+
+      // Styling & popups
+      function styleRegion(r) {
+        const color = r.color || "#3388ff";
+        const fillColor = r.fillColor || color;
+        const fillOpacity =
+          typeof r.fillOpacity === "number" ? r.fillOpacity : 0.2;
+        return { color, weight: 2, opacity: 0.9, fillColor, fillOpacity };
+      }
+      function styleRoad(road) {
+        return {
+          color: road.color || "#ff2600",
+          weight: road.weight || 3,
+          dashArray: road.dashArray || ""
+        };
+      }
+      function regionPopupHtml(r) {
+        return `
+          <div class="poi-popup">
+            <h4>${r.name || "Region"}</h4>
+            <div class="type">${r.type || "Region"}</div>
+            <div class="desc">${r.description || "—"}</div>
+            ${
+              r.wikiLink
+                ? `<div style="margin-top:6px"><a href="${r.wikiLink}" target="_blank" rel="noopener">Open Codex Entry ↗</a></div>`
+                : ""
+            }
+          </div>
+        `;
+      }
+      function poiPopupHtml(p) {
+        return `
+          <div class="poi-popup">
+            <h4>${p.name || "POI"}</h4>
+            <div class="type">${p.type || "Unknown"}</div>
+            <div class="desc">${p.description || "—"}</div>
+            ${
+              p.wikiLink
+                ? `<div style="margin-top:6px"><a href="${p.wikiLink}" target="_blank" rel="noopener">Open Codex Entry ↗</a></div>`
+                : ""
+            }
+          </div>
+        `;
+      }
+      function computePolygon(mapObj, coords) {
+        return (coords || []).map(([x, y]) => pxToLatLng(x, y, mapObj.height));
+      }
+      function computePolyline(mapObj, coords) {
+        return (coords || []).map(([x, y]) => pxToLatLng(x, y, mapObj.height));
+      }
+
+      // Build Leaflet layers for a map object
+      function buildLayersForMap(mapObj) {
+        const bounds = boundsFromSize(mapObj.width, mapObj.height);
+        const img = L.imageOverlay(mapObj.imageUrl, bounds, {
+          opacity: 1,
+          interactive: false
+        });
+        imageLayers.set(mapObj.id, img);
+
+        const regionGroup = L.layerGroup();
+        const regionEntries = [];
+        (mapObj.regions || []).forEach((r) => {
+          const latlngs = computePolygon(mapObj, r.coordinates || []);
+          const poly = L.polygon(latlngs, styleRegion(r))
+            .bindTooltip(r.name || r.type || "Region", { sticky: true })
+            .bindPopup(regionPopupHtml(r));
+          regionEntries.push(poly);
+          poly.addTo(regionGroup);
+        });
+        regionLayers.set(mapObj.id, { group: regionGroup, entries: regionEntries });
+
+        const roadGroup = L.layerGroup();
+        const roadEntries = [];
+        (mapObj.roads || []).forEach((road) => {
+          const latlngs = computePolyline(mapObj, road.coordinates || []);
+          const line = L.polyline(latlngs, styleRoad(road)).bindPopup(
+            `<div class="poi-popup"><h4>${road.name || "Road"}</h4><div class="type">Route</div><div class="desc">${
+              road.description || "—"
+            }</div></div>`
+          );
+          roadEntries.push(line);
+          line.addTo(roadGroup);
+        });
+        roadLayers.set(mapObj.id, { group: roadGroup, entries: roadEntries });
+
+        const poiGroup = L.layerGroup();
+        const poiEntries = [];
+        (mapObj.pointsOfInterest || []).forEach((p) => {
+          const [x, y] = p.coords || p.coordinates || [];
+          if (typeof x !== "number" || typeof y !== "number") return;
+          const latlng = pxToLatLng(x, y, mapObj.height);
+          const marker = L.circleMarker(latlng, {
+            radius: 6,
+            color: "#b98b3f",
+            fillColor: "#d6a756",
+            fillOpacity: 0.85,
+            weight: 1
+          }).bindPopup(poiPopupHtml(p));
+          poiEntries.push(marker);
+          marker.addTo(poiGroup);
+        });
+        poiLayers.set(mapObj.id, { group: poiGroup, entries: poiEntries });
+      }
+
+      function addMapToLeaflet(mapObj) {
+        const img = imageLayers.get(mapObj.id);
+        const bounds = boundsFromSize(mapObj.width, mapObj.height);
+        if (img) img.addTo(map);
+        regionLayers.get(mapObj.id)?.group.addTo(map);
+        roadLayers.get(mapObj.id)?.group.addTo(map);
+        poiLayers.get(mapObj.id)?.group.addTo(map);
+
+        // Fit and clamp to exact image bounds for perfect alignment
+        map.setMaxBounds(bounds.pad(0.05));
+        map.fitBounds(bounds, { padding: [10, 10] });
+      }
+
+      function removeCurrentFromLeaflet() {
+        const current = loadedMaps.find((m) => m.id === activeMapId);
+        if (!current) return;
+        const img = imageLayers.get(current.id);
+        if (img && map.hasLayer(img)) map.removeLayer(img);
+        const r = regionLayers.get(current.id);
+        if (r && map.hasLayer(r.group)) map.removeLayer(r.group);
+        const rd = roadLayers.get(current.id);
+        if (rd && map.hasLayer(rd.group)) map.removeLayer(rd.group);
+        const p = poiLayers.get(current.id);
+        if (p && map.hasLayer(p.group)) map.removeLayer(p.group);
+      }
+
+      function activateMap(id) {
+        const mapObj = loadedMaps.find((m) => m.id === id);
+        if (!mapObj) return;
+        removeCurrentFromLeaflet();
+        activeMapId = id;
+        elCurrentMapName.textContent = mapObj.name;
+        elCurrentMapName.className = "tag";
+        if (!imageLayers.has(mapObj.id)) buildLayersForMap(mapObj);
+        addMapToLeaflet(mapObj);
+        populateLayerUI(mapObj);
+        elBlurb.innerHTML = mapObj.blurb || "—";
+        updateMeta();
+        toast(`Loaded "${mapObj.name}"`);
+      }
+
+      // UI lists
+      function addMapToUI(mapObj) {
+        const item = makeEl(
+          "div",
+          { class: "layer-item", onclick: () => activateMap(mapObj.id) },
+          [
+            makeEl("span", { class: "tag" }, mapObj.name),
+            makeEl(
+              "span",
+              {
+                style: {
+                  marginLeft: "auto",
+                  color: "var(--muted)",
+                  fontSize: "12px"
+                }
+              },
+              `${mapObj.width}×${mapObj.height}`
+            )
+          ]
+        );
+        elMapList.appendChild(item);
+      }
+
+      function iconForPOI(text = "") {
+        const t = (text || "").toLowerCase();
+        if (t.includes("city")) return "map-pin";
+        if (t.includes("town")) return "map";
+        if (t.includes("village") || t.includes("hamlet")) return "home";
+        if (t.includes("ruin")) return "archive";
+        if (t.includes("mountain")) return "triangle";
+        if (t.includes("lake")) return "droplet";
+        if (t.includes("forest") || t.includes("woods")) return "tree";
+        if (t.includes("road")) return "git-branch";
+        return "map-pin";
+      }
+
+      function populateLayerUI(mapObj) {
+        clearContainer(elLayerList);
+        clearContainer(elPoiList);
+
+        (mapObj.regions || []).forEach((r, idx) => {
+          const colorDot = makeEl("span", {
+            class: "swatch",
+            style: { background: r.fillColor || r.color || "#74a7fe" }
+          });
+          const title = makeEl(
+            "div",
+            {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flex: "1",
+                color: "var(--ink)"
+              }
+            },
+            [colorDot, r.name || `Region ${idx + 1}`]
+          );
+          const eye = makeEl(
+            "button",
+            {
+              class: "btn",
+              onclick: (e) => {
+                e.stopPropagation();
+                const obj = regionLayers.get(mapObj.id);
+                if (!obj) return;
+                const layer = obj.entries[idx];
+                if (map.hasLayer(layer)) {
+                  map.removeLayer(layer);
+                  e.currentTarget.style.opacity = 0.6;
+                } else {
+                  layer.addTo(map);
+                  e.currentTarget.style.opacity = 1;
+                }
+                updateMeta();
+              }
+            },
+            [makeEl("i", { "data-feather": "eye" })]
+          );
+          const row = makeEl(
+            "div",
+            {
+              class: "layer-item",
+              onclick: () => {
+                const obj = regionLayers.get(mapObj.id);
+                if (!obj) return;
+                const layer = obj.entries[idx];
+                if (layer?.getBounds)
+                  map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+              }
+            },
+            [title, eye]
+          );
+          elLayerList.appendChild(row);
+        });
+
+        (mapObj.pointsOfInterest || []).forEach((p, idx) => {
+          const icon = iconForPOI(p.type || p.name);
+          const ico = makeEl("i", { "data-feather": icon });
+          const title = makeEl(
+            "div",
+            {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flex: "1",
+                color: "var(--ink)"
+              }
+            },
+            [ico, p.name || `POI ${idx + 1}`]
+          );
+          const crosshair = makeEl(
+            "button",
+            {
+              class: "btn",
+              onclick: (e) => {
+                e.stopPropagation();
+                const obj = poiLayers.get(mapObj.id);
+                if (!obj) return;
+                const layer = obj.entries[idx];
+                if (layer?.getLatLng) {
+                  map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 2), {
+                    duration: 0.6
+                  });
+                  layer.openPopup();
+                }
+              }
+            },
+            [makeEl("i", { "data-feather": "crosshair" })]
+          );
+          const row = makeEl(
+            "div",
+            {
+              class: "poi-item",
+              onclick: () => {
+                const obj = poiLayers.get(mapObj.id);
+                if (!obj) return;
+                const layer = obj.entries[idx];
+                if (layer?.getLatLng) {
+                  map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 2), {
+                    duration: 0.6
+                  });
+                  layer.openPopup();
+                }
+              }
+            },
+            [title, crosshair]
+          );
+          elPoiList.appendChild(row);
+        });
+
+        feather.replace();
+      }
+
+      function updateMeta() {
+        const mapObj = loadedMaps.find((m) => m.id === activeMapId);
+        if (!mapObj) return;
+
+        const layers =
+          (regionLayers.get(mapObj.id)?.entries || []).filter((l) =>
+            map.hasLayer(l)
+          ).length +
+          (poiLayers.get(mapObj.id)?.entries || []).filter((l) =>
+            map.hasLayer(l)
+          ).length +
+          (roadLayers.get(mapObj.id)?.entries || []).filter((l) =>
+            map.hasLayer(l)
+          ).length +
+          (imageLayers.has(mapObj.id) && map.hasLayer(imageLayers.get(mapObj.id))
+            ? 1
+            : 0);
+
+        elMetaLayers.textContent = String(layers);
+        elMetaPOI.textContent = String(
+          poiLayers.get(mapObj.id)?.entries.length || 0
+        );
+        elMetaPixels.textContent = `${mapObj.width} × ${mapObj.height}`;
+
+        if (
+          mapObj.scalePixels != null &&
+          mapObj.scaleKilometers != null &&
+          mapObj.scalePixels > 0
+        ) {
+          const kmPerPixel = mapObj.scaleKilometers / mapObj.scalePixels;
+          elMetaScale.textContent = `${mapObj.scalePixels} px ≈ ${mapObj.scaleKilometers} km (≈ ${kmPerPixel.toFixed(
+            4
+          )} km/px)`;
+        } else {
+          elMetaScale.textContent = "—";
+        }
+      }
+
+      // Search
+      function runSearch() {
+        const q = (elSearchInput.value || "").trim().toLowerCase();
+        clearContainer(elSearchResults);
+        if (!q) return;
+        const mapObj = loadedMaps.find((m) => m.id === activeMapId);
+        if (!mapObj) return;
+
+        const results = [];
+        (mapObj.regions || []).forEach((r, idx) => {
+          const hay = `${r.name || ""} ${r.description || ""} ${r.type || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            results.push({
+              kind: "Region",
+              name: r.name || `Region ${idx + 1}`,
+              action: () => {
+                const layer = regionLayers.get(mapObj.id)?.entries[idx];
+                if (layer?.getBounds) {
+                  map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+                  layer.openPopup();
+                }
+              }
+            });
+          }
+        });
+        (mapObj.pointsOfInterest || []).forEach((p, idx) => {
+          const hay = `${p.name || ""} ${p.description || ""} ${p.type || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            results.push({
+              kind: "POI",
+              name: p.name || `POI ${idx + 1}`,
+              action: () => {
+                const layer = poiLayers.get(mapObj.id)?.entries[idx];
+                if (layer?.getLatLng) {
+                  map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 2), {
+                    duration: 0.6
+                  });
+                  layer.openPopup();
+                }
+              }
+            });
+          }
+        });
+        (mapObj.roads || []).forEach((r, idx) => {
+          const hay = `${r.name || ""} ${r.description || ""}`.toLowerCase();
+          if (hay.includes(q)) {
+            results.push({
+              kind: "Road",
+              name: r.name || `Road ${idx + 1}`,
+              action: () => {
+                const layer = roadLayers.get(mapObj.id)?.entries[idx];
+                if (layer?.getBounds) {
+                  map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+                }
+              }
+            });
+          }
+        });
+
+        if (results.length === 0) {
+          elSearchResults.appendChild(
+            makeEl("div", { class: "poi-item" }, "No results.")
+          );
+          return;
+        }
+        results.slice(0, 100).forEach((r) => {
+          const row = makeEl(
+            "div",
+            { class: "poi-item", onclick: r.action },
+            [
+              makeEl("span", { class: "tag" }, r.kind),
+              makeEl(
+                "div",
+                { style: { marginLeft: "8px", color: "var(--ink)" } },
+                r.name
+              )
+            ]
+          );
+          elSearchResults.appendChild(row);
+        });
+      }
+
+      // Manual file input
+      elFileInput.addEventListener("change", async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        const newMaps = [];
+        for (const f of files) {
+          try {
+            const text = await f.text();
+            const json = JSON.parse(text);
+            const maps = normalizeMaps(json);
+            maps.forEach((m) => {
+              if (!loadedMaps.some((x) => x.id === m.id)) {
+                loadedMaps.push(m);
+                newMaps.push(m);
+                addMapToUI(m);
+              }
+            });
+          } catch (err) {
+            console.error(err);
+            toast(`Failed to load ${f.name}`);
+          }
+        }
+        if (newMaps.length) activateMap(newMaps[0].id);
+        e.target.value = "";
+      });
+
+      // Default boot: load /maps.json (site-wide manifest)
+      // This file can be either:
+      // • an array of map objects and/or folder-like objects (like you pasted), or
+      // • a single map object.
+      async function loadMapsJson() {
+        try {
+          const res = await fetch("/maps.json", { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          // If data is an array, normalize each element
+          let maps = [];
+          if (Array.isArray(data)) {
+            data.forEach((node) => {
+              maps = maps.concat(normalizeMaps(node));
+            });
+          } else {
+            maps = normalizeMaps(data);
+          }
+
+          // If some map JSONs omit imageUrl but follow a pairing rule of
+          // /maps/<id or name>.webp, try to auto-pair using name (safe fallback).
+          maps.forEach((m) => {
+            if (!m.imageUrl || !m.imageUrl.trim()) {
+              const base = (m.id || m.name || "map").replace(/\s+/g, "-");
+              m.imageUrl = `/maps/${base}.webp`;
+            }
+          });
+
+          // Populate UI and activate the first map
+          const newlyAdded = [];
+          maps.forEach((m) => {
+            if (!loadedMaps.some((x) => x.id === m.id)) {
+              loadedMaps.push(m);
+              newlyAdded.push(m);
+              addMapToUI(m);
+            }
+          });
+
+          if (newlyAdded.length) {
+            activateMap(newlyAdded[0].id);
+            toast("Loaded maps.json");
+          } else if (loadedMaps.length) {
+            // If already had maps (user re-clicked), just activate first
+            activateMap(loadedMaps[0].id);
+          } else {
+            elBlurb.textContent =
+              "maps.json loaded but no usable maps were found.";
+          }
+        } catch (e) {
+          console.error("Failed to load /maps.json", e);
+          toast("Failed to load /maps.json");
+          elBlurb.textContent =
+            "Could not load /maps.json. Ensure it exists and is valid JSON.";
+        }
+      }
+
+      // Buttons & shortcuts
+      elBtnMaps.addEventListener("click", loadMapsJson);
+      elBtnFit.addEventListener("click", () => {
+        const m = loadedMaps.find((x) => x.id === activeMapId);
+        if (!m) return;
+        map.fitBounds(boundsFromSize(m.width, m.height), { padding: [10, 10] });
+      });
+      elBtnToggleRegions.addEventListener("click", () => {
+        const m = loadedMaps.find((x) => x.id === activeMapId);
+        if (!m) return;
+        const g = regionLayers.get(m.id)?.group;
+        if (!g) return;
+        if (showRegions) {
+          map.removeLayer(g);
+          showRegions = false;
+          toast("Regions hidden");
+        } else {
+          g.addTo(map);
+          showRegions = true;
+          toast("Regions shown");
+        }
+        updateMeta();
+      });
+      elBtnTogglePOI.addEventListener("click", () => {
+        const m = loadedMaps.find((x) => x.id === activeMapId);
+        if (!m) return;
+        const g = poiLayers.get(m.id)?.group;
+        if (!g) return;
+        if (showPOI) {
+          map.removeLayer(g);
+          showPOI = false;
+          toast("POI hidden");
+        } else {
+          g.addTo(map);
+          showPOI = true;
+          toast("POI shown");
+        }
+        updateMeta();
+      });
+      elBtnExport.addEventListener("click", () => {
+        const state = {
+          activeMapId,
+          center: map.getCenter(),
+          zoom: map.getZoom(),
+          showRegions,
+          showPOI
+        };
+        const blob = new Blob([JSON.stringify(state, null, 2)], {
+          type: "application/json"
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "arcana-atlas-state.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("Exported current state");
+      });
+      elBtnHelp.addEventListener("click", () => {
+        alert(
+          [
+            "Arcana Atlas",
+            "",
+            "• On load, we fetch /maps.json automatically.",
+            "• /maps.json may contain a single map object, a folder-like map object,",
+            "  or an array of those. Your posted JSON works as-is.",
+            "• Coordinates are image-space pixels; we flip y (lat = height - y).",
+            "• Fit: F, Toggle regions: R, Toggle POI: P"
+          ].join("\n")
+        );
+      });
+      document.getElementById("btnSearch").addEventListener("click", runSearch);
+      elSearchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") runSearch();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName))
+          return;
+        if (e.key === "f") {
+          const m = loadedMaps.find((x) => x.id === activeMapId);
+          if (!m) return;
+          map.fitBounds(boundsFromSize(m.width, m.height), { padding: [10, 10] });
+        }
+        if (e.key === "r") elBtnToggleRegions.click();
+        if (e.key === "p") elBtnTogglePOI.click();
+      });
+
+      // Background grid and safe default
+      const emptyBounds = boundsFromSize(4096, 3072);
+      const grid = L.gridLayer({
+        tileSize: 256,
+        opacity: 0.2,
+        updateWhenIdle: true
+      });
+      grid.createTile = function () {
+        const tile = document.createElement("canvas");
+        tile.width = tile.height = 256;
+        const ctx = tile.getContext("2d");
+        ctx.fillStyle = "#0e141c";
+        ctx.fillRect(0, 0, 256, 256);
+        ctx.strokeStyle = "rgba(116,167,254,0.06)";
+        for (let i = 0; i <= 256; i += 32) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.lineTo(i, 256);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i);
+          ctx.lineTo(256, i);
+          ctx.stroke();
+        }
+        return tile;
+      };
+      grid.addTo(map);
+      map.setMaxBounds(emptyBounds.pad(2));
+      map.fitBounds(emptyBounds);
+
+      // Auto-load maps.json on startup
+      loadMapsJson();
+
+      // Drag & drop JSON
+      window.addEventListener("dragover", (e) => e.preventDefault());
+      window.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files || []);
+        if (!files.length) return;
+        elFileInput.files = e.dataTransfer.files;
+        elFileInput.dispatchEvent(new Event("change"));
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Arcana Atlas — Merged Fantasy Map Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Leaflet (no SRI to avoid integrity errors) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    
+    <!-- Feather Icons for UI -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Custom Fonts for the theme -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+
+    <style>
+      /* --- UI Theme from test.html --- */
+      :root {
+        --ink: #e9e5d8;
+        --ink-2: #d9d5c6;
+        --bg: #0b0f14;
+        --gold: #d6a756;
+        --gold-2: #b98b3f;
+        --accent: #74a7fe;
+        --accent-2: #9bd0ff;
+        --muted: #7b8a99;
+        --font-main: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        --font-display: 'Cinzel Decorative', serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: radial-gradient(1200px 800px at 75% 25%, #141a23, #0b0f14);
+        color: var(--ink);
+        font-family: var(--font-main);
+        overflow: hidden;
+      }
+
+      .arcane-border {
+        position: relative;
+        border: 1px solid rgba(214, 167, 86, 0.25);
+        box-shadow: 0 0 0 1px rgba(185, 139, 63, 0.06), inset 0 0 80px rgba(116, 167, 254, 0.04);
+      }
+
+      .topbar {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: linear-gradient(180deg, rgba(18, 24, 32, 0.9), rgba(11, 15, 20, 0.85));
+        backdrop-filter: blur(8px);
+        border-radius: 10px;
+        z-index: 1000;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        color: var(--ink);
+        letter-spacing: 1px;
+        border: 1px solid rgba(214, 167, 86, 0.18);
+      }
+      .brand .sigil {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, rgba(214, 167, 86, 0.85), rgba(116, 167, 254, 0.9), rgba(214, 167, 86, 0.85));
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4), 0 0 14px rgba(116, 167, 254, 0.25);
+        border: 1px solid rgba(214, 167, 86, 0.4);
+      }
+      .brand .title {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: linear-gradient(180deg, rgba(28, 36, 46, 0.85), rgba(22, 28, 36, 0.85));
+        color: var(--ink);
+        border: 1px solid rgba(116, 167, 254, 0.25);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 120ms ease-out;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(214, 167, 86, 0.35);
+        box-shadow: 0 0 12px rgba(214, 167, 86, 0.25);
+      }
+      .btn.active {
+        border-color: var(--gold);
+        background: linear-gradient(180deg, rgba(214, 167, 86, 0.2), rgba(214, 167, 86, 0.1));
+        box-shadow: 0 0 12px rgba(214, 167, 86, 0.4);
+      }
+
+      .sidepanel {
+        position: fixed;
+        top: 84px; 
+        left: 16px;
+        width: 360px;
+        bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+        background: linear-gradient(180deg, rgba(16, 21, 28, 0.92), rgba(12, 16, 22, 0.92));
+        backdrop-filter: blur(8px);
+        border-radius: 12px;
+        z-index: 900;
+        overflow: hidden;
+      }
+      .section {
+        padding: 10px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, rgba(25, 34, 46, 0.7), rgba(20, 26, 36, 0.6));
+        display: flex;
+        flex-direction: column;
+      }
+      .section h3 {
+        margin: 0 0 8px;
+        font-family: var(--font-display);
+        font-size: 16px;
+        color: var(--accent-2);
+        flex-shrink: 0;
+      }
+      .scroll-list {
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--gold-2) transparent;
+      }
+      .map-list-item, .poi-list-item, .filter-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 10px;
+        background: rgba(14, 18, 26, 0.6);
+        border: 1px solid rgba(116, 167, 254, 0.15);
+        margin-bottom: 6px;
+        cursor: pointer;
+        transition: 120ms ease-out;
+      }
+      .map-list-item:hover, .poi-list-item:hover {
+        transform: translateX(2px);
+        border-color: rgba(214, 167, 86, 0.35);
+        box-shadow: 0 0 10px rgba(214, 167, 86, 0.15);
+      }
+      .map-list-item.active {
+        border-color: var(--gold);
+        background: rgba(214, 167, 86, 0.1);
+      }
+      .folder-header {
+        font-weight: bold;
+        user-select: none;
+      }
+      .folder-toggle-icon {
+        transition: transform 0.2s ease-in-out;
+      }
+      .folder.closed > .folder-header .folder-toggle-icon {
+        transform: rotate(-90deg);
+      }
+      .nested-list {
+        list-style: none;
+        padding: 0;
+        margin: 4px 0 0 15px;
+        max-height: 1000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+      }
+      .folder.closed > .nested-list {
+        max-height: 0;
+      }
+      .tag {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 20px;
+        color: #0b0f14;
+        background: linear-gradient(90deg, var(--gold), var(--gold-2));
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        font-weight: 500;
+      }
+      
+      #map-container {
+        position: absolute;
+        inset: 84px 16px 16px 392px;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 48px; /* Height of meta-bar */
+        border-radius: 12px 12px 0 0;
+        background-color: #0e141c;
+        overflow: hidden;
+      }
+
+      #meta-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 48px;
+        border-radius: 0 0 12px 12px;
+        border-top: none;
+        background: linear-gradient(180deg, rgba(18, 24, 32, 0.9), rgba(11, 15, 20, 0.85));
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        padding: 0 12px;
+        gap: 10px;
+      }
+      
+      #map.measuring-cursor {
+          cursor: crosshair;
+      }
+
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(14, 18, 26, 0.6);
+        border: 1px solid rgba(116, 167, 254, 0.15);
+        flex-grow: 1;
+        max-width: 220px;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 26px;
+        transform: translateX(-50%);
+        padding: 10px 14px;
+        color: var(--ink);
+        background: linear-gradient(180deg, rgba(25, 34, 46, 0.9), rgba(20, 26, 36, 0.9));
+        border: 1px solid rgba(116, 167, 254, 0.25);
+        border-radius: 10px;
+        z-index: 3000;
+        display: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      }
+      
+      .file-load {
+        display: flex;
+        gap: 8px;
+      }
+      #fileInput {
+        display: none;
+      }
+      .file-load-label {
+        flex-grow: 1;
+      }
+      #searchInput {
+        flex: 1;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(116, 167, 254, 0.25);
+        background: rgba(15, 20, 28, 0.85);
+        color: var(--ink);
+        font-family: var(--font-main);
+      }
+      
+      .filter-item input[type="checkbox"] {
+        margin-right: 8px;
+        accent-color: var(--gold);
+      }
+      
+      .leaflet-popup-content-wrapper {
+        background: rgba(18, 24, 32, 0.9);
+        backdrop-filter: blur(8px);
+        color: var(--ink);
+        border-radius: 8px;
+        box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+        border: 1px solid rgba(214, 167, 86, 0.25);
+      }
+      .leaflet-popup-tip {
+          background: rgba(18, 24, 32, 0.9);
+      }
+      .leaflet-popup-content h4 {
+        margin: 0 0 5px;
+        font-family: var(--font-display);
+        color: var(--accent-2);
+      }
+      .leaflet-popup-content .type {
+        font-size: 0.8em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .leaflet-popup-content .desc {
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+      .leaflet-popup-content a {
+        color: var(--gold);
+        text-decoration: none;
+      }
+      .leaflet-popup-content a:hover {
+        text-decoration: underline;
+      }
+      
+      .leaflet-tooltip.measure-tooltip {
+          background-color: rgba(11, 15, 20, 0.8);
+          color: var(--ink);
+          border: 1px solid var(--gold);
+          box-shadow: 0 0 10px rgba(214, 167, 86, 0.3);
+          font-size: 0.9rem;
+          padding: 4px 8px;
+          border-radius: 4px;
+      }
+      
+      #loading-indicator {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 1001;
+          background: rgba(11, 15, 20, 0.8);
+          backdrop-filter: blur(5px);
+          color: white;
+          padding: 20px 30px;
+          border-radius: 8px;
+          display: none; 
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+          border: 1px solid var(--gold);
+      }
+      .spinner {
+          border: 4px solid rgba(255, 255, 255, 0.2);
+          border-left-color: var(--gold);
+          border-radius: 50%;
+          width: 30px;
+          height: 30px;
+          animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+          to { transform: rotate(360deg); }
+      }
+
+        @keyframes moveClouds {
+            from { background-position-x: 0; }
+            to { background-position-x: 1000px; }
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        body:not(.dark-theme) #map::before,
+        body:not(.dark-theme) #map::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 200%; height: 100%;
+            background-repeat: repeat-x;
+            background-image: 
+                radial-gradient(circle at 15% 20%, white 50px, transparent 150px),
+                radial-gradient(circle at 45% 30%, #f0f8ff 70px, transparent 200px),
+                radial-gradient(circle at 70% 15%, white 60px, transparent 180px),
+                radial-gradient(circle at 90% 40%, #f0f8ff 80px, transparent 220px);
+            animation-name: moveClouds;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        body:not(.dark-theme) #map::before {
+            opacity: 0.3;
+            animation-duration: 75s;
+        }
+        body:not(.dark-theme) #map::after {
+            opacity: 0.2;
+            animation-duration: 110s;
+            animation-delay: -10s;
+        }
+
+        body.dark-theme #map::before,
+        body.dark-theme #map::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            animation-name: twinkle;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+        body.dark-theme #map::before {
+            background-image:
+                radial-gradient(circle, rgba(255, 255, 255, 0.9) 1px, transparent 1.5px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.5px, transparent 1px);
+            background-size: 75px 75px, 50px 50px;
+            background-position: 0 0, 25px 25px;
+            animation-duration: 8s;
+        }
+        body.dark-theme #map::after {
+            background-image:
+                radial-gradient(circle, rgba(220, 240, 255, 0.8) 0.7px, transparent 1px),
+                radial-gradient(circle, rgba(220, 240, 255, 0.7) 0.3px, transparent 0.6px);
+            background-size: 60px 60px, 35px 35px;
+            background-position: 15px 15px, 40px 40px;
+            animation-duration: 5s;
+            animation-delay: -2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar arcane-border">
+        <div class="brand">
+            <div class="sigil"></div>
+            <div class="title">Arcana Atlas</div>
+        </div>
+        <div id="currentMapName" class="tag">No Map Loaded</div>
+
+        <div class="toolbar">
+            <button id="btnFit" class="btn" title="Fit to Map (F)">
+                <i data-feather="maximize-2"></i>
+                <span>Fit</span>
+            </button>
+            <button id="btnToggleLayers" class="btn" title="Toggle Markers & Regions (H)">
+                <i data-feather="layers"></i>
+                <span>Layers</span>
+            </button>
+            <button id="btnMeasure" class="btn" title="Measure Distance (M)">
+                <i data-feather="ruler"></i>
+                <span>Measure</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="sidepanel arcane-border">
+        <div class="section arcane-border">
+            <h3>Load Maps</h3>
+            <div class="file-load">
+                <input id="fileInput" type="file" multiple accept=".json,application/json" />
+                <label for="fileInput" class="btn file-load-label" title="Load a local map JSON file">
+                    <i data-feather="upload-cloud"></i>
+                    <span>Load Local File</span>
+                </label>
+                <button id="btnReloadMaps" class="btn" title="Reload maps manifest">
+                    <i data-feather="refresh-cw"></i>
+                </button>
+            </div>
+            <div id="mapList" class="scroll-list" style="margin-top: 8px; flex-grow: 1;"></div>
+        </div>
+
+        <div class="section arcane-border">
+            <h3>Search</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+                <input id="searchInput" type="text" placeholder="Find city, region, etc…" />
+                <button id="btnSearch" class="btn"><i data-feather="search"></i></button>
+            </div>
+            <div id="searchResults" class="scroll-list" style="margin-top: 8px;"></div>
+        </div>
+
+        <div id="filterContainer" class="section arcane-border">
+            <h3>Filters</h3>
+            <div class="scroll-list" id="filterList">
+            </div>
+        </div>
+        
+        <div class="section arcane-border" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <h3 style="flex-shrink: 0;">Description</h3>
+            <div class="scroll-list" id="mapBlurb" style="flex-grow: 1; color: var(--ink-2);">
+                Loading map manifest...
+            </div>
+        </div>
+    </div>
+
+    <div id="map-container">
+        <div id="map" class="arcane-border"></div>
+        <div id="meta-bar" class="arcane-border">
+            <div class="metric">
+                <span>Pixels</span>
+                <strong id="metaPixels">—</strong>
+            </div>
+            <div class="metric">
+                <span>Scale</span>
+                <strong id="metaScale">—</strong>
+            </div>
+            <div class="metric">
+                <span>Regions</span>
+                <strong id="metaRegions">0</strong>
+            </div>
+            <div class="metric">
+                <span>POI</span>
+                <strong id="metaPOI">0</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast arcane-border" id="toast"></div>
+    <div id="loading-indicator">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <script>
+        // --- MERGED & ADAPTED SCRIPT ---
+        
+        // --- Initialize Feather Icons ---
+        feather.replace();
+
+        // --- Leaflet Map Initialization ---
+        const map = L.map("map", {
+            crs: L.CRS.Simple,
+            zoomControl: false,
+            minZoom: -5,
+            maxZoom: 9
+        });
+        L.control.zoom({ position: "topright" }).addTo(map);
+
+        // --- Global State & Data ---
+        let mapData = []; // Populated by loadMapData from manifest
+        let currentlyLoadedMapId = null;
+        let allMapLayers = {
+            image: null,
+            regions: L.layerGroup(),
+            roads: L.layerGroup(),
+            poi: L.layerGroup(),
+            measurement: L.layerGroup()
+        };
+        let allMapMarkers = []; // Holds raw marker objects for searching/filtering
+        let allMapRegionLayers = []; // Holds raw region layers for filtering
+        let allMapRoadLayers = []; // Holds raw road layers for filtering
+        
+        // Toggles
+        let layersVisible = true;
+        
+        // Measurement Tool State (from index.html)
+        let isMeasuring = false;
+        let multiPointPath = [];
+        let multiPointPolyline = null;
+        let multiPointVertexMarkers = [];
+        let multiPointTotalTooltip = null;
+        let temporaryMouseMoveLine = null;
+        let temporaryMouseMoveTooltip = null;
+
+        // --- DOM Element References ---
+        const elMapList = document.getElementById("mapList");
+        const elFilterList = document.getElementById("filterList");
+        const elSearchInput = document.getElementById("searchInput");
+        const elSearchResults = document.getElementById("searchResults");
+        const elBlurb = document.getElementById("mapBlurb");
+        const elMetaPixels = document.getElementById("metaPixels");
+        const elMetaScale = document.getElementById("metaScale");
+        const elMetaRegions = document.getElementById("metaRegions");
+        const elMetaPOI = document.getElementById("metaPOI");
+        const elCurrentMapName = document.getElementById("currentMapName");
+        const elToast = document.getElementById("toast");
+        const elLoadingIndicator = document.getElementById('loading-indicator');
+        const elLoadingText = document.querySelector('#loading-indicator .loading-text');
+
+        // Buttons
+        const elBtnFit = document.getElementById("btnFit");
+        const elBtnToggleLayers = document.getElementById("btnToggleLayers");
+        const elBtnMeasure = document.getElementById("btnMeasure");
+        const elBtnReloadMaps = document.getElementById("btnReloadMaps");
+        const elFileInput = document.getElementById("fileInput");
+        const elBtnSearch = document.getElementById("btnSearch");
+
+        // --- Helper Functions ---
+        function toast(msg, timeout = 2200) {
+            elToast.textContent = msg;
+            elToast.style.display = "block";
+            clearTimeout(elToast._timer);
+            elToast._timer = setTimeout(() => {
+                elToast.style.display = "none";
+            }, timeout);
+        }
+
+        function clearContainer(el) {
+            while (el.firstChild) el.removeChild(el.firstChild);
+        }
+        
+        function boundsFromSize(width, height) {
+            return L.latLngBounds(L.latLng(0, 0), L.latLng(height, width));
+        }
+        
+        function showLoading(text) {
+            elLoadingText.textContent = text;
+            elLoadingIndicator.style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            elLoadingIndicator.style.display = 'none';
+        }
+        
+        // --- Recursive Map Data Loading (from index.html) ---
+        async function processChild(childId, level = 0) {
+            if (level > 5 || !childId || typeof childId !== 'string') {
+                console.warn(`Skipping child processing for: ${childId}`);
+                return { id: childId, name: String(childId || 'Invalid Child'), status: 'error' };
+            }
+            try {
+                const response = await fetch(`maps/${childId}.json`);
+                if (response.ok) {
+                    let childData = await response.json();
+                    if (childData.children && Array.isArray(childData.children) && typeof childData.children[0] === 'string') {
+                        const subChildIds = childData.children;
+                        childData.children = [];
+                        const subChildPromises = subChildIds.map(subId => processChild(subId, level + 1));
+                        childData.children = await Promise.all(subChildPromises);
+                    }
+                    childData.id = childData.id || childId;
+                    childData.name = childData.name || childId;
+                    return childData;
+                } else {
+                    return { id: childId, name: childId, status: 'error', error: `HTTP ${response.status}` };
+                }
+            } catch (error) {
+                console.error(`Error processing child ${childId}:`, error);
+                return { id: childId, name: childId, status: 'error', error: error.message };
+            }
+        }
+
+        async function processMapData(maps) {
+            const processedMaps = [];
+            for (let map of maps) {
+                if (map.children && Array.isArray(map.children) && typeof map.children[0] === 'string') {
+                    const childIds = map.children;
+                    map.children = [];
+                    const childPromises = childIds.map(childId => processChild(childId, 1));
+                    map.children = await Promise.all(childPromises);
+                }
+                processedMaps.push(map);
+            }
+            return processedMaps;
+        }
+
+        async function loadMapManifest() {
+            showLoading('Loading map manifest...');
+            try {
+                // Using a placeholder URL. Replace with your actual manifest path.
+                const response = await fetch('maps/maps.json', { cache: "no-store" });
+                if (!response.ok) throw new Error(`Failed to load maps.json: ${response.statusText}`);
+                const maps = await response.json();
+                mapData = await processMapData(maps);
+                
+                populateSidebar(elMapList, mapData);
+                
+                const firstLoadableMap = findFirstLoadableIdRecursive(mapData);
+                if (firstLoadableMap) {
+                    activateMap(firstLoadableMap, true); // Fit bounds on first load
+                } else {
+                     elBlurb.innerHTML = "No loadable maps found in the manifest.";
+                     toast("No loadable maps found.");
+                }
+
+            } catch (error) {
+                console.error('Error loading map data:', error);
+                elBlurb.innerHTML = `Error loading map data. Please check console. <br>Ensure a valid <strong>/maps/maps.json</strong> exists.`;
+                toast("Error loading map manifest.");
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // --- Sidebar & UI Population ---
+        function findFirstLoadableIdRecursive(items) {
+            for (const item of items) {
+                if (item.id && item.status !== 'error') return item.id;
+                if (item.type === 'folder' && item.children) {
+                    const foundId = findFirstLoadableIdRecursive(item.children);
+                    if (foundId) return foundId;
+                }
+            }
+            return null;
+        }
+
+        function populateSidebar(parentElement, items, level = 0) {
+            if (level === 0) clearContainer(parentElement);
+
+            items.forEach(item => {
+                const listItem = document.createElement('li');
+                
+                if (item.type === 'folder') {
+                    listItem.classList.add('folder', 'closed');
+                    const header = document.createElement('div');
+                    header.className = 'map-list-item folder-header';
+                    header.innerHTML = `<i data-feather="chevron-down" class="folder-toggle-icon"></i><span>${item.name || 'Unnamed Folder'}</span>`;
+                    
+                    const nestedList = document.createElement('ul');
+                    nestedList.className = 'nested-list';
+
+                    if (item.children && item.children.length > 0) {
+                        populateSidebar(nestedList, item.children, level + 1);
+                    }
+
+                    header.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        listItem.classList.toggle('closed');
+                    });
+                    
+                    if (item.id && item.status !== 'error') {
+                        header.addEventListener('dblclick', (e) => {
+                           e.stopPropagation();
+                           activateMap(item.id);
+                        });
+                    }
+                    
+                    listItem.appendChild(header);
+                    listItem.appendChild(nestedList);
+                } else { // Map Item
+                    listItem.className = 'map-list-item';
+                    listItem.innerHTML = `<span>${item.name || 'Unnamed Map'}</span>`;
+                    if(item.status === 'error') {
+                        listItem.style.opacity = 0.5;
+                        listItem.title = `Error loading: ${item.error || 'Unknown error'}`;
+                    } else {
+                        listItem.dataset.mapId = item.id;
+                        listItem.addEventListener('click', () => activateMap(item.id));
+                    }
+                }
+                parentElement.appendChild(listItem);
+            });
+            if (level === 0) feather.replace();
+        }
+        
+        // --- Map Activation & Layer Building ---
+        function findMapRecursive(items, id) {
+            for (const item of items) {
+                if (item.id === id) return item;
+                if (item.type === 'folder' && item.children) {
+                    const found = findMapRecursive(item.children, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function clearAllLayers() {
+            Object.values(allMapLayers).forEach(layer => {
+                if(layer && map.hasLayer(layer)) {
+                    map.removeLayer(layer);
+                }
+                if(layer && typeof layer.clearLayers === 'function') {
+                    layer.clearLayers();
+                }
+            });
+            allMapMarkers = [];
+            allMapRegionLayers = [];
+            allMapRoadLayers = [];
+        }
+
+        async function activateMap(mapId, fitBoundsOnLoad = false) {
+            if (isMeasuring) toggleMeasurementTool();
+            
+            const mapObj = findMapRecursive(mapData, mapId);
+            if (!mapObj || mapObj.status === 'error') {
+                toast(`Failed to activate map: ${mapId}`);
+                return;
+            }
+            
+            showLoading(`Loading "${mapObj.name}"...`);
+            
+            clearAllLayers();
+            currentlyLoadedMapId = mapId;
+            
+            document.querySelectorAll('.map-list-item.active').forEach(el => el.classList.remove('active'));
+            const activeItem = document.querySelector(`.map-list-item[data-map-id="${mapId}"]`);
+            if(activeItem) activeItem.classList.add('active');
+
+            const bounds = boundsFromSize(mapObj.width, mapObj.height);
+            allMapLayers.image = L.imageOverlay(mapObj.imageUrl, bounds, { interactive: false });
+            
+            await new Promise((resolve, reject) => {
+                allMapLayers.image.on('load', resolve);
+                allMapLayers.image.on('error', () => reject(new Error(`Failed to load image for ${mapObj.name}`)));
+                allMapLayers.image.addTo(map);
+            }).catch(err => {
+                console.error(err);
+                toast(err.message, 4000);
+                hideLoading();
+            });
+
+            buildVectorLayers(mapObj);
+            
+            Object.values(allMapLayers).forEach(layer => layer.addTo(map));
+            
+            updateUIForMap(mapObj, bounds, fitBoundsOnLoad);
+            
+            hideLoading();
+            toast(`Loaded "${mapObj.name}"`);
+        }
+
+        function buildVectorLayers(mapObj) {
+            (mapObj.regions || []).forEach(r => {
+                const latlngs = (r.coordinates || []).map(([y, x]) => L.latLng(y, x));
+                const poly = L.polygon(latlngs, {
+                    color: r.color || "#3388ff",
+                    fillColor: r.fillColor || r.color || "#3388ff",
+                    fillOpacity: typeof r.fillOpacity === "number" ? r.fillOpacity : 0.2,
+                    weight: 2
+                }).bindPopup(getPopupHTML(r, 'Region'));
+                poly.featureData = r;
+                allMapRegionLayers.push(poly);
+                poly.addTo(allMapLayers.regions);
+            });
+
+            (mapObj.roads || []).forEach(road => {
+                const latlngs = (road.coordinates || []).map(([y, x]) => L.latLng(y, x));
+                const line = L.polyline(latlngs, {
+                    color: road.color || "#ff2600",
+                    weight: road.weight || 3,
+                    dashArray: road.dashArray || ""
+                }).bindPopup(getPopupHTML(road, 'Road'));
+                line.featureData = road;
+                allMapRoadLayers.push(line);
+                line.addTo(allMapLayers.roads);
+            });
+
+            (mapObj.pointsOfInterest || []).forEach(p => {
+                const [y, x] = p.coords || p.coordinates || [];
+                if (typeof x !== "number" || typeof y !== "number") return;
+                const latlng = L.latLng(y, x);
+                const marker = L.circleMarker(latlng, {
+                    radius: 6,
+                    color: "#b98b3f",
+                    fillColor: "#d6a756",
+                    fillOpacity: 0.85,
+                    weight: 1
+                }).bindPopup(getPopupHTML(p, 'Point of Interest'));
+                marker.featureData = p;
+                allMapMarkers.push(marker);
+                marker.addTo(allMapLayers.poi);
+            });
+        }
+
+        function updateUIForMap(mapObj, bounds, fitBoundsOnLoad) {
+            elCurrentMapName.textContent = mapObj.name;
+            elBlurb.innerHTML = mapObj.blurb || "No description for this map.";
+            
+            map.setMaxBounds(bounds.pad(0.1));
+            if (fitBoundsOnLoad) {
+                map.fitBounds(bounds, { padding: [10, 10] });
+            }
+            
+            populateFilters(mapObj);
+            updateMeta(mapObj);
+        }
+        
+        function getPopupHTML(feature, defaultType) {
+            return `
+              <h4>${feature.name || "Unnamed"}</h4>
+              <div class="type">${feature.type || defaultType}</div>
+              <div class="desc">${feature.description || "—"}</div>
+              ${feature.wikiLink ? `<div style="margin-top:6px"><a href="${feature.wikiLink}" target="_blank" rel="noopener">Open Codex Entry ↗</a></div>` : ""}
+            `;
+        }
+        
+        function updateMeta(mapObj) {
+            if (!mapObj) {
+                elMetaPixels.textContent = "—";
+                elMetaScale.textContent = "—";
+                elMetaRegions.textContent = "0";
+                elMetaPOI.textContent = "0";
+                return;
+            }
+            elMetaPixels.textContent = `${mapObj.width} × ${mapObj.height}`;
+            elMetaRegions.textContent = (mapObj.regions || []).length;
+            elMetaPOI.textContent = (mapObj.pointsOfInterest || []).length;
+            
+            if (mapObj.scalePixels && mapObj.scaleKilometers) {
+                elMetaScale.textContent = `${mapObj.scalePixels} px ≈ ${mapObj.scaleKilometers} km`;
+            } else {
+                elMetaScale.textContent = "—";
+            }
+        }
+
+        function populateFilters(mapObj) {
+            clearContainer(elFilterList);
+            const allTypes = new Set();
+            (mapObj.regions || []).forEach(f => f.type && allTypes.add(f.type));
+            (mapObj.roads || []).forEach(f => f.type && allTypes.add(f.type));
+            (mapObj.pointsOfInterest || []).forEach(f => f.type && allTypes.add(f.type));
+            
+            if (allTypes.size === 0) {
+                elFilterList.innerHTML = `<div class="filter-item" style="opacity: 0.6;">No filterable types.</div>`;
+                return;
+            }
+            
+            const allDiv = document.createElement('div');
+            allDiv.className = 'filter-item';
+            allDiv.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" id="filter-toggle-all" checked> Show All</label>`;
+            elFilterList.appendChild(allDiv);
+            
+            Array.from(allTypes).sort().forEach(type => {
+                const div = document.createElement('div');
+                div.className = 'filter-item';
+                div.innerHTML = `<label style="width:100%; cursor:pointer;"><input type="checkbox" class="type-filter" value="${type}" checked> ${type}</label>`;
+                elFilterList.appendChild(div);
+            });
+            
+            document.getElementById('filter-toggle-all').addEventListener('change', (e) => {
+                document.querySelectorAll('.type-filter').forEach(cb => cb.checked = e.target.checked);
+                applyFiltersAndSearch();
+            });
+            
+            document.querySelectorAll('.type-filter').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = Array.from(document.querySelectorAll('.type-filter')).every(c => c.checked);
+                    document.getElementById('filter-toggle-all').checked = allChecked;
+                    applyFiltersAndSearch();
+                });
+            });
+        }
+        
+        function applyFiltersAndSearch() {
+            const searchTerm = elSearchInput.value.toLowerCase().trim();
+            const activeTypes = new Set(
+                Array.from(document.querySelectorAll('.type-filter:checked')).map(cb => cb.value)
+            );
+            
+            [...allMapRegionLayers, ...allMapRoadLayers, ...allMapMarkers].forEach(layer => {
+                const data = layer.featureData;
+                const nameMatch = !searchTerm || (data.name || '').toLowerCase().includes(searchTerm);
+                const typeMatch = activeTypes.has(data.type);
+                
+                const parentLayerGroup = layer instanceof L.Polygon ? allMapLayers.regions :
+                                         layer instanceof L.Polyline ? allMapLayers.roads : allMapLayers.poi;
+
+                if (nameMatch && typeMatch) {
+                    if (!parentLayerGroup.hasLayer(layer)) parentLayerGroup.addLayer(layer);
+                } else {
+                    if (parentLayerGroup.hasLayer(layer)) parentLayerGroup.removeLayer(layer);
+                }
+            });
+            
+            populateSearchResults(searchTerm, activeTypes);
+        }
+        
+        function populateSearchResults(searchTerm, activeTypes) {
+            clearContainer(elSearchResults);
+            if (!searchTerm) return;
+            
+            const results = [];
+            [...allMapMarkers, ...allMapRegionLayers, ...allMapRoadLayers].forEach(layer => {
+                const data = layer.featureData;
+                if (activeTypes.has(data.type) && (data.name || '').toLowerCase().includes(searchTerm)) {
+                    results.push({ layer, data });
+                }
+            });
+            
+            if (results.length === 0) {
+                elSearchResults.innerHTML = `<div class="poi-list-item" style="opacity: 0.6;">No results.</div>`;
+                return;
+            }
+            
+            results.slice(0, 100).forEach(({ layer, data }) => {
+                const item = document.createElement('div');
+                item.className = 'poi-list-item';
+                item.innerHTML = `<span class="tag">${data.type || 'Item'}</span><span style="flex:1;">${data.name}</span>`;
+                item.addEventListener('click', () => {
+                    if (layer.getBounds) {
+                        map.flyToBounds(layer.getBounds(), { padding: [50, 50] });
+                    } else if (layer.getLatLng) {
+                        map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 2));
+                    }
+                    layer.openPopup();
+                });
+                elSearchResults.appendChild(item);
+            });
+        }
+
+        function toggleMeasurementTool() {
+            isMeasuring = !isMeasuring;
+            elBtnMeasure.classList.toggle('active', isMeasuring);
+            map.getContainer().classList.toggle('measuring-cursor', isMeasuring);
+
+            if (isMeasuring) {
+                toast("Measure mode ON. Click to add points, ESC to cancel.", 3000);
+                map.on('click', handleMultiPointMeasureClick);
+                map.on('mousemove', handleMultiPointMouseMove);
+                document.addEventListener('keydown', handleMeasureKeyDown);
+                allMapLayers.measurement.clearLayers();
+                multiPointPath = [];
+            } else {
+                toast("Measure mode OFF.", 1500);
+                finalizeMultiPointMeasure(false);
+            }
+        }
+
+        function handleMultiPointMeasureClick(e) {
+            if (!isMeasuring) return;
+            multiPointPath.push(e.latlng);
+            const vertexMarker = L.circleMarker(e.latlng, { radius: 5, color: 'cyan', fillColor: '#0ff', fillOpacity: 0.7 }).addTo(allMapLayers.measurement);
+            multiPointVertexMarkers.push(vertexMarker);
+            updateMeasurementVisuals();
+        }
+        
+        function handleMultiPointMouseMove(e) {
+             if (!isMeasuring || multiPointPath.length === 0) return;
+             if(temporaryMouseMoveLine) allMapLayers.measurement.removeLayer(temporaryMouseMoveLine);
+             if(temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
+             
+             const lastFixedPoint = multiPointPath[multiPointPath.length - 1];
+             temporaryMouseMoveLine = L.polyline([lastFixedPoint, e.latlng], { color: 'lime', weight: 2, dashArray: '3, 3' }).addTo(allMapLayers.measurement);
+             
+             const tooltipContent = getDistanceString([lastFixedPoint, e.latlng]);
+             temporaryMouseMoveTooltip = L.tooltip({ permanent: true, direction: 'top', className: 'measure-tooltip', offset: L.point(0, -10) })
+                .setLatLng(e.latlng)
+                .setContent(`Segment: ${tooltipContent}`)
+                .addTo(map);
+        }
+
+        function handleMeasureKeyDown(e) {
+            if (e.key === 'Escape' && isMeasuring) {
+                e.preventDefault();
+                toggleMeasurementTool();
+            }
+        }
+
+        function updateMeasurementVisuals() {
+            if (multiPointPolyline) allMapLayers.measurement.removeLayer(multiPointPolyline);
+            if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
+
+            if (multiPointPath.length >= 2) {
+                multiPointPolyline = L.polyline(multiPointPath, { color: 'yellow', weight: 3, dashArray: '5, 5' }).addTo(allMapLayers.measurement);
+                
+                const totalDistanceString = getDistanceString(multiPointPath);
+                multiPointTotalTooltip = L.tooltip({ permanent: true, direction: 'right', className: 'measure-tooltip', offset: L.point(10, 0) })
+                    .setLatLng(multiPointPath[multiPointPath.length - 1])
+                    .setContent(`Total: ${totalDistanceString}`)
+                    .addTo(map);
+            }
+        }
+        
+        function getDistanceString(latlngs) {
+            const mapObj = findMapRecursive(mapData, currentlyLoadedMapId);
+            if (!mapObj) return "Scale not available";
+            
+            let totalPixelDistance = 0;
+            for (let i = 0; i < latlngs.length - 1; i++) {
+                totalPixelDistance += map.distance(latlngs[i], latlngs[i + 1]);
+            }
+            
+            const { scalePixels, scaleKilometers, paces } = mapObj;
+            if (!scalePixels || !scaleKilometers) return `${totalPixelDistance.toFixed(0)} px`;
+            
+            const realDistance = (totalPixelDistance / scalePixels) * scaleKilometers;
+            let result = `${realDistance.toFixed(2)} km`;
+            
+            if (paces && Array.isArray(paces)) {
+                paces.forEach(pace => {
+                    if (pace.name && typeof pace.speed === 'number' && pace.speed > 0) {
+                        const travelTimeDays = realDistance / pace.speed;
+                        result += `<br>${pace.name}: ${travelTimeDays.toFixed(1)} Day(s)`;
+                    }
+                });
+            }
+            return result;
+        }
+
+        function finalizeMultiPointMeasure(makePermanent = false) {
+            map.off('click', handleMultiPointMeasureClick);
+            map.off('mousemove', handleMultiPointMouseMove);
+            document.removeEventListener('keydown', handleMeasureKeyDown);
+            
+            if (temporaryMouseMoveLine) allMapLayers.measurement.removeLayer(temporaryMouseMoveLine);
+            if (temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
+            temporaryMouseMoveLine = temporaryMouseMoveTooltip = null;
+            
+            if (!makePermanent) {
+                allMapLayers.measurement.clearLayers();
+            }
+            multiPointPath = [];
+            multiPointVertexMarkers = [];
+            multiPointPolyline = null;
+            multiPointTotalTooltip = null;
+        }
+
+        // --- Event Listeners ---
+        elBtnReloadMaps.addEventListener("click", loadMapManifest);
+        
+        elBtnFit.addEventListener("click", () => {
+            const m = findMapRecursive(mapData, currentlyLoadedMapId);
+            if (!m) return;
+            map.fitBounds(boundsFromSize(m.width, m.height), { padding: [10, 10] });
+        });
+        
+        elBtnToggleLayers.addEventListener("click", () => {
+            layersVisible = !layersVisible;
+            const targetLayer = layersVisible ? map : null;
+            [allMapLayers.regions, allMapLayers.roads, allMapLayers.poi].forEach(group => {
+                if (targetLayer) {
+                    if (!map.hasLayer(group)) group.addTo(map);
+                } else {
+                    if (map.hasLayer(group)) map.removeLayer(group);
+                }
+            });
+            toast(`Layers ${layersVisible ? 'shown' : 'hidden'}`);
+        });
+
+        elBtnMeasure.addEventListener("click", toggleMeasurementTool);
+        
+        elBtnSearch.addEventListener("click", applyFiltersAndSearch);
+        elSearchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") applyFiltersAndSearch();
+        });
+        
+        elFileInput.addEventListener("change", async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            showLoading('Loading local file...');
+            try {
+                const text = await files[0].text();
+                const json = JSON.parse(text);
+                const localMap = {
+                    id: json.id || `local-${Date.now()}`,
+                    name: json.name || files[0].name,
+                    ...json
+                };
+                mapData.push(localMap);
+                populateSidebar(elMapList, mapData);
+                await activateMap(localMap.id, true); // Fit bounds on local file load
+            } catch (err) {
+                console.error(err);
+                toast(`Failed to load ${files[0].name}`);
+            } finally {
+                hideLoading();
+                e.target.value = "";
+            }
+        });
+        
+        window.addEventListener("keydown", (e) => {
+            if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+            if (e.key.toLowerCase() === "f") elBtnFit.click();
+            if (e.key.toLowerCase() === "h") elBtnToggleLayers.click();
+            if (e.key.toLowerCase() === "m") elBtnMeasure.click();
+        });
+        
+        window.addEventListener('load', () => {
+            const grid = L.gridLayer({ tileSize: 256, opacity: 0.05 }).addTo(map);
+            grid.createTile = function () {
+                const tile = document.createElement("canvas");
+                tile.width = tile.height = 256;
+                const ctx = tile.getContext("2d");
+                ctx.strokeStyle = "rgba(116,167,254,0.2)";
+                ctx.strokeRect(0, 0, 256, 256);
+                return tile;
+            };
+            map.fitBounds(boundsFromSize(4096, 3072));
+            
+            loadMapManifest();
+        });
+    </script>
+</body>
+</html>
