@@ -4598,6 +4598,16 @@
       },
       {
         "coords": [
+          4108,
+          2020
+        ],
+        "name": "Skjoldvik",
+        "type": "Capital",
+        "description": "Nestled at the head of a deep, fjord, the kingdom's capital rises in a vibrant cascade of color against the stark green and grey of the surrounding cliffs. Steeply pitched roofs of slate and painted timber in hues of deep crimson, rich ochre, and forest green line the bustling cobblestone streets, which all spiral down to a crescent-shaped harbor alive with the masts of merchant ships and fishing vessels. Presiding over it all from a high, stony bluff is the royal castle, its elegant spires and soaring towers a constant, graceful symbol of the kingdom's enduring prosperity.",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
           5151,
           2781
         ],
