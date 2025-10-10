@@ -4274,38 +4274,6 @@
         ]
       },
       {
-        "id": "region-toppicaea-dynasty",
-        "name": "Toppicaea Dynasty",
-        "description": "",
-        "type": "",
-        "color": "#C71585",
-        "fillColor": "#FF1493",
-        "fillOpacity": 0.2,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            872,
-            4618
-          ],
-          [
-            990,
-            4678
-          ],
-          [
-            1004,
-            4612
-          ],
-          [
-            970,
-            4562
-          ],
-          [
-            910,
-            4570
-          ]
-        ]
-      },
-      {
         "id": "region-The-Sundered-March",
         "name": "The Sundered March",
         "description": "A volatile, magically-scarred DMZ created by a cataclysmic event at the end of the last great war between the Athenaeum and the Beccin Empire. This wasteland is saturated with raw, unstable arcane energy that makes spellcasting wildly unpredictable and dangerous. The entire region is crisscrossed by immense, permanent wards—lingering echoes of the conflict—that are powerful enough to disintegrate armies, effectively creating an impassable buffer zone. Watched warily by its neighbors, the March serves as a grim and effective deterrent against any large-scale invasion.",
@@ -4438,6 +4406,38 @@
         ]
       },
       {
+        "id": "region-toppicaea-dynasty",
+        "name": "Toppicaea Dynasty",
+        "description": "",
+        "type": "",
+        "color": "#C71585",
+        "fillColor": "#FF1493",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            872,
+            4618
+          ],
+          [
+            990,
+            4678
+          ],
+          [
+            1004,
+            4612
+          ],
+          [
+            970,
+            4562
+          ],
+          [
+            910,
+            4570
+          ]
+        ]
+      },
+      {
         "id": "region-zafra",
         "name": "Zafra",
         "description": "Known as the Scorched Jewel of the Beccin Empire, the coastal nation of Zafra is a land of simmering resentment. Once a proud maritime kingdom whose fleets ruled the eastern seas, its skilled sailors now serve imperial masters. Beneath the veneer of imperial order, however, the old ways persist in port towns and hidden coves, where smugglers plot and the spirit of piracy waits for the tide to turn against their conquerors.",
@@ -4548,8 +4548,8 @@
       },
       {
         "coords": [
-          3678,
-          1190
+          3703,
+          1241
         ],
         "name": "Harold-Ford",
         "type": "City",
@@ -4603,6 +4603,16 @@
         ],
         "name": "The Fractured Point",
         "type": "City",
+        "description": "",
+        "wikiLink": ""
+      },
+      {
+        "coords": [
+          909,
+          2190
+        ],
+        "name": "The Iron Throne of the Bash",
+        "type": "Capital",
         "description": "",
         "wikiLink": ""
       }
