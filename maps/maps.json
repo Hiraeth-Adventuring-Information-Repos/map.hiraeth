@@ -4499,6 +4499,23 @@
       }
     ],
     "blurb": "From the gold-laced dust of its western canyons to the haunted glaciers of the far north, Fair is a land of adventure and antiquity. Chart a course through newly-opened fjord kingdoms, navigate the politics of ancient empires, and unearth the secrets of a world shaped by heroes and forgotten evils.",
+    "filterGroups": {
+      "Points of Interest": {
+        "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
+        "Structures": ["Castle", "Fortress", "Fort", "Tower", "Ruin", "Temple", "Shrine", "Mine", "Lighthouse", "Bridge", "Dungeon", "Lair", "Camp", "Asylum", "Landmark"],
+        "Natural Features": ["Mountain", "Peak", "Forest", "Wood", "River", "Lake", "Cave", "Cavern", "Coast", "Bay", "Cove", "Swamp", "Marsh", "Desert", "Natural Landmark"],
+        "Other": ["Point of Interest", "Region", "Portal"],
+        "Unknown": ["Unknown"]
+      },
+      "Regions": {
+        "Political": ["political"],
+        "Terrain": ["terrain"]
+      },
+      "Lines": {
+        "Natural": ["cliff"],
+        "Man-made": ["road"]
+      }
+    },
     "children": [
       "icebeach",
       "southern-thalassia",
