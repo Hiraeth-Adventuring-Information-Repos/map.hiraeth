@@ -1765,7 +1765,7 @@
                 const region = layer.regionData;
                 if (!region) return;
 
-                const regionType = region.type || 'Unknown';
+                const regionType = region.type || 'political'; // Default to 'political' if type is missing
                 const group = typeToGroupMap[regionType] || 'Unknown';
 
                 const groupMatch = allGroupsChecked || activeGroupFilters.has(group);
