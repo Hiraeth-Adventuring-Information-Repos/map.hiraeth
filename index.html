@@ -969,8 +969,13 @@
         // Add styled zoom control
         L.control.zoom({ position: 'topleft' }).addTo(map);
 
-        let currentFilterGroups = {}; // Will hold the active filter group configuration
-        let typeToGroupMap = {}; // Will be regenerated on map load
+        const poiTypeGroups = {
+            "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
+            "Structures": ["Castle", "Fortress", "Fort", "Tower", "Ruin", "Temple", "Shrine", "Mine", "Lighthouse", "Bridge", "Dungeon", "Lair", "Camp", "Asylum", "Landmark"],
+            "Natural Features": ["Mountain", "Peak", "Forest", "Wood", "River", "Lake", "Cave", "Cavern", "Coast", "Bay", "Cove", "Swamp", "Marsh", "Desert", "Natural Landmark"],
+            "Other": ["Point of Interest", "Region", "Portal"],
+            "Unknown": ["Unknown"]
+        };
         
         function getUrlParameters() {
             const params = {};
@@ -984,20 +989,12 @@
             return params;
         }
 
-        // --- NEW: Function to generate the reverse map (type -> group) ---
-        function generateTypeToGroupMap(filterGroups) {
-            const newMap = {};
-            // The filterGroups object has sections like "Points of Interest", "Regions", "Lines"
-            for (const sectionName in filterGroups) {
-                const section = filterGroups[sectionName];
-                for (const groupName in section) {
-                    const types = section[groupName];
-                    types.forEach(type => {
-                        newMap[type] = groupName;
-                    });
-                }
-            }
-            return newMap;
+        // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
+        const typeToGroupMap = {};
+        for (const groupName in poiTypeGroups) {
+            poiTypeGroups[groupName].forEach(type => {
+                typeToGroupMap[type] = groupName;
+            });
         }
         // --- END: POI Type Grouping Configuration ---
 
@@ -1123,26 +1120,46 @@
 
         // --- Helper Function to Update the "Toggle All" Checkbox State ---
         function updateToggleAllCheckboxState() {
-            // Select all specific filter checkboxes (POI, Region, and Line)
-            const allSpecificFilters = poiFilterContainer.querySelectorAll(
-                '.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter, .line-type-filter'
-            );
-            const checkedSpecificFilters = poiFilterContainer.querySelectorAll(
-                '.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-type-filter:checked, .line-type-filter:checked'
-            );
+            // Update indeterminate state for each region group parent
+            const regionGroupCheckboxes = poiFilterContainer.querySelectorAll('.region-group-filter');
+            regionGroupCheckboxes.forEach(groupCheckbox => {
+                const groupName = groupCheckbox.value;
+                const childCheckboxes = poiFilterContainer.querySelectorAll(`.region-type-filter[data-group="${groupName}"]`);
+                const checkedChildren = poiFilterContainer.querySelectorAll(`.region-type-filter[data-group="${groupName}"]:checked`);
 
-            if (allSpecificFilters.length === 0) { // No specific filters exist at all
+                if (checkedChildren.length === 0) {
+                    groupCheckbox.checked = false;
+                    groupCheckbox.indeterminate = false;
+                } else if (checkedChildren.length === childCheckboxes.length) {
+                    groupCheckbox.checked = true;
+                    groupCheckbox.indeterminate = false;
+                } else {
+                    groupCheckbox.checked = false;
+                    groupCheckbox.indeterminate = true;
+                }
+            });
+
+            // Update master "Show All / Hide All" checkbox state
+            const allTopLevelFilters = poiFilterContainer.querySelectorAll(
+                '.poi-filter-checkbox:not(#filter-toggle-all), .region-group-filter, .line-type-filter'
+            );
+            const checkedTopLevelFilters = poiFilterContainer.querySelectorAll(
+                '.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-group-filter:checked:not(:indeterminate), .line-type-filter:checked'
+            );
+            const indeterminateTopLevelFilters = poiFilterContainer.querySelectorAll('.region-group-filter:indeterminate');
+
+            if (allTopLevelFilters.length === 0) {
                 filterToggleAllCheckbox.checked = true;
                 filterToggleAllCheckbox.indeterminate = false;
-            } else if (checkedSpecificFilters.length === 0) { // All specific filters are unchecked
-                filterToggleAllCheckbox.checked = false;
-                filterToggleAllCheckbox.indeterminate = false;
-            } else if (checkedSpecificFilters.length === allSpecificFilters.length) { // All specific filters are checked
-                filterToggleAllCheckbox.checked = true;
-                filterToggleAllCheckbox.indeterminate = false;
-            } else { // Some are checked, some are not
+            } else if (indeterminateTopLevelFilters.length > 0 || (checkedTopLevelFilters.length > 0 && checkedTopLevelFilters.length < allTopLevelFilters.length)) {
                 filterToggleAllCheckbox.checked = false;
                 filterToggleAllCheckbox.indeterminate = true;
+            } else if (checkedTopLevelFilters.length === allTopLevelFilters.length) {
+                filterToggleAllCheckbox.checked = true;
+                filterToggleAllCheckbox.indeterminate = false;
+            } else { // All are unchecked
+                filterToggleAllCheckbox.checked = false;
+                filterToggleAllCheckbox.indeterminate = false;
             }
         }
 
@@ -1177,7 +1194,8 @@
                 const nameMatch = !searchTerm || poi.name.toLowerCase().includes(searchTerm);
 
                 const specificType = poi.type || 'Unknown';
-                const poiGroup = typeToGroupMap[specificType] || 'Unknown';
+                const poiGroup = typeToGroupMap[specificType] || 'Other';
+                // A POI group matches if the master toggle is checked OR its specific group is checked
                 const groupMatch = allPoiGroupsChecked || activeSpecificGroupFilters.has(poiGroup);
 
                 // Update marker visibility on map
@@ -1219,56 +1237,17 @@
 
 
         // --- Function to Populate Filter Checkboxes (in the panel) ---
-        function populateFilters(mapId) {
+        function populateFilters(pointsOfInterest, mapId) {
             // Clear existing dynamic filters (headers, dividers, specific checkboxes)
-            const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child)');
+            const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child), .filter-group-container');
             dynamicElements.forEach(el => el.remove());
 
+            const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
             const selectedMap = findMapRecursive(mapData, mapId);
-            const hasPOIs = selectedMap.pointsOfInterest && selectedMap.pointsOfInterest.length > 0;
-            const hasRegions = selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
-            const hasRoads = selectedMap.roads && Array.isArray(selectedMap.roads) && selectedMap.roads.length > 0;
+            const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
+            const hasRoads = selectedMap && selectedMap.roads && Array.isArray(selectedMap.roads) && selectedMap.roads.length > 0; // New check for roads
 
-            // --- NEW: Set the active filter configuration ---
-            // Fallback for older maps without filterGroups defined
-            const fallbackPoiGroups = {
-                "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
-                "Structures": ["Castle", "Fortress", "Fort", "Tower", "Ruin", "Temple", "Shrine", "Mine", "Lighthouse", "Bridge", "Dungeon", "Lair", "Camp", "Asylum", "Landmark"],
-                "Natural Features": ["Mountain", "Peak", "Forest", "Wood", "River", "Lake", "Cave", "Cavern", "Coast", "Bay", "Cove", "Swamp", "Marsh", "Desert", "Natural Landmark"],
-                "Other": ["Point of Interest", "Region", "Portal"],
-                "Unknown": ["Unknown"]
-            };
-
-            if (selectedMap.filterGroups) {
-                console.log(`Using custom filter groups for map: ${mapId}`);
-                currentFilterGroups = selectedMap.filterGroups;
-            } else {
-                console.log(`Using fallback filter groups for map: ${mapId}`);
-                // Build a fallback structure if no filterGroups exist
-                currentFilterGroups = { "Points of Interest": fallbackPoiGroups };
-                if (hasRegions) {
-                    const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))];
-                    currentFilterGroups["Regions"] = {};
-                    regionTypes.forEach(type => {
-                        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
-                        currentFilterGroups["Regions"][capitalizedType] = [type];
-                    });
-                }
-                if (hasRoads) {
-                    const lineTypes = [...new Set(selectedMap.roads.map(r => r.type || "Unnamed Road Type").filter(Boolean))];
-                    currentFilterGroups["Lines"] = {};
-                    lineTypes.forEach(type => {
-                        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
-                        currentFilterGroups["Lines"][capitalizedType] = [type];
-                    });
-                }
-            }
-            // Regenerate the reverse map for the current configuration
-            typeToGroupMap = generateTypeToGroupMap(currentFilterGroups);
-            // --- END: Filter configuration setup ---
-
-
-            // Hide filter button if no filterable data exists
+            // Hide filter button if no POIs, no regions, and no roads
             if (!hasPOIs && !hasRegions && !hasRoads) {
                 poiFilterContainer.classList.remove('visible');
                 toggleFiltersBtn.style.display = 'none';
@@ -1279,36 +1258,22 @@
                 return;
             }
 
-            let isFirstSection = true;
-
-            // --- NEW: Dynamic filter generation from currentFilterGroups ---
-            for (const sectionName in currentFilterGroups) {
-                const section = currentFilterGroups[sectionName];
-                const groups = Object.keys(section);
-                if (groups.length === 0) continue; // Skip empty sections
-
-                // Add divider if not the first section
-                if (!isFirstSection) {
-                    const divider = document.createElement('hr');
-                    divider.style.margin = '10px 0';
-                    divider.style.borderColor = 'var(--glass-border-light)';
-                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
-                    poiFilterContainer.appendChild(divider);
+            // PART 1: Add POI type filters (existing logic)
+            if (hasPOIs) {
+                if (poiFilterContainer.querySelector('h3')) {
+                    const poiHeader = document.createElement('h3');
+                    poiHeader.textContent = "POI Types:";
+                    poiFilterContainer.appendChild(poiHeader);
                 }
-
-                const sectionHeader = document.createElement('h3');
-                sectionHeader.textContent = `${sectionName}:`;
-                poiFilterContainer.appendChild(sectionHeader);
-
-                // Determine the correct CSS class for checkboxes in this section
-                let checkboxClass = 'poi-filter-checkbox'; // Default
-                if (sectionName.toLowerCase() === 'regions') {
-                    checkboxClass = 'region-type-filter';
-                } else if (sectionName.toLowerCase() === 'lines') {
-                    checkboxClass = 'line-type-filter';
-                }
-
-                groups.sort().forEach(groupName => {
+                const relevantGroups = new Set();
+                pointsOfInterest.forEach(poi => {
+                    const specificType = poi.type || 'Unknown';
+                    const group = typeToGroupMap[specificType] || 'Other';
+                    relevantGroups.add(group);
+                });
+                const sortedGroups = Array.from(relevantGroups).sort();
+                sortedGroups.forEach(groupName => {
+                    if (!groupName || (poiTypeGroups[groupName] && poiTypeGroups[groupName].length === 0)) return;
                     const filterId = `filter-group-${groupName.replace(/\s+/g, '-')}`;
                     const div = document.createElement('div');
                     div.className = 'filter-item';
@@ -1317,20 +1282,118 @@
                     checkbox.id = filterId;
                     checkbox.value = groupName;
                     checkbox.checked = true;
-                    checkbox.className = checkboxClass;
-
+                    checkbox.className = 'poi-filter-checkbox';
                     const label = document.createElement('label');
                     label.htmlFor = filterId;
                     label.textContent = groupName;
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    poiFilterContainer.appendChild(div);
+                });
+            }
+
+            // PART 2: Add region type filters (NEW HIERARCHICAL LOGIC)
+            if (hasRegions && selectedMap.filterGroups && selectedMap.filterGroups.Regions) {
+                if (hasPOIs) {
+                    const divider = document.createElement('hr');
+                    divider.style.margin = '10px 0';
+                    divider.style.borderColor = 'var(--glass-border-light)';
+                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
+                    poiFilterContainer.appendChild(divider);
+                }
+                const regionHeader = document.createElement('h3');
+                regionHeader.textContent = "Region Types:";
+                poiFilterContainer.appendChild(regionHeader);
+
+                const regionFilterGroups = selectedMap.filterGroups.Regions;
+
+                for (const groupName in regionFilterGroups) {
+                    if (Object.hasOwnProperty.call(regionFilterGroups, groupName)) {
+                        const values = regionFilterGroups[groupName];
+                        if (!Array.isArray(values) || values.length === 0) continue;
+
+                        const groupContainer = document.createElement('div');
+                        groupContainer.className = 'filter-group-container';
+                        const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
+                        const groupDiv = document.createElement('div');
+                        groupDiv.className = 'filter-item';
+                        const groupCheckbox = document.createElement('input');
+                        groupCheckbox.type = 'checkbox';
+                        groupCheckbox.id = groupFilterId;
+                        groupCheckbox.value = groupName;
+                        groupCheckbox.checked = true;
+                        groupCheckbox.className = 'region-group-filter';
+                        const groupLabel = document.createElement('label');
+                        groupLabel.htmlFor = groupFilterId;
+                        groupLabel.textContent = groupName;
+                        groupDiv.appendChild(groupCheckbox);
+                        groupDiv.appendChild(groupLabel);
+                        groupContainer.appendChild(groupDiv);
+
+                        const nestedList = document.createElement('div');
+                        nestedList.className = 'nested-filter-list';
+                        nestedList.style.marginLeft = '20px';
+
+                        values.forEach(value => {
+                            const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
+                            const div = document.createElement('div');
+                            div.className = 'filter-item';
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.id = filterId;
+                            checkbox.value = value;
+                            checkbox.checked = true;
+                            checkbox.className = 'region-type-filter';
+                            checkbox.dataset.group = groupName;
+                            const label = document.createElement('label');
+                            label.htmlFor = filterId;
+                            label.textContent = value;
+                            div.appendChild(checkbox);
+                            div.appendChild(label);
+                            nestedList.appendChild(div);
+                        });
+                        groupContainer.appendChild(nestedList);
+                        poiFilterContainer.appendChild(groupContainer);
+                    }
+                }
+            }
+
+            // PART 3: Add line type filters (New)
+            if (hasRoads) {
+                if (hasPOIs || hasRegions) { // Add divider if other filters are present
+                    const divider = document.createElement('hr');
+                    divider.style.margin = '10px 0';
+                    divider.style.borderColor = 'var(--glass-border-light)';
+                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
+                    poiFilterContainer.appendChild(divider);
+                }
+
+                const lineHeader = document.createElement('h3');
+                lineHeader.textContent = "Line Types:";
+                poiFilterContainer.appendChild(lineHeader);
+
+                const lineTypes = [...new Set(selectedMap.roads.map(r => r.type || "Unnamed Road Type").filter(Boolean))].sort();
+
+                lineTypes.forEach(type => {
+                    const filterId = `filter-line-${(type || "untyped").replace(/\s+/g, '-').toLowerCase()}`;
+                    const div = document.createElement('div');
+                    div.className = 'filter-item';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = filterId;
+                    checkbox.value = type;
+                    checkbox.checked = true; // Default checked
+                    checkbox.className = 'line-type-filter'; // Specific class for line filters
+
+                    const label = document.createElement('label');
+                    label.htmlFor = filterId;
+                    label.textContent = type.charAt(0).toUpperCase() + type.slice(1); // Capitalize
 
                     div.appendChild(checkbox);
                     div.appendChild(label);
                     poiFilterContainer.appendChild(div);
                 });
-
-                isFirstSection = false;
             }
-            // --- END: Dynamic filter generation ---
 
             // Show filter button since we have filters
             toggleFiltersBtn.style.display = 'block';
@@ -1556,12 +1619,12 @@
             preloadImg.src = selectedMap.imageUrl;
             currentImageLayer.addTo(map);
 
-            populateFilters(mapId);
+            const points = selectedMap.pointsOfInterest || []; //
+            populateFilters(points, mapId); //
 
-            const points = selectedMap.pointsOfInterest || [];
-            points.forEach(point => {
-                try {
-                    if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
+            points.forEach(point => { //
+                try { // START OF ADDED TRY BLOCK
+                    if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) { //
                         // mapHeight and mapWidth are defined earlier in loadMap
                         if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) { //
                              const marker = L.marker(point.coords); //
@@ -1739,7 +1802,14 @@
                 } else {
                     popupContent += `<h3>${region.name}</h3>`;
                 }
-                popupContent += `<p><em>Type: ${region.type || 'Region'}</em></p>`;
+
+                // NEW: Display type and value in popup
+                if (region.type && region.value) {
+                    popupContent += `<p><em>${region.type}: ${region.value}</em></p>`;
+                } else if (region.type) {
+                    popupContent += `<p><em>Type: ${region.type}</em></p>`;
+                }
+
                 if (region.description) {
                     popupContent += `<p>${region.description}</p>`;
                 }
@@ -1755,22 +1825,22 @@
         function updateVisibleRegions() {
             if (!currentRegionGroup) return;
 
-            const activeGroupFilters = new Set();
-            poiFilterContainer.querySelectorAll('.region-type-filter:checked').forEach(checkbox => {
-                activeGroupFilters.add(checkbox.value);
-            });
-            const allGroupsChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
+            // Get the currently checked region type filters (the individual values)
+            const valueFilters = poiFilterContainer.querySelectorAll('.region-type-filter:checked');
+            const valueFilterValues = new Set(Array.from(valueFilters).map(cb => cb.value));
+
+            // Check the master toggle state
+            const allTypesChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
 
             currentRegionGroup.eachLayer(layer => {
                 const region = layer.regionData;
-                if (!region) return;
+                if (!region || !region.type || !region.value) return;
 
-                const regionType = region.type || 'political'; // Default to 'political' if type is missing
-                const group = typeToGroupMap[regionType] || 'Unknown';
+                // A region is visible if the master toggle is checked OR its specific value is in the checked set.
+                const typeMatch = allTypesChecked || valueFilterValues.has(region.value);
 
-                const groupMatch = allGroupsChecked || activeGroupFilters.has(group);
-
-                if (regionsVisible && groupMatch) {
+                // Apply visibility and interactivity based on *both* the overall toggle AND the type filter match
+                if (regionsVisible && typeMatch) { // regionsVisible is synced with markersVisible
                     layer.setStyle({
                         stroke: true,
                         fill: true,
@@ -2164,28 +2234,26 @@
         function updateVisibleLines() {
             if (!currentRoadGroup) return;
 
-            const activeGroupFilters = new Set();
-            poiFilterContainer.querySelectorAll('.line-type-filter:checked').forEach(checkbox => {
-                activeGroupFilters.add(checkbox.value);
-            });
-            const allGroupsChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
+            const typeFilters = poiFilterContainer.querySelectorAll('.line-type-filter:checked');
+            const typeFilterValues = Array.from(typeFilters).map(cb => cb.value);
+            const allTypesChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
 
             currentRoadGroup.eachLayer(layer => {
                 const road = layer.roadData;
                 if (!road) return;
 
-                const roadType = road.type || "Unnamed Road Type";
-                const group = typeToGroupMap[roadType] || 'Unknown';
+                const roadType = road.type || "Unnamed Road Type"; // Match the logic in populateFilters
+                const typeMatch = allTypesChecked || typeFilterValues.includes(roadType);
 
-                const groupMatch = allGroupsChecked || activeGroupFilters.has(group);
-
-                if (groupMatch) {
+                // Lines are always "visible" in terms of the master toggle (markersVisible)
+                // Their appearance is solely based on type filters.
+                if (typeMatch) {
                     layer.setStyle({
-                        opacity: layer.originalOpacity === undefined ? 0.8 : layer.originalOpacity
+                        opacity: layer.originalOpacity === undefined ? 0.8 : layer.originalOpacity // Restore original or default
                     });
                 } else {
                     layer.setStyle({
-                        opacity: 0
+                        opacity: 0 // Hide
                     });
                 }
             });
@@ -2194,25 +2262,42 @@
         // --- Combined Filter Panel Logic ---
         poiFilterContainer.addEventListener('change', (e) => {
             const target = e.target;
-            if (target.type !== 'checkbox') return; 
+            if (target.type !== 'checkbox') return;
 
-            if (target.id === 'filter-toggle-all') {
+            // Handle parent group checkbox for regions
+            if (target.classList.contains('region-group-filter')) {
                 const isChecked = target.checked;
-                poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter, .line-type-filter').forEach(checkbox => {
-                    checkbox.checked = isChecked;
+                const groupName = target.value;
+                const nestedCheckboxes = target.closest('.filter-group-container').querySelectorAll('.region-type-filter');
+                nestedCheckboxes.forEach(checkbox => {
+                    if (checkbox.dataset.group === groupName) {
+                        checkbox.checked = isChecked;
+                    }
                 });
-                filterToggleAllCheckbox.indeterminate = false;
-            } else {
-                updateToggleAllCheckboxState(); // This now needs to consider line filters too for indeterminate state
             }
 
+            // Handle master "Show All / Hide All" checkbox
+            if (target.id === 'filter-toggle-all') {
+                const isChecked = target.checked;
+                poiFilterContainer.querySelectorAll('.poi-filter-checkbox, .region-group-filter, .region-type-filter, .line-type-filter').forEach(checkbox => {
+                    if (checkbox.id !== 'filter-toggle-all') {
+                        checkbox.checked = isChecked;
+                    }
+                });
+                filterToggleAllCheckbox.indeterminate = false;
+            }
+
+            // Update parent and master toggles' indeterminate states
+            updateToggleAllCheckboxState();
+
+            // Trigger visibility updates
             if (target.classList.contains('poi-filter-checkbox') || target.id === 'filter-toggle-all') {
                 updateVisibleMarkersAndSearch();
             }
-            if (target.classList.contains('region-type-filter') || target.id === 'filter-toggle-all') {
+            if (target.classList.contains('region-type-filter') || target.classList.contains('region-group-filter') || target.id === 'filter-toggle-all') {
                 updateVisibleRegions();
             }
-            if (target.classList.contains('line-type-filter') || target.id === 'filter-toggle-all') { // New condition
+            if (target.classList.contains('line-type-filter') || target.id === 'filter-toggle-all') {
                 updateVisibleLines();
             }
         });
