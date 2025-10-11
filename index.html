@@ -551,6 +551,40 @@
             vertical-align: middle;
             cursor: pointer;
         }
+
+        /* --- NEW: Collapsible Filter Group Styling --- */
+        .filter-group-header {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            font-weight: bold; /* Make the group name stand out */
+        }
+        .filter-group-header .folder-toggle-icon { /* Re-use folder icon style */
+            display: inline-block;
+            width: 1.2em;
+            text-align: center;
+            margin-right: 5px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .filter-group.closed > .filter-group-header .folder-toggle-icon::before {
+            content: '▸';
+        }
+        .filter-group:not(.closed) > .filter-group-header .folder-toggle-icon::before {
+            content: '▾';
+        }
+        .nested-filter-list {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0 0 20px; /* Indent nested list */
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .filter-group.closed > .nested-filter-list {
+            max-height: 0;
+        }
+        /* --- END: Collapsible Filter Group Styling --- */
         /* --- END: Filter Panel Styling --- */
 
         /* Measure Tool Button */
@@ -1313,10 +1347,15 @@
                         if (!Array.isArray(values) || values.length === 0) continue;
 
                         const groupContainer = document.createElement('div');
-                        groupContainer.className = 'filter-group-container';
-                        const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
+                        groupContainer.className = 'filter-group closed'; // Start as closed
+
+                        const groupHeader = document.createElement('div');
+                        groupHeader.className = 'filter-group-header';
+                        groupHeader.innerHTML = `<span class="folder-toggle-icon"></span>`;
+
                         const groupDiv = document.createElement('div');
                         groupDiv.className = 'filter-item';
+                        const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
                         const groupCheckbox = document.createElement('input');
                         groupCheckbox.type = 'checkbox';
                         groupCheckbox.id = groupFilterId;
@@ -1328,11 +1367,11 @@
                         groupLabel.textContent = groupName;
                         groupDiv.appendChild(groupCheckbox);
                         groupDiv.appendChild(groupLabel);
-                        groupContainer.appendChild(groupDiv);
+                        groupHeader.appendChild(groupDiv);
+                        groupContainer.appendChild(groupHeader);
 
                         const nestedList = document.createElement('div');
                         nestedList.className = 'nested-filter-list';
-                        nestedList.style.marginLeft = '20px';
 
                         values.forEach(value => {
                             const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
@@ -2302,7 +2341,16 @@
             }
         });
         // Prevent map click when clicking inside filter panel
-        poiFilterContainer.addEventListener('click', (e) => e.stopPropagation());
+        poiFilterContainer.addEventListener('click', (e) => {
+            const header = e.target.closest('.filter-group-header');
+            if (header) {
+                const group = header.closest('.filter-group');
+                if (group) {
+                    group.classList.toggle('closed');
+                }
+            }
+            e.stopPropagation();
+        });
 
 
         // --- Measurement Tool Logic ---
