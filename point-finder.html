@@ -198,6 +198,43 @@
             white-space: pre; overflow: auto;
         }
         .json-modal-copy { align-self: flex-end; }
+
+        /* --- Custom Properties Styling --- */
+        .control-group-properties {
+            padding: 6px;
+            margin: 4px 0;
+            border: 1px solid #808080;
+            background-color: #dfdfdf;
+            box-shadow: inset 1px 1px 1px #404040;
+            max-height: 120px; /* Limit height and make scrollable */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .property-row {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .property-row input[type="text"] {
+            flex-grow: 1;
+            width: 40%; /* Give them a basis to grow from */
+        }
+        .property-row .remove-property-btn {
+            padding: 2px 6px;
+            font-size: 1em;
+            line-height: 1;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+        .control-group-properties > label {
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+            text-align: left;
+        }
+        /* --- End Custom Properties Styling --- */
     </style>
 </head>
 <body>
@@ -258,6 +295,13 @@
                 <label for="pointWikiLink">Wiki Link:</label>
                 <input type="text" id="pointWikiLink" placeholder="Optional URL">
             </div>
+            <div class="control-group-properties" id="point-properties-container">
+                <label>Custom Properties:</label>
+                <!-- Dynamic property rows will be inserted here -->
+            </div>
+            <div class="control-row">
+                <button id="addPointPropertyBtn">Add Property</button>
+            </div>
             <div class="control-row">
                 <button id="addPointBtn" disabled>Add New Point</button>
                 <button id="savePointChangesBtn" class="hidden">Save Changes</button>
@@ -301,6 +345,13 @@
             <div class="control-row">
                 <label for="regionWikiLink">Wiki Link:</label>
                 <input type="text" id="regionWikiLink" placeholder="Optional URL">
+            </div>
+            <div class="control-group-properties" id="region-properties-container">
+                <label>Custom Properties:</label>
+                <!-- Dynamic property rows will be inserted here -->
+            </div>
+            <div class="control-row">
+                <button id="addRegionPropertyBtn">Add Property</button>
             </div>
             <div class="control-row">
                 <button id="startRegionBtn" disabled>Start Region</button>
@@ -361,6 +412,13 @@
             <div class="control-row">
                 <label for="lineWikiLink">Wiki Link:</label>
                 <input type="text" id="lineWikiLink" placeholder="Optional URL">
+            </div>
+            <div class="control-group-properties" id="line-properties-container">
+                <label>Custom Properties:</label>
+                <!-- Dynamic property rows will be inserted here -->
+            </div>
+            <div class="control-row">
+                <button id="addLinePropertyBtn">Add Property</button>
             </div>
             <div class="control-row">
                 <button id="startLineBtn" disabled>Start Line</button>
@@ -460,6 +518,8 @@
         const poiTypeSelect = document.getElementById('poiTypeSelect');
         const pointDescriptionInput = document.getElementById('pointDescription');
         const pointWikiLinkInput = document.getElementById('pointWikiLink');
+        const pointPropertiesContainer = document.getElementById('point-properties-container');
+        const addPointPropertyBtn = document.getElementById('addPointPropertyBtn');
         const addPointBtn = document.getElementById('addPointBtn');
         const savePointChangesBtn = document.getElementById('savePointChangesBtn');
         const cancelPointEditBtn = document.getElementById('cancelPointEditBtn');
@@ -476,6 +536,8 @@
         const regionOpacityInput = document.getElementById('regionOpacity');
         const regionDescriptionInput = document.getElementById('regionDescription');
         const regionWikiLinkInput = document.getElementById('regionWikiLink');
+        const regionPropertiesContainer = document.getElementById('region-properties-container');
+        const addRegionPropertyBtn = document.getElementById('addRegionPropertyBtn');
         const startRegionBtn = document.getElementById('startRegionBtn');
         const finishRegionBtn = document.getElementById('finishRegionBtn');
         const cancelRegionBtn = document.getElementById('cancelRegionBtn');
@@ -496,6 +558,8 @@
         const lineDashArrayInput = document.getElementById('lineDashArray');
         const lineDescriptionInput = document.getElementById('lineDescription');
         const lineWikiLinkInput = document.getElementById('lineWikiLink');
+        const linePropertiesContainer = document.getElementById('line-properties-container');
+        const addLinePropertyBtn = document.getElementById('addLinePropertyBtn');
         const startLineBtn = document.getElementById('startLineBtn');
         const finishLineBtn = document.getElementById('finishLineBtn');
         const cancelLineBtn = document.getElementById('cancelLineBtn');
@@ -824,8 +888,11 @@
                 lastClickedCoordsArray = null;
                 addPointBtn.disabled = !currentMapObject; 
                 editPointSelect.value = "";
+                displayProperties(pointPropertiesContainer, {});
+                addPointPropertyBtn.disabled = true;
             } else {
                 addPointBtn.disabled = true; 
+                addPointPropertyBtn.disabled = false;
             }
             updateStatus();
         }
@@ -852,10 +919,15 @@
                     regionDescriptionInput.value = ''; 
                     regionWikiLinkInput.value = '';
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
+                    displayProperties(regionPropertiesContainer, {});
                 }
                 startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
                 toggleOtherRegionsVisibility(false);
-            } else { startRegionBtn.disabled = true; }
+                addRegionPropertyBtn.disabled = true;
+            } else {
+                startRegionBtn.disabled = true;
+                addRegionPropertyBtn.disabled = false;
+            }
             updateStatus();
         }
 
@@ -885,6 +957,8 @@
                 lineWikiLinkInput.value = ''; startLineBtn.disabled = !currentMapObject; editLineSelect.value = "";
                 if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
                 clearLineEditingVisuals();
+                displayProperties(linePropertiesContainer, {});
+                addLinePropertyBtn.disabled = true;
             } else {
                 startLineBtn.disabled = true;
                 addLineVerticesBtn.classList.toggle('hidden', !editing || isEditingLineVertices);
@@ -893,6 +967,7 @@
                      saveLineChangesBtn.classList.add('hidden');
                      cancelLineEditBtn.classList.add('hidden');
                 }
+                addLinePropertyBtn.disabled = false;
             }
             updateStatus();
         }
@@ -904,6 +979,12 @@
             cancelRegionBtn.classList.toggle('hidden', !creating); clearRegionsBtn.classList.toggle('hidden', creating);
             mapElement.classList.toggle('region-creation-mode', creating);
             if (!creating && tempRegionLayer) { map.removeLayer(tempRegionLayer); tempRegionLayer = null; }
+            if (creating) {
+                displayProperties(regionPropertiesContainer, {});
+                addRegionPropertyBtn.disabled = false;
+            } else {
+                addRegionPropertyBtn.disabled = true;
+            }
             updateRegionVerticesCount(); updateStatus();
         }
         function setLineCreationState(creating) { 
@@ -916,6 +997,12 @@
             mapElement.classList.toggle('line-creation-mode', creating); 
 
             if (!creating && tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
+            if (creating) {
+                displayProperties(linePropertiesContainer, {});
+                addLinePropertyBtn.disabled = false;
+            } else {
+                addLinePropertyBtn.disabled = true;
+            }
             updateLineVerticesCount(); updateStatus();
         }
 
@@ -934,6 +1021,7 @@
             setStatus('Select a map and click Load.');
             coordsDisplay.textContent = '[Y, X]';
             pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+            displayProperties(pointPropertiesContainer, {});
             regionNameInput.value = '';
             regionTypeSelect.value = '';
             regionValueInput.value = '';
@@ -941,10 +1029,13 @@
             regionValueInput.disabled = true;
             regionDescriptionInput.value = '';
             regionWikiLinkInput.value = '';
+            displayProperties(regionPropertiesContainer, {});
             lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
+            displayProperties(linePropertiesContainer, {});
             scalePixelsInput.value = '3'; scaleUnitsInput.value = '1'; mapBlurbInput.value = '';
             
             addPointBtn.disabled = true; startRegionBtn.disabled = true; startLineBtn.disabled = true;
+            addPointPropertyBtn.disabled = true; addRegionPropertyBtn.disabled = true; addLinePropertyBtn.disabled = true;
             clearPointsBtn.disabled = true; clearRegionsBtn.disabled = true; clearLinesBtn.disabled = true;
             exportMapDataBtn.disabled = true; viewJsonBtn.disabled = true; copyJsonBtn.disabled = true;
             
@@ -1115,7 +1206,7 @@
                     else {
                         const lat = Number(item.coords[0]), lng = Number(item.coords[1]);
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, type: item.type || "Unknown", description: item.description || "", wikiLink: item.wikiLink || "" });
+                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, type: item.type || "Unknown", description: item.description || "", wikiLink: item.wikiLink || "", properties: item.properties || {} });
                             existingNames.add(pointName); addedCount++;
                         } else { console.warn("Skipping point with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1133,7 +1224,7 @@
                     else {
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
-                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: item.type || "", value: item.value || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]) });
+                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: item.type || "", value: item.value || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]), properties: item.properties || {} });
                             existingNames.add(regionName); addedCount++;
                         } else { console.warn("Skipping region with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1157,7 +1248,8 @@
                                 description: item.description || "", wikiLink: item.wikiLink || "",
                                 color: item.color || "#808080", weight: item.weight || 3,
                                 dashArray: item.dashArray || "",
-                                coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))])
+                                coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]),
+                                properties: item.properties || {}
                             });
                             existingIds.add(lineId); addedCount++;
                         } else { console.warn("Skipping line with invalid coordinates:", item); skippedCount++; }
@@ -1178,6 +1270,7 @@
             pointDescriptionInput.value = point.description || ""; pointWikiLinkInput.value = point.wikiLink || "";
             coordsDisplay.textContent = `[${point.coords[0]}, ${point.coords[1]}]`;
             lastClickedCoordsArray = [...point.coords];
+            displayProperties(pointPropertiesContainer, point.properties);
             setPointEditingState(true, point.name);
         }
         function loadRegionForEditing(regionName) { 
@@ -1193,6 +1286,7 @@
             regionColorInput.value = region.color || "#3388ff";
             regionFillColorInput.value = region.fillColor || "#3388ff";
             regionOpacityInput.value = region.fillOpacity ?? 0.2;
+            displayProperties(regionPropertiesContainer, region.properties);
             clearEditingVisuals();
             editingVisualsLayerGroup = L.layerGroup().addTo(map);
             editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity ?? 0.2, weight: 3, dashArray: "5, 5" });
@@ -1213,6 +1307,7 @@
             lineColorInput.value = line.color || "#808080"; lineWeightInput.value = line.weight || 3;
             lineDashArrayInput.value = line.dashArray || ""; lineDescriptionInput.value = line.description || "";
             lineWikiLinkInput.value = line.wikiLink || "";
+            displayProperties(linePropertiesContainer, line.properties);
 
             if (tempLineLayer) map.removeLayer(tempLineLayer);
             tempLineLayer = L.polyline(line.coordinates, {
@@ -1236,6 +1331,7 @@
             }
             originalPoint.name = newName; originalPoint.type = newType;
             originalPoint.description = newDescription; originalPoint.wikiLink = newWikiLink;
+            originalPoint.properties = collectProperties(pointPropertiesContainer);
             if (lastClickedCoordsArray) originalPoint.coords = [...lastClickedCoordsArray];
             updatePointsOutput(); setStatus(`Point "${newName}" updated.`, 'success');
             setPointEditingState(false);
@@ -1262,6 +1358,7 @@
             originalRegion.description = newDescription;
             originalRegion.wikiLink = newWikiLink; originalRegion.color = newColor; originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity; originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
+            originalRegion.properties = collectProperties(regionPropertiesContainer);
             updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success'); setRegionEditingState(false);
         }
         function cancelRegionEditing() { 
@@ -1279,6 +1376,7 @@
             originalLine.name = newName; originalLine.type = newType; originalLine.color = newColor;
             originalLine.weight = newWeight; originalLine.dashArray = newDashArray;
             originalLine.description = newDescription; originalLine.wikiLink = newWikiLink;
+            originalLine.properties = collectProperties(linePropertiesContainer);
             updateLinesOutput(); setStatus(`Line "${newName || originalLine.id}" updated.`, 'success');
             setLineEditState(false);
         }
@@ -1339,7 +1437,8 @@
             if (!regionValue) { alert("Please enter a region sub-category."); regionValueInput.focus(); return; }
             if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity (0.0-1.0)."); regionOpacityInput.focus(); return; }
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
-            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices] });
+            const properties = collectProperties(regionPropertiesContainer);
+            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
             updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
             regionNameInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
             regionValueOptions.innerHTML = '';
@@ -1356,7 +1455,8 @@
             const lineDescription = lineDescriptionInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(lineWeight) || lineWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
             const lineId = `line-${currentMapObject.id || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
-            collectedLines.push({ id: lineId, name: lineName, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices] });
+            const properties = collectProperties(linePropertiesContainer);
+            collectedLines.push({ id: lineId, name: lineName, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
             updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success'); 
             setLineCreationState(false);
             lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
@@ -1405,7 +1505,7 @@
         }
         function startEditingVertices() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0) return;
-            if (isAddingVerticesToRegion) { alert("Stop adding vertices first."); return; }
+            if (isAddingVerticesToRegion) { alert("Stop editing vertices first."); return; }
             if (isEditingVertices) stopEditingVertices(true);
             else { setVertexEditingState(true); createVertexMarkers(); }
         }
@@ -1746,14 +1846,16 @@
 
             mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
                 coords: p.coords, name: p.name || "", type: p.type || "Unknown",
-                description: p.description || "", wikiLink: p.wikiLink || ""
+                description: p.description || "", wikiLink: p.wikiLink || "",
+                properties: p.properties || {}
             }));
 
             mapToUpdate.regions = sortedRegions.map(r => ({
                 id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
                 description: r.description || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
                 fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
-                wikiLink: r.wikiLink || "", coordinates: r.coordinates || []
+                wikiLink: r.wikiLink || "", coordinates: r.coordinates || [],
+                properties: r.properties || {}
             }));
 
             const filterGroups = { Regions: {} };
@@ -1773,7 +1875,8 @@
                 id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
                 weight: l.weight || 3, dashArray: l.dashArray || "",
                 description: l.description || "", wikiLink: l.wikiLink || "",
-                coordinates: l.coordinates || []
+                coordinates: l.coordinates || [],
+                properties: l.properties || {}
             }));
             delete mapToUpdate.roads;
             
@@ -1862,6 +1965,7 @@
                     coordsDisplay.textContent = `[${lastClickedCoordsArray[0]}, ${lastClickedCoordsArray[1]}]`;
                     pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                     addPointBtn.disabled = !currentMapObject;
+                    addPointPropertyBtn.disabled = false;
                     setStatus('Coordinates captured. Enter point details and Add.'); pointNameInput.focus();
                 }
             });
@@ -1904,6 +2008,67 @@
             }
         }
 
+        // --- Custom Properties Logic ---
+        function addPropertyRow(container, key = "", value = "") {
+            const row = document.createElement('div');
+            row.className = 'property-row';
+
+            const keyInput = document.createElement('input');
+            keyInput.type = 'text';
+            keyInput.className = 'property-key';
+            keyInput.placeholder = 'Property Name';
+            keyInput.value = key;
+
+            const valueInput = document.createElement('input');
+            valueInput.type = 'text';
+            valueInput.className = 'property-value';
+            valueInput.placeholder = 'Value';
+            valueInput.value = value;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'X';
+            removeBtn.className = 'remove-property-btn';
+            removeBtn.title = 'Remove this property';
+            removeBtn.onclick = () => row.remove();
+
+            row.appendChild(keyInput);
+            row.appendChild(valueInput);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function displayProperties(container, properties) {
+            // Find the label and clear everything after it
+            const label = container.querySelector('label');
+            while (label && label.nextSibling) {
+                container.removeChild(label.nextSibling);
+            }
+
+            if (properties && typeof properties === 'object') {
+                for (const key in properties) {
+                    if (Object.hasOwnProperty.call(properties, key)) {
+                        addPropertyRow(container, key, properties[key]);
+                    }
+                }
+            }
+        }
+
+        function collectProperties(container) {
+            const properties = {};
+            const rows = container.querySelectorAll('.property-row');
+            rows.forEach(row => {
+                const keyInput = row.querySelector('.property-key');
+                const valueInput = row.querySelector('.property-value');
+                const key = keyInput.value.trim();
+                const value = valueInput.value.trim();
+                if (key) { // Only save if a key is present
+                    properties[key] = value;
+                }
+            });
+            return properties;
+        }
+
+
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             initMap(); 
@@ -1925,6 +2090,11 @@
 
             modeTabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
 
+            addPointPropertyBtn.addEventListener('click', () => addPropertyRow(pointPropertiesContainer));
+            addRegionPropertyBtn.addEventListener('click', () => addPropertyRow(regionPropertiesContainer));
+            addLinePropertyBtn.addEventListener('click', () => addPropertyRow(linePropertiesContainer));
+
+
             addPointBtn.addEventListener('click', () => {
                 if (!lastClickedCoordsArray) { 
                     alert("Click on the map to set coordinates for the new point."); 
@@ -1935,10 +2105,12 @@
                 if (!type) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
                 if (collectedPoints.some(p => p.name === name)) { alert(`Point "${name}" already exists.`); pointNameInput.focus(); return; }
                 
+                const properties = collectProperties(pointPropertiesContainer);
                 const coordsToUse = lastClickedCoordsArray;
-                collectedPoints.push({ coords: coordsToUse, name: name, type: type, description: pointDescriptionInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim() });
+                collectedPoints.push({ coords: coordsToUse, name: name, type: type, description: pointDescriptionInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
                 updatePointsOutput(); setStatus(`Point "${name}" added.`, 'success');
                 pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                displayProperties(pointPropertiesContainer, {});
                 coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true;
             });
             editPointSelect.addEventListener('change', (e) => e.target.value ? loadPointForEditing(e.target.value) : cancelPointEditing());

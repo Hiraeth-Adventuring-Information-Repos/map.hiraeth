@@ -353,6 +353,8 @@
         body.dark-theme .leaflet-popup-content-wrapper { background: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
         .leaflet-popup-content { margin: 15px; font-size: 1.1rem; line-height: 1.5; }
         .leaflet-popup-content h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; font-weight: 600; color: var(--popup-text); }
+        .leaflet-popup-content ul { list-style-type: none; padding: 0; margin: 5px 0 0 0; }
+        .leaflet-popup-content li { margin-bottom: 3px; font-size: 0.95rem; }
         .dark-theme .leaflet-popup-close-button { color: var(--text-secondary); }
         .dark-theme .leaflet-popup-close-button:hover { color: var(--text-primary); }
 
@@ -1023,6 +1025,29 @@
             return params;
         }
 
+        // --- NEW: Format Custom Properties for Popups ---
+        function formatPropertiesForPopup(properties) {
+            if (!properties || Object.keys(properties).length === 0) {
+                return '';
+            }
+            let hasContent = false;
+            let listItems = '';
+            for (const key in properties) {
+                if (Object.hasOwnProperty.call(properties, key) && properties[key]) {
+                    hasContent = true;
+                    // Sanitize key and value to prevent basic HTML injection
+                    const sanKey = key.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const sanValue = properties[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    listItems += `<li><strong>${sanKey}:</strong> ${sanValue}</li>`;
+                }
+            }
+
+            if (!hasContent) return '';
+
+            // Use a CSS variable for the border color to respect themes
+            return `<hr style="border-top: 1px dotted var(--border-color); border-bottom: none; margin: 10px 0;"><ul>${listItems}</ul>`;
+        }
+
         // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
         const typeToGroupMap = {};
         for (const groupName in poiTypeGroups) {
@@ -1680,6 +1705,7 @@
                                  }
                                  popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`; //
                                  popupContent += `<p>${point.description || ''}</p>`; //
+                                 popupContent += formatPropertiesForPopup(point.properties);
                                  marker.bindPopup(popupContent); //
                                  allMapMarkers.push(marker); //
                              } else {
@@ -1852,6 +1878,7 @@
                 if (region.description) {
                     popupContent += `<p>${region.description}</p>`;
                 }
+                popupContent += formatPropertiesForPopup(region.properties);
                 polygon.bindPopup(popupContent);
 
                 polygon.regionData = region; // Store data for filtering
@@ -2091,6 +2118,7 @@
                 if (road.description) {
                     popupContent += `<p>${road.description}</p>`;
                 }
+                popupContent += formatPropertiesForPopup(road.properties);
 
                 if (popupContent.trim() !== "") {
                     polyline.bindPopup(popupContent);
