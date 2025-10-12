@@ -889,8 +889,10 @@
                 addPointBtn.disabled = !currentMapObject; 
                 editPointSelect.value = "";
                 displayProperties(pointPropertiesContainer, {});
+                addPointPropertyBtn.disabled = true;
             } else {
                 addPointBtn.disabled = true; 
+                addPointPropertyBtn.disabled = false;
             }
             updateStatus();
         }
@@ -921,7 +923,11 @@
                 }
                 startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
                 toggleOtherRegionsVisibility(false);
-            } else { startRegionBtn.disabled = true; }
+                addRegionPropertyBtn.disabled = true;
+            } else {
+                startRegionBtn.disabled = true;
+                addRegionPropertyBtn.disabled = false;
+            }
             updateStatus();
         }
 
@@ -952,6 +958,7 @@
                 if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
                 clearLineEditingVisuals();
                 displayProperties(linePropertiesContainer, {});
+                addLinePropertyBtn.disabled = true;
             } else {
                 startLineBtn.disabled = true;
                 addLineVerticesBtn.classList.toggle('hidden', !editing || isEditingLineVertices);
@@ -960,6 +967,7 @@
                      saveLineChangesBtn.classList.add('hidden');
                      cancelLineEditBtn.classList.add('hidden');
                 }
+                addLinePropertyBtn.disabled = false;
             }
             updateStatus();
         }
@@ -971,7 +979,12 @@
             cancelRegionBtn.classList.toggle('hidden', !creating); clearRegionsBtn.classList.toggle('hidden', creating);
             mapElement.classList.toggle('region-creation-mode', creating);
             if (!creating && tempRegionLayer) { map.removeLayer(tempRegionLayer); tempRegionLayer = null; }
-            if (creating) displayProperties(regionPropertiesContainer, {});
+            if (creating) {
+                displayProperties(regionPropertiesContainer, {});
+                addRegionPropertyBtn.disabled = false;
+            } else {
+                addRegionPropertyBtn.disabled = true;
+            }
             updateRegionVerticesCount(); updateStatus();
         }
         function setLineCreationState(creating) { 
@@ -984,7 +997,12 @@
             mapElement.classList.toggle('line-creation-mode', creating); 
 
             if (!creating && tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
-            if (creating) displayProperties(linePropertiesContainer, {});
+            if (creating) {
+                displayProperties(linePropertiesContainer, {});
+                addLinePropertyBtn.disabled = false;
+            } else {
+                addLinePropertyBtn.disabled = true;
+            }
             updateLineVerticesCount(); updateStatus();
         }
 
@@ -1947,6 +1965,7 @@
                     coordsDisplay.textContent = `[${lastClickedCoordsArray[0]}, ${lastClickedCoordsArray[1]}]`;
                     pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                     addPointBtn.disabled = !currentMapObject;
+                    addPointPropertyBtn.disabled = false;
                     setStatus('Coordinates captured. Enter point details and Add.'); pointNameInput.focus();
                 }
             });
