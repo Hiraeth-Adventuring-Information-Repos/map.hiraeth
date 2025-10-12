@@ -1026,7 +1026,7 @@
         }
 
         // --- NEW: Format Custom Properties for Popups ---
-        function formatPropertiesForPopup(properties) {
+        function formatPropertiesForPopup(properties, hasFollowingDescription) {
             if (!properties || Object.keys(properties).length === 0) {
                 return '';
             }
@@ -1044,8 +1044,12 @@
 
             if (!hasContent) return '';
 
-            // Use a CSS variable for the border color to respect themes
-            return `<hr style="border-top: 1px dotted var(--border-color); border-bottom: none; margin: 10px 0;"><ul>${listItems}</ul>`;
+            let html = `<ul>${listItems}</ul>`;
+            // Add separator AFTER properties if there's a description to follow
+            if (hasFollowingDescription) {
+                html += `<hr style="border-top: 1px dotted var(--border-color); border-bottom: none; margin: 10px 0;">`;
+            }
+            return html;
         }
 
         // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
@@ -1704,8 +1708,8 @@
                                      popupContent += `<h3>${point.name}</h3>`; //
                                  }
                                  popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`; //
+                                 popupContent += formatPropertiesForPopup(point.properties, !!point.description);
                                  popupContent += `<p>${point.description || ''}</p>`; //
-                                 popupContent += formatPropertiesForPopup(point.properties);
                                  marker.bindPopup(popupContent); //
                                  allMapMarkers.push(marker); //
                              } else {
@@ -1875,10 +1879,10 @@
                     popupContent += `<p><em>Type: ${region.type}</em></p>`;
                 }
 
+                popupContent += formatPropertiesForPopup(region.properties, !!region.description);
                 if (region.description) {
                     popupContent += `<p>${region.description}</p>`;
                 }
-                popupContent += formatPropertiesForPopup(region.properties);
                 polygon.bindPopup(popupContent);
 
                 polygon.regionData = region; // Store data for filtering
@@ -2115,10 +2119,10 @@
                     const typeString = road.type.charAt(0).toUpperCase() + road.type.slice(1);
                     popupContent += `<p><em>Type: ${typeString}</em></p>`;
                 }
+                popupContent += formatPropertiesForPopup(road.properties, !!road.description);
                 if (road.description) {
                     popupContent += `<p>${road.description}</p>`;
                 }
-                popupContent += formatPropertiesForPopup(road.properties);
 
                 if (popupContent.trim() !== "") {
                     polyline.bindPopup(popupContent);
