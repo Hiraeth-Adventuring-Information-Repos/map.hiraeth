@@ -85,7 +85,3 @@ The map data is stored in JSON files within the `maps/` directory.
 *   **Ambient Sounds**: Background sounds that change with the theme.
 *   **Embeddable View**: UI can be hidden for embedding in other websites.
 *   **Map Data Editor**: A separate tool (`point-finder.html`) for creating and editing map data.
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
