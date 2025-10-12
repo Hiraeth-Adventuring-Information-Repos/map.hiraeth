@@ -46,13 +46,15 @@
             font-weight: normal; white-space: nowrap; font-size: 1em;
             min-width: 75px; text-align: right; padding-right: 5px;
         }
-        .controls input[type="text"], .controls select, .controls textarea, .controls input[type="number"], .controls input[type="color"] {
+        .controls input[type="text"], .controls select, .controls textarea, .controls input[type="number"], .controls input[type="color"], .controls input[type="file"] {
             padding: 3px 5px; border: 1px solid #808080; background-color: #ffffff;
             color: #000000; font-family: inherit; font-size: 1em; flex-grow: 1;
             box-shadow: inset 1px 1px 1px #404040; box-sizing: border-box;
         }
+        .controls input[type="file"] {
+            padding: 2px;
+        }
         .controls input[type="checkbox"] {
-            /* Custom styling for checkbox to match the retro theme */
             appearance: none; -webkit-appearance: none;
             width: 13px; height: 13px;
             background-color: #ffffff;
@@ -83,7 +85,7 @@
              background-size: .65em auto; padding-right: 1.5em;
         }
         #fileLoader { min-width: 200px; }
-        #pointDescription, #regionDescription, #mapBlurb, #lineDescription { height: 4.5em; resize: vertical; } /* Renamed roadDescription */
+        #pointDescription, #regionDescription, #mapBlurb, #lineDescription { height: 4.5em; resize: vertical; }
         .controls button, .output-buttons button, .summary-actions button, .json-modal-copy, .json-modal-close {
             padding: 4px 10px; cursor: pointer; color: #000000;
             border: 1px solid #808080; border-left-color: #ffffff;
@@ -107,7 +109,6 @@
             flex-grow: 1; width: 100%; background-color: #a0a0a0;
             border-top: 2px solid #808080; border-bottom: 2px solid #808080;
         }
-        /* #map.disabled-map { pointer-events: none; opacity: 0.7; } */ /* This line is commented out or removed to ensure map is clickable */
         #map.region-creation-mode, #map.vertex-adding-mode, #map.vertex-editing-mode, 
         #map.line-creation-mode, #map.line-vertex-editing-mode { cursor: crosshair !important; } 
 
@@ -162,13 +163,11 @@
             border-radius: 50%;
             box-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
-        /* ADDED: Style for the active/selected vertex marker */
         .vertex-marker.active, .line-vertex-marker.active {
             background-color: #00ffff; /* Cyan */
             border: 2px solid #0000ff; /* Blue */
             box-sizing: border-box;
         }
-        /* .editing-poi-marker class is not strictly needed if using L.circleMarker with specific styles */
 
 
         .json-modal {
@@ -211,8 +210,8 @@
                 <div class="mode-tab" data-mode="lines">Lines</div>
             </div>
             <div class="control-row">
-                 <label for="mapFileSelect">Load Map File:</label>
-                 <select id="mapFileSelect"></select>
+                 <label for="jsonFileInput">Load JSON File:</label>
+                 <input type="file" id="jsonFileInput" accept=".json">
             </div>
             <div class="control-row">
                 <label for="subMapSelect">Select Map:</label>
@@ -232,8 +231,8 @@
                 <input type="number" id="scalePixels" value="3" min="1">
             </div>
             <div class="control-row">
-                <label for="scaleKilometers">Scale (Units):</label>
-                <input type="number" id="scaleKilometers" value="1" min="0.1" step="0.1">
+                <label for="scaleUnits">Scale (Units):</label>
+                <input type="number" id="scaleUnits" value="1" min="0.1" step="0.1">
             </div>
             <div class="control-row">
                  <button id="exportMapDataBtn" disabled>View/Export All Data (JSON)</button>
@@ -273,15 +272,15 @@
                 <input type="text" id="regionName" placeholder="Enter region name">
             </div>
             <div class="control-row">
-                <label for="regionTypeSelect">Type:</label>
+                <label for="regionTypeSelect">Category (Type):</label>
                 <select id="regionTypeSelect">
                     <option value="">--Select Type--</option>
-                    <option value="political">Political</option>
-                    <option value="terrain">Terrain</option>
-                    <option value="climate">Climate</option>
-                    <option value="cultural">Cultural</option>
-                    <option value="other">Other</option>
                 </select>
+            </div>
+            <div class="control-row">
+                <label for="regionValueInput">Sub-Category (Value):</label>
+                <input type="text" id="regionValueInput" list="regionValueOptions" placeholder="Type or select..." disabled>
+                <datalist id="regionValueOptions"></datalist>
             </div>
             <div class="control-row">
                 <label for="regionColor">Border Color:</label>
@@ -315,7 +314,6 @@
                 <button id="editVerticesBtn" class="hidden">Edit Vertices</button>
                 <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
             </div>
-            <!-- ADDED: Toggle for showing other regions during an edit -->
             <div class="control-row">
                  <label for="showAllRegionsToggle">Show Others:</label>
                  <input type="checkbox" id="showAllRegionsToggle">
@@ -377,7 +375,7 @@
                 <button id="cancelLineEditBtn" class="hidden">Cancel Edit</button>
             </div>
         </div>
-        <span id="status">Load a maps.json file to begin.</span>
+        <span id="status">Load a JSON file to begin.</span>
     </div>
 
     <div id="map"></div>
@@ -447,7 +445,7 @@
     <script>
         // --- DOM Element References ---
         const mapElement = document.getElementById('map');
-        const mapFileSelect = document.getElementById('mapFileSelect');
+        const jsonFileInput = document.getElementById('jsonFileInput');
         const subMapSelect = document.getElementById('subMapSelect');
         const loadSubMapBtn = document.getElementById('loadSubMapBtn');
         const exportMapDataBtn = document.getElementById('exportMapDataBtn');
@@ -455,7 +453,7 @@
         const modeTabs = document.querySelectorAll('.mode-tab');
 
         const scalePixelsInput = document.getElementById('scalePixels');
-        const scaleKilometersInput = document.getElementById('scaleKilometers');
+        const scaleUnitsInput = document.getElementById('scaleUnits');
         const mapBlurbInput = document.getElementById('mapBlurb');
 
         const pointNameInput = document.getElementById('pointName');
@@ -471,6 +469,8 @@
 
         const regionNameInput = document.getElementById('regionName');
         const regionTypeSelect = document.getElementById('regionTypeSelect');
+        const regionValueInput = document.getElementById('regionValueInput');
+        const regionValueOptions = document.getElementById('regionValueOptions');
         const regionColorInput = document.getElementById('regionColor');
         const regionFillColorInput = document.getElementById('regionFillColor');
         const regionOpacityInput = document.getElementById('regionOpacity');
@@ -486,10 +486,9 @@
         const editRegionSelect = document.getElementById('editRegionSelect');
         const regionVerticesCount = document.getElementById('region-vertices-count');
         const clearRegionsBtn = document.getElementById('clearRegionsBtn');
-        // ADDED: Reference to the new toggle
         const showAllRegionsToggle = document.getElementById('showAllRegionsToggle');
 
-        // Line Elements (Renamed from Road)
+        // Line Elements
         const lineNameInput = document.getElementById('lineName');
         const lineTypeSelect = document.getElementById('lineTypeSelect');
         const lineColorInput = document.getElementById('lineColor');
@@ -557,24 +556,10 @@
         let isEditingLineVertices = false; 
         let editingLineVisualsLayerGroup = null; 
         let editingLinePolylineLayer = null; 
-        let activeVertexMarker = null; // ADDED: To track the selected vertex for deletion
+        let activeVertexMarker = null; 
         
-        // ADDED: State for showing/hiding other regions
         let showAllRegionsWhileEditing = false;
         let otherRegionsLayerGroup = null;
-
-        // --- Hardcoded Map Files ---
-        // To add more files, add a new line here following the format:
-        // "Display Name": "path/to/your/file.json"
-        const HARDCODED_MAP_FILES = {
-            "All Maps (Manifest)": "maps/maps.json",
-            "Icebeach": "maps/icebeach.json",
-            "Castgate": "maps/castgate.json",
-            "Cursed Old-Lin": "maps/Cursed-Old-Lin.json",
-            "Arfordir": "maps/Arfordir.json",
-            "Gelwood": "maps/gelwood.json",
-            "Southern Thalassia": "maps/southern-thalassia.json"
-        };
 
 
         const poiTypeGroups = {
@@ -585,13 +570,31 @@
             "Unknown": ["Unknown"]
         };
         const regionTypeColors = {
-            "political": { color: "#3388ff", fillColor: "#3388ff" }, "terrain": { color: "#33aa33", fillColor: "#33aa33" },
-            "climate": { color: "#aa33aa", fillColor: "#aa33aa" }, "cultural": { color: "#aaaa33", fillColor: "#aaaa33" },
+            "political": { color: "#3388ff", fillColor: "#3388ff" }, 
+            "geographic": { color: "#33aa33", fillColor: "#33aa33" },
+            "climate": { color: "#aa33aa", fillColor: "#aa33aa" }, 
+            "cultural": { color: "#aaaa33", fillColor: "#aaaa33" },
             "other": { color: "#aa3333", fillColor: "#aa3333" }
         };
 
         // --- Helper Functions ---
-        // ADDED: New function to show/hide other regions
+        function populateRegionTypeDropdowns() {
+            regionTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
+            regionValueInput.value = '';
+            regionValueOptions.innerHTML = '';
+            regionValueInput.disabled = true;
+
+            if (currentMapObject && currentMapObject.filterGroups && currentMapObject.filterGroups.Regions) {
+                const regionTypes = Object.keys(currentMapObject.filterGroups.Regions);
+                regionTypes.sort().forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    regionTypeSelect.appendChild(option);
+                });
+            }
+        }
+
         function toggleOtherRegionsVisibility(show, exceptIndex = -1) {
             if (otherRegionsLayerGroup) {
                 map.removeLayer(otherRegionsLayerGroup);
@@ -645,7 +648,7 @@
                 if (!items || !Array.isArray(items)) return;
                 items.forEach(item => {
                     if (item && typeof item === 'object') {
-                        if (item.imageUrl) {
+                        if (item.imageUrl && item.id && item.name) {
                             foundMaps.push({ id: item.id, name: item.name });
                         }
                         if (item.children && Array.isArray(item.children)) {
@@ -664,8 +667,8 @@
                subMapSelect.appendChild(option);
             });
             
-            subMapSelect.disabled = false;
-            loadSubMapBtn.disabled = false;
+            subMapSelect.disabled = foundMaps.length === 0;
+            loadSubMapBtn.disabled = foundMaps.length === 0;
         }
 
         function populateTypeDropdown() {
@@ -750,7 +753,7 @@
         function setStatus(message, type = 'info') { statusDisplay.textContent = message; statusDisplay.className = type; }
 
         function updateStatus() {
-            if (!currentMapObject) { setStatus('Select a map file from the top dropdown to start.'); return; }
+            if (!currentMapObject) { setStatus('Load a JSON file to begin.'); return; }
             if (currentMode === 'points') {
                 setStatus(isEditingPoint ? 'Editing point. Drag marker or click map to move. Modify details and Save or Cancel.' : 'Click map for new point or select existing point to edit.');
             } else if (currentMode === 'regions') {
@@ -788,13 +791,12 @@
 
                 if (currentlyEditingPointIndex !== -1) {
                     const point = collectedPoints[currentlyEditingPointIndex];
-                    // Use L.circleMarker for better visibility and distinction during editing
                     editingPointMarker = L.circleMarker(point.coords, { 
                         draggable: true, 
-                        color: 'magenta', // Distinct color
+                        color: 'magenta',
                         fillColor: '#ff00ff',
                         fillOpacity: 0.5,
-                        radius: 10 // Adjust size as needed
+                        radius: 10
                     }).addTo(map);
                     
                     editingPointMarker.on('dragend', function(event) {
@@ -839,14 +841,19 @@
             startRegionBtn.classList.toggle('hidden', editing); saveRegionChangesBtn.classList.toggle('hidden', !editing);
             addVerticesBtn.classList.toggle('hidden', !editing); editVerticesBtn.classList.toggle('hidden', !editing);
             cancelRegionEditBtn.classList.toggle('hidden', !editing); clearRegionsBtn.classList.toggle('hidden', editing);
-            mapElement.classList.toggle('disabled-map', editing && !isAddingVerticesToRegion && !isEditingVertices);
+
             if (!editing) {
                 if (!isCreatingRegion) {
-                    regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+                    regionNameInput.value = ''; 
+                    regionTypeSelect.value = '';
+                    regionValueInput.value = '';
+                    regionValueOptions.innerHTML = '';
+                    regionValueInput.disabled = true;
+                    regionDescriptionInput.value = ''; 
+                    regionWikiLinkInput.value = '';
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
                 }
                 startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
-                // MODIFIED: Clear background regions when editing stops
                 toggleOtherRegionsVisibility(false);
             } else { startRegionBtn.disabled = true; }
             updateStatus();
@@ -871,7 +878,6 @@
             editLineVerticesBtn.classList.toggle('hidden', !editing || isEditingLineVertices);
             cancelLineEditBtn.classList.toggle('hidden', !editing);
             clearLinesBtn.classList.toggle('hidden', editing);
-            mapElement.classList.toggle('disabled-map', editing && !isCreatingLine && !isEditingLineVertices);
 
             if (!editing) {
                 lineNameInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
@@ -908,7 +914,6 @@
             cancelLineBtn.classList.toggle('hidden', !creating);
             clearLinesBtn.classList.toggle('hidden', creating);
             mapElement.classList.toggle('line-creation-mode', creating); 
-            mapElement.classList.toggle('disabled-map', isEditingLine && !creating);
 
             if (!creating && tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
             updateLineVerticesCount(); updateStatus();
@@ -929,9 +934,15 @@
             setStatus('Select a map and click Load.');
             coordsDisplay.textContent = '[Y, X]';
             pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
-            regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            regionNameInput.value = '';
+            regionTypeSelect.value = '';
+            regionValueInput.value = '';
+            regionValueOptions.innerHTML = '';
+            regionValueInput.disabled = true;
+            regionDescriptionInput.value = '';
+            regionWikiLinkInput.value = '';
             lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
-            scalePixelsInput.value = '3'; scaleKilometersInput.value = '1'; mapBlurbInput.value = '';
+            scalePixelsInput.value = '3'; scaleUnitsInput.value = '1'; mapBlurbInput.value = '';
             
             addPointBtn.disabled = true; startRegionBtn.disabled = true; startLineBtn.disabled = true;
             clearPointsBtn.disabled = true; clearRegionsBtn.disabled = true; clearLinesBtn.disabled = true;
@@ -942,16 +953,18 @@
             lastClickedCoordsArray = null;
             collectedPoints = []; collectedRegions = []; collectedLines = [];
             
-            if (imageLayer && map) {
-                map.eachLayer(layer => {
-                    if (layer !== imageLayer && layer !== map) { 
+            if (map) {
+                 map.eachLayer(layer => {
+                    // Do not remove the map container itself, just overlays and features
+                    if (layer._url === undefined) { 
                         map.removeLayer(layer);
                     }
                 });
-                map.removeLayer(imageLayer);
-                imageLayer = null;
+                if (imageLayer) {
+                     map.removeLayer(imageLayer);
+                }
             }
-
+            imageLayer = null;
             currentMapObject = null; currentBounds = null; 
             
             setPointEditingState(false); setRegionEditingState(false); setRegionCreationState(false);
@@ -961,51 +974,48 @@
             updateRegionVerticesCount(); updateLineVerticesCount();
         }
 
-        async function handleMapFileSelection(event) {
-            const filePath = event.target.value;
-            if (!filePath) {
-                resetUIForNewMap();
-                subMapSelect.innerHTML = '<option value="">-- Load a file first --</option>';
-                subMapSelect.disabled = true;
-                loadSubMapBtn.disabled = true;
+        function handleJsonFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) {
                 return;
             }
+            setStatus(`Loading ${file.name}...`, 'info');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const jsonObject = JSON.parse(e.target.result);
+                    
+                    if (Array.isArray(jsonObject)) {
+                        masterMapData = jsonObject;
+                        populateSubMapSelector(masterMapData);
+                        setStatus("Manifest file loaded. Select a map from the dropdown.", "success");
+                        resetUIForNewMap();
+                        subMapSelect.disabled = false;
+                        loadSubMapBtn.disabled = false;
+                    } else if (typeof jsonObject === 'object' && jsonObject !== null && jsonObject.imageUrl) {
+                        masterMapData = [jsonObject];
+                        subMapSelect.innerHTML = `<option value="${jsonObject.id || ''}" selected>${jsonObject.name || 'Single Map'}</option>`;
+                        subMapSelect.disabled = true;
+                        loadSubMapBtn.disabled = true;
+                        await loadMap(jsonObject);
+                    } else {
+                        throw new Error("Invalid JSON format. Must be an array of map objects or a single map object with an 'imageUrl' property.");
+                    }
 
-            try {
-                setStatus(`Loading ${filePath}...`, 'info');
-                const response = await fetch(filePath);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const jsonObject = await response.json();
-                
-                if (Array.isArray(jsonObject)) {
-                    // This is a manifest file like maps.json
-                    masterMapData = jsonObject;
-                    populateSubMapSelector(masterMapData);
-                    setStatus("Manifest file loaded. Select a map from the dropdown.", "success");
-                    resetUIForNewMap();
-                    subMapSelect.disabled = false;
-                    loadSubMapBtn.disabled = false;
-                } else if (typeof jsonObject === 'object' && jsonObject !== null && jsonObject.imageUrl) {
-                    // This is a single map object file
-                    masterMapData = [jsonObject]; // Store as an array of one for consistent export
-                    subMapSelect.innerHTML = `<option value="${jsonObject.id || ''}">${jsonObject.name || 'Single Map'}</option>`;
+                } catch(error) {
+                    setStatus(`Error loading map file '${file.name}': ${error.message}`, 'error');
+                    console.error(error);
+                    masterMapData = [];
+                    subMapSelect.innerHTML = '<option value="">-- Load failed --</option>';
                     subMapSelect.disabled = true;
                     loadSubMapBtn.disabled = true;
-                    await loadMap(jsonObject); // Load the single map immediately
-                } else {
-                    throw new Error("Invalid JSON format. Must be an array of map objects or a single map object with an 'imageUrl' property.");
+                    resetUIForNewMap();
                 }
-            } catch(error) {
-                setStatus(`Error loading map file '${filePath}': ${error.message}`, 'error');
-                console.error(error);
-                masterMapData = [];
-                subMapSelect.innerHTML = '<option value="">-- Load failed --</option>';
-                subMapSelect.disabled = true;
-                loadSubMapBtn.disabled = true;
-                resetUIForNewMap();
+            };
+            reader.onerror = () => {
+                 setStatus(`Error reading file: ${file.name}`, 'error');
             }
+            reader.readAsText(file);
         }
 
         async function loadMapFromSelector() {
@@ -1039,14 +1049,15 @@
             }
             
             resetUIForNewMap();
-            currentMapObject = mapData; // Set the current map context
+            currentMapObject = mapData;
 
             loadSubMapBtn.disabled = true; setStatus('Loading image and map data...');
             
             try {
                 const img = new Image();
                 await new Promise((resolve, reject) => {
-                    img.onload = resolve; img.onerror = () => reject(new Error(`Could not load image file: ${mapData.imageUrl}`));
+                    img.onload = resolve; 
+                    img.onerror = () => reject(new Error(`Could not load image file: ${mapData.imageUrl}. Ensure the URL is correct and accessible.`));
                     img.src = mapData.imageUrl;
                 });
 
@@ -1061,13 +1072,16 @@
                 map.fitBounds(currentBounds);
                 
                 scalePixelsInput.value = currentMapObject.scalePixels || 3;
-                scaleKilometersInput.value = currentMapObject.scaleKilometers || 1;
+                scaleUnitsInput.value = currentMapObject.scaleKilometers || currentMapObject.scaleUnits || 1; 
                 mapBlurbInput.value = currentMapObject.blurb || "";
                 
+                populateRegionTypeDropdowns();
+
                 let pointsImported = 0, regionsImported = 0, linesImported = 0; 
                 if (currentMapObject.pointsOfInterest) { importPoints(currentMapObject.pointsOfInterest, true); pointsImported = currentMapObject.pointsOfInterest.length; }
                 if (currentMapObject.regions) { importRegions(currentMapObject.regions, true); regionsImported = currentMapObject.regions.length; }
-                if (currentMapObject.roads) { importLines(currentMapObject.roads, true); linesImported = currentMapObject.roads.length; } 
+                const lineData = currentMapObject.lines || currentMapObject.roads;
+                if (lineData) { importLines(lineData, true); linesImported = lineData.length; } 
 
                 let finalStatus = `Loaded: ${currentMapObject.name}. `;
                 finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions, ${linesImported} lines. `; 
@@ -1081,7 +1095,7 @@
                 setStatus(`Error loading map: ${error.message}`, 'error'); 
                 console.error("Map Loading Error:", error); 
                 resetUIForNewMap();
-                if (masterMapData.length > 1) { // If it was a manifest, re-enable selector
+                if (masterMapData.length > 1) {
                     subMapSelect.disabled = false;
                     loadSubMapBtn.disabled = false;
                 }
@@ -1119,7 +1133,7 @@
                     else {
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
-                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: item.type || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity || 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]) });
+                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: item.type || "", value: item.value || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]) });
                             existingNames.add(regionName); addedCount++;
                         } else { console.warn("Skipping region with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1170,15 +1184,20 @@
             const index = collectedRegions.findIndex(r => r.name === regionName);
             if (index === -1) { setRegionEditingState(false); return; }
             const region = collectedRegions[index];
-            regionNameInput.value = region.name; regionTypeSelect.value = region.type || "";
-            regionDescriptionInput.value = region.description || ""; regionWikiLinkInput.value = region.wikiLink || "";
-            regionColorInput.value = region.color || "#3388ff"; regionFillColorInput.value = region.fillColor || "#3388ff";
-            regionOpacityInput.value = region.fillOpacity || 0.2;
-            clearEditingVisuals(); editingVisualsLayerGroup = L.layerGroup().addTo(map);
-            editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity || 0.2, weight: 3, dashArray: "5, 5" });
+            regionNameInput.value = region.name;
+            regionTypeSelect.value = region.type || "";
+            regionTypeSelect.dispatchEvent(new Event('change'));
+            regionValueInput.value = region.value || "";
+            regionDescriptionInput.value = region.description || "";
+            regionWikiLinkInput.value = region.wikiLink || "";
+            regionColorInput.value = region.color || "#3388ff";
+            regionFillColorInput.value = region.fillColor || "#3388ff";
+            regionOpacityInput.value = region.fillOpacity ?? 0.2;
+            clearEditingVisuals();
+            editingVisualsLayerGroup = L.layerGroup().addTo(map);
+            editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity ?? 0.2, weight: 3, dashArray: "5, 5" });
             editingVisualsLayerGroup.addLayer(editingPolygonLayer);
             map.fitBounds(editingPolygonLayer.getBounds().pad(0.1));
-            // MODIFIED: Show other regions if the toggle is checked
             if (showAllRegionsWhileEditing) {
                 toggleOtherRegionsVisibility(true, index);
             }
@@ -1228,7 +1247,7 @@
         function saveRegionChanges() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || currentlyEditingRegionIndex >= collectedRegions.length) return;
             const originalRegion = collectedRegions[currentlyEditingRegionIndex];
-            const newName = regionNameInput.value.trim(), newType = regionTypeSelect.value;
+            const newName = regionNameInput.value.trim(), newType = regionTypeSelect.value, newValue = regionValueInput.value.trim();
             const newDescription = regionDescriptionInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
             const newColor = regionColorInput.value, newFillColor = regionFillColorInput.value;
             const newOpacity = parseFloat(regionOpacityInput.value);
@@ -1237,7 +1256,10 @@
             if (newName !== originalRegion.name && collectedRegions.some((r, i) => i !== currentlyEditingRegionIndex && r.name === newName)) {
                 alert(`Another region named "${newName}" already exists.`); regionNameInput.focus(); return;
             }
-            originalRegion.name = newName; originalRegion.type = newType; originalRegion.description = newDescription;
+            originalRegion.name = newName;
+            originalRegion.type = newType;
+            originalRegion.value = newValue;
+            originalRegion.description = newDescription;
             originalRegion.wikiLink = newWikiLink; originalRegion.color = newColor; originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity; originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
             updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success'); setRegionEditingState(false);
@@ -1308,16 +1330,20 @@
 
         function finishRegionCreation() { 
             if (!isCreatingRegion || tempRegionVertices.length < 3) { alert("A region needs at least 3 vertices."); return; }
-            const regionName = regionNameInput.value.trim(), regionType = regionTypeSelect.value;
+            const regionName = regionNameInput.value.trim(), regionType = regionTypeSelect.value, regionValue = regionValueInput.value.trim();
             const regionColor = regionColorInput.value, regionFillColor = regionFillColorInput.value;
             const regionOpacity = parseFloat(regionOpacityInput.value);
             const regionDescription = regionDescriptionInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
             if (!regionName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
+            if (!regionType) { alert("Please select a region category."); regionTypeSelect.focus(); return; }
+            if (!regionValue) { alert("Please enter a region sub-category."); regionValueInput.focus(); return; }
             if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity (0.0-1.0)."); regionOpacityInput.focus(); return; }
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
-            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices] });
+            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices] });
             updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
-            regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            regionNameInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            regionValueOptions.innerHTML = '';
+            regionValueInput.disabled = true;
         }
         function cancelRegionCreation() { 
              if (!isCreatingRegion) return; setRegionCreationState(false); setStatus('Region creation cancelled.');
@@ -1341,7 +1367,7 @@
             setLineCreationState(false); setStatus('Line creation cancelled.');
         }
 
-        // --- Region Vertex Editing Logic (Full) ---
+        // --- Region Vertex Editing Logic ---
         function startAddingVertices() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0) return;
             if (isEditingVertices) { alert("Stop editing vertices first."); return; }
@@ -1408,7 +1434,7 @@
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || !editingPolygonLayer) return;
             clearEditingVisuals(); editingVisualsLayerGroup = L.layerGroup().addTo(map);
             const region = collectedRegions[currentlyEditingRegionIndex]; const latLngs = region.coordinates;
-            editingPolygonLayer = L.polygon(latLngs, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity || 0.2, weight: 3, dashArray: "5, 5" }).addTo(editingVisualsLayerGroup);
+            editingPolygonLayer = L.polygon(latLngs, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity ?? 0.2, weight: 3, dashArray: "5, 5" }).addTo(editingVisualsLayerGroup);
             latLngs.forEach((latLng, index) => addVertexMarker(latLng, index));
             addMidpointMarkers();
         }
@@ -1416,9 +1442,8 @@
              const marker = L.marker(latLng, { draggable: true, icon: L.divIcon({ className: 'vertex-marker', iconSize: [12, 12], iconAnchor: [6, 6] }), isVertexMarker: true, vertexIndex: index }).addTo(editingVisualsLayerGroup);
              marker.on('drag', updatePolygonFromMarkers);
              marker.on('dragend', () => { const newLatLng = marker.getLatLng(); marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]); updatePolygonFromMarkers(); });
-             // ADDED: Click handler for selection/deselection
              marker.on('click', (e) => {
-                 L.DomEvent.stopPropagation(e); // Prevent map click from firing
+                 L.DomEvent.stopPropagation(e); 
                  if (activeVertexMarker && activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
                  activeVertexMarker = marker;
                  if (marker._icon) marker._icon.classList.add('active');
@@ -1440,7 +1465,8 @@
                     editingVisualsLayerGroup.removeLayer(marker);
                     const currentLatLngs = editingPolygonLayer.getLatLngs()[0];
                     currentLatLngs.splice(segmentStartIndex + 1, 0, L.latLng(newCoord));
-                    editingPolygonLayer.setLatLngs(currentLatLngs); recreateAllVertexMarkers();
+                    editingPolygonLayer.setLatLngs(currentLatLngs);
+                    recreateAllVertexMarkers();
                     setStatus('Added new vertex. Continue dragging or Stop Editing.', 'info');
                 });
             }
@@ -1462,7 +1488,7 @@
         }
         function clearEditingVisuals() { 
             if (editingVisualsLayerGroup) { map.removeLayer(editingVisualsLayerGroup); editingVisualsLayerGroup = null; editingPolygonLayer = null; }
-            activeVertexMarker = null; // MODIFIED: Ensure active marker is cleared
+            activeVertexMarker = null;
         }
 
         // --- Line Vertex Editing Logic ---
@@ -1471,12 +1497,12 @@
             editVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
             addVerticesBtn.textContent = isAddingVerticesToRegion ? 'Stop Adding Vertices' : 'Add Vertices';
             mapElement.classList.toggle('vertex-editing-mode', editing);
-            mapElement.classList.toggle('disabled-map', !editing && isEditingRegion && !isAddingVerticesToRegion);
             
             saveRegionChangesBtn.disabled = editing || isAddingVerticesToRegion;
             cancelRegionEditBtn.disabled = editing || isAddingVerticesToRegion;
             regionNameInput.disabled = editing || isAddingVerticesToRegion;
             regionTypeSelect.disabled = editing || isAddingVerticesToRegion;
+            regionValueInput.disabled = editing || isAddingVerticesToRegion;
             editRegionSelect.disabled = editing || isAddingVerticesToRegion;
             startRegionBtn.disabled = true;
 
@@ -1488,20 +1514,20 @@
                     }
                 });
             }
-            if(!editing) activeVertexMarker = null; // Clear active marker on state change
+            if(!editing) activeVertexMarker = null;
             updateStatus();
         }
         function setVertexAddingState(adding) {
             isAddingVerticesToRegion = adding;
             addVerticesBtn.textContent = adding ? 'Stop Adding Vertices' : 'Add Vertices';
             mapElement.classList.toggle('vertex-adding-mode', adding);
-            mapElement.classList.toggle('disabled-map', !adding && isEditingRegion && !isEditingVertices);
             
             saveRegionChangesBtn.disabled = adding || isEditingVertices;
             cancelRegionEditBtn.disabled = adding || isEditingVertices;
             editVerticesBtn.disabled = adding;
             regionNameInput.disabled = adding || isEditingVertices;
             regionTypeSelect.disabled = adding || isEditingVertices;
+            regionValueInput.disabled = adding || isEditingVertices;
             editRegionSelect.disabled = adding || isEditingVertices;
             startRegionBtn.disabled = true;
 
@@ -1511,7 +1537,6 @@
             isEditingLineVertices = editing;
             editLineVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
             mapElement.classList.toggle('line-vertex-editing-mode', editing);
-            mapElement.classList.toggle('disabled-map', !editing && isEditingLine && !isCreatingLine);
 
             saveLineChangesBtn.disabled = editing;
             addLineVerticesBtn.disabled = editing;
@@ -1530,7 +1555,7 @@
                     }
                 });
             }
-            if(!editing) activeVertexMarker = null; // Clear active marker on state change
+            if(!editing) activeVertexMarker = null;
             updateStatus();
         }
 
@@ -1610,9 +1635,8 @@
                 marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]);
                 updateLinePolylineFromMarkers();
             });
-            // ADDED: Click handler for selection/deselection
             marker.on('click', (e) => {
-                L.DomEvent.stopPropagation(e); // Prevent map click from firing
+                L.DomEvent.stopPropagation(e);
                 if (activeVertexMarker && activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
                 activeVertexMarker = marker;
                 if (marker._icon) marker._icon.classList.add('active');
@@ -1679,7 +1703,7 @@
                 editingLineVisualsLayerGroup = null;
                 editingLinePolylineLayer = null;
             }
-            activeVertexMarker = null; // MODIFIED: Ensure active marker is cleared
+            activeVertexMarker = null;
         }
 
 
@@ -1688,11 +1712,7 @@
                  alert("No map is currently loaded for saving.");
                  return null;
              }
-            // Deep clone the master data to avoid modifying it directly before export
             const updatedMasterData = JSON.parse(JSON.stringify(masterMapData));
-
-            // Find the map object we were editing in the cloned data.
-            // This works whether masterMapData has one or many maps.
             let mapToUpdate = null;
             function findMapByIdRecursive(items, id) {
                  for (const item of items) {
@@ -1707,8 +1727,6 @@
             mapToUpdate = findMapByIdRecursive(updatedMasterData, currentMapObject.id);
 
             if (!mapToUpdate) {
-                // If we loaded a single file, the `updatedMasterData` is an array with one item.
-                // And `currentMapObject.id` should match its id. If not, something is wrong.
                 if (updatedMasterData.length === 1 && updatedMasterData[0].id === currentMapObject.id) {
                      mapToUpdate = updatedMasterData[0];
                 } else {
@@ -1717,13 +1735,13 @@
                 }
             }
             
-            // Update the found map object with the collected data and settings
             const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
             const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
             const sortedLines = [...collectedLines].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
 
             mapToUpdate.scalePixels = parseInt(scalePixelsInput.value) || 3;
-            mapToUpdate.scaleKilometers = parseFloat(scaleKilometersInput.value) || 1;
+            mapToUpdate.scaleUnits = parseFloat(scaleUnitsInput.value) || 1;
+            delete mapToUpdate.scaleKilometers; // Remove old key if it exists
             mapToUpdate.blurb = mapBlurbInput.value || "";
 
             mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
@@ -1733,19 +1751,32 @@
 
             mapToUpdate.regions = sortedRegions.map(r => ({
                 id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
-                description: r.description || "", type: r.type || "", color: r.color || "#3388ff",
+                description: r.description || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
                 fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
                 wikiLink: r.wikiLink || "", coordinates: r.coordinates || []
             }));
+
+            const filterGroups = { Regions: {} };
+            sortedRegions.forEach(region => {
+                if (region.type && region.value) {
+                    if (!filterGroups.Regions[region.type]) {
+                        filterGroups.Regions[region.type] = [];
+                    }
+                    if (!filterGroups.Regions[region.type].includes(region.value)) {
+                        filterGroups.Regions[region.type].push(region.value);
+                    }
+                }
+            });
+            mapToUpdate.filterGroups = filterGroups;
             
-            mapToUpdate.roads = sortedLines.map(l => ({
+            mapToUpdate.lines = sortedLines.map(l => ({
                 id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
                 weight: l.weight || 3, dashArray: l.dashArray || "",
                 description: l.description || "", wikiLink: l.wikiLink || "",
                 coordinates: l.coordinates || []
             }));
+            delete mapToUpdate.roads;
             
-            // If we loaded a single map file, we should return an object, not an array.
             if (masterMapData.length === 1 && updatedMasterData.length === 1 && masterMapData[0].id === mapToUpdate.id) {
                 return mapToUpdate;
             }
@@ -1798,21 +1829,18 @@
             map = L.map('map', { crs: L.CRS.Simple, minZoom: -5, maxZoom: 5, center: [0, 0], zoom: 0, doubleClickZoom: false });
             
             map.on('click', (e) => {
-                // ADDED: Deselect active vertex if clicking on the map background
                 if (activeVertexMarker) {
                     if (activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
                     activeVertexMarker = null;
                     updateStatus();
                 }
 
-                if (!currentMapObject) return; // Don't do anything if no map is loaded
+                if (!currentMapObject) return;
 
-                // This outer if handles ALL editing/creation modes to prevent fall-through to new item creation.
                 if (isEditingPoint || 
                     (currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) ||
                     (currentMode === 'lines' && (isCreatingLine || isEditingLineVertices))) {
                     
-                    // Specific logic for POINT EDITING click-to-move
                     if (currentMode === 'points' && isEditingPoint && editingPointMarker) {
                         const newCoords = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
                         lastClickedCoordsArray = newCoords;
@@ -1820,11 +1848,9 @@
                         editingPointMarker.setLatLng(e.latlng); 
                         setStatus('Point position updated by click. Modify details and Save or Cancel.');
                     } 
-                    // Specific logic for REGION vertex placement
                     else if (currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion)) {
                         handleMapClickForRegion(e);
                     } 
-                    // Specific logic for LINE vertex placement
                     else if (currentMode === 'lines' && isCreatingLine) { 
                         handleMapClickForLineCreation(e);
                     }
@@ -1849,18 +1875,7 @@
                 }
             });
         }
-
-        function populateMapFileSelector() {
-            mapFileSelect.innerHTML = '<option value="">-- Select a map file --</option>';
-            for (const [name, path] of Object.entries(HARDCODED_MAP_FILES)) {
-                const option = document.createElement('option');
-                option.value = path;
-                option.textContent = name;
-                mapFileSelect.appendChild(option);
-            }
-        }
         
-        // ADDED: Handle vertex deletion
         function handleVertexDelete() {
             if (!activeVertexMarker) return;
 
@@ -1893,12 +1908,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             initMap(); 
             populateTypeDropdown();
-            populateMapFileSelector();
             setMode('points');
-            resetUIForNewMap(); // Start with a clean slate
-            setStatus('Select a map file from the top dropdown to start.');
+            resetUIForNewMap(); 
+            setStatus('Load a JSON file to begin.');
 
-            // ADDED: Global keydown listener for deleting vertices
             document.addEventListener('keydown', (e) => {
                 if ((e.key === 'Delete' || e.key === 'Backspace') && activeVertexMarker) {
                     e.preventDefault();
@@ -1906,7 +1919,7 @@
                 }
             });
 
-            mapFileSelect.addEventListener('change', handleMapFileSelection);
+            jsonFileInput.addEventListener('change', handleJsonFileLoad);
             loadSubMapBtn.addEventListener('click', loadMapFromSelector);
             exportMapDataBtn.addEventListener('click', exportMapData);
 
@@ -1935,6 +1948,29 @@
                 if (confirm('Clear all points for this map?')) { collectedPoints = []; updatePointsOutput(); setPointEditingState(false); setStatus('All points cleared.'); }
             });
 
+            regionTypeSelect.addEventListener('change', () => {
+                const selectedType = regionTypeSelect.value;
+                regionValueOptions.innerHTML = '';
+                regionValueInput.value = '';
+
+                if (selectedType && currentMapObject && currentMapObject.filterGroups && currentMapObject.filterGroups.Regions && currentMapObject.filterGroups.Regions[selectedType]) {
+                    const values = currentMapObject.filterGroups.Regions[selectedType];
+                    values.sort().forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        regionValueOptions.appendChild(option);
+                    });
+                    regionValueInput.disabled = false;
+                } else {
+                    regionValueInput.disabled = true;
+                }
+                const lowerCaseType = selectedType.toLowerCase();
+                if (regionTypeColors[lowerCaseType]) {
+                    regionColorInput.value = regionTypeColors[lowerCaseType].color;
+                    regionFillColorInput.value = regionTypeColors[lowerCaseType].fillColor;
+                }
+            });
+
             startRegionBtn.addEventListener('click', startRegionCreation);
             finishRegionBtn.addEventListener('click', finishRegionCreation);
             cancelRegionBtn.addEventListener('click', cancelRegionCreation);
@@ -1949,7 +1985,6 @@
             regionColorInput.addEventListener('input', () => { const c = regionColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ color: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ color: c }); });
             regionFillColorInput.addEventListener('input', () => { const c = regionFillColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillColor: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillColor: c }); });
             regionOpacityInput.addEventListener('input', () => { const o = parseFloat(regionOpacityInput.value); if (!isNaN(o)) { if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillOpacity: o }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillOpacity: o }); }});
-            regionTypeSelect.addEventListener('change', (e) => { const t = e.target.value; if (regionTypeColors[t] && !isEditingRegion && !isCreatingRegion) { regionColorInput.value = regionTypeColors[t].color; regionFillColorInput.value = regionTypeColors[t].fillColor; }});
 
             // Line Event Listeners 
             startLineBtn.addEventListener('click', startLineCreation);
@@ -1966,10 +2001,8 @@
             lineWeightInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ weight: parseInt(lineWeightInput.value) || 3 }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({weight: parseInt(lineWeightInput.value) || 3 }); });
             lineDashArrayInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ dashArray: lineDashArrayInput.value.trim() || null }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({dashArray: lineDashArrayInput.value.trim() || null}); });
             
-            // ADDED: Listener for the new toggle
             showAllRegionsToggle.addEventListener('change', (e) => {
                 showAllRegionsWhileEditing = e.target.checked;
-                // If we are currently editing a region, update the view immediately
                 if (isEditingRegion) {
                     toggleOtherRegionsVisibility(showAllRegionsWhileEditing, currentlyEditingRegionIndex);
                 }

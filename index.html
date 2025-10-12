@@ -551,6 +551,40 @@
             vertical-align: middle;
             cursor: pointer;
         }
+
+        /* --- NEW: Collapsible Filter Group Styling --- */
+        .filter-group-header {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            font-weight: bold; /* Make the group name stand out */
+        }
+        .filter-group-header .folder-toggle-icon { /* Re-use folder icon style */
+            display: inline-block;
+            width: 1.2em;
+            text-align: center;
+            margin-right: 5px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .filter-group.closed > .filter-group-header .folder-toggle-icon::before {
+            content: '▸';
+        }
+        .filter-group:not(.closed) > .filter-group-header .folder-toggle-icon::before {
+            content: '▾';
+        }
+        .nested-filter-list {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0 0 20px; /* Indent nested list */
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .filter-group.closed > .nested-filter-list {
+            max-height: 0;
+        }
+        /* --- END: Collapsible Filter Group Styling --- */
         /* --- END: Filter Panel Styling --- */
 
         /* Measure Tool Button */
@@ -1120,26 +1154,46 @@
 
         // --- Helper Function to Update the "Toggle All" Checkbox State ---
         function updateToggleAllCheckboxState() {
-            // Select all specific filter checkboxes (POI, Region, and Line)
-            const allSpecificFilters = poiFilterContainer.querySelectorAll(
-                '.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter, .line-type-filter'
-            );
-            const checkedSpecificFilters = poiFilterContainer.querySelectorAll(
-                '.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-type-filter:checked, .line-type-filter:checked'
-            );
+            // Update indeterminate state for each region group parent
+            const regionGroupCheckboxes = poiFilterContainer.querySelectorAll('.region-group-filter');
+            regionGroupCheckboxes.forEach(groupCheckbox => {
+                const groupName = groupCheckbox.value;
+                const childCheckboxes = poiFilterContainer.querySelectorAll(`.region-type-filter[data-group="${groupName}"]`);
+                const checkedChildren = poiFilterContainer.querySelectorAll(`.region-type-filter[data-group="${groupName}"]:checked`);
 
-            if (allSpecificFilters.length === 0) { // No specific filters exist at all
+                if (checkedChildren.length === 0) {
+                    groupCheckbox.checked = false;
+                    groupCheckbox.indeterminate = false;
+                } else if (checkedChildren.length === childCheckboxes.length) {
+                    groupCheckbox.checked = true;
+                    groupCheckbox.indeterminate = false;
+                } else {
+                    groupCheckbox.checked = false;
+                    groupCheckbox.indeterminate = true;
+                }
+            });
+
+            // Update master "Show All / Hide All" checkbox state
+            const allTopLevelFilters = poiFilterContainer.querySelectorAll(
+                '.poi-filter-checkbox:not(#filter-toggle-all), .region-group-filter, .line-type-filter'
+            );
+            const checkedTopLevelFilters = poiFilterContainer.querySelectorAll(
+                '.poi-filter-checkbox:not(#filter-toggle-all):checked, .region-group-filter:checked:not(:indeterminate), .line-type-filter:checked'
+            );
+            const indeterminateTopLevelFilters = poiFilterContainer.querySelectorAll('.region-group-filter:indeterminate');
+
+            if (allTopLevelFilters.length === 0) {
                 filterToggleAllCheckbox.checked = true;
                 filterToggleAllCheckbox.indeterminate = false;
-            } else if (checkedSpecificFilters.length === 0) { // All specific filters are unchecked
-                filterToggleAllCheckbox.checked = false;
-                filterToggleAllCheckbox.indeterminate = false;
-            } else if (checkedSpecificFilters.length === allSpecificFilters.length) { // All specific filters are checked
-                filterToggleAllCheckbox.checked = true;
-                filterToggleAllCheckbox.indeterminate = false;
-            } else { // Some are checked, some are not
+            } else if (indeterminateTopLevelFilters.length > 0 || (checkedTopLevelFilters.length > 0 && checkedTopLevelFilters.length < allTopLevelFilters.length)) {
                 filterToggleAllCheckbox.checked = false;
                 filterToggleAllCheckbox.indeterminate = true;
+            } else if (checkedTopLevelFilters.length === allTopLevelFilters.length) {
+                filterToggleAllCheckbox.checked = true;
+                filterToggleAllCheckbox.indeterminate = false;
+            } else { // All are unchecked
+                filterToggleAllCheckbox.checked = false;
+                filterToggleAllCheckbox.indeterminate = false;
             }
         }
 
@@ -1219,7 +1273,7 @@
         // --- Function to Populate Filter Checkboxes (in the panel) ---
         function populateFilters(pointsOfInterest, mapId) {
             // Clear existing dynamic filters (headers, dividers, specific checkboxes)
-            const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child)');
+            const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child), .filter-group-container');
             dynamicElements.forEach(el => el.remove());
 
             const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
@@ -1240,13 +1294,11 @@
 
             // PART 1: Add POI type filters (existing logic)
             if (hasPOIs) {
-                // Add "POI Types" section header (only if not the first header)
-                if (poiFilterContainer.querySelector('h3')) { 
+                if (poiFilterContainer.querySelector('h3')) {
                     const poiHeader = document.createElement('h3');
                     poiHeader.textContent = "POI Types:";
                     poiFilterContainer.appendChild(poiHeader);
                 }
-
                 const relevantGroups = new Set();
                 pointsOfInterest.forEach(poi => {
                     const specificType = poi.type || 'Unknown';
@@ -1254,10 +1306,8 @@
                     relevantGroups.add(group);
                 });
                 const sortedGroups = Array.from(relevantGroups).sort();
-
                 sortedGroups.forEach(groupName => {
                     if (!groupName || (poiTypeGroups[groupName] && poiTypeGroups[groupName].length === 0)) return;
-
                     const filterId = `filter-group-${groupName.replace(/\s+/g, '-')}`;
                     const div = document.createElement('div');
                     div.className = 'filter-item';
@@ -1265,54 +1315,86 @@
                     checkbox.type = 'checkbox';
                     checkbox.id = filterId;
                     checkbox.value = groupName;
-                    checkbox.checked = true; 
-                    checkbox.className = 'poi-filter-checkbox'; 
-
+                    checkbox.checked = true;
+                    checkbox.className = 'poi-filter-checkbox';
                     const label = document.createElement('label');
                     label.htmlFor = filterId;
                     label.textContent = groupName;
-
                     div.appendChild(checkbox);
                     div.appendChild(label);
                     poiFilterContainer.appendChild(div);
                 });
             }
 
-            // PART 2: Add region type filters (existing logic)
-            if (hasRegions) {
-                if (hasPOIs) { // Add divider only if POI filters are also present
+            // PART 2: Add region type filters (NEW HIERARCHICAL LOGIC)
+            if (hasRegions && selectedMap.filterGroups && selectedMap.filterGroups.Regions) {
+                if (hasPOIs) {
                     const divider = document.createElement('hr');
                     divider.style.margin = '10px 0';
-                    divider.style.borderColor = 'var(--glass-border-light)'; 
-                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)'); 
+                    divider.style.borderColor = 'var(--glass-border-light)';
+                    bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
                     poiFilterContainer.appendChild(divider);
                 }
-                
                 const regionHeader = document.createElement('h3');
                 regionHeader.textContent = "Region Types:";
                 poiFilterContainer.appendChild(regionHeader);
 
-                const regionTypes = [...new Set(selectedMap.regions.map(r => r.type).filter(Boolean))].sort();
+                const regionFilterGroups = selectedMap.filterGroups.Regions;
 
-                regionTypes.forEach(type => {
-                    const filterId = `filter-region-${type.replace(/\s+/g, '-')}`;
-                    const div = document.createElement('div');
-                    div.className = 'filter-item';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = filterId;
-                    checkbox.value = type;
-                    checkbox.checked = true; 
-                    checkbox.className = 'region-type-filter'; 
+                for (const groupName in regionFilterGroups) {
+                    if (Object.hasOwnProperty.call(regionFilterGroups, groupName)) {
+                        const values = regionFilterGroups[groupName];
+                        if (!Array.isArray(values) || values.length === 0) continue;
 
-                    const label = document.createElement('label');
-                    label.htmlFor = filterId;
-                    label.textContent = type.charAt(0).toUpperCase() + type.slice(1); 
+                        const groupContainer = document.createElement('div');
+                        groupContainer.className = 'filter-group closed'; // Start as closed
 
-                    div.appendChild(checkbox);
-                    div.appendChild(label);
-                    poiFilterContainer.appendChild(div);
-                });
+                        const groupHeader = document.createElement('div');
+                        groupHeader.className = 'filter-group-header';
+                        groupHeader.innerHTML = `<span class="folder-toggle-icon"></span>`;
+
+                        const groupDiv = document.createElement('div');
+                        groupDiv.className = 'filter-item';
+                        const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
+                        const groupCheckbox = document.createElement('input');
+                        groupCheckbox.type = 'checkbox';
+                        groupCheckbox.id = groupFilterId;
+                        groupCheckbox.value = groupName;
+                        groupCheckbox.checked = true;
+                        groupCheckbox.className = 'region-group-filter';
+                        const groupLabel = document.createElement('label');
+                        groupLabel.htmlFor = groupFilterId;
+                        groupLabel.textContent = groupName;
+                        groupDiv.appendChild(groupCheckbox);
+                        groupDiv.appendChild(groupLabel);
+                        groupHeader.appendChild(groupDiv);
+                        groupContainer.appendChild(groupHeader);
+
+                        const nestedList = document.createElement('div');
+                        nestedList.className = 'nested-filter-list';
+
+                        values.forEach(value => {
+                            const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
+                            const div = document.createElement('div');
+                            div.className = 'filter-item';
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.id = filterId;
+                            checkbox.value = value;
+                            checkbox.checked = true;
+                            checkbox.className = 'region-type-filter';
+                            checkbox.dataset.group = groupName;
+                            const label = document.createElement('label');
+                            label.htmlFor = filterId;
+                            label.textContent = value;
+                            div.appendChild(checkbox);
+                            div.appendChild(label);
+                            nestedList.appendChild(div);
+                        });
+                        groupContainer.appendChild(nestedList);
+                        poiFilterContainer.appendChild(groupContainer);
+                    }
+                }
             }
 
             // PART 3: Add line type filters (New)
@@ -1351,7 +1433,6 @@
                     poiFilterContainer.appendChild(div);
                 });
             }
-
 
             // Show filter button since we have filters
             toggleFiltersBtn.style.display = 'block';
@@ -1760,7 +1841,14 @@
                 } else {
                     popupContent += `<h3>${region.name}</h3>`;
                 }
-                popupContent += `<p><em>Type: ${region.type || 'Region'}</em></p>`;
+
+                // NEW: Display type and value in popup
+                if (region.type && region.value) {
+                    popupContent += `<p><em>${region.type}: ${region.value}</em></p>`;
+                } else if (region.type) {
+                    popupContent += `<p><em>Type: ${region.type}</em></p>`;
+                }
+
                 if (region.description) {
                     popupContent += `<p>${region.description}</p>`;
                 }
@@ -1776,32 +1864,33 @@
         function updateVisibleRegions() {
             if (!currentRegionGroup) return;
 
-            // Get the currently checked region type filters from the combined panel
-            const typeFilters = poiFilterContainer.querySelectorAll('.region-type-filter:checked');
-            const typeFilterValues = Array.from(typeFilters).map(cb => cb.value);
+            // Get the currently checked region type filters (the individual values)
+            const valueFilters = poiFilterContainer.querySelectorAll('.region-type-filter:checked');
+            const valueFilterValues = new Set(Array.from(valueFilters).map(cb => cb.value));
+
             // Check the master toggle state
             const allTypesChecked = filterToggleAllCheckbox.checked && !filterToggleAllCheckbox.indeterminate;
 
             currentRegionGroup.eachLayer(layer => {
                 const region = layer.regionData;
-                if (!region) return;
+                if (!region || !region.type || !region.value) return;
 
-                // A region's type matches if the master toggle is checked OR its specific type is checked
-                const typeMatch = allTypesChecked || typeFilterValues.includes(region.type);
+                // A region is visible if the master toggle is checked OR its specific value is in the checked set.
+                const typeMatch = allTypesChecked || valueFilterValues.has(region.value);
 
                 // Apply visibility and interactivity based on *both* the overall toggle AND the type filter match
                 if (regionsVisible && typeMatch) { // regionsVisible is synced with markersVisible
                     layer.setStyle({
-                        stroke: true, // Make path stroke visible and interactive
-                        fill: true,   // Make path fill visible and interactive
+                        stroke: true,
+                        fill: true,
                         opacity: 1,
                         fillOpacity: region.fillOpacity || 0.2
                     });
-                    layer.bringToBack(); // Ensure regions stay behind markers
+                    layer.bringToBack();
                 } else {
                     layer.setStyle({
-                        stroke: false, // Make path stroke invisible and non-interactive
-                        fill: false    // Make path fill invisible and non-interactive
+                        stroke: false,
+                        fill: false
                     });
                 }
             });
@@ -2194,7 +2283,7 @@
 
                 const roadType = road.type || "Unnamed Road Type"; // Match the logic in populateFilters
                 const typeMatch = allTypesChecked || typeFilterValues.includes(roadType);
-                
+
                 // Lines are always "visible" in terms of the master toggle (markersVisible)
                 // Their appearance is solely based on type filters.
                 if (typeMatch) {
@@ -2212,30 +2301,56 @@
         // --- Combined Filter Panel Logic ---
         poiFilterContainer.addEventListener('change', (e) => {
             const target = e.target;
-            if (target.type !== 'checkbox') return; 
+            if (target.type !== 'checkbox') return;
 
-            if (target.id === 'filter-toggle-all') {
+            // Handle parent group checkbox for regions
+            if (target.classList.contains('region-group-filter')) {
                 const isChecked = target.checked;
-                poiFilterContainer.querySelectorAll('.poi-filter-checkbox:not(#filter-toggle-all), .region-type-filter, .line-type-filter').forEach(checkbox => {
-                    checkbox.checked = isChecked;
+                const groupName = target.value;
+                const nestedCheckboxes = target.closest('.filter-group-container').querySelectorAll('.region-type-filter');
+                nestedCheckboxes.forEach(checkbox => {
+                    if (checkbox.dataset.group === groupName) {
+                        checkbox.checked = isChecked;
+                    }
                 });
-                filterToggleAllCheckbox.indeterminate = false;
-            } else {
-                updateToggleAllCheckboxState(); // This now needs to consider line filters too for indeterminate state
             }
 
+            // Handle master "Show All / Hide All" checkbox
+            if (target.id === 'filter-toggle-all') {
+                const isChecked = target.checked;
+                poiFilterContainer.querySelectorAll('.poi-filter-checkbox, .region-group-filter, .region-type-filter, .line-type-filter').forEach(checkbox => {
+                    if (checkbox.id !== 'filter-toggle-all') {
+                        checkbox.checked = isChecked;
+                    }
+                });
+                filterToggleAllCheckbox.indeterminate = false;
+            }
+
+            // Update parent and master toggles' indeterminate states
+            updateToggleAllCheckboxState();
+
+            // Trigger visibility updates
             if (target.classList.contains('poi-filter-checkbox') || target.id === 'filter-toggle-all') {
                 updateVisibleMarkersAndSearch();
             }
-            if (target.classList.contains('region-type-filter') || target.id === 'filter-toggle-all') {
+            if (target.classList.contains('region-type-filter') || target.classList.contains('region-group-filter') || target.id === 'filter-toggle-all') {
                 updateVisibleRegions();
             }
-            if (target.classList.contains('line-type-filter') || target.id === 'filter-toggle-all') { // New condition
+            if (target.classList.contains('line-type-filter') || target.id === 'filter-toggle-all') {
                 updateVisibleLines();
             }
         });
         // Prevent map click when clicking inside filter panel
-        poiFilterContainer.addEventListener('click', (e) => e.stopPropagation());
+        poiFilterContainer.addEventListener('click', (e) => {
+            const header = e.target.closest('.filter-group-header');
+            if (header) {
+                const group = header.closest('.filter-group');
+                if (group) {
+                    group.classList.toggle('closed');
+                }
+            }
+            e.stopPropagation();
+        });
 
 
         // --- Measurement Tool Logic ---
