@@ -1483,7 +1483,8 @@
             saveRegionChangesBtn.disabled = editing || isAddingVerticesToRegion;
             cancelRegionEditBtn.disabled = editing || isAddingVerticesToRegion;
             regionNameInput.disabled = editing || isAddingVerticesToRegion;
-            regionTypeSelect.disabled = editing || isAddingVerticesToRegion;
+            regionTypeInput.disabled = editing || isAddingVerticesToRegion;
+            regionValueInput.disabled = editing || isAddingVerticesToRegion;
             editRegionSelect.disabled = editing || isAddingVerticesToRegion;
             startRegionBtn.disabled = true;
 
@@ -1508,7 +1509,8 @@
             cancelRegionEditBtn.disabled = adding || isEditingVertices;
             editVerticesBtn.disabled = adding;
             regionNameInput.disabled = adding || isEditingVertices;
-            regionTypeSelect.disabled = adding || isEditingVertices;
+            regionTypeInput.disabled = adding || isEditingVertices;
+            regionValueInput.disabled = adding || isEditingVertices;
             editRegionSelect.disabled = adding || isEditingVertices;
             startRegionBtn.disabled = true;
 
