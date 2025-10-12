@@ -24,7 +24,7 @@ You need a modern web browser and a local web server to run this project. Due to
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/your_username_/hiraeth-map-viewer.git
+   git clone https://github.com/jaxsnjohnson/map.hiraeth.git
    ```
 2. Start a local web server. For example, using Python:
    ```sh
