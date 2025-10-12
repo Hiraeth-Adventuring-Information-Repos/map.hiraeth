@@ -4,8 +4,6 @@ An interactive map viewer for the world of Hiraeth, built with Leaflet.js.
 
 **[Live Demo](http://maps.hiraeth.wiki)**
 
-![Hiraeth Map Viewer Screenshot](images/screenshot.png)
-
 ## About The Project
 
 This project is an interactive map viewer designed to display custom world maps, specifically for the world of Hiraeth. It allows users to explore different regions, view points of interest (POIs), and interact with map features.
