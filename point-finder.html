@@ -273,15 +273,12 @@
                 <input type="text" id="regionName" placeholder="Enter region name">
             </div>
             <div class="control-row">
-                <label for="regionTypeSelect">Type:</label>
-                <select id="regionTypeSelect">
-                    <option value="">--Select Type--</option>
-                    <option value="political">Political</option>
-                    <option value="terrain">Terrain</option>
-                    <option value="climate">Climate</option>
-                    <option value="cultural">Cultural</option>
-                    <option value="other">Other</option>
-                </select>
+                <label for="regionTypeInput">Category (Type):</label>
+                <input type="text" id="regionTypeInput" placeholder="e.g., Political, Geographic">
+            </div>
+            <div class="control-row">
+                <label for="regionValueInput">Sub-Category (Value):</label>
+                <input type="text" id="regionValueInput" placeholder="e.g., Kingdom, Canyon">
             </div>
             <div class="control-row">
                 <label for="regionColor">Border Color:</label>
@@ -470,7 +467,8 @@
         const clearPointsBtn = document.getElementById('clearPointsBtn');
 
         const regionNameInput = document.getElementById('regionName');
-        const regionTypeSelect = document.getElementById('regionTypeSelect');
+        const regionTypeInput = document.getElementById('regionTypeInput');
+        const regionValueInput = document.getElementById('regionValueInput');
         const regionColorInput = document.getElementById('regionColor');
         const regionFillColorInput = document.getElementById('regionFillColor');
         const regionOpacityInput = document.getElementById('regionOpacity');
@@ -645,9 +643,11 @@
                 if (!items || !Array.isArray(items)) return;
                 items.forEach(item => {
                     if (item && typeof item === 'object') {
-                        if (item.imageUrl) {
+                        // A folder might not have an imageUrl itself, but its children might.
+                        if (item.imageUrl && item.id && item.name) {
                             foundMaps.push({ id: item.id, name: item.name });
                         }
+                        // Always recurse into children if they exist.
                         if (item.children && Array.isArray(item.children)) {
                            findMapsRecursive(item.children);
                         }
@@ -842,7 +842,7 @@
             mapElement.classList.toggle('disabled-map', editing && !isAddingVerticesToRegion && !isEditingVertices);
             if (!editing) {
                 if (!isCreatingRegion) {
-                    regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+                    regionNameInput.value = ''; regionTypeInput.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
                 }
                 startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
@@ -1170,15 +1170,19 @@
             const index = collectedRegions.findIndex(r => r.name === regionName);
             if (index === -1) { setRegionEditingState(false); return; }
             const region = collectedRegions[index];
-            regionNameInput.value = region.name; regionTypeSelect.value = region.type || "";
-            regionDescriptionInput.value = region.description || ""; regionWikiLinkInput.value = region.wikiLink || "";
-            regionColorInput.value = region.color || "#3388ff"; regionFillColorInput.value = region.fillColor || "#3388ff";
+            regionNameInput.value = region.name;
+            regionTypeInput.value = region.type || "";
+            regionValueInput.value = region.value || "";
+            regionDescriptionInput.value = region.description || "";
+            regionWikiLinkInput.value = region.wikiLink || "";
+            regionColorInput.value = region.color || "#3388ff";
+            regionFillColorInput.value = region.fillColor || "#3388ff";
             regionOpacityInput.value = region.fillOpacity || 0.2;
-            clearEditingVisuals(); editingVisualsLayerGroup = L.layerGroup().addTo(map);
+            clearEditingVisuals();
+            editingVisualsLayerGroup = L.layerGroup().addTo(map);
             editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity || 0.2, weight: 3, dashArray: "5, 5" });
             editingVisualsLayerGroup.addLayer(editingPolygonLayer);
             map.fitBounds(editingPolygonLayer.getBounds().pad(0.1));
-            // MODIFIED: Show other regions if the toggle is checked
             if (showAllRegionsWhileEditing) {
                 toggleOtherRegionsVisibility(true, index);
             }
@@ -1228,7 +1232,7 @@
         function saveRegionChanges() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || currentlyEditingRegionIndex >= collectedRegions.length) return;
             const originalRegion = collectedRegions[currentlyEditingRegionIndex];
-            const newName = regionNameInput.value.trim(), newType = regionTypeSelect.value;
+            const newName = regionNameInput.value.trim(), newType = regionTypeInput.value.trim(), newValue = regionValueInput.value.trim();
             const newDescription = regionDescriptionInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
             const newColor = regionColorInput.value, newFillColor = regionFillColorInput.value;
             const newOpacity = parseFloat(regionOpacityInput.value);
@@ -1237,7 +1241,10 @@
             if (newName !== originalRegion.name && collectedRegions.some((r, i) => i !== currentlyEditingRegionIndex && r.name === newName)) {
                 alert(`Another region named "${newName}" already exists.`); regionNameInput.focus(); return;
             }
-            originalRegion.name = newName; originalRegion.type = newType; originalRegion.description = newDescription;
+            originalRegion.name = newName;
+            originalRegion.type = newType;
+            originalRegion.value = newValue;
+            originalRegion.description = newDescription;
             originalRegion.wikiLink = newWikiLink; originalRegion.color = newColor; originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity; originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
             updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success'); setRegionEditingState(false);
@@ -1308,16 +1315,16 @@
 
         function finishRegionCreation() { 
             if (!isCreatingRegion || tempRegionVertices.length < 3) { alert("A region needs at least 3 vertices."); return; }
-            const regionName = regionNameInput.value.trim(), regionType = regionTypeSelect.value;
+            const regionName = regionNameInput.value.trim(), regionType = regionTypeInput.value.trim(), regionValue = regionValueInput.value.trim();
             const regionColor = regionColorInput.value, regionFillColor = regionFillColorInput.value;
             const regionOpacity = parseFloat(regionOpacityInput.value);
             const regionDescription = regionDescriptionInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
             if (!regionName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
             if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity (0.0-1.0)."); regionOpacityInput.focus(); return; }
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
-            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices] });
+            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices] });
             updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
-            regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            regionNameInput.value = ''; regionTypeInput.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
         }
         function cancelRegionCreation() { 
              if (!isCreatingRegion) return; setRegionCreationState(false); setStatus('Region creation cancelled.');
@@ -1733,10 +1740,24 @@
 
             mapToUpdate.regions = sortedRegions.map(r => ({
                 id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
-                description: r.description || "", type: r.type || "", color: r.color || "#3388ff",
+                description: r.description || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
                 fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
                 wikiLink: r.wikiLink || "", coordinates: r.coordinates || []
             }));
+
+            // --- NEW: Generate filterGroups ---
+            const filterGroups = { Regions: {} };
+            sortedRegions.forEach(region => {
+                if (region.type && region.value) {
+                    if (!filterGroups.Regions[region.type]) {
+                        filterGroups.Regions[region.type] = [];
+                    }
+                    if (!filterGroups.Regions[region.type].includes(region.value)) {
+                        filterGroups.Regions[region.type].push(region.value);
+                    }
+                }
+            });
+            mapToUpdate.filterGroups = filterGroups;
             
             mapToUpdate.roads = sortedLines.map(l => ({
                 id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
@@ -1949,7 +1970,6 @@
             regionColorInput.addEventListener('input', () => { const c = regionColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ color: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ color: c }); });
             regionFillColorInput.addEventListener('input', () => { const c = regionFillColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillColor: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillColor: c }); });
             regionOpacityInput.addEventListener('input', () => { const o = parseFloat(regionOpacityInput.value); if (!isNaN(o)) { if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillOpacity: o }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillOpacity: o }); }});
-            regionTypeSelect.addEventListener('change', (e) => { const t = e.target.value; if (regionTypeColors[t] && !isEditingRegion && !isCreatingRegion) { regionColorInput.value = regionTypeColors[t].color; regionFillColorInput.value = regionTypeColors[t].fillColor; }});
 
             // Line Event Listeners 
             startLineBtn.addEventListener('click', startLineCreation);
