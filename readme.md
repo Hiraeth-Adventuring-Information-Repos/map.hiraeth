@@ -1,69 +1,91 @@
 # Hiraeth Interactive World Map Viewer
 
+An interactive map viewer for the world of Hiraeth, built with Leaflet.js.
+
+**[Live Demo](http://maps.hiraeth.wiki)**
+
+![Hiraeth Map Viewer Screenshot](images/screenshot.png)
+
+## About The Project
+
 This project is an interactive map viewer designed to display custom world maps, specifically for the world of Hiraeth. It allows users to explore different regions, view points of interest (POIs), and interact with map features.
 
-## Description
+Built with vanilla JavaScript and Leaflet.js, this tool provides a dynamic way to navigate and visualize the various locations within the Hiraeth setting. It loads map configurations and points of interest from JSON data files, offering features like zooming, panning, marker popups, region overlays, filtering, and searching.
 
-Built using Leaflet.js, this tool provides a dynamic way to navigate and visualize the various locations within the Hiraeth setting. It loads map configurations and points of interest from JSON data files, offering features like zooming, panning, marker popups, region overlays, filtering, and searching. The project also includes an editing tool (`point-finder.html`) for managing map data.
+## Getting Started
+
+To get a local copy up and running, follow these simple steps.
+
+### Prerequisites
+
+You need a modern web browser and a local web server to run this project. Due to browser security restrictions (CORS) when fetching local JSON files, you cannot simply open `index.html` from the file system.
+
+### Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/your_username_/hiraeth-map-viewer.git
+   ```
+2. Start a local web server. For example, using Python:
+   ```sh
+   python -m http.server
+   ```
+   Or, if you have Node.js installed:
+   ```sh
+   npx http-server
+   ```
+3. Open your browser and navigate to `http://localhost:8000` (or the port your server is running on).
+
+## Project Architecture
+
+### Technology Stack
+
+*   **HTML5 & CSS3**: For the structure and styling of the web pages.
+*   **Vanilla JavaScript (ES6+)**: Powers the application logic, including data loading, UI interactions, and Leaflet.js integration.
+*   **[Leaflet.js](https://leafletjs.com/)**: A lightweight, open-source library for interactive maps. It was chosen for its simplicity, performance, and ease of use with custom map tiles and overlays.
+
+### Project Structure
+
+```
+.
+├── index.html          # Main map viewer application
+├── about.html          # About page providing context
+├── point-finder.html   # Tool for creating and editing map data
+├── maps/
+│   ├── maps.json       # Index file listing available maps and folders
+│   ├── [map_id].json   # Map data files (points, regions, etc.)
+│   └── [map_id].webp   # Map image files
+├── sounds/
+│   └── *.mp3           # Ambient sound files
+└── images/
+    └── *.png           # UI images and screenshots
+```
+
+### Data Format
+
+The map data is stored in JSON files within the `maps/` directory.
+
+*   **`maps/maps.json`**: This file acts as an index of all available maps and how they are organized in the sidebar. It contains an array of map and folder objects.
+*   **`<map_id>.json`**: Each map has its own JSON file containing its metadata:
+    *   `id`, `name`, `width`, `height`, `imageUrl`
+    *   `scalePixels`, `scaleKilometers`: For the measurement tool.
+    *   `blurb`: A short HTML description displayed on the map.
+    *   `pointsOfInterest`: An array of POI objects (`coords`, `name`, `type`, `description`, `wikiLink`).
+    *   `regions`: An array of region objects (`id`, `name`, `description`, `type`, `color`, `fillColor`, `fillOpacity`, `wikiLink`, `coordinates`).
 
 ## Features
 
-* **Interactive Map Display:** Uses Leaflet.js to display map tiles with smooth zooming and panning.
-* **Dynamic Data Loading:** Loads map configurations (`maps.json`) and detailed map data (individual map JSON files like `icebeach.json`, `Fair-Content.json`) dynamically.
-* **Sidebar Navigation:** A collapsible sidebar lists available maps, organized into folders, including indicators for maps that are "coming soon".
-* **Points of Interest (POIs):** Displays markers for POIs defined in the map data, with popups showing details (name, type, description, wiki link).
-* **Region Overlays:** Displays configurable colored polygon regions on the map with popups for details.
-* **Marker & Region Toggling:** Allows users to show or hide markers and regions globally.
-* **Filtering:** A filter panel allows users to toggle the visibility of POIs by type group and regions by type.
-* **Search Functionality:** Users can search for POIs by name, with results displayed dynamically.
-* **Dark Mode:** Includes a theme toggle for switching between light and dark modes, saved using localStorage.
-* **Measurement Tool:** Allows users to measure distances on the map in pixels and configured units (e.g., kilometers).
-* **Ambient Sound:** Plays different ambient background sounds depending on the selected theme (light/dark), with a mute toggle.
-* **Embeddable View:** Supports URL parameters (`?embed=true` or `?hideUI=true`) to hide UI elements for embedding.
-* **Map Blurb:** Displays a short description or note for the currently loaded map.
-* **Map Data Editor:** A separate tool (`point-finder.html`) for creating and editing map points and regions, and exporting the data as JSON.
-* **About Page:** A simple page providing context about the Hiraeth world and the map project.
+*   **Interactive Map Display**: Smooth zooming and panning with Leaflet.js.
+*   **Dynamic Data Loading**: Maps and POIs are loaded from JSON files.
+*   **Sidebar Navigation**: Collapsible sidebar with a list of available maps.
+*   **Markers & Regions**: Toggleable markers for POIs and colored polygon regions.
+*   **Filtering & Search**: Filter POIs and regions by type, and search for POIs by name.
+*   **Dark Mode**: Switch between light and dark themes.
+*   **Measurement Tool**: Measure distances on the map.
+*   **Ambient Sounds**: Background sounds that change with the theme.
+*   **Embeddable View**: UI can be hidden for embedding in other websites.
+*   **Map Data Editor**: A separate tool (`point-finder.html`) for creating and editing map data.
 
-## Technology Stack
+## License
 
-* HTML5
-* CSS3
-* JavaScript (ES6+)
-* [Leaflet.js](https://leafletjs.com/) (Interactive Map Library)
-
-## Project Structure
-
-```
-maps.hiraeth.wiki/
-├── index.html          # Main map viewer application
-├── about.html          # About page providing context
-├── point-finder.html   # Tool for editing map data
-├── maps/
-│   ├── maps.json       # Index file listing available maps and folders
-│   ├── icebeach.json   # Example map data file
-│   ├── Fair-Content.json # Example map data file
-│   └── *.webp          # Map image files (referenced in JSON)
-├── sounds/
-│   ├── *.mp3           # Ambient sound files
-└── *.png               # Favicons and touch icons
-```
-
-## How to Use/Run
-
-1.  Clone the repository.
-2.  Open the `index.html` file in a modern web browser.
-3.  **Note:** Due to browser security restrictions (CORS) when fetching local JSON files (`Workspace` API), you might need to run this project from a local web server. Many simple options exist (e.g., Python's `http.server`, Node.js `http-server`, VS Code Live Server extension).
-
-## Data Format
-
-* **`maps/maps.json`**: An array of map/folder objects. Folders contain a `children` array listing IDs of child maps/folders. Maps have `id`, `name`, `width`, `height`, `imageUrl`, etc..
-* **Individual Map JSON (`maps/<map_id>.json`)**: Contains metadata for a specific map:
-    * `id`, `name`, `width`, `height`, `imageUrl`
-    * `scalePixels`, `scaleKilometers`: For the measurement tool
-    * `blurb`: Short HTML description displayed on the map
-    * `pointsOfInterest`: Array of POI objects (`coords`, `name`, `type`, `description`, `wikiLink`)
-    * `regions`: Array of region objects (`id`, `name`, `description`, `type`, `color`, `fillColor`, `fillOpacity`, `wikiLink`, `coordinates` array)
-
-## Author/Credits
-
-* Created by Jax SN Johnson for the world of Hiraeth.
+Distributed under the MIT License. See `LICENSE` for more information.
