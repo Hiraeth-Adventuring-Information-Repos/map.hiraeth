@@ -51,6 +51,9 @@
         "fillColor": "#7393B3",
         "fillOpacity": 0.1,
         "wikiLink": "",
+        "properties": {
+          "Climate": "Temperate, subterranean"
+        },
         "coordinates": [
           [
             3040,
@@ -4583,7 +4586,10 @@
         "name": "Castgate",
         "type": "City",
         "description": "Encased within a dome that holds the winter at bay, Castgate's picturesque beauty was earned through legendary battles against a goddess and an undead horde. Today, its bustling streets shine as a beacon of defiant prosperity, a testament to the heroes of Sub Rosa who fought to give the city a future.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {
+          "Population": "15,000"
+        }
       },
       {
         "coords": [
@@ -4706,6 +4712,9 @@
         "dashArray": "",
         "description": "",
         "wikiLink": "",
+        "properties": {
+          "Constructed": "Naturally Occurring"
+        },
         "coordinates": [
           [
             4060,
