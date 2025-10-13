@@ -383,23 +383,6 @@
         .popup-read-more:hover {
             text-decoration: underline;
         }
-        /* Gradient fade-out effect for non-expanded popups */
-        .popup-content-container:not(.expanded)::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 30px;
-            background: linear-gradient(to bottom, transparent, var(--glass-bg-light));
-            pointer-events: none;
-            z-index: 1;
-        }
-        body.dark-theme .popup-content-container:not(.expanded)::after {
-            background: linear-gradient(to bottom, transparent, var(--glass-bg-dark));
-        }
-
-
         /* --- Popup Link Styling --- */
         .leaflet-popup-content h3 a,
         .leaflet-popup-content h3 a:link,
