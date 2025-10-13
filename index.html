@@ -348,7 +348,19 @@
         }
 
         /* Popups */
-        .leaflet-popup-content-wrapper { background: var(--glass-bg-light); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--popup-text); border-radius: 8px; box-shadow: 0 3px 14px var(--shadow-color); border: 1px solid var(--glass-border-light); }
+        .leaflet-popup-content-wrapper {
+            background: var(--glass-bg-light);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: var(--popup-text);
+            border-radius: 8px;
+            box-shadow: 0 3px 14px var(--shadow-color);
+            border: 1px solid var(--glass-border-light);
+            transition: width 0.4s ease-in-out; /* Add transition for width */
+        }
+        .leaflet-popup-content-wrapper.popup-wide {
+            width: 400px !important; /* Use !important to override Leaflet's inline styles */
+        }
         .leaflet-popup-tip { background: transparent; box-shadow: none; }
         body.dark-theme .leaflet-popup-content-wrapper { background: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
         .leaflet-popup-content { margin: 15px; font-size: 1.1rem; line-height: 1.5; }
@@ -2291,13 +2303,16 @@
         // --- NEW: Expand/Collapse Popup Logic ---
         function togglePopupExpand(button) {
             const container = button.previousElementSibling;
+            const wrapper = button.closest('.leaflet-popup-content-wrapper');
             const isExpanded = container.classList.contains('expanded');
 
             if (isExpanded) {
                 container.classList.remove('expanded');
+                if (wrapper) wrapper.classList.remove('popup-wide');
                 button.textContent = 'Read More';
             } else {
                 container.classList.add('expanded');
+                if (wrapper) wrapper.classList.add('popup-wide');
                 button.textContent = 'Read Less';
             }
         }
