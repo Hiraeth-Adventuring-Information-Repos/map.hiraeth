@@ -358,6 +358,48 @@
         .dark-theme .leaflet-popup-close-button { color: var(--text-secondary); }
         .dark-theme .leaflet-popup-close-button:hover { color: var(--text-primary); }
 
+        /* --- NEW: Popup Content Limiting --- */
+        .popup-content-container {
+            max-height: 150px; /* Initial max height */
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.4s ease-in-out;
+        }
+        .popup-content-container.expanded {
+            max-height: 500px; /* Height when expanded */
+            overflow-y: auto; /* Add scrollbar if content overflows */
+        }
+        .popup-read-more {
+            text-align: center;
+            padding-top: 5px;
+            margin-top: -5px; /* Overlap the fade */
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: bold;
+        }
+        .popup-read-more:hover {
+            text-decoration: underline;
+        }
+        /* Gradient fade-out effect for non-expanded popups */
+        .popup-content-container:not(.expanded)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, transparent, var(--glass-bg-light));
+            pointer-events: none;
+            z-index: 1;
+        }
+        body.dark-theme .popup-content-container:not(.expanded)::after {
+            background: linear-gradient(to bottom, transparent, var(--glass-bg-dark));
+        }
+
+
         /* --- Popup Link Styling --- */
         .leaflet-popup-content h3 a,
         .leaflet-popup-content h3 a:link,
@@ -1052,6 +1094,48 @@
             return html;
         }
 
+        // --- NEW: Unified Popup Content Generator ---
+        function createPopupContent(data) {
+            let innerHtml = '';
+
+            // Title/Link
+            if (data.name) {
+                if (data.wikiLink) {
+                    innerHtml += `<h3><a href="${data.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${data.name}">${data.name}</a></h3>`;
+                } else {
+                    innerHtml += `<h3>${data.name}</h3>`;
+                }
+            }
+
+            // Type/Value - handles points, regions, and roads
+            if (data.type && data.value) { // Regions specifically
+                innerHtml += `<p><em>${data.type}: ${data.value}</em></p>`;
+            } else if (data.type) {
+                // For POIs, type is already good. For roads, it might need capitalization.
+                const typeString = data.type.charAt(0).toUpperCase() + data.type.slice(1);
+                innerHtml += `<p><em>Type: ${typeString}</em></p>`;
+            }
+
+            // Properties
+            innerHtml += formatPropertiesForPopup(data.properties, !!data.description);
+
+            // Description
+            if (data.description) {
+                innerHtml += `<p>${data.description}</p>`;
+            }
+
+            // The new wrapper structure
+            if (innerHtml.trim() === '') return '';
+
+            // Note: The onclick handler will be implemented in the next step.
+            return `
+                <div class="popup-content-container">
+                    ${innerHtml}
+                </div>
+                <div class="popup-read-more" onclick="togglePopupExpand(this)">Read More</div>
+            `;
+        }
+
         // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
         const typeToGroupMap = {};
         for (const groupName in poiTypeGroups) {
@@ -1701,16 +1785,10 @@
                              // The ReferenceError for 'marker' is unusual here unless L.marker itself has an issue.
                              if (marker) {
                                  marker.poiData = point; //
-                                 let popupContent = '';
-                                 if (point.wikiLink) { //
-                                     popupContent += `<h3><a href="${point.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${point.name}">${point.name}</a></h3>`; //
-                                 } else {
-                                     popupContent += `<h3>${point.name}</h3>`; //
-                                 }
-                                 popupContent += `<p><em>Type: ${point.type || 'Unknown'}</em></p>`; //
-                                 popupContent += formatPropertiesForPopup(point.properties, !!point.description);
-                                 popupContent += `<p>${point.description || ''}</p>`; //
-                                 marker.bindPopup(popupContent); //
+                                 const popupContent = createPopupContent(point);
+                                 marker.bindPopup(popupContent, {
+                                     minWidth: 250 // Set a min-width for consistency
+                                 });
                                  allMapMarkers.push(marker); //
                              } else {
                                  // This case is unlikely if L.marker is standard Leaflet, but good for robustness
@@ -1883,7 +1961,9 @@
                 if (region.description) {
                     popupContent += `<p>${region.description}</p>`;
                 }
-                polygon.bindPopup(popupContent);
+                polygon.bindPopup(createPopupContent(region), {
+                    minWidth: 250 // Set a min-width for consistency
+                });
 
                 polygon.regionData = region; // Store data for filtering
                 currentRegionGroup.addLayer(polygon);
@@ -2125,7 +2205,9 @@
                 }
 
                 if (popupContent.trim() !== "") {
-                    polyline.bindPopup(popupContent);
+                    polyline.bindPopup(createPopupContent(road), {
+                        minWidth: 250 // Set a min-width for consistency
+                    });
                 }
 
                 // Store road data with the layer if needed for future interactions
@@ -2217,6 +2299,20 @@
         // Apply initial theme from storage
         const savedTheme = localStorage.getItem('theme') || 'light';
         applyTheme(savedTheme);
+
+        // --- NEW: Expand/Collapse Popup Logic ---
+        function togglePopupExpand(button) {
+            const container = button.previousElementSibling;
+            const isExpanded = container.classList.contains('expanded');
+
+            if (isExpanded) {
+                container.classList.remove('expanded');
+                button.textContent = 'Read More';
+            } else {
+                container.classList.add('expanded');
+                button.textContent = 'Read Less';
+            }
+        }
 
         // --- Map Click Handler ---
         map.on('click', function(e) {
