@@ -6,7 +6,6 @@
     "width": 8192,
     "height": 6144,
     "scalePixels": 1,
-    "scaleKilometers": 1.3,
     "imageUrl": "maps/Fair-Content.webp",
     "filterGroups": {
       "Regions": {
@@ -25,12 +24,13 @@
           "Divine Sanctuary",
           "Dynasty",
           "Monastic Society",
+          "Wasteland",
           "Military Zone",
+          "Duchy",
           "Territory",
           "Krai",
           "Subjugated Territory",
-          "Vassal State",
-          "Duchy"
+          "Vassal State"
         ],
         "Geographic": [
           "Ashen Lands",
@@ -44,6 +44,7 @@
       {
         "id": "region-iron-mountain-dwarves",
         "name": "Aethelumbra",
+        "pronunciation": "",
         "description": "The ancient Aethelumbra, know as the home of the Iron Mountain Dwarves, have carved their kingdom into vast, honeycomb cities within the mountains, a realm governed by a monarch and a unique two-house parliament of commoners and guild masters. Their industrious society is deeply private, shaped by bitter experience with outsiders. They hold a weary suspicion of the elves since an incident involving a destroyed caffeine-fungus, but this pales before their outright hatred for the Athenaeum, who once turned the dwarven lands into a battleground for a human war the dwarves neither wanted nor cared for.",
         "type": "Political",
         "value": "Kingdom",
@@ -51,9 +52,6 @@
         "fillColor": "#7393B3",
         "fillOpacity": 0.1,
         "wikiLink": "",
-        "properties": {
-          "Climate": "Temperate, subterranean"
-        },
         "coordinates": [
           [
             3040,
@@ -107,11 +105,15 @@
             2986,
             4224
           ]
-        ]
+        ],
+        "properties": {
+          "Climate": "Temperate, subterranean"
+        }
       },
       {
         "id": "region-albynor",
         "name": "Albynor",
+        "pronunciation": "",
         "description": "Albynor is a realm ruled by clans, a people as stern and unyielding as the mountains and hills they inhabit. They are masters of stone and steel, their honor bound by oaths as old as the Highlands themselves.",
         "type": "Political",
         "value": "Clan-based",
@@ -220,11 +222,13 @@
             4031,
             1257
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-arfordir",
         "name": "Arfordir",
+        "pronunciation": "",
         "description": "Famed for its fertile valleys and fragrant lavender fields, this kingdom is breathing a collective sigh of relief. It has only recently cast down a usurper to welcome its rightful Queen Eloise I, and a sense of hard-won peace now settles over the land.",
         "type": "Political",
         "value": "Monarchy",
@@ -421,11 +425,13 @@
             2070,
             518
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-athenaeum",
         "name": "Athenaeum",
+        "pronunciation": "",
         "description": "Born from the hubris of post-war treaties, this league of city-states is ruled from the sacred lake where the God of Magic died. A tense quiet now hangs over its marble halls after a shadowy cataclysm nearly tore the capital apart, leaving the nation's fate in the hands of a single, powerful archivist.",
         "type": "Political",
         "value": "League",
@@ -550,11 +556,13 @@
             2584,
             4600
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-bec",
         "name": "Bec",
+        "pronunciation": "",
         "description": "Bec is the glittering, autocratic heart of the ascendant Beccin Empire, a vast land stretching from the sun-drenched rice paddies of its southern provinces to the frigid, windswept mountains of the north. Its society is one of stark contrasts, where the unimaginable opulence of the nobility's gilded palaces is built upon the endless toil of the peasantry. Fueled by relentless expansion and the flow of tribute from its satellite states, the empire's wealth and power grow with each passing year.",
         "type": "Political",
         "value": "Empire",
@@ -643,11 +651,13 @@
             4420,
             6460
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-blū",
         "name": "Blū",
+        "pronunciation": "",
         "description": "A nation of humming factory-cities and alchemical ingenuity, where every citizen is a vital cog in a grand, well-oiled machine. Generations of gnomish innovation have forged a society of relentless progress and unparalleled collective welfare, making the state itself their greatest invention.",
         "type": "Political",
         "value": "Gnomish Technocracy",
@@ -832,11 +842,13 @@
             2509,
             1213
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-bugon-kingdom",
         "name": "Bugon Kingdom",
+        "pronunciation": "",
         "description": "Often Called \"Bugdom\" for the fact when people first found the people of this island they were dealing with a bad case of sea spiders.",
         "type": "Political",
         "value": "Kingdom",
@@ -869,11 +881,13 @@
             612,
             5504
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-confederacy-of-half-hieghts",
         "name": "Confederacy of Half Hieghts",
+        "pronunciation": "",
         "description": "",
         "type": "Political",
         "value": "Confederacy",
@@ -970,11 +984,13 @@
             1435,
             1309
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-cursed-oldlin",
         "name": "Cursed Oldlin",
+        "pronunciation": "",
         "description": "This land was once a sun-kissed jewel, a vibrant valley whose people knew only bountiful harvests and bright horizons. That was before the arrival of him, Strahd. He took the valley first by the niceness think himself freed from damnation, then the cycle started a new and his dark pact poisoned the very soil, bleeding the life and color from the world. Now the land is a twisted reflection of its master's tormented soul: the sun is a stranger, the forests have grown teeth, and the entire valley is caged in a ghostly mist—a monument not to a kingdom, but to one man's tragic and eternal damnation.",
         "type": "Political",
         "value": "Cursed Land",
@@ -1031,11 +1047,13 @@
             4405,
             2901
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-farnear",
         "name": "Farnear",
+        "pronunciation": "",
         "description": "While the farming communities of the great river basin are as old as any on the continent, the nation of Farnear is a recent invention. For generations, this fertile breadbasket was a disconnected patchwork of independent nations. This changed when the pragmatic gnomes of Blū, seeking a more efficient and stable trading partner, brokered a grand unification - this caused a short and violent civil war. By offering infrastructure investments and access to advanced technology, they helped organize them into a cohesive republic. The name 'Farnear' was chosen by the new council to signify their new reality: no longer a 'far'-flung collection of nations, but a single, 'near' neighbor, united in prosperity.",
         "type": "Political",
         "value": "Republic",
@@ -1328,11 +1346,13 @@
             2664,
             1455
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-ferendel",
         "name": "Ferendel",
+        "pronunciation": "",
         "description": "Nestled within a dramatic fjord, this kingdom was for a generation shrouded in a mysterious, self-imposed isolation. Today, its bustling port has reopened to the world, yet the nation retains an atmosphere of guarded secrets and quiet resilience.",
         "type": "Political",
         "value": "Kingdom",
@@ -1421,11 +1441,13 @@
             4518,
             2070
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-goldwind",
         "name": "Goldwind",
+        "pronunciation": "",
         "description": "In this sun-scorched expanse, where glittering sands whisper tales of easily won fortunes and powerful dust devils carve canyons, a rough-and-tumble society thrives. Here, beneath the vast, unforgiving sky, disputes are settled with a blend of frontier justice and arcane arts.",
         "type": "Political",
         "value": "Frontier",
@@ -1482,11 +1504,13 @@
             3068,
             6425
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-harold-ford",
         "name": "Harold Ford",
+        "pronunciation": "",
         "description": "An ancient kingdom forged from the union of proud and culturally distinct peoples, its rolling green hills and rugged highlands are often shrouded in mist. From the sprawling, historic capital that shares the nation's name, a single crown now governs the formerly warring lands, navigating a delicate peace built on a shared, yet often contested, history.",
         "type": "Political",
         "value": "Kingdom",
@@ -1559,11 +1583,13 @@
             3978,
             1240
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-icebeach",
         "name": "Icebeach",
+        "pronunciation": "",
         "description": "This brutal, frozen frontier is a land of hardy survivors and terrifying beasts, where scattered settlements cling to life like flickering candles against an oppressive and isolating terrain. Legends of a lich's forgotten fortress and secrets buried within the great glacier's sunless heart lend a palpable sense of terror to the landscape.",
         "type": "Political",
         "value": "Frontier",
@@ -1908,11 +1934,13 @@
             4612,
             2150
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "island-iron-bash",
         "name": "Iron Bash",
+        "pronunciation": "",
         "description": "Life on the islands of the Iron Bash is tethered to the tides of the immortal Empress Mael Muire. Her people enjoy a profound security; the Empress's will is the sea itself, forming a protective wall of storms and treacherous currents that no foreign navy dares to cross. She is their guardian and their sustainer, calming the waters for their fishing fleets and trade. Yet, the sea is also their greatest fear. Her sanity is a fickle ocean, and a sudden, deep swell of madness can turn a minor offense into a capital crime. This unleashes the terrifying wrath that gives the nation its name: the 'Bash' is the sound of a tidal wave of her own making, crashing against the cliffs with the force of hammered iron. The people of the Iron Bash offer their Empress both genuine gratitude and cautious obedience, forever reading the moods of the ocean for a sign of the storm within their queen.",
         "type": "Political",
         "value": "Empire",
@@ -1989,11 +2017,13 @@
             1054,
             2006
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-raided-lands-of-the-mounted-ones",
         "name": "Kargotha",
+        "pronunciation": "",
         "description": "The full name is the Kargotha - The Ormakth Hegemony of the Kaliean Reach.  This land is not a nation but an area under the control of a warlord raiding party of goliaths.  They are a bunch of clans all ran by members of the Ormakth, said to be a line similar to the one that Beckarak forged.",
         "type": "Political",
         "value": "Hegemony",
@@ -2050,11 +2080,13 @@
             4220,
             3734
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-oldlin",
         "name": "Oldlin",
+        "pronunciation": "olden",
         "description": "Oldlin is less a nation and more a divine sanctuary, a swath of tranquil farmland held sacred by the god Pythia. It is a sparsely populated land of rolling hills and unnaturally bountiful fields, forbidden to outsiders by divine decree. The borders are not guarded by soldiers, but by a palpable aura of judgment, and tales of those who trespassed and vanished are told as warnings in the neighboring realms. Only those who have received 'permission'—a blessing said to be granted through cryptic visions to the worthy or the truly desperate—may enter its serene landscape without incurring the god's wrath.",
         "type": "Political",
         "value": "Divine Sanctuary",
@@ -2207,11 +2239,13 @@
             3987,
             2373
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-peris-dynasty",
         "name": "Peris Dynasty",
+        "pronunciation": "",
         "description": "",
         "type": "Political",
         "value": "Dynasty",
@@ -2244,11 +2278,13 @@
             702,
             5166
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-pyralis",
         "name": "Pyralis",
+        "pronunciation": "",
         "description": "Sequestered from the world, Pyralis is a monastic society dedicated to a single purpose: watching the heavens. Warmed by the celestial fragment they call the Firesoul, the scholar-monks of Pyralis spend their lives charting cosmic movements and guarding the secrets of their orders. They are a reclusive people, rarely venturing out, but their eerily accurate prophecies—cautiously traded for rare books and knowledge—grant them a quiet influence that belies their profound isolation.",
         "type": "Political",
         "value": "Monastic Society",
@@ -2281,11 +2317,13 @@
             3284,
             7653
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-roswin",
         "name": "RosWin",
+        "pronunciation": "",
         "description": "While newer nations practice agriculture on an industrial scale, the ancient kingdom of RosWin is the continent's traditional, gourmet heartland. Its name is believed to be a corruption of an old phrase for 'Red Wine,' hinting at the rolling, sun-drenched hills of vineyards that define its landscape. Here, heritage and quality are valued over mere quantity; power lies not in armies, but in the unique terroir of the soil and the prestige of a family's ancient vintage. Governed by noble houses whose passionate rivalries over their harvests are legendary, RosWin has long survived as a political crossroads, a neutral ground where treaties are often sealed over a bottle of its finest wine.",
         "type": "Political",
         "value": "Kingdom",
@@ -2554,11 +2592,13 @@
             3386,
             1366
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-seaslinate-dynasty",
         "name": "Seaslinate Dynasty",
+        "pronunciation": "",
         "description": "",
         "type": "Political",
         "value": "Dynasty",
@@ -2619,11 +2659,13 @@
             900,
             4372
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-Tewhal",
         "name": "Tewhal",
+        "pronunciation": "",
         "description": "A land that was under the control of the gnomes and wizards of the Athenaeum for manufacturing of the flying islands and other machines of war.  It is sparcerly populated now and the land is stained with the remnates of machines of war.  Some ranching farms and towns are up in the high, dry, and desolet dessert.",
         "type": "Political",
         "value": "Wasteland",
@@ -2764,11 +2806,13 @@
             2812,
             2843
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-ashen-lands---egna",
         "name": "The Ashen Lands - Egna",
+        "pronunciation": "",
         "description": "",
         "type": "Geographic",
         "value": "Ashen Lands",
@@ -2809,11 +2853,13 @@
             5456,
             6440
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-bulwark-command",
         "name": "The Bulwark Command",
+        "pronunciation": "",
         "description": "Officially, The Bulwark Command is a fortified military zone protecting the Beccin Empire's frontier. In truth, it is the empire's most brutal and profitable resource-extraction colony. The landscape is not one of natural beauty, but of colossal quarries and smoke-belching refineries that scar the earth. Under the watchful eyes of imperial legions, a populace of convicts, debtors, and conscripts toils to strip the land of its rare minerals. The entire operation is the personal fiefdom of the Emperor's apprentice Legate Crassus, a notoriously avaricious governor who measures the value of a mountain in ore and the value of a person in the labor they can provide to the imperial coffers.",
         "type": "Political",
         "value": "Military Zone",
@@ -2870,11 +2916,13 @@
             3694,
             5762
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-grate-basin",
         "name": "The Grate Basin",
+        "pronunciation": "",
         "description": "Breathtaking and expansive, the deep canyon the stape of the desert. This canyon system vast and dangious, lots of hidden side passages and and uncharted areas.  Only the bravest prospectors or adventures would venture into its sun-scorched depths.",
         "type": "Geographic",
         "value": "Canyon",
@@ -2995,11 +3043,13 @@
             2876,
             6660
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-iron-duchy-of-vardenheim",
         "name": "The Iron Duchy of Vardenheim",
+        "pronunciation": "",
         "description": "To the outside world, the Iron Duchy of Vardenheim is a loyal Beccin vassal state, a windswept land of hardy folk on the imperial frontier, dutifully providing iron and soldiers. This official narrative is a carefully crafted lie. In truth, Vardenheim is the Empire's clandestine operations hub for the entire region. From its grim citadels, the Duke orchestrates a vast network of spies, while its remote location makes it the perfect site for the Empire's most secret and forbidden magical research. It is a paranoid land of watchful eyes, where the wind across the steppes carries whispers of the dark work being done for the glory of the empire.",
         "type": "Political",
         "value": "Duchy",
@@ -3052,11 +3102,13 @@
             3140,
             4164
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-kamensky-coast",
         "name": "The Kamensky Coast",
+        "pronunciation": "",
         "description": "A stark, coastal land wind-carved rock and thin, stubborn soil. Known for its rich marble quarries and strategic ports, the land is sparsely populated. It is a rugged, resource-focused territory, defined more by its harsh geography than by its people.",
         "type": "Political",
         "value": "Territory",
@@ -3109,11 +3161,13 @@
             2696,
             7496
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-aurora-dwarves",
         "name": "The Kingdom of the Auroran Dwarves",
+        "pronunciation": "",
         "description": "This dwarf kingdom is very isolationist, not outright xenophobic but prides themselves in being independet and not involved in geopolitcs.",
         "type": "Political",
         "value": "Kingdom",
@@ -3194,11 +3248,13 @@
             3568,
             3920
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-krasnogory-krai",
         "name": "The Krasnogory Krai",
+        "pronunciation": "",
         "description": "Governed by a volatile council of jealous Boyars and grizzled Atamans, the people of the Krai are defined by stoykost', a grim fortitude that allows them to endure the unforgiving land and their own leaders' endless feuds. This fragile unity is forged in a shared reverence for the sacred, warmth-giving Solntsekamen they carve from the heart of their mountains, a resource that is both the source of their wealth and the cause of their eternal conflict.",
         "type": "Political",
         "value": "Krai",
@@ -3235,11 +3291,13 @@
             2344,
             6922
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-last-elven-state",
         "name": "The Last Elven State",
+        "pronunciation": "",
         "description": "As the oldest continuous government on the continent, this ancient and verdant elven democratic republic is a land of deep history and living memory. Though it thrives, its splendor is shadowed by its status as a satellite state, a beautiful but captive jewel in the Beccin Empire's imperial crown.",
         "type": "Political",
         "value": "Republic",
@@ -3400,11 +3458,13 @@
             1722,
             3190
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-rimewaste",
         "name": "The Rimewaste",
+        "pronunciation": "",
         "description": "The Rimewastes are less a nation and more a vast, primal expanse of unending ice and wind-scoured rock where civilization holds no sway. Here, nomadic tribes of humans and goliaths follow the migratory paths of colossal megafauna, living not by the laws of kings but by ancient pacts. Survival is the only creed in this land that does not bow to any empire, and the scattered campfires of its people are but fleeting sparks of warmth against a truly unforgiving lands.",
         "type": "Geographic",
         "value": "Wasteland",
@@ -3573,11 +3633,13 @@
             4873,
             3783
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-sea-of-silver-tears",
         "name": "The Sea of Silver Tears",
+        "pronunciation": "",
         "description": "",
         "type": "Geographic",
         "value": "Sea",
@@ -3706,11 +3768,13 @@
             1830,
             3110
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-the-southern-state-of-fair",
         "name": "The Southern State of Fair",
+        "pronunciation": "",
         "description": "Sprawling across the continent's heartland, this vast republic stands as a monument to unity and a crossroads for all peoples. Once a collection of disparate territories, it is now the humming epicenter of culture and governance, where the continent's future is forged in the grand theater of its politics.",
         "type": "Political",
         "value": "Republic",
@@ -4339,11 +4403,13 @@
             2818,
             2812
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-The-Sundered-March",
         "name": "The Sundered March",
+        "pronunciation": "",
         "description": "A volatile, magically-scarred DMZ created by a cataclysmic event at the end of the last great war between the Athenaeum and the Beccin Empire. This wasteland is saturated with raw, unstable arcane energy that makes spellcasting wildly unpredictable and dangerous. The entire region is crisscrossed by immense, permanent wards—lingering echoes of the conflict—that are powerful enough to disintegrate armies, effectively creating an impassable buffer zone. Watched warily by its neighbors, the March serves as a grim and effective deterrent against any large-scale invasion.",
         "type": "Geographic",
         "value": "Wasteland",
@@ -4408,11 +4474,13 @@
             2545,
             6078
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-The-Volgrad-March",
         "name": "The Volgrad March",
+        "pronunciation": "",
         "description": "A subjugated territory of the Beccin Empire, once home to proud, nomadic horse-clans. Conquered a generation ago to secure a strategic land route for the Empire, the Volg people have been forced from their traditional lifestyle into agricultural servitude. Though imperial fortresses now scar the windswept plains, the occupation is met with simmering resentment and frequent guerilla raids by rebels known as 'land-partisans.' The spirit of the Volg remains unbroken as they fight to reclaim the freedom symbolized by the wild dragons of the nearby Gorá-Sirotá mountain.",
         "type": "Political",
         "value": "Subjugated Territory",
@@ -4473,11 +4541,13 @@
             2954,
             7218
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-toppicaea-dynasty",
         "name": "Toppicaea Dynasty",
+        "pronunciation": "",
         "description": "",
         "type": "Political",
         "value": "Dynasty",
@@ -4506,11 +4576,13 @@
             910,
             4570
           ]
-        ]
+        ],
+        "properties": {}
       },
       {
         "id": "region-zafra",
         "name": "Zafra",
+        "pronunciation": "",
         "description": "Known as the Scorched Jewel of the Beccin Empire, the coastal nation of Zafra is a land of simmering resentment. Once a proud maritime kingdom whose fleets ruled the eastern seas, its skilled sailors now serve imperial masters. Beneath the veneer of imperial order, however, the old ways persist in port towns and hidden coves, where smugglers plot and the spirit of piracy waits for the tide to turn against their conquerors.",
         "type": "Political",
         "value": "Vassal State",
@@ -4567,7 +4639,8 @@
             3072,
             7181
           ]
-        ]
+        ],
+        "properties": {}
       }
     ],
     "blurb": "From the gold-laced dust of its western canyons to the haunted glaciers of the far north, Fair is a land of adventure and antiquity. Chart a course through newly-opened fjord kingdoms, navigate the politics of ancient empires, and unearth the secrets of a world shaped by heroes and forgotten evils.",
@@ -4584,6 +4657,7 @@
           3017
         ],
         "name": "Castgate",
+        "pronunciation": "",
         "type": "City",
         "description": "Encased within a dome that holds the winter at bay, Castgate's picturesque beauty was earned through legendary battles against a goddess and an undead horde. Today, its bustling streets shine as a beacon of defiant prosperity, a testament to the heroes of Sub Rosa who fought to give the city a future.",
         "wikiLink": "",
@@ -4597,9 +4671,11 @@
           4943
         ],
         "name": "Delphi",
+        "pronunciation": "",
         "type": "City",
         "description": "The marble metropolis of Delphi, a jewel on the shore of a sacred lake, is still reeling from the 'Slip'—a magical cataclysm that recently tore through its heart. Now, the air is thick not only with the dust of reconstruction, but with the renewed, ruthless ambitions of its magical elite.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4607,9 +4683,11 @@
           1626
         ],
         "name": "Fook & Took",
+        "pronunciation": "",
         "type": "City",
         "description": "The twin city that is a city-state of its own.  The cities recently split.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4617,9 +4695,11 @@
           6357
         ],
         "name": "Gorá-Sirotá",
+        "pronunciation": "",
         "type": "Mountain",
         "description": "Gorá-Sirotá, the Orphan Mountain, rises in stark isolation from the plains, a peak where dragons are often seen locked in vicious combat. Common legend holds that they fight over the lost treasure of a dwarven kingdom that was long ago driven from the mountain. The other ledgeons are more primal: the mountain is an ancient and sacred draconic graveyard. The dwarves were not destroyed for their gold, but for the sacrilege of disturbing the hallowed bones within. The dragons of today continue their war not just for treasure, but for the instinctual right to claim the mountain as their final roost.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4627,9 +4707,11 @@
           1241
         ],
         "name": "Harold-Ford",
+        "pronunciation": "",
         "type": "City",
         "description": "The sprawling capital of Harold-Ford, which once united warring peoples, stands shrouded in both river mist and a fanatical devotion to its grand temples. While the crown maintains a delicate peace over its contested history, the city's avenues are rife with tension fueled by a cold war with a rival empire.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4637,9 +4719,11 @@
           5615
         ],
         "name": "Katia",
+        "pronunciation": "",
         "type": "Town",
         "description": "Once a serene elven town nestled in an ancient forest at a river's mouth, Katia is now a stark symbol of imperial occupation. The old woods have been clear-cut for Beccin military operations, leaving the town simmering with quiet resentment under the watch of its unwelcome garrisons.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4647,9 +4731,11 @@
           3149
         ],
         "name": "Morana's Fang",
+        "pronunciation": "",
         "type": "Mountain",
         "description": "This jagged peak is the tallest point in the world.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4657,9 +4743,11 @@
           4891
         ],
         "name": "Mt. Primo",
+        "pronunciation": "",
         "type": "Mountain",
         "description": "The seat of magical power and the death place of Arcana.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4667,9 +4755,11 @@
           661
         ],
         "name": "Rockdrift",
+        "pronunciation": "",
         "type": "City",
         "description": "As the mercantile capital of Arfordir, Rockdrift is better known as the 'Stonehearted City' , a bustling hub where coin is king and powerful guilds control all commerce. While the city celebrates the restoration of its queen , whispers of a newly discovered fortune have begun to quietly stir the ambitions of its most influential citizens.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4677,9 +4767,11 @@
           2020
         ],
         "name": "Skjoldvik",
+        "pronunciation": "",
         "type": "Capital",
         "description": "Nestled at the head of a deep, fjord, the kingdom's capital rises in a vibrant cascade of color against the stark green and grey of the surrounding cliffs. Steeply pitched roofs of slate and painted timber in hues of deep crimson, rich ochre, and forest green line the bustling cobblestone streets, which all spiral down to a crescent-shaped harbor alive with the masts of merchant ships and fishing vessels. Presiding over it all from a high, stony bluff is the royal castle, its elegant spires and soaring towers a constant, graceful symbol of the kingdom's enduring prosperity.",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4687,9 +4779,11 @@
           2781
         ],
         "name": "The Fractured Point",
+        "pronunciation": "",
         "type": "City",
         "description": "",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       },
       {
         "coords": [
@@ -4697,24 +4791,25 @@
           2190
         ],
         "name": "The Iron Throne of the Bash",
+        "pronunciation": "",
         "type": "Capital",
         "description": "",
-        "wikiLink": ""
+        "wikiLink": "",
+        "properties": {}
       }
     ],
-    "roads": [
+    "scaleUnits": 1.3,
+    "lines": [
       {
         "id": "line-main_continent-1757961351595-21ron",
         "name": "The Sheer",
+        "pronunciation": "",
         "type": "cliff",
         "color": "#000000",
         "weight": 3,
         "dashArray": "",
         "description": "",
         "wikiLink": "",
-        "properties": {
-          "Constructed": "Naturally Occurring"
-        },
         "coordinates": [
           [
             4060,
@@ -4800,7 +4895,10 @@
             3304,
             3982
           ]
-        ]
+        ],
+        "properties": {
+          "Constructed": "Naturally Occurring"
+        }
       }
     ]
   },
