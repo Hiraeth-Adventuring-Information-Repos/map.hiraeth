@@ -349,9 +349,7 @@
 
         /* Popups */
         .leaflet-popup-content-wrapper {
-            background: var(--glass-bg-light);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: var(--bg-secondary);
             color: var(--popup-text);
             border-radius: 8px;
             box-shadow: 0 3px 14px var(--shadow-color);
@@ -361,10 +359,15 @@
         .leaflet-popup-content-wrapper.popup-wide {
             width: 400px !important; /* Use !important to override Leaflet's inline styles */
         }
+        .leaflet-popup-content-wrapper.popup-wide .leaflet-popup-content {
+            width: auto !important; /* Allow content to fill the new wrapper width */
+        }
         .leaflet-popup-tip { background: transparent; box-shadow: none; }
-        body.dark-theme .leaflet-popup-content-wrapper { background: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
+        body.dark-theme .leaflet-popup-content-wrapper { background: var(--bg-secondary); border-color: var(--glass-border-dark); }
         .leaflet-popup-content { margin: 15px; font-size: 1.1rem; line-height: 1.5; }
-        .leaflet-popup-content h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; font-weight: 600; color: var(--popup-text); }
+        .leaflet-popup-content h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; font-weight: 600; color: var(--popup-text); text-align: center; }
+        .leaflet-popup-content p { text-align: justify; }
+        .leaflet-popup-content .popup-pronunciation { text-align: center; }
         .leaflet-popup-content ul { list-style-type: none; padding: 0; margin: 5px 0 0 0; }
         .leaflet-popup-content li { margin-bottom: 3px; font-size: 0.95rem; }
         .dark-theme .leaflet-popup-close-button { color: var(--text-secondary); }
@@ -1104,7 +1107,7 @@
 
             // Pronunciation
             if (data.pronunciation) {
-                innerHtml += `<p style="margin-top: -10px; margin-bottom: 5px;"><em>${data.pronunciation}</em></p>`;
+                innerHtml += `<p class="popup-pronunciation" style="margin-top: -10px; margin-bottom: 5px;"><em>${data.pronunciation}</em></p>`;
             }
 
             // Type/Value - handles points, regions, and roads
