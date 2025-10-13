@@ -282,6 +282,10 @@
                 <input type="text" id="pointName" placeholder="Click map or select point">
             </div>
             <div class="control-row">
+                <label for="pointPronunciation">Pronunciation:</label>
+                <input type="text" id="pointPronunciation" placeholder="e.g., (heer-AHTH) (Optional)">
+            </div>
+            <div class="control-row">
                 <label for="poiTypeSelect">Type:</label>
                 <select id="poiTypeSelect">
                     <option value="">--Select Type--</option>
@@ -314,6 +318,10 @@
             <div class="control-row">
                 <label for="regionName">Region Name:</label>
                 <input type="text" id="regionName" placeholder="Enter region name">
+            </div>
+            <div class="control-row">
+                <label for="regionPronunciation">Pronunciation:</label>
+                <input type="text" id="regionPronunciation" placeholder="e.g., (heer-AHTH) (Optional)">
             </div>
             <div class="control-row">
                 <label for="regionTypeSelect">Category (Type):</label>
@@ -376,6 +384,10 @@
             <div class="control-row">
                 <label for="lineName">Line Name:</label>
                 <input type="text" id="lineName" placeholder="Enter line name (optional)">
+            </div>
+            <div class="control-row">
+                <label for="linePronunciation">Pronunciation:</label>
+                <input type="text" id="linePronunciation" placeholder="e.g., (heer-AHTH) (Optional)">
             </div>
             <div class="control-row">
                 <label for="lineTypeSelect">Type:</label>
@@ -515,6 +527,7 @@
         const mapBlurbInput = document.getElementById('mapBlurb');
 
         const pointNameInput = document.getElementById('pointName');
+        const pointPronunciationInput = document.getElementById('pointPronunciation');
         const poiTypeSelect = document.getElementById('poiTypeSelect');
         const pointDescriptionInput = document.getElementById('pointDescription');
         const pointWikiLinkInput = document.getElementById('pointWikiLink');
@@ -528,6 +541,7 @@
         const clearPointsBtn = document.getElementById('clearPointsBtn');
 
         const regionNameInput = document.getElementById('regionName');
+        const regionPronunciationInput = document.getElementById('regionPronunciation');
         const regionTypeSelect = document.getElementById('regionTypeSelect');
         const regionValueInput = document.getElementById('regionValueInput');
         const regionValueOptions = document.getElementById('regionValueOptions');
@@ -552,6 +566,7 @@
 
         // Line Elements
         const lineNameInput = document.getElementById('lineName');
+        const linePronunciationInput = document.getElementById('linePronunciation');
         const lineTypeSelect = document.getElementById('lineTypeSelect');
         const lineColorInput = document.getElementById('lineColor');
         const lineWeightInput = document.getElementById('lineWeight');
@@ -883,7 +898,7 @@
             clearPointsBtn.classList.toggle('hidden', editing);
 
             if (!editing) {
-                pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                 coordsDisplay.textContent = '[Y, X]';
                 lastClickedCoordsArray = null;
                 addPointBtn.disabled = !currentMapObject; 
@@ -912,6 +927,7 @@
             if (!editing) {
                 if (!isCreatingRegion) {
                     regionNameInput.value = ''; 
+                    regionPronunciationInput.value = '';
                     regionTypeSelect.value = '';
                     regionValueInput.value = '';
                     regionValueOptions.innerHTML = '';
@@ -952,7 +968,7 @@
             clearLinesBtn.classList.toggle('hidden', editing);
 
             if (!editing) {
-                lineNameInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
+                lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
                 lineWeightInput.value = '3'; lineDashArrayInput.value = ''; lineDescriptionInput.value = '';
                 lineWikiLinkInput.value = ''; startLineBtn.disabled = !currentMapObject; editLineSelect.value = "";
                 if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
@@ -1020,9 +1036,10 @@
         function resetUIForNewMap() {
             setStatus('Select a map and click Load.');
             coordsDisplay.textContent = '[Y, X]';
-            pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+            pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
             displayProperties(pointPropertiesContainer, {});
             regionNameInput.value = '';
+            regionPronunciationInput.value = '';
             regionTypeSelect.value = '';
             regionValueInput.value = '';
             regionValueOptions.innerHTML = '';
@@ -1030,7 +1047,7 @@
             regionDescriptionInput.value = '';
             regionWikiLinkInput.value = '';
             displayProperties(regionPropertiesContainer, {});
-            lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
+            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
             displayProperties(linePropertiesContainer, {});
             scalePixelsInput.value = '3'; scaleUnitsInput.value = '1'; mapBlurbInput.value = '';
             
@@ -1206,7 +1223,7 @@
                     else {
                         const lat = Number(item.coords[0]), lng = Number(item.coords[1]);
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, type: item.type || "Unknown", description: item.description || "", wikiLink: item.wikiLink || "", properties: item.properties || {} });
+                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, pronunciation: item.pronunciation || "", type: item.type || "Unknown", description: item.description || "", wikiLink: item.wikiLink || "", properties: item.properties || {} });
                             existingNames.add(pointName); addedCount++;
                         } else { console.warn("Skipping point with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1224,7 +1241,7 @@
                     else {
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
-                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: item.type || "", value: item.value || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]), properties: item.properties || {} });
+                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: item.pronunciation || "", type: item.type || "", value: item.value || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]), properties: item.properties || {} });
                             existingNames.add(regionName); addedCount++;
                         } else { console.warn("Skipping region with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1244,7 +1261,7 @@
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
                             collectedLines.push({ 
-                                id: lineId, name: item.name || "", type: item.type || "",
+                                id: lineId, name: item.name || "", pronunciation: item.pronunciation || "", type: item.type || "",
                                 description: item.description || "", wikiLink: item.wikiLink || "",
                                 color: item.color || "#808080", weight: item.weight || 3,
                                 dashArray: item.dashArray || "",
@@ -1266,7 +1283,9 @@
             const index = collectedPoints.findIndex(p => p.name === pointName);
             if (index === -1) { setPointEditingState(false); return; }
             const point = collectedPoints[index];
-            pointNameInput.value = point.name; poiTypeSelect.value = point.type || "";
+            pointNameInput.value = point.name;
+            pointPronunciationInput.value = point.pronunciation || "";
+            poiTypeSelect.value = point.type || "";
             pointDescriptionInput.value = point.description || ""; pointWikiLinkInput.value = point.wikiLink || "";
             coordsDisplay.textContent = `[${point.coords[0]}, ${point.coords[1]}]`;
             lastClickedCoordsArray = [...point.coords];
@@ -1278,6 +1297,7 @@
             if (index === -1) { setRegionEditingState(false); return; }
             const region = collectedRegions[index];
             regionNameInput.value = region.name;
+            regionPronunciationInput.value = region.pronunciation || "";
             regionTypeSelect.value = region.type || "";
             regionTypeSelect.dispatchEvent(new Event('change'));
             regionValueInput.value = region.value || "";
@@ -1303,7 +1323,9 @@
 
             if (index === -1) { setLineEditState(false); return; }
             const line = collectedLines[index];
-            lineNameInput.value = line.name || ""; lineTypeSelect.value = line.type || "";
+            lineNameInput.value = line.name || "";
+            linePronunciationInput.value = line.pronunciation || "";
+            lineTypeSelect.value = line.type || "";
             lineColorInput.value = line.color || "#808080"; lineWeightInput.value = line.weight || 3;
             lineDashArrayInput.value = line.dashArray || ""; lineDescriptionInput.value = line.description || "";
             lineWikiLinkInput.value = line.wikiLink || "";
@@ -1322,14 +1344,16 @@
         function savePointChanges() {
             if (!isEditingPoint || currentlyEditingPointIndex < 0 || currentlyEditingPointIndex >= collectedPoints.length) return;
             const originalPoint = collectedPoints[currentlyEditingPointIndex];
-            const newName = pointNameInput.value.trim(), newType = poiTypeSelect.value;
+            const newName = pointNameInput.value.trim(), newPronunciation = pointPronunciationInput.value.trim(), newType = poiTypeSelect.value;
             const newDescription = pointDescriptionInput.value.trim(), newWikiLink = pointWikiLinkInput.value.trim();
             if (!newName) { alert("Point Name cannot be empty."); pointNameInput.focus(); return; }
             if (!newType) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
             if (newName !== originalPoint.name && collectedPoints.some((p, i) => i !== currentlyEditingPointIndex && p.name === newName)) {
                 alert(`Another point named "${newName}" already exists.`); pointNameInput.focus(); return;
             }
-            originalPoint.name = newName; originalPoint.type = newType;
+            originalPoint.name = newName;
+            originalPoint.pronunciation = newPronunciation;
+            originalPoint.type = newType;
             originalPoint.description = newDescription; originalPoint.wikiLink = newWikiLink;
             originalPoint.properties = collectProperties(pointPropertiesContainer);
             if (lastClickedCoordsArray) originalPoint.coords = [...lastClickedCoordsArray];
@@ -1343,7 +1367,7 @@
         function saveRegionChanges() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || currentlyEditingRegionIndex >= collectedRegions.length) return;
             const originalRegion = collectedRegions[currentlyEditingRegionIndex];
-            const newName = regionNameInput.value.trim(), newType = regionTypeSelect.value, newValue = regionValueInput.value.trim();
+            const newName = regionNameInput.value.trim(), newPronunciation = regionPronunciationInput.value.trim(), newType = regionTypeSelect.value, newValue = regionValueInput.value.trim();
             const newDescription = regionDescriptionInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
             const newColor = regionColorInput.value, newFillColor = regionFillColorInput.value;
             const newOpacity = parseFloat(regionOpacityInput.value);
@@ -1353,6 +1377,7 @@
                 alert(`Another region named "${newName}" already exists.`); regionNameInput.focus(); return;
             }
             originalRegion.name = newName;
+            originalRegion.pronunciation = newPronunciation;
             originalRegion.type = newType;
             originalRegion.value = newValue;
             originalRegion.description = newDescription;
@@ -1367,13 +1392,15 @@
         function saveLineChanges() { 
             if (!isEditingLine || currentlyEditingLineIndex < 0 || currentlyEditingLineIndex >= collectedLines.length) return;
             const originalLine = collectedLines[currentlyEditingLineIndex];
-            const newName = lineNameInput.value.trim(), newType = lineTypeSelect.value;
+            const newName = lineNameInput.value.trim(), newPronunciation = linePronunciationInput.value.trim(), newType = lineTypeSelect.value;
             const newColor = lineColorInput.value, newWeight = parseInt(lineWeightInput.value);
             const newDashArray = lineDashArrayInput.value.trim();
             const newDescription = lineDescriptionInput.value.trim(), newWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(newWeight) || newWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
 
-            originalLine.name = newName; originalLine.type = newType; originalLine.color = newColor;
+            originalLine.name = newName;
+            originalLine.pronunciation = newPronunciation;
+            originalLine.type = newType; originalLine.color = newColor;
             originalLine.weight = newWeight; originalLine.dashArray = newDashArray;
             originalLine.description = newDescription; originalLine.wikiLink = newWikiLink;
             originalLine.properties = collectProperties(linePropertiesContainer);
@@ -1428,7 +1455,7 @@
 
         function finishRegionCreation() { 
             if (!isCreatingRegion || tempRegionVertices.length < 3) { alert("A region needs at least 3 vertices."); return; }
-            const regionName = regionNameInput.value.trim(), regionType = regionTypeSelect.value, regionValue = regionValueInput.value.trim();
+            const regionName = regionNameInput.value.trim(), regionPronunciation = regionPronunciationInput.value.trim(), regionType = regionTypeSelect.value, regionValue = regionValueInput.value.trim();
             const regionColor = regionColorInput.value, regionFillColor = regionFillColorInput.value;
             const regionOpacity = parseFloat(regionOpacityInput.value);
             const regionDescription = regionDescriptionInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
@@ -1438,9 +1465,9 @@
             if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity (0.0-1.0)."); regionOpacityInput.focus(); return; }
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
             const properties = collectProperties(regionPropertiesContainer);
-            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
+            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: regionPronunciation, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
             updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
-            regionNameInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            regionNameInput.value = ''; regionPronunciationInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
             regionValueOptions.innerHTML = '';
             regionValueInput.disabled = true;
         }
@@ -1449,17 +1476,17 @@
         }
         function finishLineCreation() { 
             if (!isCreatingLine || tempLineVertices.length < 2) { alert("A line needs at least 2 vertices."); return; }
-            const lineName = lineNameInput.value.trim(), lineType = lineTypeSelect.value;
+            const lineName = lineNameInput.value.trim(), linePronunciation = linePronunciationInput.value.trim(), lineType = lineTypeSelect.value;
             const lineColor = lineColorInput.value, lineWeight = parseInt(lineWeightInput.value);
             const lineDashArray = lineDashArrayInput.value.trim();
             const lineDescription = lineDescriptionInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(lineWeight) || lineWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
             const lineId = `line-${currentMapObject.id || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
             const properties = collectProperties(linePropertiesContainer);
-            collectedLines.push({ id: lineId, name: lineName, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
+            collectedLines.push({ id: lineId, name: lineName, pronunciation: linePronunciation, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
             updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success'); 
             setLineCreationState(false);
-            lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
+            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
             lineColorInput.value = '#808080'; lineWeightInput.value = '3'; lineDashArrayInput.value = '';
         }
         function cancelLineCreation() { 
@@ -1845,14 +1872,14 @@
             mapToUpdate.blurb = mapBlurbInput.value || "";
 
             mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
-                coords: p.coords, name: p.name || "", type: p.type || "Unknown",
+                coords: p.coords, name: p.name || "", pronunciation: p.pronunciation || "", type: p.type || "Unknown",
                 description: p.description || "", wikiLink: p.wikiLink || "",
                 properties: p.properties || {}
             }));
 
             mapToUpdate.regions = sortedRegions.map(r => ({
                 id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
-                description: r.description || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
+                pronunciation: r.pronunciation || "", description: r.description || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
                 fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
                 wikiLink: r.wikiLink || "", coordinates: r.coordinates || [],
                 properties: r.properties || {}
@@ -1872,7 +1899,7 @@
             mapToUpdate.filterGroups = filterGroups;
             
             mapToUpdate.lines = sortedLines.map(l => ({
-                id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
+                id: l.id, name: l.name || "", pronunciation: l.pronunciation || "", type: l.type || "", color: l.color || "#808080",
                 weight: l.weight || 3, dashArray: l.dashArray || "",
                 description: l.description || "", wikiLink: l.wikiLink || "",
                 coordinates: l.coordinates || [],
@@ -1963,7 +1990,7 @@
                 if (currentMode === 'points') {
                     lastClickedCoordsArray = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
                     coordsDisplay.textContent = `[${lastClickedCoordsArray[0]}, ${lastClickedCoordsArray[1]}]`;
-                    pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                    pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                     addPointBtn.disabled = !currentMapObject;
                     addPointPropertyBtn.disabled = false;
                     setStatus('Coordinates captured. Enter point details and Add.'); pointNameInput.focus();
@@ -2100,16 +2127,16 @@
                     alert("Click on the map to set coordinates for the new point."); 
                     return; 
                 }
-                const name = pointNameInput.value.trim(), type = poiTypeSelect.value;
+                const name = pointNameInput.value.trim(), pronunciation = pointPronunciationInput.value.trim(), type = poiTypeSelect.value;
                 if (!name) { alert("Point Name cannot be empty."); pointNameInput.focus(); return; }
                 if (!type) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
                 if (collectedPoints.some(p => p.name === name)) { alert(`Point "${name}" already exists.`); pointNameInput.focus(); return; }
                 
                 const properties = collectProperties(pointPropertiesContainer);
                 const coordsToUse = lastClickedCoordsArray;
-                collectedPoints.push({ coords: coordsToUse, name: name, type: type, description: pointDescriptionInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
+                collectedPoints.push({ coords: coordsToUse, name: name, pronunciation: pronunciation, type: type, description: pointDescriptionInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
                 updatePointsOutput(); setStatus(`Point "${name}" added.`, 'success');
-                pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                 displayProperties(pointPropertiesContainer, {});
                 coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true;
             });
