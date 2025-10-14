@@ -6,6 +6,7 @@
     "width": 8192,
     "height": 6144,
     "scalePixels": 1,
+    "scaleKilometers": 1.4,
     "imageUrl": "maps/Fair-Content.webp",
     "filterGroups": {
       "Regions": {
