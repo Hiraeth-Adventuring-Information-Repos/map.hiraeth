@@ -1138,7 +1138,7 @@
                 <div class="popup-content-container">
                     ${innerHtml}
                 </div>
-                <div class="popup-read-more" onclick="togglePopupExpand(this)">Read More</div>
+                <div class="popup-read-more">Read More</div>
             `;
         }
 
@@ -2307,21 +2307,32 @@
         applyTheme(savedTheme);
 
         // --- NEW: Expand/Collapse Popup Logic ---
-        function togglePopupExpand(button) {
-            const container = button.previousElementSibling;
-            const wrapper = button.closest('.leaflet-popup-content-wrapper');
-            const isExpanded = container.classList.contains('expanded');
+        map.on('popupopen', function(e) {
+            const popup = e.popup;
+            const content = popup.getContent();
+            const readMoreButton = popup.getElement().querySelector('.popup-read-more');
 
-            if (isExpanded) {
-                container.classList.remove('expanded');
-                if (wrapper) wrapper.classList.remove('popup-wide');
-                button.textContent = 'Read More';
-            } else {
-                container.classList.add('expanded');
-                if (wrapper) wrapper.classList.add('popup-wide');
-                button.textContent = 'Read Less';
+            if (readMoreButton) {
+                readMoreButton.addEventListener('click', function() {
+                    const container = this.previousElementSibling;
+                    const wrapper = this.closest('.leaflet-popup-content-wrapper');
+                    const isExpanded = container.classList.contains('expanded');
+
+                    if (isExpanded) {
+                        container.classList.remove('expanded');
+                        if (wrapper) wrapper.classList.remove('popup-wide');
+                        this.textContent = 'Read More';
+                    } else {
+                        container.classList.add('expanded');
+                        if (wrapper) wrapper.classList.add('popup-wide');
+                        this.textContent = 'Read Less';
+                    }
+                    setTimeout(() => {
+                        popup.update();
+                    }, 400); // Wait for CSS transition
+                });
             }
-        }
+        });
 
         // --- Map Click Handler ---
         map.on('click', function(e) {
