@@ -9,11 +9,8 @@
   "width": 7016,
   "height": 4960,
   "imageUrl": "maps/IceBeach.webp",
-  "scale": {
-    "pixels": 3,
-    "units": "km",
-    "value": 1
-  },
+  "scalePixels": 3,
+  "scaleKilometers": 1,
   "paces": [
     {
       "name": "Normal",
