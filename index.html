@@ -356,7 +356,8 @@
             border-radius: 8px;
             box-shadow: 0 3px 14px var(--shadow-color);
             border: 1px solid var(--glass-border-light);
-            transition: width 0.4s ease-in-out; /* Add transition for width */
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+            transform-origin: bottom center; /* Animate from bottom */
         }
         .leaflet-popup-content-wrapper.popup-wide {
             width: 400px !important; /* Use !important to override Leaflet's inline styles */
@@ -380,7 +381,7 @@
             max-height: 150px; /* Initial max height */
             overflow: hidden;
             position: relative;
-            transition: max-height 0.4s ease-in-out;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         .popup-content-container.expanded {
             max-height: 500px; /* Height when expanded */
