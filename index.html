@@ -348,29 +348,11 @@
         }
 
         /* Popups */
-        .leaflet-popup-content-wrapper {
-            background: var(--glass-bg-light);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: var(--popup-text);
-            border-radius: 8px;
-            box-shadow: 0 3px 14px var(--shadow-color);
-            border: 1px solid var(--glass-border-light);
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
-            transform-origin: bottom center; /* Animate from bottom */
-        }
-        .leaflet-popup-content-wrapper.popup-wide {
-            width: 400px !important; /* Use !important to override Leaflet's inline styles */
-        }
-        .leaflet-popup-content-wrapper.popup-wide .leaflet-popup-content {
-            width: auto !important; /* Allow content to fill the new wrapper width */
-        }
+        .leaflet-popup-content-wrapper { background: var(--glass-bg-light); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--popup-text); border-radius: 8px; box-shadow: 0 3px 14px var(--shadow-color); border: 1px solid var(--glass-border-light); }
         .leaflet-popup-tip { background: transparent; box-shadow: none; }
         body.dark-theme .leaflet-popup-content-wrapper { background: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
         .leaflet-popup-content { margin: 15px; font-size: 1.1rem; line-height: 1.5; }
-        .leaflet-popup-content h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; font-weight: 600; color: var(--popup-text); text-align: center; }
-        .leaflet-popup-content p { text-align: justify; }
-        .leaflet-popup-content .popup-pronunciation { text-align: center; }
+        .leaflet-popup-content h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; font-weight: 600; color: var(--popup-text); }
         .leaflet-popup-content ul { list-style-type: none; padding: 0; margin: 5px 0 0 0; }
         .leaflet-popup-content li { margin-bottom: 3px; font-size: 0.95rem; }
         .dark-theme .leaflet-popup-close-button { color: var(--text-secondary); }
@@ -381,7 +363,7 @@
             max-height: 150px; /* Initial max height */
             overflow: hidden;
             position: relative;
-            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: max-height 0.4s ease-in-out;
         }
         .popup-content-container.expanded {
             max-height: 500px; /* Height when expanded */
@@ -401,6 +383,23 @@
         .popup-read-more:hover {
             text-decoration: underline;
         }
+        /* Gradient fade-out effect for non-expanded popups */
+        .popup-content-container:not(.expanded)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: transparent;
+            pointer-events: none;
+            z-index: 1;
+        }
+        body.dark-theme .popup-content-container:not(.expanded)::after {
+            background: transparent;
+        }
+
+
         /* --- Popup Link Styling --- */
         .leaflet-popup-content h3 a,
         .leaflet-popup-content h3 a:link,
@@ -1110,7 +1109,7 @@
 
             // Pronunciation
             if (data.pronunciation) {
-                innerHtml += `<p class="popup-pronunciation" style="margin-top: -10px; margin-bottom: 5px;"><em>${data.pronunciation}</em></p>`;
+                innerHtml += `<p style="margin-top: -10px; margin-bottom: 5px;"><em>${data.pronunciation}</em></p>`;
             }
 
             // Type/Value - handles points, regions, and roads
@@ -1138,7 +1137,7 @@
                 <div class="popup-content-container">
                     ${innerHtml}
                 </div>
-                <div class="popup-read-more">Read More</div>
+                <div class="popup-read-more" onclick="togglePopupExpand(this)">Read More</div>
             `;
         }
 
@@ -2307,32 +2306,18 @@
         applyTheme(savedTheme);
 
         // --- NEW: Expand/Collapse Popup Logic ---
-        map.on('popupopen', function(e) {
-            const popup = e.popup;
-            const content = popup.getContent();
-            const readMoreButton = popup.getElement().querySelector('.popup-read-more');
+        function togglePopupExpand(button) {
+            const container = button.previousElementSibling;
+            const isExpanded = container.classList.contains('expanded');
 
-            if (readMoreButton) {
-                readMoreButton.addEventListener('click', function() {
-                    const container = this.previousElementSibling;
-                    const wrapper = this.closest('.leaflet-popup-content-wrapper');
-                    const isExpanded = container.classList.contains('expanded');
-
-                    if (isExpanded) {
-                        container.classList.remove('expanded');
-                        if (wrapper) wrapper.classList.remove('popup-wide');
-                        this.textContent = 'Read More';
-                    } else {
-                        container.classList.add('expanded');
-                        if (wrapper) wrapper.classList.add('popup-wide');
-                        this.textContent = 'Read Less';
-                    }
-                    setTimeout(() => {
-                        popup.update();
-                    }, 400); // Wait for CSS transition
-                });
+            if (isExpanded) {
+                container.classList.remove('expanded');
+                button.textContent = 'Read More';
+            } else {
+                container.classList.add('expanded');
+                button.textContent = 'Read Less';
             }
-        });
+        }
 
         // --- Map Click Handler ---
         map.on('click', function(e) {
