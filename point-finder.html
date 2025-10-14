@@ -85,7 +85,7 @@
              background-size: .65em auto; padding-right: 1.5em;
         }
         #fileLoader { min-width: 200px; }
-        #pointDescription, #regionDescription, #mapBlurb, #lineDescription { height: 4.5em; resize: vertical; }
+        #pointDescription, #regionDescription, #mapBlurb, #lineDescription, #pointSummary, #regionSummary, #lineSummary { height: 4.5em; resize: vertical; }
         .controls button, .output-buttons button, .summary-actions button, .json-modal-copy, .json-modal-close {
             padding: 4px 10px; cursor: pointer; color: #000000;
             border: 1px solid #808080; border-left-color: #ffffff;
@@ -296,6 +296,10 @@
                 <textarea id="pointDescription"></textarea>
             </div>
             <div class="control-row">
+                <label for="pointSummary">Summary:</label>
+                <textarea id="pointSummary" placeholder="Short summary for unexpanded popup"></textarea>
+            </div>
+            <div class="control-row">
                 <label for="pointWikiLink">Wiki Link:</label>
                 <input type="text" id="pointWikiLink" placeholder="Optional URL">
             </div>
@@ -349,6 +353,10 @@
             <div class="control-row">
                 <label for="regionDescription">Description:</label>
                 <textarea id="regionDescription"></textarea>
+            </div>
+            <div class="control-row">
+                <label for="regionSummary">Summary:</label>
+                <textarea id="regionSummary" placeholder="Short summary for unexpanded popup"></textarea>
             </div>
             <div class="control-row">
                 <label for="regionWikiLink">Wiki Link:</label>
@@ -420,6 +428,10 @@
             <div class="control-row">
                 <label for="lineDescription">Description:</label>
                 <textarea id="lineDescription"></textarea>
+            </div>
+            <div class="control-row">
+                <label for="lineSummary">Summary:</label>
+                <textarea id="lineSummary" placeholder="Short summary for unexpanded popup"></textarea>
             </div>
             <div class="control-row">
                 <label for="lineWikiLink">Wiki Link:</label>
@@ -530,6 +542,7 @@
         const pointPronunciationInput = document.getElementById('pointPronunciation');
         const poiTypeSelect = document.getElementById('poiTypeSelect');
         const pointDescriptionInput = document.getElementById('pointDescription');
+        const pointSummaryInput = document.getElementById('pointSummary');
         const pointWikiLinkInput = document.getElementById('pointWikiLink');
         const pointPropertiesContainer = document.getElementById('point-properties-container');
         const addPointPropertyBtn = document.getElementById('addPointPropertyBtn');
@@ -549,6 +562,7 @@
         const regionFillColorInput = document.getElementById('regionFillColor');
         const regionOpacityInput = document.getElementById('regionOpacity');
         const regionDescriptionInput = document.getElementById('regionDescription');
+        const regionSummaryInput = document.getElementById('regionSummary');
         const regionWikiLinkInput = document.getElementById('regionWikiLink');
         const regionPropertiesContainer = document.getElementById('region-properties-container');
         const addRegionPropertyBtn = document.getElementById('addRegionPropertyBtn');
@@ -572,6 +586,7 @@
         const lineWeightInput = document.getElementById('lineWeight');
         const lineDashArrayInput = document.getElementById('lineDashArray');
         const lineDescriptionInput = document.getElementById('lineDescription');
+        const lineSummaryInput = document.getElementById('lineSummary');
         const lineWikiLinkInput = document.getElementById('lineWikiLink');
         const linePropertiesContainer = document.getElementById('line-properties-container');
         const addLinePropertyBtn = document.getElementById('addLinePropertyBtn');
@@ -898,7 +913,7 @@
             clearPointsBtn.classList.toggle('hidden', editing);
 
             if (!editing) {
-                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
                 coordsDisplay.textContent = '[Y, X]';
                 lastClickedCoordsArray = null;
                 addPointBtn.disabled = !currentMapObject; 
@@ -933,6 +948,7 @@
                     regionValueOptions.innerHTML = '';
                     regionValueInput.disabled = true;
                     regionDescriptionInput.value = ''; 
+                    regionSummaryInput.value = '';
                     regionWikiLinkInput.value = '';
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
                     displayProperties(regionPropertiesContainer, {});
@@ -969,7 +985,7 @@
 
             if (!editing) {
                 lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
-                lineWeightInput.value = '3'; lineDashArrayInput.value = ''; lineDescriptionInput.value = '';
+                lineWeightInput.value = '3'; lineDashArrayInput.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = '';
                 lineWikiLinkInput.value = ''; startLineBtn.disabled = !currentMapObject; editLineSelect.value = "";
                 if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
                 clearLineEditingVisuals();
@@ -1036,7 +1052,7 @@
         function resetUIForNewMap() {
             setStatus('Select a map and click Load.');
             coordsDisplay.textContent = '[Y, X]';
-            pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+            pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
             displayProperties(pointPropertiesContainer, {});
             regionNameInput.value = '';
             regionPronunciationInput.value = '';
@@ -1045,9 +1061,10 @@
             regionValueOptions.innerHTML = '';
             regionValueInput.disabled = true;
             regionDescriptionInput.value = '';
+            regionSummaryInput.value = '';
             regionWikiLinkInput.value = '';
             displayProperties(regionPropertiesContainer, {});
-            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
+            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = ''; lineWikiLinkInput.value = '';
             displayProperties(linePropertiesContainer, {});
             scalePixelsInput.value = '3'; scaleUnitsInput.value = '1'; mapBlurbInput.value = '';
             
@@ -1223,7 +1240,7 @@
                     else {
                         const lat = Number(item.coords[0]), lng = Number(item.coords[1]);
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, pronunciation: item.pronunciation || "", type: item.type || "Unknown", description: item.description || "", wikiLink: item.wikiLink || "", properties: item.properties || {} });
+                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, pronunciation: item.pronunciation || "", type: item.type || "Unknown", description: item.description || "", summary: item.summary || "", wikiLink: item.wikiLink || "", properties: item.properties || {} });
                             existingNames.add(pointName); addedCount++;
                         } else { console.warn("Skipping point with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1241,7 +1258,7 @@
                     else {
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
-                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: item.pronunciation || "", type: item.type || "", value: item.value || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]), properties: item.properties || {} });
+                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: item.pronunciation || "", type: item.type || "", value: item.value || "", description: item.description || "", summary: item.summary || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]), properties: item.properties || {} });
                             existingNames.add(regionName); addedCount++;
                         } else { console.warn("Skipping region with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1262,7 +1279,7 @@
                         if (validCoords) {
                             collectedLines.push({ 
                                 id: lineId, name: item.name || "", pronunciation: item.pronunciation || "", type: item.type || "",
-                                description: item.description || "", wikiLink: item.wikiLink || "",
+                                description: item.description || "", summary: item.summary || "", wikiLink: item.wikiLink || "",
                                 color: item.color || "#808080", weight: item.weight || 3,
                                 dashArray: item.dashArray || "",
                                 coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]),
@@ -1286,7 +1303,9 @@
             pointNameInput.value = point.name;
             pointPronunciationInput.value = point.pronunciation || "";
             poiTypeSelect.value = point.type || "";
-            pointDescriptionInput.value = point.description || ""; pointWikiLinkInput.value = point.wikiLink || "";
+            pointDescriptionInput.value = point.description || "";
+            pointSummaryInput.value = point.summary || "";
+            pointWikiLinkInput.value = point.wikiLink || "";
             coordsDisplay.textContent = `[${point.coords[0]}, ${point.coords[1]}]`;
             lastClickedCoordsArray = [...point.coords];
             displayProperties(pointPropertiesContainer, point.properties);
@@ -1302,6 +1321,7 @@
             regionTypeSelect.dispatchEvent(new Event('change'));
             regionValueInput.value = region.value || "";
             regionDescriptionInput.value = region.description || "";
+            regionSummaryInput.value = region.summary || "";
             regionWikiLinkInput.value = region.wikiLink || "";
             regionColorInput.value = region.color || "#3388ff";
             regionFillColorInput.value = region.fillColor || "#3388ff";
@@ -1327,7 +1347,9 @@
             linePronunciationInput.value = line.pronunciation || "";
             lineTypeSelect.value = line.type || "";
             lineColorInput.value = line.color || "#808080"; lineWeightInput.value = line.weight || 3;
-            lineDashArrayInput.value = line.dashArray || ""; lineDescriptionInput.value = line.description || "";
+            lineDashArrayInput.value = line.dashArray || "";
+            lineDescriptionInput.value = line.description || "";
+            lineSummaryInput.value = line.summary || "";
             lineWikiLinkInput.value = line.wikiLink || "";
             displayProperties(linePropertiesContainer, line.properties);
 
@@ -1345,7 +1367,7 @@
             if (!isEditingPoint || currentlyEditingPointIndex < 0 || currentlyEditingPointIndex >= collectedPoints.length) return;
             const originalPoint = collectedPoints[currentlyEditingPointIndex];
             const newName = pointNameInput.value.trim(), newPronunciation = pointPronunciationInput.value.trim(), newType = poiTypeSelect.value;
-            const newDescription = pointDescriptionInput.value.trim(), newWikiLink = pointWikiLinkInput.value.trim();
+            const newDescription = pointDescriptionInput.value.trim(), newSummary = pointSummaryInput.value.trim(), newWikiLink = pointWikiLinkInput.value.trim();
             if (!newName) { alert("Point Name cannot be empty."); pointNameInput.focus(); return; }
             if (!newType) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
             if (newName !== originalPoint.name && collectedPoints.some((p, i) => i !== currentlyEditingPointIndex && p.name === newName)) {
@@ -1354,7 +1376,9 @@
             originalPoint.name = newName;
             originalPoint.pronunciation = newPronunciation;
             originalPoint.type = newType;
-            originalPoint.description = newDescription; originalPoint.wikiLink = newWikiLink;
+            originalPoint.description = newDescription;
+            originalPoint.summary = newSummary;
+            originalPoint.wikiLink = newWikiLink;
             originalPoint.properties = collectProperties(pointPropertiesContainer);
             if (lastClickedCoordsArray) originalPoint.coords = [...lastClickedCoordsArray];
             updatePointsOutput(); setStatus(`Point "${newName}" updated.`, 'success');
@@ -1368,7 +1392,7 @@
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || currentlyEditingRegionIndex >= collectedRegions.length) return;
             const originalRegion = collectedRegions[currentlyEditingRegionIndex];
             const newName = regionNameInput.value.trim(), newPronunciation = regionPronunciationInput.value.trim(), newType = regionTypeSelect.value, newValue = regionValueInput.value.trim();
-            const newDescription = regionDescriptionInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
+            const newDescription = regionDescriptionInput.value.trim(), newSummary = regionSummaryInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
             const newColor = regionColorInput.value, newFillColor = regionFillColorInput.value;
             const newOpacity = parseFloat(regionOpacityInput.value);
             if (!newName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
@@ -1381,6 +1405,7 @@
             originalRegion.type = newType;
             originalRegion.value = newValue;
             originalRegion.description = newDescription;
+            originalRegion.summary = newSummary;
             originalRegion.wikiLink = newWikiLink; originalRegion.color = newColor; originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity; originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
             originalRegion.properties = collectProperties(regionPropertiesContainer);
@@ -1395,14 +1420,16 @@
             const newName = lineNameInput.value.trim(), newPronunciation = linePronunciationInput.value.trim(), newType = lineTypeSelect.value;
             const newColor = lineColorInput.value, newWeight = parseInt(lineWeightInput.value);
             const newDashArray = lineDashArrayInput.value.trim();
-            const newDescription = lineDescriptionInput.value.trim(), newWikiLink = lineWikiLinkInput.value.trim();
+            const newDescription = lineDescriptionInput.value.trim(), newSummary = lineSummaryInput.value.trim(), newWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(newWeight) || newWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
 
             originalLine.name = newName;
             originalLine.pronunciation = newPronunciation;
             originalLine.type = newType; originalLine.color = newColor;
             originalLine.weight = newWeight; originalLine.dashArray = newDashArray;
-            originalLine.description = newDescription; originalLine.wikiLink = newWikiLink;
+            originalLine.description = newDescription;
+            originalLine.summary = newSummary;
+            originalLine.wikiLink = newWikiLink;
             originalLine.properties = collectProperties(linePropertiesContainer);
             updateLinesOutput(); setStatus(`Line "${newName || originalLine.id}" updated.`, 'success');
             setLineEditState(false);
@@ -1458,16 +1485,16 @@
             const regionName = regionNameInput.value.trim(), regionPronunciation = regionPronunciationInput.value.trim(), regionType = regionTypeSelect.value, regionValue = regionValueInput.value.trim();
             const regionColor = regionColorInput.value, regionFillColor = regionFillColorInput.value;
             const regionOpacity = parseFloat(regionOpacityInput.value);
-            const regionDescription = regionDescriptionInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
+            const regionDescription = regionDescriptionInput.value.trim(), regionSummary = regionSummaryInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
             if (!regionName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
             if (!regionType) { alert("Please select a region category."); regionTypeSelect.focus(); return; }
             if (!regionValue) { alert("Please enter a region sub-category."); regionValueInput.focus(); return; }
             if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity (0.0-1.0)."); regionOpacityInput.focus(); return; }
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
             const properties = collectProperties(regionPropertiesContainer);
-            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: regionPronunciation, type: regionType, value: regionValue, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
+            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: regionPronunciation, type: regionType, value: regionValue, description: regionDescription, summary: regionSummary, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
             updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
-            regionNameInput.value = ''; regionPronunciationInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            regionNameInput.value = ''; regionPronunciationInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionSummaryInput.value = ''; regionWikiLinkInput.value = '';
             regionValueOptions.innerHTML = '';
             regionValueInput.disabled = true;
         }
@@ -1479,14 +1506,14 @@
             const lineName = lineNameInput.value.trim(), linePronunciation = linePronunciationInput.value.trim(), lineType = lineTypeSelect.value;
             const lineColor = lineColorInput.value, lineWeight = parseInt(lineWeightInput.value);
             const lineDashArray = lineDashArrayInput.value.trim();
-            const lineDescription = lineDescriptionInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
+            const lineDescription = lineDescriptionInput.value.trim(), lineSummary = lineSummaryInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(lineWeight) || lineWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
             const lineId = `line-${currentMapObject.id || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
             const properties = collectProperties(linePropertiesContainer);
-            collectedLines.push({ id: lineId, name: lineName, pronunciation: linePronunciation, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
+            collectedLines.push({ id: lineId, name: lineName, pronunciation: linePronunciation, type: lineType, description: lineDescription, summary: lineSummary, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
             updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success'); 
             setLineCreationState(false);
-            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
+            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = ''; lineWikiLinkInput.value = '';
             lineColorInput.value = '#808080'; lineWeightInput.value = '3'; lineDashArrayInput.value = '';
         }
         function cancelLineCreation() { 
@@ -1873,13 +1900,13 @@
 
             mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
                 coords: p.coords, name: p.name || "", pronunciation: p.pronunciation || "", type: p.type || "Unknown",
-                description: p.description || "", wikiLink: p.wikiLink || "",
+                description: p.description || "", summary: p.summary || "", wikiLink: p.wikiLink || "",
                 properties: p.properties || {}
             }));
 
             mapToUpdate.regions = sortedRegions.map(r => ({
                 id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
-                pronunciation: r.pronunciation || "", description: r.description || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
+                pronunciation: r.pronunciation || "", description: r.description || "", summary: r.summary || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
                 fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
                 wikiLink: r.wikiLink || "", coordinates: r.coordinates || [],
                 properties: r.properties || {}
@@ -1901,7 +1928,7 @@
             mapToUpdate.lines = sortedLines.map(l => ({
                 id: l.id, name: l.name || "", pronunciation: l.pronunciation || "", type: l.type || "", color: l.color || "#808080",
                 weight: l.weight || 3, dashArray: l.dashArray || "",
-                description: l.description || "", wikiLink: l.wikiLink || "",
+                description: l.description || "", summary: l.summary || "", wikiLink: l.wikiLink || "",
                 coordinates: l.coordinates || [],
                 properties: l.properties || {}
             }));
@@ -2134,9 +2161,9 @@
                 
                 const properties = collectProperties(pointPropertiesContainer);
                 const coordsToUse = lastClickedCoordsArray;
-                collectedPoints.push({ coords: coordsToUse, name: name, pronunciation: pronunciation, type: type, description: pointDescriptionInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
+                collectedPoints.push({ coords: coordsToUse, name: name, pronunciation: pronunciation, type: type, description: pointDescriptionInput.value.trim(), summary: pointSummaryInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
                 updatePointsOutput(); setStatus(`Point "${name}" added.`, 'success');
-                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
                 displayProperties(pointPropertiesContainer, {});
                 coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true;
             });
