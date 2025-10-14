@@ -2165,7 +2165,7 @@
                 updatePointsOutput(); setStatus(`Point "${name}" added.`, 'success');
                 pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
                 displayProperties(pointPropertiesContainer, {});
-                coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true;
+                coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true; addPointPropertyBtn.disabled = true;
             });
             editPointSelect.addEventListener('change', (e) => e.target.value ? loadPointForEditing(e.target.value) : cancelPointEditing());
             savePointChangesBtn.addEventListener('click', savePointChanges);
