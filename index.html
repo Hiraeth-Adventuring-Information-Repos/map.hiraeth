@@ -380,6 +380,10 @@
             color: var(--text-secondary);
             font-weight: bold;
         }
+        .popup-summary { display: block; }
+        .popup-full-content { display: none; }
+        .popup-content-container.expanded .popup-summary { display: none; }
+        .popup-content-container.expanded .popup-full-content { display: block; }
         .popup-read-more:hover {
             text-decoration: underline;
         }
@@ -1096,49 +1100,76 @@
 
         // --- NEW: Unified Popup Content Generator ---
         function createPopupContent(data) {
-            let innerHtml = '';
-
-            // Title/Link
+            // Part 1: Build the header, which is always visible.
+            let headerHtml = '';
             if (data.name) {
                 if (data.wikiLink) {
-                    innerHtml += `<h3><a href="${data.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${data.name}">${data.name}</a></h3>`;
+                    headerHtml += `<h3><a href="${data.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${data.name}">${data.name}</a></h3>`;
                 } else {
-                    innerHtml += `<h3>${data.name}</h3>`;
+                    headerHtml += `<h3>${data.name}</h3>`;
+                }
+            }
+            if (data.pronunciation) {
+                headerHtml += `<p style="margin-top: -10px; margin-bottom: 5px;"><em>${data.pronunciation}</em></p>`;
+            }
+
+            // Part 2: Build the rest of the content that will be expandable.
+            let fullContentInnerHtml = '';
+            if (data.type && data.value) { // Regions
+                fullContentInnerHtml += `<p><em>${data.type}: ${data.value}</em></p>`;
+            } else if (data.type) { // POIs, Roads
+                const typeString = data.type.charAt(0).toUpperCase() + data.type.slice(1);
+                fullContentInnerHtml += `<p><em>Type: ${typeString}</em></p>`;
+            }
+            fullContentInnerHtml += formatPropertiesForPopup(data.properties, !!data.description);
+            if (data.description) {
+                fullContentInnerHtml += `<p>${data.description}</p>`;
+            }
+
+            // Part 3: Check for summary and full content presence.
+            const hasSummary = data.summary && data.summary.trim() !== '';
+            const hasFullContent = fullContentInnerHtml.trim() !== '';
+
+            // If there's nothing to show, just return the header.
+            if (!hasSummary && !hasFullContent) {
+                return headerHtml;
+            }
+
+            // Part 4: Construct the main container and "Read More" button based on content.
+            let mainContent = '';
+            let readMoreButton = '';
+
+            if (hasSummary) {
+                // If a summary exists, use the new structure with summary and full-content divs.
+                mainContent = `
+                    <div class="popup-content-container">
+                        <div class="popup-summary">
+                            <p>${data.summary}</p>
+                        </div>
+                        <div class="popup-full-content">
+                            ${fullContentInnerHtml}
+                        </div>
+                    </div>
+                `;
+                // Show "Read More" button only if there's full content to expand to.
+                if (hasFullContent) {
+                    readMoreButton = `<div class="popup-read-more" onclick="togglePopupExpand(this)">Read More</div>`;
+                }
+            } else {
+                // No summary, so use the old behavior. The container will be truncated by CSS.
+                mainContent = `
+                    <div class="popup-content-container">
+                        ${fullContentInnerHtml}
+                    </div>
+                `;
+                // Show "Read More" button if there's content that might be truncated.
+                if (hasFullContent) {
+                    readMoreButton = `<div class="popup-read-more" onclick="togglePopupExpand(this)">Read More</div>`;
                 }
             }
 
-            // Pronunciation
-            if (data.pronunciation) {
-                innerHtml += `<p style="margin-top: -10px; margin-bottom: 5px;"><em>${data.pronunciation}</em></p>`;
-            }
-
-            // Type/Value - handles points, regions, and roads
-            if (data.type && data.value) { // Regions specifically
-                innerHtml += `<p><em>${data.type}: ${data.value}</em></p>`;
-            } else if (data.type) {
-                // For POIs, type is already good. For roads, it might need capitalization.
-                const typeString = data.type.charAt(0).toUpperCase() + data.type.slice(1);
-                innerHtml += `<p><em>Type: ${typeString}</em></p>`;
-            }
-
-            // Properties
-            innerHtml += formatPropertiesForPopup(data.properties, !!data.description);
-
-            // Description
-            if (data.description) {
-                innerHtml += `<p>${data.description}</p>`;
-            }
-
-            // The new wrapper structure
-            if (innerHtml.trim() === '') return '';
-
-            // Note: The onclick handler will be implemented in the next step.
-            return `
-                <div class="popup-content-container">
-                    ${innerHtml}
-                </div>
-                <div class="popup-read-more" onclick="togglePopupExpand(this)">Read More</div>
-            `;
+            // Combine the header, main content container, and button for the final popup HTML.
+            return headerHtml + mainContent + readMoreButton;
         }
 
         // --- Auto-generate a reverse map for quick lookup (Type -> Group) ---
