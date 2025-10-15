@@ -2685,61 +2685,49 @@
         "properties": {}
       },
       {
-        "id": "region-tes",
-        "name": "TES",
+        "id": "region-the-southern-state-of-fair",
+        "name": "The Southern State of Fair",
         "pronunciation": "",
-        "description": "",
+        "description": "Sprawling across the continent's heartland, this vast republic stands as a monument to unity and a crossroads for all peoples. Once a collection of disparate territories, it is now the humming epicenter of culture and governance, where the continent's future is forged in the grand theater of its politics.",
         "summary": "",
         "type": "Political",
         "value": "Republic",
-        "color": "#3388ff",
-        "fillColor": "#3388ff",
+        "color": "#38571a",
+        "fillColor": "#00f900",
         "fillOpacity": 0.2,
         "wikiLink": "",
         "coordinates": [
           [
-            1680,
-            960
+            1632,
+            944
           ],
           [
-            2224,
-            912
+            2240,
+            944
           ],
           [
-            2368,
-            1616
+            2256,
+            1312
           ],
           [
-            2480,
-            2016
-          ],
-          [
-            2480,
+            2464,
             2160
           ],
           [
-            2784,
-            2848
+            2800,
+            2896
           ],
           [
-            2720,
-            3408
+            2656,
+            3440
           ],
           [
-            2560,
-            3424
+            1984,
+            2880
           ],
           [
-            2144,
-            3136
-          ],
-          [
-            1728,
-            2496
-          ],
-          [
-            1584,
-            2096
+            1536,
+            2112
           ]
         ],
         "properties": {}
@@ -3865,10 +3853,10 @@
         "properties": {}
       },
       {
-        "id": "region-the-southern-state-of-fair",
-        "name": "The Southern State of Fair",
+        "id": "region-the-counties-of-fair",
+        "name": "The Counties State of Fair",
         "pronunciation": "",
-        "description": "Sprawling across the continent's heartland, this vast republic stands as a monument to unity and a crossroads for all peoples. Once a collection of disparate territories, it is now the humming epicenter of culture and governance, where the continent's future is forged in the grand theater of its politics.",
+        "description": "",
         "summary": "",
         "type": "Political",
         "value": "Republic",
