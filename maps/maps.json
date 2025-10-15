@@ -2685,6 +2685,66 @@
         "properties": {}
       },
       {
+        "id": "region-tes",
+        "name": "TES",
+        "pronunciation": "",
+        "description": "",
+        "summary": "",
+        "type": "Political",
+        "value": "Republic",
+        "color": "#3388ff",
+        "fillColor": "#3388ff",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            1680,
+            960
+          ],
+          [
+            2224,
+            912
+          ],
+          [
+            2368,
+            1616
+          ],
+          [
+            2480,
+            2016
+          ],
+          [
+            2480,
+            2160
+          ],
+          [
+            2784,
+            2848
+          ],
+          [
+            2720,
+            3408
+          ],
+          [
+            2560,
+            3424
+          ],
+          [
+            2144,
+            3136
+          ],
+          [
+            1728,
+            2496
+          ],
+          [
+            1584,
+            2096
+          ]
+        ],
+        "properties": {}
+      },
+      {
         "id": "region-Tewhal",
         "name": "Tewhal",
         "pronunciation": "",
