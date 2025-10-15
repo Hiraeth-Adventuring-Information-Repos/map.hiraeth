@@ -1894,8 +1894,7 @@
             const sortedLines = [...collectedLines].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
 
             mapToUpdate.scalePixels = parseInt(scalePixelsInput.value) || 3;
-            mapToUpdate.scaleUnits = parseFloat(scaleUnitsInput.value) || 1;
-            delete mapToUpdate.scaleKilometers; // Remove old key if it exists
+            mapToUpdate.scaleKilometers = parseFloat(scaleUnitsInput.value) || 1;
             mapToUpdate.blurb = mapBlurbInput.value || "";
 
             mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
