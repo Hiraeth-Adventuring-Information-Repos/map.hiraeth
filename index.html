@@ -487,6 +487,35 @@
             cursor: pointer;
             font-size: 1.1em;
             padding: 0 0 0 5px;
+            transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+            position: relative; /* For positioning copied message */
+            width: 20px; /* Give it a fixed width */
+            text-align: center;
+        }
+        .copy-coords-btn .copy-coords-icon {
+            display: inline-block;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .copy-coords-btn .copy-coords-copied-msg {
+            display: inline-block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: var(--text-secondary);
+            pointer-events: none; /* Don't intercept clicks */
+        }
+        .copy-coords-btn.copied .copy-coords-icon {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .copy-coords-btn.copied .copy-coords-copied-msg {
+            opacity: 1;
+            transform: translateY(0);
         }
         #toggle-coords-btn {
             top: 226px; /* Position below sound toggle */
@@ -1090,13 +1119,33 @@
         const coordinateControl = L.Control.extend({
             onAdd: function(map) {
                 const container = L.DomUtil.create('div', 'coordinate-control');
-                container.innerHTML = '<span>0.0° N, 0.0° W</span> <button class="copy-coords-btn">📋</button>';
-                container.querySelector('.copy-coords-btn').addEventListener('click', () => {
+                container.innerHTML = `
+                    <span>0.0° N, 0.0° W</span>
+                    <button class="copy-coords-btn" title="Copy Coordinates">
+                        <span class="copy-coords-icon">📋</span>
+                        <span class="copy-coords-copied-msg">✔</span>
+                    </button>
+                `;
+
+                const copyBtn = container.querySelector('.copy-coords-btn');
+                copyBtn.addEventListener('click', () => {
+                    if (copyBtn.classList.contains('copied')) return; // Prevent re-clicking
+
                     const coordsText = container.querySelector('span').innerText;
                     navigator.clipboard.writeText(coordsText).then(() => {
-                        // maybe show a "copied!" message
+                        copyBtn.classList.add('copied');
+                        copyBtn.title = "Copied!";
+
+                        setTimeout(() => {
+                            copyBtn.classList.remove('copied');
+                            copyBtn.title = "Copy Coordinates";
+                        }, 1500); // Reset after 1.5 seconds
+                    }).catch(err => {
+                        console.error('Failed to copy coordinates: ', err);
+                        // Optional: handle error visually
                     });
                 });
+
                 return container;
             },
             update: function(lat, lon) {
