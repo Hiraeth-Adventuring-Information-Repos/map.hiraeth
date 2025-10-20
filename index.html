@@ -1150,7 +1150,7 @@
             },
             update: function(lat, lon) {
                 const latString = `${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? 'N' : 'S'}`;
-                const lonString = `${Math.abs(lon).toFixed(2)}° ${lon >= 0 ? 'E' : 'W'}`;
+                const lonString = `${Math.abs(lon).toFixed(2)}° ${lon >= 0 ? 'W' : 'E'}`;
                 this.getContainer().querySelector('span').innerHTML = `${latString}, ${lonString}`;
             }
         });
