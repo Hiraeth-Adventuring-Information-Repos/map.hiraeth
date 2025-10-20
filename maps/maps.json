@@ -30,6 +30,7 @@
           "Duchy",
           "Territory",
           "Krai",
+          "Meritocracy",
           "Subjugated Territory",
           "Vassal State"
         ],
@@ -2102,6 +2103,46 @@
         "properties": {}
       },
       {
+        "id": "region-nokkar-the-nag",
+        "name": "Nokkar the Nag",
+        "pronunciation": "",
+        "description": "Originally charted as 'The Rest' due to its proximity to a fabled dark fortress on the coast of Icebeach, this remote, ice-bound island has a history steeped in superstition and linguistic corruption. Dwarven mariners, finding the name too serene for such a malevolent place, dubbed it 'Nagargrom' ('spirit-stone' in their tongue). This harsh name was eventually clipped and hardened by human sailors into 'Nokkar.' Over generations, its reputation as a perilous and unavoidable navigational hazard earned it the additional moniker 'the Nag.' Legends persist that the island is not merely a landmark but a source of unnatural cold, a place where compasses fail and ghostly lights dance on its frozen peaks, leading many to believe it is a magical prison or the very anchor of some terrible, undying soul to the mortal plane.",
+        "summary": "Nokkar the Nag is a cursed, frozen island rumored to be a magical prison that disrupts compasses with its unnatural cold.",
+        "type": "Political",
+        "value": "Cursed Land",
+        "color": "#1a1a2a",
+        "fillColor": "#e8eaf6",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            4652,
+            1918
+          ],
+          [
+            4674,
+            1959
+          ],
+          [
+            4644,
+            2010
+          ],
+          [
+            4616,
+            1995
+          ],
+          [
+            4618,
+            1939
+          ],
+          [
+            4641,
+            1921
+          ]
+        ],
+        "properties": {}
+      },
+      {
         "id": "region-oldlin",
         "name": "Oldlin",
         "pronunciation": "olden",
@@ -3977,6 +4018,102 @@
           [
             1722,
             3190
+          ]
+        ],
+        "properties": {}
+      },
+      {
+        "id": "region-ossurian-forges-of-dûr-gromthal",
+        "name": "The Ossurian Forges of Dûr-Gromthal",
+        "pronunciation": "/ðə ɔːˈsʊəriən fɔːrdʒəz əv ˌdʊr ˈɡrɒmθɔːl/",
+        "description": "The Ossurian Forges of Dûr-Gromthal is a formidable, soot-stained dwarven kingdom where the roar of industry has violently supplanted the quiet wisdom of ancestors. Once an Ossuary Kingdom guided by an Undying Council, this ancient leadership was overthrown by the revolutionary Anvilwrights, a faction of smiths and engineers who chose survival over tradition during the last great war. Their coup was sealed by the Hearth-Anvil Compact and a pragmatic, secret pact with the Beccin Empire, trading their industrial might for military protection. Today, Dûr-Gromthal is a relentless meritocracy run by the Forgemasters Guild, serving as the official arsenal of the Empire, and its rune-etched hallmark is a symbol of both imperial power and oppression. This alliance has brought them wealth but also the enmity of rivals like the Iron Duchy and the scorn of traditional dwarves, all while the Guild secretly labors to forge its ultimate weapon: an undying army of clockwork soldiers.",
+        "summary": "The Ossurian Forges of Dûr-Gromthal is an industrial dwarven meritocracy that betrayed its ancestral past to become the powerful, and widely despised, arsenal of the Beccin Empire.",
+        "type": "Political",
+        "value": "Meritocracy",
+        "color": "#919191",
+        "fillColor": "#c0c0c0",
+        "fillOpacity": 0.2,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2524,
+            5455
+          ],
+          [
+            2601,
+            5450
+          ],
+          [
+            2619,
+            5359
+          ],
+          [
+            2684,
+            5344
+          ],
+          [
+            2662,
+            5467
+          ],
+          [
+            2692,
+            5552
+          ],
+          [
+            2615,
+            5547
+          ],
+          [
+            2545,
+            6077
+          ],
+          [
+            2634,
+            6138
+          ],
+          [
+            2503,
+            6150
+          ],
+          [
+            2424,
+            6436
+          ],
+          [
+            2382,
+            6707
+          ],
+          [
+            2370,
+            6851
+          ],
+          [
+            2343,
+            6922
+          ],
+          [
+            2261,
+            6879
+          ],
+          [
+            2271,
+            6797
+          ],
+          [
+            2365,
+            6380
+          ],
+          [
+            2386,
+            6289
+          ],
+          [
+            2424,
+            6089
+          ],
+          [
+            2524,
+            5560
           ]
         ],
         "properties": {}
