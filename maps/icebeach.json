@@ -6,6 +6,12 @@
     "castgate",
     "Flamore"
   ],
+  "latLonBounds": {
+    "north": 73.0,
+    "south": 1.24,
+    "east": 72.65625,
+    "west": -47.34375
+  },
   "width": 7016,
   "height": 4960,
   "imageUrl": "maps/IceBeach.webp",

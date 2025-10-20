@@ -3,6 +3,12 @@
     "type": "folder",
     "id": "main_continent",
     "name": "Content Map",
+    "latLonBounds": {
+      "north": 73.0,
+      "south": 1.24,
+      "east": -48.34375,
+      "west": 71.65625
+    },
     "width": 8192,
     "height": 6144,
     "scalePixels": 1,
