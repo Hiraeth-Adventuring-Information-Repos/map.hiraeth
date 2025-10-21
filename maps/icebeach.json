@@ -8,9 +8,9 @@
   ],
   "latLonBounds": {
     "north": 73.0,
-    "south": 1.24,
-    "east": 72.65625,
-    "west": -47.34375
+    "south": 33,
+    "east": 15,
+    "west": 44
   },
   "width": 7016,
   "height": 4960,
