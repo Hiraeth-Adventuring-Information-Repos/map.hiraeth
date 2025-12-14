@@ -4,7 +4,7 @@
     "id": "main_continent",
     "name": "Content Map",
     "latLonBounds": {
-      "north": 73.0,
+      "north": 73,
       "south": 1.24,
       "east": -48.34375,
       "west": 71.65625
@@ -4855,6 +4855,19 @@
     "pointsOfInterest": [
       {
         "coords": [
+          1636,
+          5351
+        ],
+        "name": "Argyra",
+        "pronunciation": "",
+        "type": "Capital",
+        "description": "A city of breathtaking, ancient silver spires wrapped in a permanent gray fog (industrial smog mixed with coastal mist). It is terrifyingly quiet. The Elven Senate debates for months while the city starves under a literal 'Glass Ceiling' built by the Empire. Oppressive silence, beautiful architecture decaying, surveillance state.",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
           5423,
           3017
         ],
@@ -4935,6 +4948,32 @@
       },
       {
         "coords": [
+          2186,
+          6358
+        ],
+        "name": "Kausis",
+        "pronunciation": "",
+        "type": "Town",
+        "description": "There is no day or night here, only the glow of the furnaces. Raw resources from the West are turned into weapons. The population is mostly indentured servants and Warforged prototypes.",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1554,
+          5465
+        ],
+        "name": "Mnemosyne",
+        "pronunciation": "",
+        "type": "Ruin",
+        "description": "Once the home of the Athenaeum wizards before they defected. Now, a ghost town of empty libraries and locked towers. The Empire forbids entry, claiming 'Magical Radiation' left behind by the traitors.",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
           5302,
           3149
         ],
@@ -4956,6 +4995,19 @@
         "type": "Mountain",
         "description": "The seat of magical power and the death place of Arcana.",
         "summary": "This sacred mountain is the very seat of magical power and the fabled death place of a god.",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1833,
+          4574
+        ],
+        "name": "Obol",
+        "pronunciation": "",
+        "type": "City",
+        "description": "A gambling and banking city built on a cluster of islands connected by bridges. Since the Empire banned Gold, Obol is the only place where 'Heavy Money' is still secretly traded under the table of the Iron Coffers. It is bright, loud, and desperate.",
+        "summary": "",
         "wikiLink": "",
         "properties": {}
       },
@@ -4987,6 +5039,19 @@
       },
       {
         "coords": [
+          2096,
+          5686
+        ],
+        "name": "Stomion",
+        "pronunciation": "",
+        "type": "City",
+        "description": "A massive, grim port city built into a river delta. Beccin 'Customs Officers' act as state-sponsored gangsters, demanding bribes to let fishing boats leave. The air smells of brine and unwashed bodies.",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
           5151,
           2781
         ],
@@ -5010,10 +5075,23 @@
         "summary": "From this imposing fortress, an immortal Empress rules over the islands of the Bash.",
         "wikiLink": "",
         "properties": {}
+      },
+      {
+        "coords": [
+          2320,
+          6710
+        ],
+        "name": "Vincuta",
+        "pronunciation": "",
+        "type": "Fortress",
+        "description": "A brutalist fortress carved into the side of the mountain. This is where Imperial Intelligence operates",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
       }
     ],
     "scaleUnits": 1.3,
-    "roads": [
+    "lines": [
       {
         "id": "line-main_continent-1757961351595-21ron",
         "name": "The Sheer",

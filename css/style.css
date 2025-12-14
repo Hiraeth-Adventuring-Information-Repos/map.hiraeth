@@ -1,0 +1,980 @@
+/* --- Theme Variables --- */
+:root {
+    /* Light Mode Backgrounds */
+    --bg-primary: #fdfaf6; /* Lighter base */
+    --bg-secondary: #f4f0eb; /* Slightly darker secondary */
+
+    /* Light Mode Text */
+    --text-primary: #6b2c25; /* User's Primary Color */
+    --text-secondary: #bb9b73; /* User's Default Link Color */
+    --popup-text: var(--text-primary); /* Match main text */
+
+    /* Light Mode UI Elements */
+    --border-color: #dcd3c8; /* Desaturated brown */
+    --highlight-bg: rgba(212, 163, 106, 0.3); /* Based on Chapter Color w/ alpha */
+    --active-bg: rgba(189, 137, 77, 0.5); /* Based on Page Color w/ alpha */
+    --shadow-color: rgba(107, 44, 37, 0.15); /* Shadow based on primary */
+    --slider-bg: #d4a36a; /* Chapter Color */
+    --slider-color: white;
+    --font-family-main: 'EB Garamond', serif;
+
+    /* Light Mode Frosted Glass */
+    --glass-bg-light: rgba(253, 250, 246, 0.75); /* Based on bg-primary w/ alpha */
+    --glass-border-light: rgba(160, 82, 45, 0.3); /* Based on Shelf Color w/ alpha */
+}
+
+body.dark-theme {
+    /* Dark Mode Backgrounds */
+    --bg-primary: #222034; /* Darker version of user's primary */
+    --bg-secondary: #1b1830; /* Even darker */
+
+    /* Dark Mode Text */
+    --text-primary: #e8e6f2; /* Light text for contrast */
+    --text-secondary: #b9b8e0; /* User's Default Link Color */
+    --popup-text: var(--text-primary);
+
+    /* Dark Mode UI Elements */
+    --border-color: #524f6c; /* User's Primary Color */
+    --highlight-bg: rgba(237, 174, 73, 0.3); /* Based on Chapter Color w/ alpha */
+    --active-bg: rgba(66, 159, 227, 0.4); /* Based on Page Color w/ alpha */
+    --shadow-color: rgba(0, 0, 0, 0.3); /* Darker shadow */
+    --slider-bg: #555;
+    --slider-color: #429fe3; /* User's Page Color */
+    /* font-family is inherited */
+
+    /* Dark Mode Frosted Glass */
+    --glass-bg-dark: rgba(34, 33, 50, 0.7); /* Based on user's primary w/ alpha */
+    --glass-border-dark: rgba(245, 67, 91, 0.3); /* Based on Shelf Color w/ alpha */
+}
+
+/* --- Keyframes for WIP Popup Gradient Pulse --- */
+@keyframes pulseGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* --- /* --- Keyframes for Twinkling Stars --- */
+
+/* --- Base Dark Theme Map Style --- */
+body.dark-theme #map {
+    /* Set the background image */
+    background-image: url('../images/night-sky.webp');
+
+    /* Ensure it tiles */
+    background-repeat: repeat;
+
+    /* Fallback color if image fails */
+    background-color: #050510;
+
+    /* These might no longer be strictly necessary, but often harmless */
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* --- Keyframes for Moving Clouds --- */
+@keyframes moveClouds {
+    from { background-position-x: 0; }
+    to { background-position-x: 1000px; } /* Adjust value based on image width & desired speed */
+}
+
+#map-blurb a,
+#map-blurb a:link,
+#map-blurb a:visited {
+    color: inherit; /* Inherit color from blurb text */
+    text-decoration: underline; /* Standard link underline */
+    transition: color 0.2s ease;
+}
+
+#map-blurb a:hover,
+#map-blurb a:active {
+    color: var(--text-secondary); /* Use secondary color on hover */
+    text-decoration: none; /* Optional: remove underline on hover */
+}
+
+/* Ensure dark theme hover looks okay (it should inherit fine, but explicit rule is safe) */
+body.dark-theme #map-blurb a:hover,
+body.dark-theme #map-blurb a:active {
+        color: var(--text-secondary);
+}
+
+
+/* Apply Variables & Base Styles */
+html, body {
+    height: 100%; margin: 0; padding: 0; font-family: var(--font-family-main);
+    background-color: var(--bg-primary); color: var(--text-primary);
+    overflow: hidden; transition: background-color 0.3s ease, color 0.3s ease;
+}
+.container { display: flex; height: 100%; width: 100%; }
+
+/* Sidebar styling */
+#sidebar {
+    background-color: var(--glass-bg-light); backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); border-right: 1px solid var(--glass-border-light);
+    width: 250px; padding: 15px; box-shadow: 2px 0 15px var(--shadow-color);
+    overflow-y: auto; flex-shrink: 0;
+    transition: width 0.3s ease, padding 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    box-sizing: border-box; position: relative; display: flex; flex-direction: column;
+}
+body.dark-theme #sidebar { background-color: var(--glass-bg-dark); border-right-color: var(--glass-border-dark); }
+#sidebar h2 {
+    margin-top: 0; margin-bottom: 15px; font-size: 1.5rem; font-weight: 600;
+    border-bottom: 1px solid var(--glass-border-light); padding-bottom: 10px;
+    white-space: nowrap; color: var(--text-primary); flex-shrink: 0;
+}
+body.dark-theme #sidebar h2 { border-bottom-color: var(--glass-border-dark); }
+
+/* Sidebar List Styling */
+#map-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+#map-list li { border-radius: 4px; margin-bottom: 3px; overflow: hidden; }
+.map-item {
+    padding: 10px 10px 10px 15px; cursor: pointer; transition: background-color 0.2s ease;
+    white-space: nowrap; text-overflow: ellipsis; font-size: 1.1rem;
+    background-color: transparent; display: block;
+}
+.map-item:hover { background-color: var(--highlight-bg); }
+.map-item.active { background-color: var(--active-bg); font-weight: 600; }
+.folder-header {
+    padding: 10px 5px; cursor: pointer; font-weight: bold; display: flex;
+    align-items: center; transition: background-color 0.2s ease; background-color: transparent;
+    user-select: none; /* Prevent text selection on double click */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+.folder-header:hover { background-color: var(--highlight-bg); }
+/* Style active folder header */
+.folder-header.active {
+        background-color: var(--active-bg);
+        font-weight: 600; /* Match map item active style */
+}
+.folder-toggle-icon { display: inline-block; width: 1.2em; text-align: center; margin-right: 5px; transition: transform 0.2s ease-in-out; }
+.folder.closed > .folder-header .folder-toggle-icon::before { content: '▸'; }
+.folder:not(.closed) > .folder-header .folder-toggle-icon::before { content: '▾'; }
+.nested-list { list-style: none; padding: 0; margin: 0 0 0 15px; max-height: 1000px; overflow: hidden; transition: max-height 0.3s ease-out; }
+.folder.closed > .nested-list { max-height: 0; }
+
+/* --- Coming Soon Sidebar Item Styling --- */
+.map-item.coming-soon, .folder-header.coming-soon {
+    color: var(--text-secondary); /* Use secondary text color */
+    font-style: italic;
+    cursor: not-allowed; /* Indicate non-interactive */
+    opacity: 0.7;
+}
+/* Optional: Prevent hover effect or use a different one */
+.map-item.coming-soon:hover, .folder-header.coming-soon:hover {
+    background-color: transparent; /* No highlight on hover */
+}
+/* Ensure dark theme also looks disabled */
+body.dark-theme .map-item.coming-soon,
+body.dark-theme .folder-header.coming-soon {
+        color: var(--text-secondary); /* Already uses variable */
+}
+body.dark-theme .map-item.coming-soon:hover,
+body.dark-theme .folder-header.coming-soon:hover {
+        background-color: transparent;
+}
+
+/* Map container */
+#map-container { flex-grow: 1; height: 100%; position: relative; overflow: hidden; }
+#map {
+    height: 100%; width: 100%;
+    background-color: var(--bg-secondary);
+    transition: background-color 0.3s ease;
+    position: relative; /* Needed for pseudo-elements */
+    overflow: hidden; /* Needed for pseudo-elements */
+}
+/* --- NEW: Cursor style for measurement tool --- */
+#map.measuring-cursor {
+    cursor: crosshair;
+}
+body.dark-theme #map {
+    /* background-image: url('images/night-sky.png'); */ /* Base static stars - REMOVED for CSS stars */
+    background-repeat: repeat;
+    background-color: #050510;
+}
+
+/* --- Moving Clouds Effect (Light Mode Only) --- */
+body:not(.dark-theme) #map::before,
+body:not(.dark-theme) #map::after {
+    background-image: url('../images/clouds.webp');
+    background-repeat: repeat-x;
+    background-size: auto 300px;
+    background-color: #87CEEB;
+    width: 100%;
+    animation-name: moveClouds;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 0;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    pointer-events: none;
+}
+body:not(.dark-theme) #map::before {
+    background-position: 0 5%; opacity: 0.45; animation-duration: 75s;
+}
+body:not(.dark-theme) #map::after {
+    background-position: 0 20%; opacity: 0.3; animation-duration: 110s; animation-delay: -10s;
+}
+
+body.embedded-view #search-control-container {
+    bottom: 10px; /* Adjust from 40px when bottom bar is hidden */
+}
+/* --- Enhanced Dark Theme Stars --- */
+body.dark-theme #map::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.9) 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.5px, transparent 1px);
+    background-size:
+        75px 75px,
+        50px 50px;
+    background-position:
+        0 0,
+        25px 25px;
+    animation: twinkleEnhanced 8s infinite;
+    opacity: 1; /* Ensure visible */
+}
+
+body.dark-theme #map::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.7px, transparent 1px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.7) 0.3px, transparent 0.6px);
+    background-size:
+        60px 60px,
+        35px 35px;
+    background-position:
+        15px 15px,
+        40px 40px;
+    animation: twinkleSubtle 5s infinite;
+    animation-delay: 2s;
+    opacity: 1; /* Ensure visible */
+}
+
+/* Third star layer for more variety */
+body.dark-theme #map > div:first-child::before { /* Target inner Leaflet container */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0; /* Keep behind map elements */
+    pointer-events: none;
+    background-image:
+        radial-gradient(circle, rgba(220, 240, 255, 0.9) 0.2px, transparent 0.5px);
+    background-size: 30px 30px;
+    background-position: 5px 10px;
+    animation: twinkleEnhanced 6s infinite;
+    animation-delay: 1s;
+    opacity: 1; /* Ensure visible */
+}
+/* --- End Theme Effects --- */
+
+
+/* Map Blurb */
+#map-blurb {
+    position: absolute;
+    top: 50px; 
+    right: 10px;
+    z-index: 999;
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    color: var(--popup-text); /* Use popup text color */
+    border-radius: 6px;
+    padding: 8px 12px;
+    max-width: 250px; /* Limit width */
+    font-size: 0.9rem;
+    box-shadow: 0 1px 5px var(--shadow-color);
+    opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Don't block map clicks when hidden */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Add transform to transition */
+    transform: scale(0.95); /* Start slightly smaller */
+    transform-origin: top right; /* Animate from the corner */
+}
+#map-blurb.visible {
+    opacity: 1;
+    transform: scale(1); /* Scale to full size when visible */
+    pointer-events: auto;
+}
+body.dark-theme #map-blurb {
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+}
+
+/* Popups */
+.leaflet-popup-content-wrapper { background: var(--glass-bg-light); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--popup-text); border-radius: 8px; box-shadow: 0 3px 14px var(--shadow-color); border: 1px solid var(--glass-border-light); }
+.leaflet-popup-tip { background: transparent; box-shadow: none; }
+body.dark-theme .leaflet-popup-content-wrapper { background: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
+.leaflet-popup-content { margin: 15px; font-size: 1.1rem; line-height: 1.5; }
+.leaflet-popup-content h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.3rem; font-weight: 600; color: var(--popup-text); }
+.leaflet-popup-content ul { list-style-type: none; padding: 0; margin: 5px 0 0 0; }
+.leaflet-popup-content li { margin-bottom: 3px; font-size: 0.95rem; }
+.dark-theme .leaflet-popup-close-button { color: var(--text-secondary); }
+.dark-theme .leaflet-popup-close-button:hover { color: var(--text-primary); }
+
+/* --- NEW: Popup Content Limiting --- */
+.popup-content-container {
+    max-height: 150px; /* Initial max height */
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.4s ease-in-out;
+}
+.popup-content-container.expanded {
+    max-height: 500px; /* Height when expanded */
+    overflow-y: auto; /* Add scrollbar if content overflows */
+}
+.popup-read-more {
+    text-align: center;
+    padding-top: 5px;
+    margin-top: -5px; /* Overlap the fade */
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+.popup-summary { display: block; }
+.popup-full-content { display: none; }
+.popup-content-container.expanded .popup-summary { display: none; }
+.popup-content-container.expanded .popup-full-content { display: block; }
+.popup-read-more:hover {
+    text-decoration: underline;
+}
+/* Gradient fade-out effect for non-expanded popups */
+.popup-content-container:not(.expanded)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: transparent;
+    pointer-events: none;
+    z-index: 1;
+}
+body.dark-theme .popup-content-container:not(.expanded)::after {
+    background: transparent;
+}
+
+
+/* --- Popup Link Styling --- */
+.leaflet-popup-content h3 a,
+.leaflet-popup-content h3 a:link,
+.leaflet-popup-content h3 a:visited {
+    color: inherit; /* Inherit color from the h3 (uses --popup-text) */
+    text-decoration: none; /* Remove default underline */
+    border-bottom: 1px dotted; /* Subtle underline */
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+}
+.leaflet-popup-content h3 a:hover,
+.leaflet-popup-content h3 a:active {
+    color: var(--text-secondary); /* Use secondary color on hover */
+    border-bottom-style: solid; /* Make underline solid on hover */
+}
+/* Ensure dark theme hover looks okay */
+body.dark-theme .leaflet-popup-content h3 a:hover,
+body.dark-theme .leaflet-popup-content h3 a:active {
+        color: var(--text-secondary); /* Already uses variable */
+}
+/* Buttons */
+#toggle-sidebar-btn {
+    position: absolute;
+    bottom: 43px;
+    left: 15px;
+    /* Change z-index from 1000 to 1002 (or higher than the popup) */
+    z-index: 1002;
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    color: var(--text-primary);
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    box-shadow: 0 1px 5px var(--shadow-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+#toggle-sidebar-btn:hover { background-color: rgba(255, 255, 255, 0.75); }
+body.dark-theme #toggle-sidebar-btn { background-color: var(--glass-bg-dark); border-color: var(--glass-border-dark); }
+body.dark-theme #toggle-sidebar-btn:hover { background-color: rgba(70, 70, 70, 0.75); }
+.container.sidebar-collapsed #sidebar { width: 0; padding-left: 0; padding-right: 0; overflow: hidden; border-right: none; }
+
+.leaflet-top.leaflet-left {
+    display: flex;
+    align-items: flex-start;
+}
+/* Default Leaflet Zoom Control Styling */
+.leaflet-control-zoom a { background-color: var(--glass-bg-light); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--glass-border-light); color: var(--text-primary); border-bottom: 1px solid var(--glass-border-light); transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
+.leaflet-control-zoom-in { border-bottom: 1px solid var(--glass-border-light); border-radius: 4px 4px 0 0; }
+.leaflet-control-zoom-out { border-radius: 0 0 4px 4px; border: 1px solid var(--glass-border-light); border-top: none; }
+.leaflet-control-zoom a:hover { background-color: rgba(255, 255, 255, 0.75); color: #000; }
+body.dark-theme .leaflet-control-zoom a { background-color: var(--glass-bg-dark); border-color: var(--glass-border-dark); color: var(--text-primary); }
+body.dark-theme .leaflet-control-zoom-in { border-bottom: 1px solid var(--glass-border-dark); }
+body.dark-theme .leaflet-control-zoom-out { border: 1px solid var(--glass-border-dark); border-top: none; }
+body.dark-theme .leaflet-control-zoom a:hover { background-color: rgba(70, 70, 70, 0.75); color: #fff; }
+
+/* --- Coordinate Display Control --- */
+.coordinate-control {
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    color: var(--text-primary);
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-shadow: 0 1px 5px var(--shadow-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    display: none; /* Hide by default */
+    margin-left: 10px;
+}
+body.dark-theme .coordinate-control {
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+}
+.copy-coords-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 0 0 0 5px;
+    transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+    position: relative; /* For positioning copied message */
+    width: 20px; /* Give it a fixed width */
+    text-align: center;
+}
+.copy-coords-btn .copy-coords-icon {
+    display: inline-block;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.copy-coords-btn .copy-coords-copied-msg {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--text-secondary);
+    pointer-events: none; /* Don't intercept clicks */
+}
+.copy-coords-btn.copied .copy-coords-icon {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+.copy-coords-btn.copied .copy-coords-copied-msg {
+    opacity: 1;
+    transform: translateY(0);
+}
+#toggle-coords-btn {
+    top: 226px; /* Position below sound toggle */
+}
+
+/* --- Map Control Buttons Common Style --- */
+.map-control-button {
+    position: absolute;
+    left: 12px; /* Adjusted slightly for default zoom control */
+    z-index: 1000;
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    color: var(--text-primary);
+    border-radius: 4px;
+    padding: 0; /* Remove padding for icon */
+    width: 32px; /* Match zoom control width */
+    height: 30px; /* Match zoom control height */
+    cursor: pointer;
+    font-size: 1.4rem; /* Adjust icon size */
+    line-height: 30px; /* Center icon vertically */
+    text-align: center;
+    box-shadow: 0 1px 5px var(--shadow-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.2s ease;
+    display: none; /* Hide by default, shown via JS */
+}
+.map-control-button:hover {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+/* --- CORRECTED: Blurb Toggle Button --- */
+#toggle-blurb-btn {
+    top: 10px;
+    right: 10px; /* Position in the top right corner */
+    left: auto; /* IMPORTANT: Override the 'left' from .map-control-button */
+    z-index: 1000; /* Ensure it's above the map */
+    display: none; /* Hide by default, JS will show it */
+}
+#toggle-blurb-btn.active {
+        background-color: var(--active-bg);
+}
+/* --- END CORRECTION --- */
+
+body.dark-theme .map-control-button {
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+    color: var(--text-primary);
+}
+body.dark-theme .map-control-button:hover {
+    background-color: rgba(70, 70, 70, 0.75);
+}
+/* --- END: Map Control Buttons Common Style --- */
+
+/* Marker Toggle Button (Now controls Markers & Regions) */
+#toggle-markers-btn {
+    top: 78px; /* Position below zoom controls */
+    /* Inherits from .map-control-button */
+}
+#toggle-markers-btn::before {
+    content: '📍';
+    opacity: 1; /* Default: visible */
+    transition: opacity 0.2s ease;
+}
+#toggle-markers-btn.markers-hidden::before {
+    opacity: 0.5; /* Dimmed when hidden */
+}
+
+/* --- Filter Toggle Button (Now uses Map Icon) --- */
+#toggle-filters-btn {
+    top: 115px; /* Position below marker toggle */
+    /* Inherits from .map-control-button */
+    /* Icon is now applied via JS-injected style */
+}
+/* #toggle-filters-btn::before { ... } - Removed, handled by JS */
+#toggle-filters-btn.active {
+        background-color: var(--active-bg); /* Use active color */
+}
+body.dark-theme #toggle-filters-btn.active {
+        background-color: var(--active-bg); /* Use active color */
+}
+/* --- END: Filter Toggle Button --- */
+
+/* --- Filter Panel Styling (Now includes POI and Region filters) --- */
+#poi-filter-container {
+    position: absolute;
+    top: 110px; /* Align near the filter button */
+    left: 50px; /* Position to the right of the button */
+    z-index: 999; /* Below controls, above map */
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 10px 15px;
+    width: 180px; /* Adjust width as needed */
+    max-height: calc(100vh - 200px); /* Limit height */
+    overflow-y: auto;
+    box-shadow: 0 1px 5px var(--shadow-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: scale(0.95);
+    transform-origin: top left;
+    pointer-events: none; /* Hidden by default */
+}
+#poi-filter-container.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+body.dark-theme #poi-filter-container {
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+}
+#poi-filter-container h3 { /* Style for section headers */
+    margin-top: 10px; /* Add space above subsequent headers */
+    margin-bottom: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--glass-border-light);
+}
+#poi-filter-container h3:first-of-type {
+        margin-top: 0; /* No top margin for the very first header */
+}
+body.dark-theme #poi-filter-container h3 {
+    border-bottom-color: var(--glass-border-dark);
+}
+.filter-item {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    user-select: none;
+}
+.filter-item input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+.filter-item label {
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* --- NEW: Collapsible Filter Group Styling --- */
+.filter-group-header {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    font-weight: bold; /* Make the group name stand out */
+}
+.filter-group-header .folder-toggle-icon { /* Re-use folder icon style */
+    display: inline-block;
+    width: 1.2em;
+    text-align: center;
+    margin-right: 5px;
+    transition: transform 0.2s ease-in-out;
+}
+.filter-group.closed > .filter-group-header .folder-toggle-icon::before {
+    content: '▸';
+}
+.filter-group:not(.closed) > .filter-group-header .folder-toggle-icon::before {
+    content: '▾';
+}
+.nested-filter-list {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 20px; /* Indent nested list */
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+.filter-group.closed > .nested-filter-list {
+    max-height: 0;
+}
+/* --- END: Collapsible Filter Group Styling --- */
+/* --- END: Filter Panel Styling --- */
+
+/* Measure Tool Button */
+#measure-tool-btn {
+    top: 152px; /* Position below filter toggle */
+    /* Inherits from .map-control-button */
+}
+#measure-tool-btn::before {
+    content: '📏'; /* Ruler emoji */
+    opacity: 0.6; /* Default: slightly dimmed */
+}
+#measure-tool-btn.active::before {
+    opacity: 1; /* Full opacity when active */
+}
+#measure-tool-btn.active {
+        background-color: var(--active-bg); /* Use active color */
+}
+body.dark-theme #measure-tool-btn.active {
+        background-color: var(--active-bg); /* Use active color */
+}
+
+/* Sound Toggle Button */
+#toggle-sound-btn {
+    top: 189px; /* Position below measure tool */
+    /* Inherits from .map-control-button */
+    display: block; /* Make visible by default */
+}
+
+/* --- Search Control Container (Bottom Center) --- */
+#search-control-container {
+    position: absolute;
+    bottom: 40px; /* Above bottom link bar */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    border-radius: 6px;
+    padding: 5px 10px;
+    box-shadow: 0 -1px 5px var(--shadow-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+    display: none; /* Hidden by default, shown via JS */
+}
+body.dark-theme #search-control-container {
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+}
+#poi-search-input {
+    width: 250px; /* Adjust width */
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+}
+/* --- END: Search Control Container --- */
+
+/* --- Search Results Container --- */
+#search-results-container {
+    position: absolute;
+    bottom: 80px; /* Above search bar */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001; /* Above search bar, potentially above other controls */
+    background-color: var(--glass-bg-light);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border-light);
+    border-radius: 6px;
+    padding: 5px;
+    box-shadow: 0 -1px 5px var(--shadow-color);
+    width: 270px; /* Match search bar width roughly */
+    max-height: 150px; /* Limit height */
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+body.dark-theme #search-results-container {
+    background-color: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+}
+.search-result-item {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.search-result-item:last-child {
+    margin-bottom: 0;
+}
+.search-result-item:hover {
+    background-color: var(--highlight-bg);
+}
+.search-result-item strong { /* Optional: Highlight matching part */
+    font-weight: bold;
+    color: var(--text-secondary); /* Or another highlight color */
+}
+/* --- END: Search Results Container --- */
+
+
+/* Theme Toggle */
+.theme-switch-wrapper { display: flex; align-items: center; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--glass-border-light); flex-shrink: 0; white-space: nowrap; overflow: hidden; }
+body.dark-theme .theme-switch-wrapper { border-top-color: var(--glass-border-dark); }
+.theme-switch-wrapper span { margin-left: 10px; font-size: 1rem; color: var(--text-secondary); }
+.theme-switch { position: relative; display: inline-block; width: 50px; height: 24px; flex-shrink: 0; }
+.theme-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--slider-bg); transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: #2196F3; } /* Keep blue for dark mode toggle */
+body.dark-theme input:checked + .slider { background-color: var(--slider-color); } /* Use theme variable for dark mode */
+body.dark-theme .slider { background-color: var(--slider-bg); } /* Use theme variable for dark mode */
+input:checked + .slider:before { transform: translateX(26px); }
+.slider.round { border-radius: 24px; }
+.slider.round:before { border-radius: 50%; }
+
+/* Bottom Link Bar */
+#bottom-link-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 28px; background-color: var(--glass-bg-light); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); border-top: 1px solid var(--glass-border-light); box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: 0 15px; z-index: 1000; transition: background-color 0.3s ease, border-color 0.3s ease; }
+#bottom-link-bar a { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; margin: 0 8px; transition: color 0.2s ease; }
+#bottom-link-bar a:hover { color: var(--text-primary); text-decoration: underline; }
+body.dark-theme #bottom-link-bar { background-color: var(--glass-bg-dark); border-top-color: var(--glass-border-dark); }
+body.dark-theme #bottom-link-bar a { color: var(--text-secondary); }
+body.dark-theme #bottom-link-bar a:hover { color: var(--text-primary); }
+
+/* WIP Popup */
+#wip-popup {
+    position: fixed;
+    bottom: 43px;
+    right: 15px;
+    /* Lower z-index to be behind the search bar (z-index: 1000) */
+    z-index: 999;
+    padding: 8px 12px;
+    border: 1px solid var(--glass-border-light);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px var(--shadow-color);
+    transition: border-color 0.3s ease, color 0.3s ease;
+    background: linear-gradient(to right, #ff7e7e, #ffae70, #fff078, #ffae70, #ff7e7e);
+    background-size: 300% 100%;
+    animation: pulseGradient 30s ease-in-out infinite;
+}
+
+#wip-popup p { margin: 0; font-size: 0.8rem; color: var(--text-primary); text-align: center; white-space: nowrap; text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.4); }
+body.dark-theme #wip-popup { border-color: var(--glass-border-dark); }
+body.dark-theme #wip-popup p { text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.6); }
+
+/* --- Measurement Tooltip --- */
+.leaflet-tooltip.measure-tooltip {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    box-shadow: none;
+    font-size: 0.9rem;
+    padding: 3px 6px;
+}
+
+#loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 250px;
+}
+
+.loading-text {
+    margin: 10px 0;
+}
+
+.progress-container {
+    width: 100%;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%; /* Starts at 0% */
+    background-color: #2196F3;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3); /* Light grey border */
+    border-left-color: #fff; /* White for the spinning part */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    margin-right: 10px; /* Space between spinner and text */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@media (max-width: 768px) {
+    /* Styles specifically for screens 768px wide or less */
+
+    #sidebar {
+    width: 200px; /* Example: Make sidebar narrower */
+    /* Or you might hide it completely and use the toggle */
+    }
+    .leaflet-control-zoom {
+    display: none;
+    }
+
+    .map-control-button {
+    /* Example: Make map buttons larger for touch */
+    width: 40px;
+    height: 40px;
+    font-size: 1.6rem;
+    line-height: 40px; /* Adjust line-height too */
+    }
+
+    /* Adjust button positions if needed */
+    #toggle-markers-btn { top: 70px; }
+    #toggle-filters-btn { top: 118px; }
+    #measure-tool-btn { top: 166px; }
+    #toggle-sound-btn { top: 214px; }
+
+    #poi-search-input {
+    width: 180px; /* Example: Adjust search input width */
+    }
+    #search-control-container {
+        /* Maybe adjust padding or position */
+        padding: 5px;
+    }
+
+    #map-blurb {
+    max-width: 150px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    }
+
+    .leaflet-popup-content {
+        font-size: 1rem; /* Slightly smaller popup text */
+    }
+
+    /* Add other adjustments as needed: font sizes, padding, margins */
+}
+
+@media (max-width: 480px) {
+    /* Styles for even smaller screens (optional) */
+    #sidebar {
+        /* Maybe hide it by default on very small screens */
+        /* width: 0; */
+        /* position: fixed; /* Example: make it an overlay */
+        /* height: 100%; */
+        /* left: -200px; /* Start off-screen */
+        /* transition: left 0.3s ease; */
+    }
+    /* Add styles to show/hide overlay sidebar */
+
+    #bottom-link-bar {
+        font-size: 0.75rem; /* Smaller text on bottom bar */
+        height: auto; /* Allow wrapping */
+        padding: 5px;
+        flex-wrap: wrap; /* Allow links to wrap */
+        justify-content: space-around;
+    }
+        #bottom-link-bar a {
+            margin: 2px 5px;
+        }
+}
+@media (max-width: 600px) { /* Adjust breakpoint as needed */
+    #wip-popup {
+            /* Center horizontally */
+            left: 50%;
+            transform: translateX(-50%);
+            /* Remove right positioning */
+            right: auto;
+            /* Position it above the search bar */
+            /* (search bar is bottom: 40px, estimate its height + spacing) */
+            bottom: 85px; /* Adjust this value as needed */
+            /* Ensure it doesn't overlap the toggle button */
+            max-width: calc(100% - 30px); /* Prevent full width */
+    }
+    #wip-popup.fade-out {
+            opacity: 0;
+            transform: translateY(15px); /* Optional slide down */
+            pointer-events: none; /* Prevent interaction after fading */
+    }
+}
