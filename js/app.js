@@ -462,7 +462,7 @@ function updateVisibleMarkersAndSearch() {
 // --- Function to Populate Filter Checkboxes (in the panel) ---
 function populateFilters(pointsOfInterest, mapId) {
     // Clear existing dynamic filters (headers, dividers, specific checkboxes)
-    const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child), .filter-group-container');
+    const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child), .filter-group');
     dynamicElements.forEach(el => el.remove());
 
     const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
@@ -1190,6 +1190,23 @@ function applyTheme(theme) {
     }
 }
 
+themeToggle.addEventListener('change', () => {
+    const newTheme = themeToggle.checked ? 'dark' : 'light';
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    // Update audio track if sound is enabled
+    if (soundEnabled) {
+        if (newTheme === 'dark') {
+            fadeAudio(lightAmbient, 0);
+            fadeAudio(darkAmbient, 0.3);
+        } else {
+            fadeAudio(darkAmbient, 0);
+            fadeAudio(lightAmbient, 0.3);
+        }
+    }
+});
+
 // --- Sound Control Logic ---
 function fadeAudio(audioElement, targetVolume, duration = 1500) { // Shorter fade
     const startVolume = audioElement.volume;
@@ -1321,6 +1338,32 @@ function initializeSoundState() {
     }
     // Make button visible now that state is set (only if not embedded)
     if (toggleSoundBtn) toggleSoundBtn.style.display = 'block';
+}
+
+if (toggleSoundBtn) {
+    toggleSoundBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('soundEnabled', soundEnabled);
+
+        if (soundEnabled) {
+            soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+            toggleSoundBtn.title = "Mute Sound";
+
+            const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
+            if (currentTheme === 'dark') {
+                fadeAudio(darkAmbient, 0.3);
+            } else {
+                fadeAudio(lightAmbient, 0.3);
+            }
+        } else {
+            soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>`;
+            toggleSoundBtn.title = "Unmute Sound";
+
+            fadeAudio(lightAmbient, 0);
+            fadeAudio(darkAmbient, 0);
+        }
+    });
 }
 
 
@@ -1485,7 +1528,7 @@ poiFilterContainer.addEventListener('change', (e) => {
     if (target.classList.contains('region-group-filter')) {
         const isChecked = target.checked;
         const groupName = target.value;
-        const nestedCheckboxes = target.closest('.filter-group-container').querySelectorAll('.region-type-filter');
+        const nestedCheckboxes = target.closest('.filter-group').querySelectorAll('.region-type-filter');
         nestedCheckboxes.forEach(checkbox => {
             if (checkbox.dataset.group === groupName) {
                 checkbox.checked = isChecked;
