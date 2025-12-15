@@ -7,523 +7,660 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* --- Oldschool Style --- */
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-panel: #252526;
+            --bg-hover: #2a2d2e;
+            --bg-input: #3c3c3c;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #3e3e42;
+            --accent: #007acc;
+            --accent-hover: #0062a3;
+            --danger: #f44336;
+            --success: #4caf50;
+            --radius: 4px;
+            --spacing: 12px;
+        }
+
         body {
-            font-family: "MS Sans Serif", "Tahoma", "Verdana", sans-serif;
-            margin: 0; padding: 0; display: flex; flex-direction: column;
-            height: 100vh; background-color: #c0c0c0; color: #000000;
-            font-size: 12px;
-        }
-        .controls {
-            padding: 8px 10px; background-color: #c0c0c0;
-            border-bottom: 2px solid #808080; display: flex; flex-wrap: wrap;
-            gap: 8px; align-items: flex-start;
-        }
-        .mode-selector {
-            display: flex; margin-bottom: 8px;
-        }
-        .mode-tab {
-            padding: 4px 10px; cursor: pointer; background-color: #c0c0c0;
-            border: 1px solid #808080; border-left-color: #ffffff;
-            border-top-color: #ffffff; font-weight: bold;
-            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf;
-        }
-        .mode-tab.active {
-            background-color: #a0a0a0;
-            border: 1px solid #808080; border-right-color: #ffffff;
-            border-bottom-color: #ffffff;
-            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-        }
-        .control-group {
-            display: flex; flex-direction: column; gap: 4px; padding: 6px;
-            border: 1px solid #808080; border-right-color: #ffffff;
-            border-bottom-color: #ffffff; background-color: #c0c0c0;
-            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-        }
-        .control-row { display: flex; align-items: center; gap: 5px; width: 100%; }
-        .controls label {
-            font-weight: normal; white-space: nowrap; font-size: 1em;
-            min-width: 75px; text-align: right; padding-right: 5px;
-        }
-        .controls input[type="text"], .controls select, .controls textarea, .controls input[type="number"], .controls input[type="color"], .controls input[type="file"] {
-            padding: 3px 5px; border: 1px solid #808080; background-color: #ffffff;
-            color: #000000; font-family: inherit; font-size: 1em; flex-grow: 1;
-            box-shadow: inset 1px 1px 1px #404040; box-sizing: border-box;
-        }
-        .controls input[type="file"] {
-            padding: 2px;
-        }
-        .controls input[type="checkbox"] {
-            appearance: none; -webkit-appearance: none;
-            width: 13px; height: 13px;
-            background-color: #ffffff;
-            border: 1px solid #808080;
-            box-shadow: inset 1px 1px 1px #404040;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             margin: 0;
-            position: relative;
-            cursor: pointer;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        /* --- Layout --- */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar {
+            width: 380px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
             flex-shrink: 0;
+            z-index: 10;
         }
-        .controls input[type="checkbox"]:checked::after {
-            content: '✔';
-            position: absolute;
-            top: -2px; left: 1px;
-            font-size: 12px;
-            color: #000000;
+
+        .map-area {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: #111;
         }
-        .controls input[type="color"] {
-            width: 40px; height: 24px; padding: 0; cursor: pointer;
-        }
-        .controls input[type="number"] {
-            width: 60px;
-        }
-        .controls select {
-             appearance: none;
-             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-             background-repeat: no-repeat; background-position: right 5px top 50%;
-             background-size: .65em auto; padding-right: 1.5em;
-        }
-        #fileLoader { min-width: 200px; }
-        #pointDescription, #regionDescription, #mapBlurb, #lineDescription, #pointSummary, #regionSummary, #lineSummary { height: 4.5em; resize: vertical; }
-        .controls button, .output-buttons button, .summary-actions button, .json-modal-copy, .json-modal-close {
-            padding: 4px 10px; cursor: pointer; color: #000000;
-            border: 1px solid #808080; border-left-color: #ffffff;
-            border-top-color: #ffffff; background-color: #c0c0c0;
-            font-size: 1em;
-            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf;
-            text-align: center;
-        }
-        .controls button:active, .output-buttons button:active, .summary-actions button:active, .json-modal-copy:active, .json-modal-close:active {
-             border: 1px solid #808080; border-right-color: #ffffff;
-             border-bottom-color: #ffffff;
-             box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-             background-color: #b0b0b0;
-        }
-        .controls button:disabled, .output-buttons button:disabled, .summary-actions button:disabled {
-            color: #808080; background-color: #c0c0c0; cursor: default;
-            box-shadow: none; border: 1px solid #a0a0a0;
-        }
-        .hidden { display: none !important; }
+
         #map {
-            flex-grow: 1; width: 100%; background-color: #a0a0a0;
-            border-top: 2px solid #808080; border-bottom: 2px solid #808080;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
-        #map.region-creation-mode, #map.vertex-adding-mode, #map.vertex-editing-mode, 
-        #map.line-creation-mode, #map.line-vertex-editing-mode { cursor: crosshair !important; } 
 
-        .bottom-section {
-             display: flex; flex-direction: column;
-             border-top: 2px solid #808080; background-color: #c0c0c0;
+        /* --- Sidebar Components --- */
+        .sidebar-header {
+            padding: var(--spacing);
+            border-bottom: 1px solid var(--border-color);
         }
-        .info-area { display: flex; padding: 8px 10px; gap: 10px; align-items: flex-start; }
-        .left-info { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 180px; }
-        .coords-section { display: flex; align-items: center; gap: 8px; }
-        #coords-display {
-            font-weight: normal; font-family: "Courier New", monospace; background-color: #ffffff;
-            padding: 3px 6px; border: 1px solid #808080; box-shadow: inset 1px 1px 1px #404040;
-            min-width: 90px; text-align: center;
-        }
-        .instructions { font-size: 0.9em; color: #404040; }
-        #status { font-style: normal; color: #000000; font-size: 0.9em; margin-top: 4px; padding: 3px; border: 1px solid transparent; }
-        #status.error { color: #ff0000; font-weight: bold; border: 1px dotted #ff0000; }
-        #status.success { color: #008000; font-weight: bold; border: 1px dotted #008000; }
-        .edit-selection { margin-top: 8px; }
-        .edit-selection label { font-weight: normal; font-size: 1em; margin-bottom: 3px; display: block; text-align: left; }
-        #editPointSelect, #editRegionSelect, #editLineSelect { width: 100%; } 
-        .map-summary {
-            flex-grow: 1; display: flex; flex-direction: column; gap: 6px;
-            padding: 6px; border: 1px solid #808080; border-right-color: #ffffff;
-            border-bottom-color: #ffffff; background-color: #c0c0c0;
-            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-        }
-        .map-summary h3 { margin: 0 0 5px 0; font-size: 1.1em; }
-        .summary-stats p { margin: 2px 0; font-size: 1em; }
-        .summary-stats span { font-weight: bold; }
-        .summary-actions { display: flex; gap: 8px; margin-top: 8px; }
-        .summary-actions button { font-size: 0.9em; }
 
-        .leaflet-popup-content-wrapper { background: #f0f0f0; color: #000000; border: 1px solid #808080; border-radius: 0; box-shadow: 2px 2px 3px rgba(0,0,0,0.3); }
-        .leaflet-popup-content { font-family: inherit; font-size: 1em; margin: 8px 10px; }
-        .leaflet-popup-tip-container { width: 20px; height: 10px; }
-        .leaflet-popup-tip { background: #f0f0f0; border: 1px solid #808080; border-left: none; border-top: none; box-shadow: none; }
-        .leaflet-marker-icon { filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5)); }
-        
-        .vertex-marker, .line-vertex-marker { 
-            background-color: rgba(255, 0, 0, 0.7);
-            border: 1px solid #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.5);
-            cursor: grab;
+        .file-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .vertex-marker:active, .line-vertex-marker:active { cursor: grabbing; }
-        .new-vertex-marker, .new-line-vertex-marker { 
-            background-color: rgba(0, 255, 0, 0.7);
-            border: 1px solid #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+
+        .mode-selector {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
         }
-        .vertex-marker.active, .line-vertex-marker.active {
-            background-color: #00ffff; /* Cyan */
-            border: 2px solid #0000ff; /* Blue */
+
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .mode-tab:hover {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+        }
+
+        .mode-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .sidebar-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: var(--spacing);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing);
+        }
+
+        .sidebar-footer {
+            padding: var(--spacing);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+        }
+
+        /* --- Forms & Controls --- */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-row.inline {
+             flex-direction: row;
+             align-items: center;
+             justify-content: space-between;
+        }
+
+        label {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        textarea,
+        select {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: var(--radius);
+            font-family: inherit;
+            width: 100%;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
 
+        input[type="file"] {
+             padding: 4px;
+        }
 
-        .json-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.6); display: flex;
-            justify-content: center; align-items: center; z-index: 1000;
-            padding: 20px; box-sizing: border-box;
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
         }
-        .json-modal-content {
-            background-color: #c0c0c0; border: 1px solid #808080;
-            border-left-color: #ffffff; border-top-color: #ffffff;
-            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf, 3px 3px 5px rgba(0,0,0,0.3);
-            width: 90%; max-width: 800px; max-height: 90vh;
-            display: flex; flex-direction: column; padding: 10px;
-        }
-        .json-modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #808080;
-        }
-        .json-modal-header h3 { margin: 0; font-size: 1.1em; font-weight: bold; }
-        .json-modal-close { font-size: 1.4em; font-weight: bold; line-height: 1; padding: 0px 6px 2px 6px; }
-        .json-modal-textarea {
-            width: 100%; flex-grow: 1; min-height: 200px;
-            font-family: "Courier New", monospace; font-size: 0.95em;
-            border: 1px solid #808080; background-color: #ffffff; color: #000000;
-            padding: 10px; box-sizing: border-box; margin-bottom: 10px;
-            resize: none; box-shadow: inset 1px 1px 1px #404040;
-            white-space: pre; overflow: auto;
-        }
-        .json-modal-copy { align-self: flex-end; }
 
-        /* --- Custom Properties Styling --- */
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #3e3e42;
+            border-color: #555;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button#addPointBtn,
+        button#startRegionBtn,
+        button#startLineBtn,
+        button#finishRegionBtn,
+        button#finishLineBtn,
+        button#savePointChangesBtn,
+        button#saveRegionChangesBtn,
+        button#saveLineChangesBtn {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        button#addPointBtn:hover:not(:disabled),
+        button#startRegionBtn:hover:not(:disabled),
+        button#startLineBtn:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+        }
+
+        button#cancelPointEditBtn, button#cancelRegionBtn, button#cancelRegionEditBtn, button#cancelLineBtn, button#cancelLineEditBtn {
+             background-color: transparent;
+             border-color: var(--danger);
+             color: var(--danger);
+        }
+        button#cancelPointEditBtn:hover, button#cancelRegionBtn:hover, button#cancelRegionEditBtn:hover, button#cancelLineBtn:hover, button#cancelLineEditBtn:hover {
+             background-color: rgba(244, 67, 54, 0.1);
+        }
+
         .control-group-properties {
-            padding: 6px;
-            margin: 4px 0;
-            border: 1px solid #808080;
-            background-color: #dfdfdf;
-            box-shadow: inset 1px 1px 1px #404040;
-            max-height: 120px; /* Limit height and make scrollable */
+            background-color: #2d2d30;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 8px;
+            max-height: 150px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
+
         .property-row {
             display: flex;
-            gap: 5px;
+            gap: 6px;
+        }
+
+        .property-row input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .remove-property-btn {
+            padding: 0 8px;
+            color: var(--danger);
+            border-color: var(--border-color);
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Info Sections --- */
+        .info-block {
+            background: #2d2d30;
+            padding: 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+
+        .info-block .instructions {
+            display: block;
+            margin-bottom: 8px;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        #coords-display {
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .summary-stats p { margin: 0; color: var(--text-muted); }
+        .summary-stats span { color: var(--text-main); font-weight: bold; }
+
+        .summary-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .summary-actions button { flex: 1; font-size: 0.85em; }
+
+        /* --- Status Bar --- */
+        #status-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 6px 12px;
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
-        .property-row input[type="text"] {
+
+        #status {
+            color: var(--text-main);
+        }
+        #status.error { color: var(--danger); }
+        #status.success { color: var(--success); }
+
+        /* --- Leaflet Overrides --- */
+        .leaflet-container { background: #111; }
+        
+        /* Markers for editing */
+        .vertex-marker, .line-vertex-marker { 
+            background-color: var(--danger);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+        .vertex-marker.active, .line-vertex-marker.active {
+            background-color: #00ffff;
+            border-color: #0000ff;
+        }
+        .new-vertex-marker, .new-line-vertex-marker {
+            background-color: var(--success);
+            border: 1px solid white;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        /* --- Modal --- */
+        .json-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7); backdrop-filter: blur(2px);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .json-modal-content {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 80%; max-width: 900px; height: 80vh;
+            display: flex; flex-direction: column; padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .json-modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px;
+        }
+        .json-modal-header h3 { margin: 0; color: var(--text-main); }
+        .json-modal-close {
+            background: none; border: none; font-size: 1.5em; color: var(--text-muted); padding: 0;
+        }
+        .json-modal-close:hover { color: var(--text-main); background: none; }
+        .json-modal-textarea {
             flex-grow: 1;
-            width: 40%; /* Give them a basis to grow from */
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        .property-row .remove-property-btn {
-            padding: 2px 6px;
-            font-size: 1em;
-            line-height: 1;
-            flex-shrink: 0;
-            font-weight: bold;
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Input Color overrides */
+        input[type="color"] {
+            padding: 0; border: none; height: 32px; cursor: pointer;
         }
-        .control-group-properties > label {
-            font-weight: bold;
-            margin-bottom: 4px;
-            display: block;
-            text-align: left;
-        }
-        /* --- End Custom Properties Styling --- */
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <div class="control-group">
-            <div class="mode-selector">
-                <div class="mode-tab active" data-mode="points">Points</div>
-                <div class="mode-tab" data-mode="regions">Regions</div>
-                <div class="mode-tab" data-mode="lines">Lines</div>
-            </div>
-            <div class="control-row">
-                 <label for="jsonFileInput">Load JSON File:</label>
-                 <input type="file" id="jsonFileInput" accept=".json">
-            </div>
-            <div class="control-row">
-                <label for="subMapSelect">Select Map:</label>
-                <select id="subMapSelect" disabled>
-                    <option value="">-- Load a file first --</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <button id="loadSubMapBtn" disabled>Load Selected Map</button>
-            </div>
-             <div class="control-row">
-                <label for="mapBlurb">Map Blurb:</label>
-                <textarea id="mapBlurb" placeholder="Brief description (HTML allowed)"></textarea>
-            </div>
-             <div class="control-row">
-                <label for="scalePixels">Scale (Pixels):</label>
-                <input type="number" id="scalePixels" value="3" min="1">
-            </div>
-            <div class="control-row">
-                <label for="scaleUnits">Scale (Units):</label>
-                <input type="number" id="scaleUnits" value="1" min="0.1" step="0.1">
-            </div>
-            <div class="control-row">
-                 <button id="exportMapDataBtn" disabled>View/Export All Data (JSON)</button>
-            </div>
-        </div>
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="file-controls">
+                <div class="control-row">
+                    <label for="jsonFileInput">1. Load JSON File</label>
+                    <input type="file" id="jsonFileInput" accept=".json">
+                </div>
+                <div class="control-row">
+                     <label for="subMapSelect">2. Select Map</label>
+                     <select id="subMapSelect" disabled>
+                        <option value="">-- Load file first --</option>
+                     </select>
+                </div>
+                <div class="control-row inline">
+                     <button id="loadSubMapBtn" disabled style="flex:1">Load Map</button>
+                </div>
 
-        <div class="control-group point-controls">
-            <div class="control-row">
-                <label for="pointName">Point Name:</label>
-                <input type="text" id="pointName" placeholder="Click map or select point">
-            </div>
-            <div class="control-row">
-                <label for="pointPronunciation">Pronunciation:</label>
-                <input type="text" id="pointPronunciation" placeholder="e.g., (heer-AHTH) (Optional)">
-            </div>
-            <div class="control-row">
-                <label for="poiTypeSelect">Type:</label>
-                <select id="poiTypeSelect">
-                    <option value="">--Select Type--</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <label for="pointDescription">Description:</label>
-                <textarea id="pointDescription"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="pointSummary">Summary:</label>
-                <textarea id="pointSummary" placeholder="Short summary for unexpanded popup"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="pointWikiLink">Wiki Link:</label>
-                <input type="text" id="pointWikiLink" placeholder="Optional URL">
-            </div>
-            <div class="control-group-properties" id="point-properties-container">
-                <label>Custom Properties:</label>
-                <!-- Dynamic property rows will be inserted here -->
-            </div>
-            <div class="control-row">
-                <button id="addPointPropertyBtn">Add Property</button>
-            </div>
-            <div class="control-row">
-                <button id="addPointBtn" disabled>Add New Point</button>
-                <button id="savePointChangesBtn" class="hidden">Save Changes</button>
-                <button id="cancelPointEditBtn" class="hidden">Cancel Edit</button>
-                <button id="clearPointsBtn" disabled>Clear All Points</button>
-            </div>
-        </div>
-
-        <div class="control-group region-controls hidden">
-            <div class="control-row">
-                <label for="regionName">Region Name:</label>
-                <input type="text" id="regionName" placeholder="Enter region name">
-            </div>
-            <div class="control-row">
-                <label for="regionPronunciation">Pronunciation:</label>
-                <input type="text" id="regionPronunciation" placeholder="e.g., (heer-AHTH) (Optional)">
-            </div>
-            <div class="control-row">
-                <label for="regionTypeSelect">Category (Type):</label>
-                <select id="regionTypeSelect">
-                    <option value="">--Select Type--</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <label for="regionValueInput">Sub-Category (Value):</label>
-                <input type="text" id="regionValueInput" list="regionValueOptions" placeholder="Type or select..." disabled>
-                <datalist id="regionValueOptions"></datalist>
-            </div>
-            <div class="control-row">
-                <label for="regionColor">Border Color:</label>
-                <input type="color" id="regionColor" value="#3388ff">
-            </div>
-            <div class="control-row">
-                <label for="regionFillColor">Fill Color:</label>
-                <input type="color" id="regionFillColor" value="#3388ff">
-            </div>
-            <div class="control-row">
-                <label for="regionOpacity">Fill Opacity:</label>
-                <input type="number" id="regionOpacity" min="0.0" max="1.0" step="0.05" value="0.2">
-            </div>
-            <div class="control-row">
-                <label for="regionDescription">Description:</label>
-                <textarea id="regionDescription"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="regionSummary">Summary:</label>
-                <textarea id="regionSummary" placeholder="Short summary for unexpanded popup"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="regionWikiLink">Wiki Link:</label>
-                <input type="text" id="regionWikiLink" placeholder="Optional URL">
-            </div>
-            <div class="control-group-properties" id="region-properties-container">
-                <label>Custom Properties:</label>
-                <!-- Dynamic property rows will be inserted here -->
-            </div>
-            <div class="control-row">
-                <button id="addRegionPropertyBtn">Add Property</button>
-            </div>
-            <div class="control-row">
-                <button id="startRegionBtn" disabled>Start Region</button>
-                <button id="finishRegionBtn" class="hidden">Finish Region</button>
-                <button id="cancelRegionBtn" class="hidden">Cancel</button>
-                <button id="clearRegionsBtn" disabled>Clear All Regions</button>
-            </div>
-            <div class="control-row">
-                <button id="saveRegionChangesBtn" class="hidden">Save Changes</button>
-                <button id="addVerticesBtn" class="hidden">Add Vertices</button>
-                <button id="editVerticesBtn" class="hidden">Edit Vertices</button>
-                <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
-            </div>
-            <div class="control-row">
-                 <label for="showAllRegionsToggle">Show Others:</label>
-                 <input type="checkbox" id="showAllRegionsToggle">
-                 <span style="font-size: 0.9em; flex-grow: 1; text-align: left;">Show other regions while editing</span>
-            </div>
-        </div>
-
-        <div class="control-group line-controls hidden">
-            <div class="control-row">
-                <label for="lineName">Line Name:</label>
-                <input type="text" id="lineName" placeholder="Enter line name (optional)">
-            </div>
-            <div class="control-row">
-                <label for="linePronunciation">Pronunciation:</label>
-                <input type="text" id="linePronunciation" placeholder="e.g., (heer-AHTH) (Optional)">
-            </div>
-            <div class="control-row">
-                <label for="lineTypeSelect">Type:</label>
-                <select id="lineTypeSelect">
-                    <option value="">--Select Type--</option>
-                    <option value="highway">Highway</option>
-                    <option value="main_road">Main Road</option>
-                    <option value="street">Street</option>
-                    <option value="path">Path</option>
-                    <option value="track">Track</option>
-                    <option value="river">River</option>
-                    <option value="stream">Stream</option>
-                    <option value="cliff">Cliff Edge</option>
-                    <option value="border">Border</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <label for="lineColor">Line Color:</label>
-                <input type="color" id="lineColor" value="#808080">
-            </div>
-            <div class="control-row">
-                <label for="lineWeight">Line Weight:</label>
-                <input type="number" id="lineWeight" min="1" max="20" step="1" value="3">
-            </div>
-            <div class="control-row">
-                <label for="lineDashArray">Dash Array:</label>
-                <input type="text" id="lineDashArray" placeholder="e.g., 5, 5 (optional)">
-            </div>
-            <div class="control-row">
-                <label for="lineDescription">Description:</label>
-                <textarea id="lineDescription"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="lineSummary">Summary:</label>
-                <textarea id="lineSummary" placeholder="Short summary for unexpanded popup"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="lineWikiLink">Wiki Link:</label>
-                <input type="text" id="lineWikiLink" placeholder="Optional URL">
-            </div>
-            <div class="control-group-properties" id="line-properties-container">
-                <label>Custom Properties:</label>
-                <!-- Dynamic property rows will be inserted here -->
-            </div>
-            <div class="control-row">
-                <button id="addLinePropertyBtn">Add Property</button>
-            </div>
-            <div class="control-row">
-                <button id="startLineBtn" disabled>Start Line</button>
-                <button id="finishLineBtn" class="hidden">Finish Line</button>
-                <button id="cancelLineBtn" class="hidden">Cancel</button>
-                <button id="clearLinesBtn" disabled>Clear All Lines</button>
-            </div>
-            <div class="control-row">
-                <button id="saveLineChangesBtn" class="hidden">Save Changes</button>
-                <button id="addLineVerticesBtn" class="hidden">Add Vertices</button>
-                <button id="editLineVerticesBtn" class="hidden">Edit Vertices</button>
-                <button id="cancelLineEditBtn" class="hidden">Cancel Edit</button>
-            </div>
-        </div>
-        <span id="status">Load a JSON file to begin.</span>
-    </div>
-
-    <div id="map"></div>
-
-    <div class="bottom-section">
-        <div class="info-area">
-            <div class="left-info">
-                <div class="point-info">
-                    <span class="instructions">Click map for new coords or drag existing:</span>
-                    <div class="coords-section">
-                        <span id="coords-display">[Y, X]</span>
+                 <!-- Map Settings Collapsible? -->
+                 <details style="margin-top: 8px; font-size:0.9em; color: var(--text-muted);">
+                     <summary style="cursor: pointer;">Map Settings</summary>
+                     <div class="control-row" style="margin-top: 5px;">
+                        <label>Scale (Pixels/Units):</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="scalePixels" value="3" min="1" placeholder="Px">
+                            <input type="number" id="scaleUnits" value="1" min="0.1" step="0.1" placeholder="Km">
+                        </div>
                     </div>
-                    <div class="edit-selection">
+                    <div class="control-row">
+                        <label>Blurb:</label>
+                        <textarea id="mapBlurb" placeholder="Brief description..."></textarea>
+                    </div>
+                 </details>
+            </div>
+        </div>
+
+        <div class="mode-selector">
+            <div class="mode-tab active" data-mode="points">Points</div>
+            <div class="mode-tab" data-mode="regions">Regions</div>
+            <div class="mode-tab" data-mode="lines">Lines</div>
+        </div>
+
+        <div class="sidebar-content">
+            <!-- POINTS CONTENT -->
+            <div class="point-info hidden"> <!-- Used by JS to toggle -->
+                 <div class="info-block">
+                     <span class="instructions">Click map to set coordinates:</span>
+                     <div style="text-align: center;"><span id="coords-display">[Y, X]</span></div>
+                     <div class="control-row">
                         <label for="editPointSelect">Edit Existing Point:</label>
                         <select id="editPointSelect">
-                            <option value="">--Select Point to Edit--</option>
+                            <option value="">-- Select Point --</option>
                         </select>
-                    </div>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="control-group point-controls hidden"> <!-- Used by JS to toggle -->
+                <div class="control-row">
+                    <label>Name & Pronunciation:</label>
+                    <input type="text" id="pointName" placeholder="Name">
+                    <input type="text" id="pointPronunciation" placeholder="Pronunciation (opt)">
                 </div>
-                <div class="region-info hidden">
-                    <span class="instructions">Click map to place vertices:</span>
-                    <div class="coords-section">
-                        <span id="region-vertices-count">0 vertices</span>
-                    </div>
-                    <div class="edit-selection">
-                        <label for="editRegionSelect">Edit Existing Region:</label>
-                        <select id="editRegionSelect">
-                            <option value="">--Select Region to Edit--</option>
-                        </select>
-                    </div>
+                <div class="control-row">
+                    <label>Type:</label>
+                    <select id="poiTypeSelect"><option value="">--Select Type--</option></select>
                 </div>
-                <div class="line-info hidden">
-                    <span class="instructions">Click map to place line vertices:</span>
-                    <div class="coords-section">
-                        <span id="line-vertices-count">0 vertices</span>
-                    </div>
-                    <div class="edit-selection">
-                        <label for="editLineSelect">Edit Existing Line:</label>
-                        <select id="editLineSelect">
-                            <option value="">--Select Line to Edit--</option>
-                        </select>
-                    </div>
+                <div class="control-row">
+                    <label>Description:</label>
+                    <textarea id="pointDescription" placeholder="Detailed description..."></textarea>
+                </div>
+                <div class="control-row">
+                    <label>Summary & Wiki:</label>
+                    <textarea id="pointSummary" placeholder="Short summary..." style="min-height: 40px;"></textarea>
+                    <input type="text" id="pointWikiLink" placeholder="Wiki URL">
+                </div>
+
+                <div class="control-group-properties" id="point-properties-container">
+                    <label>Custom Properties:</label>
+                </div>
+                <button id="addPointPropertyBtn" class="secondary" style="font-size: 0.8em; align-self: flex-start;">+ Add Property</button>
+
+                <div class="control-row" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="addPointBtn" disabled>Add Point</button>
+                    <button id="savePointChangesBtn" class="hidden">Save Changes</button>
+                    <button id="cancelPointEditBtn" class="hidden">Cancel</button>
+                    <button id="clearPointsBtn" disabled style="grid-column: span 2; background: #333; color: #888;">Clear All Points</button>
                 </div>
             </div>
 
-            <div class="map-summary">
-                <h3>Map Data Summary</h3>
-                <div class="summary-stats">
-                    <p>Points: <span id="points-count">0</span></p>
-                    <p>Regions: <span id="regions-count">0</span></p>
-                    <p>Lines: <span id="lines-count">0</span></p>
+
+            <!-- REGIONS CONTENT -->
+            <div class="region-info hidden">
+                 <div class="info-block">
+                     <span class="instructions">Click map to add vertices for polygon.</span>
+                     <div style="text-align: center;"><span id="region-vertices-count" style="color: var(--accent);">0 vertices</span></div>
+                     <div class="control-row">
+                        <label for="editRegionSelect">Edit Existing Region:</label>
+                        <select id="editRegionSelect"><option value="">-- Select Region --</option></select>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="control-group region-controls hidden">
+                <div class="control-row">
+                    <label>Name & Pronunciation:</label>
+                    <input type="text" id="regionName" placeholder="Region Name">
+                    <input type="text" id="regionPronunciation" placeholder="Pronunciation (opt)">
                 </div>
-                <div class="summary-actions">
-                    <button id="viewJsonBtn" disabled>View Complete JSON</button>
-                    <button id="copyJsonBtn" disabled>Copy Complete JSON</button>
+                <div class="control-row">
+                    <label>Category:</label>
+                    <select id="regionTypeSelect"><option value="">-- Type --</option></select>
                 </div>
+                <div class="control-row">
+                    <label>Sub-Category:</label>
+                    <input type="text" id="regionValueInput" list="regionValueOptions" placeholder="Value..." disabled>
+                    <datalist id="regionValueOptions"></datalist>
+                </div>
+                <div class="control-row inline">
+                     <div style="flex:1">
+                        <label>Stroke:</label>
+                        <input type="color" id="regionColor" value="#3388ff" style="width: 100%;">
+                     </div>
+                     <div style="flex:1; margin-left: 8px;">
+                        <label>Fill:</label>
+                        <input type="color" id="regionFillColor" value="#3388ff" style="width: 100%;">
+                     </div>
+                     <div style="flex:1; margin-left: 8px;">
+                        <label>Opacity:</label>
+                        <input type="number" id="regionOpacity" min="0" max="1" step="0.1" value="0.2">
+                     </div>
+                </div>
+                <div class="control-row">
+                    <label>Description & Wiki:</label>
+                    <textarea id="regionDescription" placeholder="Description..."></textarea>
+                    <input type="text" id="regionWikiLink" placeholder="Wiki URL">
+                </div>
+                 <div class="control-row">
+                    <textarea id="regionSummary" placeholder="Short summary..." style="min-height: 40px;"></textarea>
+                </div>
+
+                 <div class="control-group-properties" id="region-properties-container">
+                    <label>Custom Properties:</label>
+                </div>
+                <button id="addRegionPropertyBtn" class="secondary" style="font-size: 0.8em; align-self: flex-start;">+ Add Property</button>
+
+                <div class="control-row" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="startRegionBtn" disabled>Start Region</button>
+                    <button id="finishRegionBtn" class="hidden">Finish Region</button>
+                    <button id="saveRegionChangesBtn" class="hidden">Save Changes</button>
+                    <button id="cancelRegionBtn" class="hidden">Cancel</button>
+                    <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
+                </div>
+
+                <div class="control-row inline hidden" id="region-vertex-tools" style="margin-top: 5px;"> <!-- I'll make sure JS unhides the buttons directly -->
+                     <button id="addVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Add Vertices</button>
+                     <button id="editVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Edit Vertices</button>
+                </div>
+
+                <div class="control-row inline" style="margin-top: 5px;">
+                     <input type="checkbox" id="showAllRegionsToggle" style="width: auto;">
+                     <label for="showAllRegionsToggle" style="margin-left: 5px; flex: 1;">Show others while editing</label>
+                </div>
+
+                <button id="clearRegionsBtn" disabled style="margin-top: 5px; background: #333; color: #888; width: 100%;">Clear All Regions</button>
+            </div>
+
+            <!-- LINES CONTENT -->
+             <div class="line-info hidden">
+                 <div class="info-block">
+                     <span class="instructions">Click map to trace path.</span>
+                     <div style="text-align: center;"><span id="line-vertices-count" style="color: var(--accent);">0 vertices</span></div>
+                     <div class="control-row">
+                        <label for="editLineSelect">Edit Existing Line:</label>
+                        <select id="editLineSelect"><option value="">-- Select Line --</option></select>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="control-group line-controls hidden">
+                 <div class="control-row">
+                    <label>Name & Pronunciation:</label>
+                    <input type="text" id="lineName" placeholder="Line Name">
+                    <input type="text" id="linePronunciation" placeholder="Pronunciation (opt)">
+                </div>
+                 <div class="control-row">
+                    <label>Type:</label>
+                    <select id="lineTypeSelect">
+                        <option value="">--Select Type--</option>
+                        <option value="highway">Highway</option>
+                        <option value="main_road">Main Road</option>
+                        <option value="street">Street</option>
+                        <option value="path">Path</option>
+                        <option value="track">Track</option>
+                        <option value="river">River</option>
+                        <option value="stream">Stream</option>
+                        <option value="cliff">Cliff Edge</option>
+                        <option value="border">Border</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                 <div class="control-row inline">
+                     <div style="flex:1">
+                        <label>Color:</label>
+                        <input type="color" id="lineColor" value="#808080" style="width: 100%;">
+                     </div>
+                     <div style="flex:1; margin-left: 8px;">
+                        <label>Weight:</label>
+                        <input type="number" id="lineWeight" min="1" max="20" value="3">
+                     </div>
+                 </div>
+                 <div class="control-row">
+                     <label>Dash Array (e.g. "5, 5"):</label>
+                     <input type="text" id="lineDashArray">
+                 </div>
+                  <div class="control-row">
+                    <label>Description & Wiki:</label>
+                    <textarea id="lineDescription" placeholder="Description..."></textarea>
+                    <input type="text" id="lineWikiLink" placeholder="Wiki URL">
+                </div>
+                 <div class="control-row">
+                    <textarea id="lineSummary" placeholder="Short summary..." style="min-height: 40px;"></textarea>
+                </div>
+
+                 <div class="control-group-properties" id="line-properties-container">
+                    <label>Custom Properties:</label>
+                </div>
+                <button id="addLinePropertyBtn" class="secondary" style="font-size: 0.8em; align-self: flex-start;">+ Add Property</button>
+
+                 <div class="control-row" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="startLineBtn" disabled>Start Line</button>
+                    <button id="finishLineBtn" class="hidden">Finish Line</button>
+                    <button id="saveLineChangesBtn" class="hidden">Save Changes</button>
+                    <button id="cancelLineBtn" class="hidden">Cancel</button>
+                    <button id="cancelLineEditBtn" class="hidden">Cancel Edit</button>
+                </div>
+                 <div class="control-row inline" style="margin-top: 5px;">
+                     <button id="addLineVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Add Vertices</button>
+                     <button id="editLineVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Edit Vertices</button>
+                </div>
+                 <button id="clearLinesBtn" disabled style="margin-top: 5px; background: #333; color: #888; width: 100%;">Clear All Lines</button>
+
+            </div>
+
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="summary-stats">
+                <p>Points: <span id="points-count">0</span></p>
+                <p>Regions: <span id="regions-count">0</span></p>
+                <p>Lines: <span id="lines-count">0</span></p>
+            </div>
+            <div class="summary-actions">
+                <button id="viewJsonBtn" disabled>View JSON</button>
+                <button id="copyJsonBtn" disabled>Copy JSON</button>
+                <button id="exportMapDataBtn" class="hidden" disabled>View/Export</button> <!-- Kept for ID compatibility but hidden or merged -->
             </div>
         </div>
-    </div>
+    </aside>
+
+    <main class="map-area">
+        <div id="map"></div>
+        <div id="status-bar-container">
+             <span id="status">Load a JSON file to begin.</span>
+             <span style="opacity: 0.6; font-size: 0.8em;">Jules Map Editor</span>
+        </div>
+    </main>
+</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
     <script src="https://unpkg.com/leaflet-geometryutil"></script>
 
-
+    <!-- Paste Original JS Logic Here with minimal tweaks -->
     <script>
         // --- DOM Element References ---
         const mapElement = document.getElementById('map');
@@ -1113,10 +1250,21 @@
                     if (Array.isArray(jsonObject)) {
                         masterMapData = jsonObject;
                         populateSubMapSelector(masterMapData);
-                        setStatus("Manifest file loaded. Select a map from the dropdown.", "success");
+                        setStatus("Manifest file loaded. Select a map.", "success");
                         resetUIForNewMap();
                         subMapSelect.disabled = false;
                         loadSubMapBtn.disabled = false;
+
+                        // NEW: Auto-load if only one map available
+                        const allMaps = [];
+                        function collect(items) { items.forEach(i => { if(i.imageUrl) allMaps.push(i); if(i.children) collect(i.children); }) }
+                        collect(masterMapData);
+
+                        if (allMaps.length === 1) {
+                            subMapSelect.value = allMaps[0].id;
+                            loadMapFromSelector(); // Auto load
+                        }
+
                     } else if (typeof jsonObject === 'object' && jsonObject !== null && jsonObject.imageUrl) {
                         masterMapData = [jsonObject];
                         subMapSelect.innerHTML = `<option value="${jsonObject.id || ''}" selected>${jsonObject.name || 'Single Map'}</option>`;
