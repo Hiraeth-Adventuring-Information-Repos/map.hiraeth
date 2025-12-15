@@ -4,7 +4,7 @@ let loadingProgressInterval = null;
 let loadingProgress = 0;
 let currentRegionGroup = null;
 let regionsVisible = false; // Overall region visibility toggle
-let currentRoadGroup = null; // Holds currently displayed road layers
+let currentRoadGroup = null; // Holds currently displayed road layers (and lines)
 // let regionFiltersPanelVisible = false; // No longer needed as separate panel
 
 // --- Measurement Tool State ---
@@ -468,7 +468,8 @@ function populateFilters(pointsOfInterest, mapId) {
     const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
     const selectedMap = findMapRecursive(mapData, mapId);
     const hasRegions = selectedMap && selectedMap.regions && Array.isArray(selectedMap.regions) && selectedMap.regions.length > 0;
-    const hasRoads = selectedMap && selectedMap.roads && Array.isArray(selectedMap.roads) && selectedMap.roads.length > 0; // New check for roads
+    // Modified: Check for both roads and lines
+    const hasRoads = selectedMap && ((selectedMap.roads && Array.isArray(selectedMap.roads) && selectedMap.roads.length > 0) || (selectedMap.lines && Array.isArray(selectedMap.lines) && selectedMap.lines.length > 0));
 
     // Hide filter button if no POIs, no regions, and no roads
     if (!hasPOIs && !hasRegions && !hasRoads) {
@@ -531,38 +532,12 @@ function populateFilters(pointsOfInterest, mapId) {
                     }
                     tempGroups[region.type].add(region.value);
                 }
-                // Fallback: If region just has 'type' but no 'value' (or vice versa),
-                // we can try to group by 'type' and use 'name' as the value,
-                // OR just group everything under "Regions" -> [Region Name]
-                // For now, let's stick to the type/value structure if possible.
-                // But looking at southern-thalassia.json, regions look like:
-                // { "type": "Territory", "name": "Last Elven State", ... } but NO "value" key?
-                // Wait, the code expects region.type AND region.value.
-
-                // Let's adapt the fallback logic to handle regions that might just have 'type'.
+                // Fallback: If region just has 'type' but no 'value'
                 else if (region.type && region.name) {
-                     // If we have type but no value, maybe the 'name' is what we want to filter?
-                     // Or maybe the 'type' is the category and 'name' is the item.
-                     if (!tempGroups[region.type]) {
+                    if (!tempGroups[region.type]) {
                         tempGroups[region.type] = new Set();
                     }
-                    // For filtering visibility, we usually filter by specific 'values' of a type.
-                    // If the data structure in southern-thalassia doesn't have 'value',
-                    // we need to see what `updateVisibleRegions` expects.
-                    // updateVisibleRegions checks: if (regionsVisible && typeMatch)
-                    // and typeMatch checks: valueFilterValues.has(region.value)
-
-                    // So if region.value is missing, filtering won't work even if we generate the checkbox.
-                    // We must ensure region objects have a 'value' property or we adapt the check.
-
-                    // Temporary fix: In memory, treat 'name' as 'value' if 'value' is missing?
-                    // But we shouldn't modify the raw mapData object permanently if we can avoid it.
-                    // Actually, let's just use 'name' as the value for the filter list AND
-                    // ensure we check against 'name' if 'value' is missing in updateVisibleRegions.
-
                     tempGroups[region.type].add(region.name);
-
-                    // Monkey-patch the region object for this session so updateVisibleRegions works?
                     if (!region.value) region.value = region.name;
                 }
             });
@@ -661,7 +636,9 @@ function populateFilters(pointsOfInterest, mapId) {
         lineHeader.textContent = "Line Types:";
         poiFilterContainer.appendChild(lineHeader);
 
-        const lineTypes = [...new Set(selectedMap.roads.map(r => r.type || "Unnamed Road Type").filter(Boolean))].sort();
+        // Merge roads and lines for filtering
+        const allLines = [...(selectedMap.roads || []), ...(selectedMap.lines || [])];
+        const lineTypes = [...new Set(allLines.map(r => r.type || "Unnamed Road Type").filter(Boolean))].sort();
 
         lineTypes.forEach(type => {
             const filterId = `filter-line-${(type || "untyped").replace(/\s+/g, '-').toLowerCase()}`;
@@ -986,7 +963,8 @@ function loadMap(mapId, updateHash = true) {
     const hasPOIs = allMapMarkers.length > 0;
     // Adjust control visibility based on whether POIs, Regions, or Roads exist
     const hasRegions = selectedMap.regions && selectedMap.regions.length > 0;
-    const hasRoads = selectedMap.roads && selectedMap.roads.length > 0;
+    // Modified: Check for both roads and lines
+    const hasRoads = (selectedMap.roads && selectedMap.roads.length > 0) || (selectedMap.lines && selectedMap.lines.length > 0);
 
     toggleMarkersBtn.style.display = (hasPOIs || hasRegions) ? 'block' : 'none'; // Show if POIs or Regions exist
     searchControlContainer.style.display = hasPOIs ? 'block' : 'none'; // Search for POIs
@@ -1310,11 +1288,16 @@ function addRoadsToMap(mapId) {
     }
 
     const selectedMap = findMapRecursive(mapData, mapId);
-    if (!selectedMap || !selectedMap.roads || !Array.isArray(selectedMap.roads)) {
+    if (!selectedMap) return;
+
+    // NEW: Support both 'roads' and 'lines' arrays
+    const allLines = [...(selectedMap.roads || []), ...(selectedMap.lines || [])];
+
+    if (allLines.length === 0) {
         return;
     }
 
-    selectedMap.roads.forEach(road => {
+    allLines.forEach(road => {
         if (!road.coordinates || road.coordinates.length < 2) {
             console.warn(`Invalid coordinates for road: ${road.name}`);
             return;
