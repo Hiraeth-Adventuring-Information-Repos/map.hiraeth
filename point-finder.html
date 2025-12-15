@@ -107,33 +107,6 @@
             pointer-events: none;
         }
 
-        /* Sidebar Toggle Button */
-        .sidebar-toggle {
-            position: absolute;
-            left: var(--sidebar-width);
-            top: 10px;
-            width: 24px;
-            height: 40px;
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-left: none;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-            z-index: 101;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            transition: left 0.3s ease, background-color 0.2s;
-        }
-        .sidebar.collapsed + .map-area .sidebar-toggle {
-            left: 0;
-        }
-        .sidebar-toggle:hover {
-            background-color: var(--bg-hover);
-            color: var(--text-main);
-        }
-
         /* --- Sidebar Components --- */
         .sidebar-header {
             padding: var(--spacing);
@@ -779,9 +752,6 @@
     </aside>
 
     <main class="map-area">
-        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
-             <span class="icon">❮</span>
-        </button>
         <div id="map"></div>
         <div id="status-bar-container">
              <span id="status">Load a JSON file to begin.</span>
@@ -807,7 +777,6 @@
         const statusDisplay = document.getElementById('status');
         const modeTabs = document.querySelectorAll('.mode-tab');
         const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
         const dropZone = document.getElementById('drop-zone');
         const toastContainer = document.getElementById('toastContainer');
 
@@ -2497,12 +2466,6 @@
 
             // Init Text Toolbar
             new TextToolbar(['pointDescription', 'regionDescription', 'lineDescription', 'mapBlurb']);
-
-            // Sidebar Toggle
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                setTimeout(() => { map.invalidateSize(); }, 300);
-            });
 
             setStatus('Load a JSON file to begin.');
 
