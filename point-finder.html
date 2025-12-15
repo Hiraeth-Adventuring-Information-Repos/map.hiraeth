@@ -23,6 +23,9 @@
             --success: #4caf50;
             --radius: 4px;
             --spacing: 12px;
+            --sidebar-width: 380px;
+            --sidebar-collapsed-width: 0px;
+            --header-height: 40px;
         }
 
         body {
@@ -41,16 +44,26 @@
             display: flex;
             width: 100%;
             height: 100%;
+            position: relative;
+            transition: all 0.3s ease;
         }
 
         .sidebar {
-            width: 380px;
+            width: var(--sidebar-width);
             background-color: var(--bg-panel);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            z-index: 10;
+            z-index: 100;
+            transition: width 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+            border-right: none;
         }
 
         .map-area {
@@ -59,6 +72,7 @@
             display: flex;
             flex-direction: column;
             background-color: #111;
+            transition: margin-left 0.3s ease;
         }
 
         #map {
@@ -66,6 +80,58 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+        }
+
+        /* Drag & Drop Overlay */
+        #drop-zone {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 122, 204, 0.2);
+            border: 4px dashed var(--accent);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Let events pass through initially */
+        }
+        #drop-zone.active {
+            display: flex;
+            pointer-events: auto;
+        }
+        .drop-message {
+            font-size: 2em;
+            color: var(--text-main);
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        /* Sidebar Toggle Button */
+        .sidebar-toggle {
+            position: absolute;
+            left: var(--sidebar-width);
+            top: 10px;
+            width: 24px;
+            height: 40px;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: left 0.3s ease, background-color 0.2s;
+        }
+        .sidebar.collapsed + .map-area .sidebar-toggle {
+            left: 0;
+        }
+        .sidebar-toggle:hover {
+            background-color: var(--bg-hover);
+            color: var(--text-main);
         }
 
         /* --- Sidebar Components --- */
@@ -175,6 +241,38 @@
             min-height: 60px;
             resize: vertical;
         }
+
+        /* Toolbar Styling */
+        .text-toolbar {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 2px;
+            background: #2d2d30;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .text-toolbar + textarea {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .toolbar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        .toolbar-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
 
         button {
             background-color: var(--bg-hover);
@@ -297,7 +395,7 @@
         }
         .summary-actions button { flex: 1; font-size: 0.85em; }
 
-        /* --- Status Bar --- */
+        /* --- Status Bar & Toasts --- */
         #status-bar-container {
             position: absolute;
             bottom: 0;
@@ -312,16 +410,44 @@
             justify-content: space-between;
             align-items: center;
         }
+        #status { color: var(--text-main); }
 
-        #status {
-            color: var(--text-main);
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 40px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2000;
+            pointer-events: none;
         }
-        #status.error { color: var(--danger); }
-        #status.success { color: var(--success); }
+        .toast {
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--accent);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            max-width: 300px;
+        }
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.info { border-left-color: var(--accent); }
+
 
         /* --- Leaflet Overrides --- */
         .leaflet-container { background: #111; }
-        
+
         /* Markers for editing */
         .vertex-marker, .line-vertex-marker { 
             background-color: var(--danger);
@@ -386,8 +512,14 @@
 </head>
 <body>
 
+<div id="drop-zone">
+    <div class="drop-message">Drop JSON file here to load</div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
 <div class="app-layout">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="file-controls">
                 <div class="control-row">
@@ -540,7 +672,7 @@
                     <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
                 </div>
 
-                <div class="control-row inline hidden" id="region-vertex-tools" style="margin-top: 5px;"> <!-- I'll make sure JS unhides the buttons directly -->
+                <div class="control-row inline" id="region-vertex-tools" style="margin-top: 5px;"> <!-- Removed hidden class -->
                      <button id="addVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Add Vertices</button>
                      <button id="editVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Edit Vertices</button>
                 </div>
@@ -647,6 +779,9 @@
     </aside>
 
     <main class="map-area">
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+             <span class="icon">❮</span>
+        </button>
         <div id="map"></div>
         <div id="status-bar-container">
              <span id="status">Load a JSON file to begin.</span>
@@ -659,6 +794,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
     <script src="https://unpkg.com/leaflet-geometryutil"></script>
+    <script src="js/libs/text-toolbar.js"></script>
 
     <!-- Paste Original JS Logic Here with minimal tweaks -->
     <script>
@@ -670,6 +806,10 @@
         const exportMapDataBtn = document.getElementById('exportMapDataBtn');
         const statusDisplay = document.getElementById('status');
         const modeTabs = document.querySelectorAll('.mode-tab');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const dropZone = document.getElementById('drop-zone');
+        const toastContainer = document.getElementById('toastContainer');
 
         const scalePixelsInput = document.getElementById('scalePixels');
         const scaleUnitsInput = document.getElementById('scaleUnits');
@@ -809,6 +949,28 @@
         };
 
         // --- Helper Functions ---
+
+        // Show Toast Function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('visible');
+            });
+
+            // Remove after delay
+            setTimeout(() => {
+                toast.classList.remove('visible');
+                setTimeout(() => {
+                    if (toast.parentNode) toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
         function populateRegionTypeDropdowns() {
             regionTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
             regionValueInput.value = '';
@@ -981,7 +1143,10 @@
             exportMapDataBtn.disabled = !mapLoaded; viewJsonBtn.disabled = !mapLoaded; copyJsonBtn.disabled = !mapLoaded;
         }
 
-        function setStatus(message, type = 'info') { statusDisplay.textContent = message; statusDisplay.className = type; }
+        function setStatus(message, type = 'info') {
+            statusDisplay.textContent = message;
+            statusDisplay.className = type;
+        }
 
         function updateStatus() {
             if (!currentMapObject) { setStatus('Load a JSON file to begin.'); return; }
@@ -1236,11 +1401,8 @@
             updateRegionVerticesCount(); updateLineVerticesCount();
         }
 
-        function handleJsonFileLoad(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
+        // Refactored file processing to reuse for drop and input
+        function processFile(file) {
             setStatus(`Loading ${file.name}...`, 'info');
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -1255,7 +1417,7 @@
                         subMapSelect.disabled = false;
                         loadSubMapBtn.disabled = false;
 
-                        // NEW: Auto-load if only one map available
+                        // Auto-load if only one map available
                         const allMaps = [];
                         function collect(items) { items.forEach(i => { if(i.imageUrl) allMaps.push(i); if(i.children) collect(i.children); }) }
                         collect(masterMapData);
@@ -1272,7 +1434,7 @@
                         loadSubMapBtn.disabled = true;
                         await loadMap(jsonObject);
                     } else {
-                        throw new Error("Invalid JSON format. Must be an array of map objects or a single map object with an 'imageUrl' property.");
+                        throw new Error("Invalid JSON format. Must be an array of map objects or a single map object.");
                     }
 
                 } catch(error) {
@@ -1289,6 +1451,11 @@
                  setStatus(`Error reading file: ${file.name}`, 'error');
             }
             reader.readAsText(file);
+        }
+
+        function handleJsonFileLoad(event) {
+            const file = event.target.files[0];
+            if (file) processFile(file);
         }
 
         async function loadMapFromSelector() {
@@ -1360,6 +1527,7 @@
                 finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions, ${linesImported} lines. `; 
                 finalStatus += `${currentMode === 'points' ? 'Click map for new point' : (currentMode === 'regions' ? 'Fill in region details' : 'Fill in line details')}.`; 
                 setStatus(finalStatus, 'success');
+                showToast(`Map "${currentMapObject.name}" Loaded!`, 'success');
                 
                 addPointBtn.disabled = false; startRegionBtn.disabled = false; startLineBtn.disabled = false; 
                 exportMapDataBtn.disabled = false; viewJsonBtn.disabled = false; copyJsonBtn.disabled = false;
@@ -1530,6 +1698,7 @@
             originalPoint.properties = collectProperties(pointPropertiesContainer);
             if (lastClickedCoordsArray) originalPoint.coords = [...lastClickedCoordsArray];
             updatePointsOutput(); setStatus(`Point "${newName}" updated.`, 'success');
+            showToast('Point Updated', 'success');
             setPointEditingState(false);
         }
         function cancelPointEditing() {
@@ -1557,7 +1726,9 @@
             originalRegion.wikiLink = newWikiLink; originalRegion.color = newColor; originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity; originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
             originalRegion.properties = collectProperties(regionPropertiesContainer);
-            updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success'); setRegionEditingState(false);
+            updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success');
+            showToast('Region Updated', 'success');
+            setRegionEditingState(false);
         }
         function cancelRegionEditing() { 
             setRegionEditingState(false); setStatus('Region editing cancelled.');
@@ -1580,6 +1751,7 @@
             originalLine.wikiLink = newWikiLink;
             originalLine.properties = collectProperties(linePropertiesContainer);
             updateLinesOutput(); setStatus(`Line "${newName || originalLine.id}" updated.`, 'success');
+            showToast('Line Updated', 'success');
             setLineEditState(false);
         }
         function cancelLineEdit() { 
@@ -1641,7 +1813,9 @@
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
             const properties = collectProperties(regionPropertiesContainer);
             collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: regionPronunciation, type: regionType, value: regionValue, description: regionDescription, summary: regionSummary, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
-            updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
+            updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success');
+            showToast('Region Created', 'success');
+            setRegionCreationState(false);
             regionNameInput.value = ''; regionPronunciationInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionSummaryInput.value = ''; regionWikiLinkInput.value = '';
             regionValueOptions.innerHTML = '';
             regionValueInput.disabled = true;
@@ -1659,7 +1833,8 @@
             const lineId = `line-${currentMapObject.id || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
             const properties = collectProperties(linePropertiesContainer);
             collectedLines.push({ id: lineId, name: lineName, pronunciation: linePronunciation, type: lineType, description: lineDescription, summary: lineSummary, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
-            updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success'); 
+            updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success');
+            showToast('Line Created', 'success');
             setLineCreationState(false);
             lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = ''; lineWikiLinkInput.value = '';
             lineColorInput.value = '#808080'; lineWeightInput.value = '3'; lineDashArrayInput.value = '';
@@ -2124,7 +2299,10 @@
             if (!finalData) { setStatus('Copy failed.', 'error'); return; }
             const jsonString = JSON.stringify(finalData, null, 2);
             navigator.clipboard.writeText(jsonString)
-                .then(() => setStatus('Complete map JSON copied!', 'success'))
+                .then(() => {
+                    setStatus('Complete map JSON copied!', 'success');
+                    showToast('Map JSON copied to clipboard!', 'success');
+                })
                 .catch(err => { setStatus('Failed to copy JSON.', 'error'); console.error("Copy JSON error:", err); });
         }
 
@@ -2269,6 +2447,45 @@
             return properties;
         }
 
+        // --- Drag and Drop Logic ---
+        function initDragAndDrop() {
+            let dragCounter = 0;
+
+            document.body.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                dragCounter++;
+                dropZone.classList.add('active');
+            });
+
+            document.body.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dragCounter--;
+                if (dragCounter === 0) {
+                    dropZone.classList.remove('active');
+                }
+            });
+
+            document.body.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Necessary to allow dropping
+            });
+
+            document.body.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                dragCounter = 0;
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type === "application/json" || file.name.endsWith('.json')) {
+                        processFile(file);
+                    } else {
+                        showToast('Only JSON files are supported', 'error');
+                    }
+                }
+            });
+        }
+
 
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -2276,6 +2493,17 @@
             populateTypeDropdown();
             setMode('points');
             resetUIForNewMap(); 
+            initDragAndDrop();
+
+            // Init Text Toolbar
+            new TextToolbar(['pointDescription', 'regionDescription', 'lineDescription', 'mapBlurb']);
+
+            // Sidebar Toggle
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                setTimeout(() => { map.invalidateSize(); }, 300);
+            });
+
             setStatus('Load a JSON file to begin.');
 
             document.addEventListener('keydown', (e) => {
@@ -2310,6 +2538,7 @@
                 const coordsToUse = lastClickedCoordsArray;
                 collectedPoints.push({ coords: coordsToUse, name: name, pronunciation: pronunciation, type: type, description: pointDescriptionInput.value.trim(), summary: pointSummaryInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
                 updatePointsOutput(); setStatus(`Point "${name}" added.`, 'success');
+                showToast('Point Added', 'success');
                 pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
                 displayProperties(pointPropertiesContainer, {});
                 coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true; addPointPropertyBtn.disabled = true;
