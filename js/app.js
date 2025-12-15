@@ -516,72 +516,133 @@ function populateFilters(pointsOfInterest, mapId) {
     }
 
     // PART 2: Add region type filters (NEW HIERARCHICAL LOGIC)
-    if (hasRegions && selectedMap.filterGroups && selectedMap.filterGroups.Regions) {
-        if (hasPOIs) {
-            const divider = document.createElement('hr');
-            divider.style.margin = '10px 0';
-            divider.style.borderColor = 'var(--glass-border-light)';
-            bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
-            poiFilterContainer.appendChild(divider);
+    if (hasRegions) {
+        // Check if explicit filter groups exist, otherwise auto-generate from data
+        let regionFilterGroups = selectedMap.filterGroups && selectedMap.filterGroups.Regions;
+
+        // Auto-generation fallback
+        if (!regionFilterGroups) {
+            const tempGroups = {};
+            selectedMap.regions.forEach(region => {
+                // If region has type and value, group by type
+                if (region.type && region.value) {
+                    if (!tempGroups[region.type]) {
+                        tempGroups[region.type] = new Set();
+                    }
+                    tempGroups[region.type].add(region.value);
+                }
+                // Fallback: If region just has 'type' but no 'value' (or vice versa),
+                // we can try to group by 'type' and use 'name' as the value,
+                // OR just group everything under "Regions" -> [Region Name]
+                // For now, let's stick to the type/value structure if possible.
+                // But looking at southern-thalassia.json, regions look like:
+                // { "type": "Territory", "name": "Last Elven State", ... } but NO "value" key?
+                // Wait, the code expects region.type AND region.value.
+
+                // Let's adapt the fallback logic to handle regions that might just have 'type'.
+                else if (region.type && region.name) {
+                     // If we have type but no value, maybe the 'name' is what we want to filter?
+                     // Or maybe the 'type' is the category and 'name' is the item.
+                     if (!tempGroups[region.type]) {
+                        tempGroups[region.type] = new Set();
+                    }
+                    // For filtering visibility, we usually filter by specific 'values' of a type.
+                    // If the data structure in southern-thalassia doesn't have 'value',
+                    // we need to see what `updateVisibleRegions` expects.
+                    // updateVisibleRegions checks: if (regionsVisible && typeMatch)
+                    // and typeMatch checks: valueFilterValues.has(region.value)
+
+                    // So if region.value is missing, filtering won't work even if we generate the checkbox.
+                    // We must ensure region objects have a 'value' property or we adapt the check.
+
+                    // Temporary fix: In memory, treat 'name' as 'value' if 'value' is missing?
+                    // But we shouldn't modify the raw mapData object permanently if we can avoid it.
+                    // Actually, let's just use 'name' as the value for the filter list AND
+                    // ensure we check against 'name' if 'value' is missing in updateVisibleRegions.
+
+                    tempGroups[region.type].add(region.name);
+
+                    // Monkey-patch the region object for this session so updateVisibleRegions works?
+                    if (!region.value) region.value = region.name;
+                }
+            });
+
+            // Convert Sets to Arrays for processing
+            if (Object.keys(tempGroups).length > 0) {
+                regionFilterGroups = {};
+                for (const key in tempGroups) {
+                    regionFilterGroups[key] = Array.from(tempGroups[key]).sort();
+                }
+            }
         }
-        const regionHeader = document.createElement('h3');
-        regionHeader.textContent = "Region Types:";
-        poiFilterContainer.appendChild(regionHeader);
 
-        const regionFilterGroups = selectedMap.filterGroups.Regions;
+        if (regionFilterGroups && Object.keys(regionFilterGroups).length > 0) {
+            if (hasPOIs) {
+                const divider = document.createElement('hr');
+                divider.style.margin = '10px 0';
+                divider.style.borderColor = 'var(--glass-border-light)';
+                if (bodyElement.classList.contains('dark-theme')) {
+                    divider.style.borderColor = 'var(--glass-border-dark)';
+                }
+                poiFilterContainer.appendChild(divider);
+            }
+            const regionHeader = document.createElement('h3');
+            regionHeader.textContent = "Region Types:";
+            poiFilterContainer.appendChild(regionHeader);
 
-        for (const groupName in regionFilterGroups) {
-            if (Object.hasOwnProperty.call(regionFilterGroups, groupName)) {
-                const values = regionFilterGroups[groupName];
-                if (!Array.isArray(values) || values.length === 0) continue;
+            for (const groupName in regionFilterGroups) {
+                if (Object.hasOwnProperty.call(regionFilterGroups, groupName)) {
+                    const values = regionFilterGroups[groupName];
+                    if (!Array.isArray(values) || values.length === 0) continue;
 
-                const groupContainer = document.createElement('div');
-                groupContainer.className = 'filter-group closed'; // Start as closed
+                    const groupContainer = document.createElement('div');
+                    groupContainer.className = 'filter-group closed'; // Start as closed
 
-                const groupHeader = document.createElement('div');
-                groupHeader.className = 'filter-group-header';
-                groupHeader.innerHTML = `<span class="folder-toggle-icon"></span>`;
+                    const groupHeader = document.createElement('div');
+                    groupHeader.className = 'filter-group-header';
+                    groupHeader.innerHTML = `<span class="folder-toggle-icon"></span>`;
 
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'filter-item';
-                const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
-                const groupCheckbox = document.createElement('input');
-                groupCheckbox.type = 'checkbox';
-                groupCheckbox.id = groupFilterId;
-                groupCheckbox.value = groupName;
-                groupCheckbox.checked = true;
-                groupCheckbox.className = 'region-group-filter';
-                const groupLabel = document.createElement('label');
-                groupLabel.htmlFor = groupFilterId;
-                groupLabel.textContent = groupName;
-                groupDiv.appendChild(groupCheckbox);
-                groupDiv.appendChild(groupLabel);
-                groupHeader.appendChild(groupDiv);
-                groupContainer.appendChild(groupHeader);
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'filter-item';
+                    const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
+                    const groupCheckbox = document.createElement('input');
+                    groupCheckbox.type = 'checkbox';
+                    groupCheckbox.id = groupFilterId;
+                    groupCheckbox.value = groupName;
+                    groupCheckbox.checked = true;
+                    groupCheckbox.className = 'region-group-filter';
+                    const groupLabel = document.createElement('label');
+                    groupLabel.htmlFor = groupFilterId;
+                    groupLabel.textContent = groupName;
+                    groupDiv.appendChild(groupCheckbox);
+                    groupDiv.appendChild(groupLabel);
+                    groupHeader.appendChild(groupDiv);
+                    groupContainer.appendChild(groupHeader);
 
-                const nestedList = document.createElement('div');
-                nestedList.className = 'nested-filter-list';
+                    const nestedList = document.createElement('div');
+                    nestedList.className = 'nested-filter-list';
 
-                values.forEach(value => {
-                    const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
-                    const div = document.createElement('div');
-                    div.className = 'filter-item';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = filterId;
-                    checkbox.value = value;
-                    checkbox.checked = true;
-                    checkbox.className = 'region-type-filter';
-                    checkbox.dataset.group = groupName;
-                    const label = document.createElement('label');
-                    label.htmlFor = filterId;
-                    label.textContent = value;
-                    div.appendChild(checkbox);
-                    div.appendChild(label);
-                    nestedList.appendChild(div);
-                });
-                groupContainer.appendChild(nestedList);
-                poiFilterContainer.appendChild(groupContainer);
+                    values.forEach(value => {
+                        const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
+                        const div = document.createElement('div');
+                        div.className = 'filter-item';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = filterId;
+                        checkbox.value = value;
+                        checkbox.checked = true;
+                        checkbox.className = 'region-type-filter';
+                        checkbox.dataset.group = groupName;
+                        const label = document.createElement('label');
+                        label.htmlFor = filterId;
+                        label.textContent = value;
+                        div.appendChild(checkbox);
+                        div.appendChild(label);
+                        nestedList.appendChild(div);
+                    });
+                    groupContainer.appendChild(nestedList);
+                    poiFilterContainer.appendChild(groupContainer);
+                }
             }
         }
     }
