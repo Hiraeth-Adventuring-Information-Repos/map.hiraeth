@@ -3,8 +3,7 @@
   "id": "IceBeach",
   "name": "IceBeach",
   "children": [
-    "castgate",
-    "Flamore"
+    "castgate"
   ],
   "latLonBounds": {
     "north": 73.0,

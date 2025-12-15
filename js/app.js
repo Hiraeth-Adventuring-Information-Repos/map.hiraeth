@@ -312,10 +312,18 @@ function setSidebarState(state, updateHash = true) {
     const shouldBeCollapsed = (state === 'c');
     const isCurrentlyCollapsed = container.classList.contains('sidebar-collapsed');
     if (shouldBeCollapsed !== isCurrentlyCollapsed) {
-        console.log(`Setting sidebar state to: ${state}`);
         container.classList.toggle('sidebar-collapsed', shouldBeCollapsed);
-        toggleBtn.innerHTML = shouldBeCollapsed ? '&raquo;' : '&laquo;';
-        toggleBtn.title = shouldBeCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar';
+
+        // Update SVG direction
+        if (shouldBeCollapsed) {
+            // Point Right (Expand)
+             toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`;
+             toggleBtn.title = 'Expand Sidebar';
+        } else {
+            // Point Left (Collapse)
+            toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`;
+            toggleBtn.title = 'Collapse Sidebar';
+        }
 
         // Invalidate map size after CSS transition completes
         setTimeout(() => { map.invalidateSize({ animate: true }); }, transitionDuration);
@@ -326,12 +334,10 @@ function setSidebarState(state, updateHash = true) {
             const newHash = generateHash(currentlyLoadedMapId, state);
             const currentSearch = window.location.search;
             const newUrl = `${currentSearch}${newHash}`;
-            console.log("Updating URL from setSidebarState:", newUrl);
             history.replaceState(null, '', newUrl); // Use replaceState for sidebar toggle
             }
     } else {
             currentSidebarState = state;
-            console.log(`Sidebar already in state: ${state}`);
     }
 }
 
@@ -456,7 +462,7 @@ function updateVisibleMarkersAndSearch() {
 // --- Function to Populate Filter Checkboxes (in the panel) ---
 function populateFilters(pointsOfInterest, mapId) {
     // Clear existing dynamic filters (headers, dividers, specific checkboxes)
-    const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child), .filter-group-container');
+    const dynamicElements = poiFilterContainer.querySelectorAll('h3:not(:first-of-type), hr, .filter-item:not(:first-child), .filter-group');
     dynamicElements.forEach(el => el.remove());
 
     const hasPOIs = pointsOfInterest && pointsOfInterest.length > 0;
@@ -510,72 +516,133 @@ function populateFilters(pointsOfInterest, mapId) {
     }
 
     // PART 2: Add region type filters (NEW HIERARCHICAL LOGIC)
-    if (hasRegions && selectedMap.filterGroups && selectedMap.filterGroups.Regions) {
-        if (hasPOIs) {
-            const divider = document.createElement('hr');
-            divider.style.margin = '10px 0';
-            divider.style.borderColor = 'var(--glass-border-light)';
-            bodyElement.classList.contains('dark-theme') && (divider.style.borderColor = 'var(--glass-border-dark)');
-            poiFilterContainer.appendChild(divider);
+    if (hasRegions) {
+        // Check if explicit filter groups exist, otherwise auto-generate from data
+        let regionFilterGroups = selectedMap.filterGroups && selectedMap.filterGroups.Regions;
+
+        // Auto-generation fallback
+        if (!regionFilterGroups) {
+            const tempGroups = {};
+            selectedMap.regions.forEach(region => {
+                // If region has type and value, group by type
+                if (region.type && region.value) {
+                    if (!tempGroups[region.type]) {
+                        tempGroups[region.type] = new Set();
+                    }
+                    tempGroups[region.type].add(region.value);
+                }
+                // Fallback: If region just has 'type' but no 'value' (or vice versa),
+                // we can try to group by 'type' and use 'name' as the value,
+                // OR just group everything under "Regions" -> [Region Name]
+                // For now, let's stick to the type/value structure if possible.
+                // But looking at southern-thalassia.json, regions look like:
+                // { "type": "Territory", "name": "Last Elven State", ... } but NO "value" key?
+                // Wait, the code expects region.type AND region.value.
+
+                // Let's adapt the fallback logic to handle regions that might just have 'type'.
+                else if (region.type && region.name) {
+                     // If we have type but no value, maybe the 'name' is what we want to filter?
+                     // Or maybe the 'type' is the category and 'name' is the item.
+                     if (!tempGroups[region.type]) {
+                        tempGroups[region.type] = new Set();
+                    }
+                    // For filtering visibility, we usually filter by specific 'values' of a type.
+                    // If the data structure in southern-thalassia doesn't have 'value',
+                    // we need to see what `updateVisibleRegions` expects.
+                    // updateVisibleRegions checks: if (regionsVisible && typeMatch)
+                    // and typeMatch checks: valueFilterValues.has(region.value)
+
+                    // So if region.value is missing, filtering won't work even if we generate the checkbox.
+                    // We must ensure region objects have a 'value' property or we adapt the check.
+
+                    // Temporary fix: In memory, treat 'name' as 'value' if 'value' is missing?
+                    // But we shouldn't modify the raw mapData object permanently if we can avoid it.
+                    // Actually, let's just use 'name' as the value for the filter list AND
+                    // ensure we check against 'name' if 'value' is missing in updateVisibleRegions.
+
+                    tempGroups[region.type].add(region.name);
+
+                    // Monkey-patch the region object for this session so updateVisibleRegions works?
+                    if (!region.value) region.value = region.name;
+                }
+            });
+
+            // Convert Sets to Arrays for processing
+            if (Object.keys(tempGroups).length > 0) {
+                regionFilterGroups = {};
+                for (const key in tempGroups) {
+                    regionFilterGroups[key] = Array.from(tempGroups[key]).sort();
+                }
+            }
         }
-        const regionHeader = document.createElement('h3');
-        regionHeader.textContent = "Region Types:";
-        poiFilterContainer.appendChild(regionHeader);
 
-        const regionFilterGroups = selectedMap.filterGroups.Regions;
+        if (regionFilterGroups && Object.keys(regionFilterGroups).length > 0) {
+            if (hasPOIs) {
+                const divider = document.createElement('hr');
+                divider.style.margin = '10px 0';
+                divider.style.borderColor = 'var(--glass-border-light)';
+                if (bodyElement.classList.contains('dark-theme')) {
+                    divider.style.borderColor = 'var(--glass-border-dark)';
+                }
+                poiFilterContainer.appendChild(divider);
+            }
+            const regionHeader = document.createElement('h3');
+            regionHeader.textContent = "Region Types:";
+            poiFilterContainer.appendChild(regionHeader);
 
-        for (const groupName in regionFilterGroups) {
-            if (Object.hasOwnProperty.call(regionFilterGroups, groupName)) {
-                const values = regionFilterGroups[groupName];
-                if (!Array.isArray(values) || values.length === 0) continue;
+            for (const groupName in regionFilterGroups) {
+                if (Object.hasOwnProperty.call(regionFilterGroups, groupName)) {
+                    const values = regionFilterGroups[groupName];
+                    if (!Array.isArray(values) || values.length === 0) continue;
 
-                const groupContainer = document.createElement('div');
-                groupContainer.className = 'filter-group closed'; // Start as closed
+                    const groupContainer = document.createElement('div');
+                    groupContainer.className = 'filter-group closed'; // Start as closed
 
-                const groupHeader = document.createElement('div');
-                groupHeader.className = 'filter-group-header';
-                groupHeader.innerHTML = `<span class="folder-toggle-icon"></span>`;
+                    const groupHeader = document.createElement('div');
+                    groupHeader.className = 'filter-group-header';
+                    groupHeader.innerHTML = `<span class="folder-toggle-icon"></span>`;
 
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'filter-item';
-                const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
-                const groupCheckbox = document.createElement('input');
-                groupCheckbox.type = 'checkbox';
-                groupCheckbox.id = groupFilterId;
-                groupCheckbox.value = groupName;
-                groupCheckbox.checked = true;
-                groupCheckbox.className = 'region-group-filter';
-                const groupLabel = document.createElement('label');
-                groupLabel.htmlFor = groupFilterId;
-                groupLabel.textContent = groupName;
-                groupDiv.appendChild(groupCheckbox);
-                groupDiv.appendChild(groupLabel);
-                groupHeader.appendChild(groupDiv);
-                groupContainer.appendChild(groupHeader);
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'filter-item';
+                    const groupFilterId = `filter-region-group-${groupName.replace(/\s+/g, '-')}`;
+                    const groupCheckbox = document.createElement('input');
+                    groupCheckbox.type = 'checkbox';
+                    groupCheckbox.id = groupFilterId;
+                    groupCheckbox.value = groupName;
+                    groupCheckbox.checked = true;
+                    groupCheckbox.className = 'region-group-filter';
+                    const groupLabel = document.createElement('label');
+                    groupLabel.htmlFor = groupFilterId;
+                    groupLabel.textContent = groupName;
+                    groupDiv.appendChild(groupCheckbox);
+                    groupDiv.appendChild(groupLabel);
+                    groupHeader.appendChild(groupDiv);
+                    groupContainer.appendChild(groupHeader);
 
-                const nestedList = document.createElement('div');
-                nestedList.className = 'nested-filter-list';
+                    const nestedList = document.createElement('div');
+                    nestedList.className = 'nested-filter-list';
 
-                values.forEach(value => {
-                    const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
-                    const div = document.createElement('div');
-                    div.className = 'filter-item';
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = filterId;
-                    checkbox.value = value;
-                    checkbox.checked = true;
-                    checkbox.className = 'region-type-filter';
-                    checkbox.dataset.group = groupName;
-                    const label = document.createElement('label');
-                    label.htmlFor = filterId;
-                    label.textContent = value;
-                    div.appendChild(checkbox);
-                    div.appendChild(label);
-                    nestedList.appendChild(div);
-                });
-                groupContainer.appendChild(nestedList);
-                poiFilterContainer.appendChild(groupContainer);
+                    values.forEach(value => {
+                        const filterId = `filter-region-value-${value.replace(/\s+/g, '-')}`;
+                        const div = document.createElement('div');
+                        div.className = 'filter-item';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = filterId;
+                        checkbox.value = value;
+                        checkbox.checked = true;
+                        checkbox.className = 'region-type-filter';
+                        checkbox.dataset.group = groupName;
+                        const label = document.createElement('label');
+                        label.htmlFor = filterId;
+                        label.textContent = value;
+                        div.appendChild(checkbox);
+                        div.appendChild(label);
+                        nestedList.appendChild(div);
+                    });
+                    groupContainer.appendChild(nestedList);
+                    poiFilterContainer.appendChild(groupContainer);
+                }
             }
         }
     }
@@ -717,7 +784,6 @@ function loadMap(mapId, updateHash = true) {
     // --- This block was removed as the logic is now handled by the history.pushState below ---
 
     if (mapId === currentlyLoadedMapId) {
-        console.log(`Map ${mapId} is already loaded.`);
         if (updateHash) {
             // --- FIX: Ensure the full correct URL is in the history state ---
             const newHash = generateHash(mapId, currentSidebarState);
@@ -734,13 +800,11 @@ function loadMap(mapId, updateHash = true) {
         return;
     }
 
-    console.log(`Loading map: ${selectedMap.name} (ID: ${mapId})`);
 
     // Initialize Layer Groups for this map load
     currentMarkerGroup = L.layerGroup(); // Not added to map until populated
     currentRegionGroup = L.layerGroup().addTo(map); // Add to map immediately
     currentRoadGroup = L.layerGroup().addTo(map);   // Add to map immediately
-    console.log("Initialized currentRoadGroup in loadMap:", currentRoadGroup, "Is L.LayerGroup:", currentRoadGroup instanceof L.LayerGroup);
 
 
     const mapHeight = selectedMap.height;
@@ -785,7 +849,6 @@ function loadMap(mapId, updateHash = true) {
         loadingComplete = true;
         clearTimeout(loadingTimeout);
 
-        console.log("Image overlay loaded (or timed out).");
         if (loadingIndicator) {
             const progressBarEl = loadingIndicator.querySelector('.progress-bar');
             if (progressBarEl) {
@@ -893,7 +956,6 @@ function loadMap(mapId, updateHash = true) {
     updateVisibleRegions();
 
     addRoadsToMap(mapId); // Populates currentRoadGroup
-    console.log("currentRoadGroup before bringToBack in loadMap:", currentRoadGroup, "Is L.LayerGroup:", currentRoadGroup instanceof L.LayerGroup);
 
 
     // Adjust layering order as desired
@@ -995,7 +1057,6 @@ function loadMap(mapId, updateHash = true) {
             `${currentSearch}${newHash}`
         );
     }
-    console.log(`Finished setting up map load for: ${selectedMap.name}`);
 }
 
 // --- Function to add regions to map ---
@@ -1008,7 +1069,6 @@ function addRegionsToMap(mapId) {
 
     const selectedMap = findMapRecursive(mapData, mapId);
     if (!selectedMap || !selectedMap.regions || !Array.isArray(selectedMap.regions)) {
-        console.log(`No regions found for map: ${mapId}`);
         return;
     }
 
@@ -1094,18 +1154,15 @@ function updateVisibleRegions() {
 // --- Populate Sidebar (Recursive Function) ---
 function populateSidebar(parentElement, items) {
     // Add this log at the start of the function
-    console.log(`Populating sidebar for parent:`, parentElement, 'with items:', items);
 
     parentElement.innerHTML = '';
     items.forEach(item => {
         // Add this log inside the loop
-        console.log(`Processing item:`, JSON.stringify(item)); // Stringify to see the whole object easily
 
         const listItem = document.createElement('li');
 
         if (item.type === 'folder') {
             // Add this log for folders
-            console.log(`-- It's a Folder. Name: '${item.name}', Status: '${item.status}'`);
 
             listItem.classList.add('folder', 'closed');
             const header = document.createElement('div');
@@ -1117,11 +1174,9 @@ function populateSidebar(parentElement, items) {
 
             if (item.children && item.children.length > 0) {
                 // Log before recursion
-                console.log(`---- Populating children for folder '${item.name}'`);
                 populateSidebar(nestedList, item.children);
             } else {
                 // Log if no children
-                console.log(`---- Folder '${item.name}' has no children.`);
             }
 
             header.addEventListener('click', (e) => {
@@ -1153,7 +1208,6 @@ function populateSidebar(parentElement, items) {
 
         } else { // Map Item
             // Add this log for map items
-            console.log(`-- It's a Map Item. Name: '${item.name}', Status: '${item.status}'`);
 
             listItem.classList.add('map-item');
             listItem.textContent = item.name || 'Unnamed Map!'; // Add fallback text
@@ -1197,6 +1251,23 @@ function applyTheme(theme) {
     }
 }
 
+themeToggle.addEventListener('change', () => {
+    const newTheme = themeToggle.checked ? 'dark' : 'light';
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    // Update audio track if sound is enabled
+    if (soundEnabled) {
+        if (newTheme === 'dark') {
+            fadeAudio(lightAmbient, 0);
+            fadeAudio(darkAmbient, 0.3);
+        } else {
+            fadeAudio(darkAmbient, 0);
+            fadeAudio(lightAmbient, 0.3);
+        }
+    }
+});
+
 // --- Sound Control Logic ---
 function fadeAudio(audioElement, targetVolume, duration = 1500) { // Shorter fade
     const startVolume = audioElement.volume;
@@ -1215,7 +1286,6 @@ function fadeAudio(audioElement, targetVolume, duration = 1500) { // Shorter fad
         } else {
             if (targetVolume === 0 && !audioElement.paused) {
                 audioElement.pause();
-                console.log("Paused:", audioElement.id);
             }
         }
     }
@@ -1223,9 +1293,8 @@ function fadeAudio(audioElement, targetVolume, duration = 1500) { // Shorter fad
     if (targetVolume > 0 && audioElement.paused) {
         audioElement.volume = 0; // Start from silent
         audioElement.play().then(() => {
-            console.log("Playing:", audioElement.id);
             requestAnimationFrame(updateVolume);
-        }).catch(e => console.log('Audio play prevented:', e));
+        }).catch(e => console.warn('Audio play prevented:', e));
     } else if (targetVolume > 0 && !audioElement.paused) {
         requestAnimationFrame(updateVolume); // Already playing, just adjust volume
     } else if (targetVolume === 0) {
@@ -1242,7 +1311,6 @@ function addRoadsToMap(mapId) {
 
     const selectedMap = findMapRecursive(mapData, mapId);
     if (!selectedMap || !selectedMap.roads || !Array.isArray(selectedMap.roads)) {
-        console.log(`No roads found for map: ${mapId}`);
         return;
     }
 
@@ -1298,10 +1366,9 @@ function initializeSoundState() {
     // --- NEW: Check for embedded mode ---
     const urlParams = getUrlParameters(); // Need to get params here too
     if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
-        console.log("Embedded mode: Sound initialization skipped.");
         soundEnabled = false; // Ensure state reflects no sound
         // Set icon/title to muted state (even though button is hidden)
-        soundIcon.textContent = '🔇';
+        soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>`;
         if (toggleSoundBtn) toggleSoundBtn.title = "Unmute Sound"; // Check if button exists before setting title
         return; // Exit early, do not proceed with sound logic
     }
@@ -1317,7 +1384,7 @@ function initializeSoundState() {
     darkAmbient.volume = 0;
 
     if (soundEnabled) {
-        soundIcon.textContent = '🔊';
+        soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
         if (toggleSoundBtn) toggleSoundBtn.title = "Mute Sound";
         // Start playing the correct track based on the current theme
         const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
@@ -1327,11 +1394,37 @@ function initializeSoundState() {
             fadeAudio(lightAmbient, 0.3);
         }
     } else {
-        soundIcon.textContent = '🔇';
+        soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>`;
         if (toggleSoundBtn) toggleSoundBtn.title = "Unmute Sound";
     }
     // Make button visible now that state is set (only if not embedded)
     if (toggleSoundBtn) toggleSoundBtn.style.display = 'block';
+}
+
+if (toggleSoundBtn) {
+    toggleSoundBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('soundEnabled', soundEnabled);
+
+        if (soundEnabled) {
+            soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+            toggleSoundBtn.title = "Mute Sound";
+
+            const currentTheme = bodyElement.classList.contains('dark-theme') ? 'dark' : 'light';
+            if (currentTheme === 'dark') {
+                fadeAudio(darkAmbient, 0.3);
+            } else {
+                fadeAudio(lightAmbient, 0.3);
+            }
+        } else {
+            soundIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>`;
+            toggleSoundBtn.title = "Unmute Sound";
+
+            fadeAudio(lightAmbient, 0);
+            fadeAudio(darkAmbient, 0);
+        }
+    });
 }
 
 
@@ -1370,7 +1463,6 @@ function updateCoordinates(e) {
 // --- Map Click Handler ---
 map.on('click', function (e) {
     if (!isMeasuring && currentBounds) {
-        console.log(`Map clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}] (Y, X from bottom-left)`);
     }
 });
 map.on('dblclick', function (e) {
@@ -1406,12 +1498,10 @@ document.getElementById('toggle-coords-btn').addEventListener('click', function 
 
 // --- Handle Hash Changes / Back/Forward Navigation ---
 window.addEventListener('popstate', (event) => {
-    console.log("Popstate event:", event.state);
     const { mapId: hashMpId, sidebarState: hashSidebarState } = parseHash(); // Re-parse hash
     const targetMapId = event.state?.mapId || hashMpId;
     const targetSidebarState = event.state?.sidebarState || hashSidebarState;
 
-    console.log("Navigating via history - Target Map:", targetMapId, "Target Sidebar:", targetSidebarState);
 
     if (targetMapId && targetMapId !== currentlyLoadedMapId) {
         loadMap(targetMapId, false); // Load map without pushing new state
@@ -1436,7 +1526,6 @@ toggleMarkersBtn.addEventListener('click', () => {
     updateVisibleRegions(); // Update regions visibility
     updateVisibleMarkersAndSearch(); // Update marker visibility
 
-    console.log(`Markers and regions toggled. Visible: ${markersVisible}`);
 });
 // --- Blurb Toggle Button Logic ---
 toggleBlurbBtn.addEventListener('click', (e) => {
@@ -1500,7 +1589,7 @@ poiFilterContainer.addEventListener('change', (e) => {
     if (target.classList.contains('region-group-filter')) {
         const isChecked = target.checked;
         const groupName = target.value;
-        const nestedCheckboxes = target.closest('.filter-group-container').querySelectorAll('.region-type-filter');
+        const nestedCheckboxes = target.closest('.filter-group').querySelectorAll('.region-type-filter');
         nestedCheckboxes.forEach(checkbox => {
             if (checkbox.dataset.group === groupName) {
                 checkbox.checked = isChecked;
@@ -1893,20 +1982,7 @@ measureToolBtn.addEventListener('click', (e) => {
 });
 
 // --- Inject Map Icon CSS ---
-function updateStyleWithMapIcon() {
-    const style = document.createElement('style');
-    style.textContent = `
-        #toggle-filters-btn::before {
-            content: ''; display: inline-block; width: 16px; height: 16px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M15,19L9,16.89V5L15,7.11V19M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: center;
-            margin-top: 7px; opacity: 0.6;
-        }
-        #toggle-filters-btn.active::before { opacity: 1; }
-    `;
-    document.head.appendChild(style);
-}
-updateStyleWithMapIcon(); // Inject CSS immediately
+// REMOVED: Icons are now inline SVGs.
 
 // --- NEW: Data Loading Functions ---
 async function loadMapData() {
@@ -2081,12 +2157,11 @@ async function loadMapData() {
 async function processChild(childId, level = 0) {
     // Base case for recursion depth limit or invalid ID
     if (level > 5 || !childId || typeof childId !== 'string') {
-        console.warn(`Skipping child processing for: ${childId} at level ${level}`);
+        // console.warn(`Skipping child processing for: ${childId} at level ${level}`);
         // Return a placeholder that populateSidebar can handle as coming soon/error
         return { id: childId, name: String(childId || 'Invalid Child'), status: 'coming-soon', error: true };
     }
 
-    console.log(`${'-'.repeat(level * 2)} Processing child: ${childId} at level ${level}`);
     try {
         // Optional: Handle known 'coming-soon' IDs directly if needed
         // if (childId === 'some-known-coming-soon-id') {
@@ -2098,12 +2173,10 @@ async function processChild(childId, level = 0) {
 
         if (response.ok) {
             let childData = await response.json();
-            console.log(`${'-'.repeat(level * 2)} --> Fetched data for ${childId}:`, childData);
 
             // *** RECURSIVE STEP ***
             // Check if the fetched child ALSO has children that are string IDs
             if (childData.children && Array.isArray(childData.children) && childData.children.length > 0 && typeof childData.children[0] === 'string') {
-                console.log(`${'-'.repeat(level * 2)} --> Child ${childId} has children to process recursively:`, childData.children);
                 const subChildIds = childData.children;
                 childData.children = []; // Prepare for processed sub-children
                 const subChildPromises = subChildIds.map(subId => processChild(subId, level + 1)); // Recursive call
@@ -2134,19 +2207,16 @@ async function processChild(childId, level = 0) {
 }
 async function processMapData(maps) {
     const processedMaps = [];
-    console.log("Starting processMapData with:", maps);
 
     for (let map of maps) {
         if (map.children && Array.isArray(map.children) && map.children.length > 0 && typeof map.children[0] === 'string') {
             const childIds = map.children;
-            console.log(`Processing top-level children for ${map.id || map.name}:`, childIds);
             map.children = [];
             const childPromises = childIds.map(childId => processChild(childId, 1));
             map.children = await Promise.all(childPromises);
         }
         processedMaps.push(map);
     }
-    console.log("Finished processing map data. Result:", processedMaps);
     return processedMaps;
 }
 
@@ -2155,7 +2225,6 @@ function initializeApp() {
 
     // Handle embedded view - hide UI elements
     if (urlParams.embed === 'true' || urlParams.hideUI === 'true') {
-        console.log("Embedded view detected, hiding UI elements.");
         const wipPopup = document.getElementById('wip-popup');
         if (wipPopup) wipPopup.style.display = 'none';
 
@@ -2192,7 +2261,6 @@ function initializeApp() {
     }
     // --- END: Embedding Check ---
 
-    console.log("Initializing App with loaded mapData:", mapData);
 
     // Populate sidebar now that mapData is ready
     populateSidebar(mapListElement, mapData);
@@ -2209,12 +2277,10 @@ function initializeApp() {
 
     // If hash map is invalid/missing/coming-soon, or no hash map, find the default
     if (!mapToLoadData || mapToLoadData.status === 'coming-soon') {
-        console.log("Initial hash map not loadable or not specified, finding default.");
         mapIdToLoad = findFirstLoadableIdRecursive(mapData);
         mapToLoadData = findMapRecursive(mapData, mapIdToLoad);
     }
 
-    console.log("Final Map to Load:", mapIdToLoad, "Initial Sidebar State:", initialSidebarState);
 
     setSidebarState(initialSidebarState, false); // Set sidebar state without updating hash yet
 
@@ -2251,7 +2317,6 @@ function initializeApp() {
     const correctInitialHash = generateHash(currentlyLoadedMapId, currentSidebarState);
     const currentSearch = window.location.search; // Get current search params like ?embed=true
     const finalUrl = `${currentSearch}${correctInitialHash}`;
-    console.log("Replacing initial history state with:", finalUrl);
     history.replaceState({ mapId: currentlyLoadedMapId, sidebarState: currentSidebarState }, mapToLoadData?.name || '', finalUrl);
 }
 

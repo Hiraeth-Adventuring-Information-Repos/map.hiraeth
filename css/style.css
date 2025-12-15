@@ -21,6 +21,28 @@
     /* Light Mode Frosted Glass */
     --glass-bg-light: rgba(253, 250, 246, 0.75); /* Based on bg-primary w/ alpha */
     --glass-border-light: rgba(160, 82, 45, 0.3); /* Based on Shelf Color w/ alpha */
+
+    /* Scrollbar Variables (Light) */
+    --scrollbar-track: rgba(0, 0, 0, 0.05);
+    --scrollbar-thumb: rgba(160, 82, 45, 0.5);
+    --scrollbar-thumb-hover: rgba(160, 82, 45, 0.7);
+}
+
+/* --- Custom Scrollbars --- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
 }
 
 body.dark-theme {
@@ -45,6 +67,11 @@ body.dark-theme {
     /* Dark Mode Frosted Glass */
     --glass-bg-dark: rgba(34, 33, 50, 0.7); /* Based on user's primary w/ alpha */
     --glass-border-dark: rgba(245, 67, 91, 0.3); /* Based on Shelf Color w/ alpha */
+
+    /* Scrollbar Variables (Dark) */
+    --scrollbar-track: rgba(255, 255, 255, 0.05);
+    --scrollbar-thumb: rgba(114, 111, 150, 0.6);
+    --scrollbar-thumb-hover: rgba(114, 111, 150, 0.8);
 }
 
 /* --- Keyframes for WIP Popup Gradient Pulse --- */
@@ -517,11 +544,13 @@ body.dark-theme .coordinate-control {
     line-height: 30px; /* Center icon vertically */
     text-align: center;
     box-shadow: 0 1px 5px var(--shadow-color);
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, opacity 0.2s ease;
+    transition: all 0.2s ease; /* Smooth transition for all properties */
     display: none; /* Hide by default, shown via JS */
 }
 .map-control-button:hover {
-    background-color: rgba(255, 255, 255, 0.75);
+    background-color: var(--highlight-bg); /* Use theme highlight */
+    transform: scale(1.05); /* Subtle scale effect */
+    box-shadow: 0 4px 8px var(--shadow-color);
 }
 
 /* --- CORRECTED: Blurb Toggle Button --- */
@@ -552,12 +581,11 @@ body.dark-theme .map-control-button:hover {
     top: 78px; /* Position below zoom controls */
     /* Inherits from .map-control-button */
 }
-#toggle-markers-btn::before {
-    content: '📍';
+#toggle-markers-btn svg {
     opacity: 1; /* Default: visible */
     transition: opacity 0.2s ease;
 }
-#toggle-markers-btn.markers-hidden::before {
+#toggle-markers-btn.markers-hidden svg {
     opacity: 0.5; /* Dimmed when hidden */
 }
 
@@ -565,9 +593,7 @@ body.dark-theme .map-control-button:hover {
 #toggle-filters-btn {
     top: 115px; /* Position below marker toggle */
     /* Inherits from .map-control-button */
-    /* Icon is now applied via JS-injected style */
 }
-/* #toggle-filters-btn::before { ... } - Removed, handled by JS */
 #toggle-filters-btn.active {
         background-color: var(--active-bg); /* Use active color */
 }
@@ -680,11 +706,11 @@ body.dark-theme #poi-filter-container h3 {
     top: 152px; /* Position below filter toggle */
     /* Inherits from .map-control-button */
 }
-#measure-tool-btn::before {
-    content: '📏'; /* Ruler emoji */
+#measure-tool-btn svg {
     opacity: 0.6; /* Default: slightly dimmed */
+    transition: opacity 0.2s ease;
 }
-#measure-tool-btn.active::before {
+#measure-tool-btn.active svg {
     opacity: 1; /* Full opacity when active */
 }
 #measure-tool-btn.active {
@@ -812,21 +838,27 @@ body.dark-theme #bottom-link-bar a:hover { color: var(--text-primary); }
     position: fixed;
     bottom: 43px;
     right: 15px;
-    /* Lower z-index to be behind the search bar (z-index: 1000) */
     z-index: 999;
     padding: 8px 12px;
     border: 1px solid var(--glass-border-light);
     border-radius: 6px;
-    box-shadow: 0 2px 6px var(--shadow-color);
+    box-shadow: 0 4px 15px var(--shadow-color);
     transition: border-color 0.3s ease, color 0.3s ease;
-    background: linear-gradient(to right, #ff7e7e, #ffae70, #fff078, #ffae70, #ff7e7e);
-    background-size: 300% 100%;
-    animation: pulseGradient 30s ease-in-out infinite;
+
+    /* New Polished Look: Glassmorphism instead of rainbow gradient */
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-left: 4px solid #ffae70; /* Accent colored border */
 }
 
-#wip-popup p { margin: 0; font-size: 0.8rem; color: var(--text-primary); text-align: center; white-space: nowrap; text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.4); }
-body.dark-theme #wip-popup { border-color: var(--glass-border-dark); }
-body.dark-theme #wip-popup p { text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.6); }
+#wip-popup p { margin: 0; font-size: 0.85rem; color: var(--text-primary); text-align: left; white-space: nowrap; font-weight: 500; }
+body.dark-theme #wip-popup {
+    background: var(--glass-bg-dark);
+    border-color: var(--glass-border-dark);
+    border-left-color: #f5435b;
+}
+body.dark-theme #wip-popup p { text-shadow: none; }
 
 /* --- Measurement Tooltip --- */
 .leaflet-tooltip.measure-tooltip {
