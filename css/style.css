@@ -861,7 +861,7 @@ body.dark-theme #bottom-link-bar a:hover { color: var(--text-primary); }
 /* WIP Popup */
 #wip-popup {
     position: fixed;
-    bottom: 10px;
+    bottom: 40px;
     left: auto;
     transform: none;
     right: 10px;
@@ -1036,5 +1036,5 @@ body.dark-theme #wip-popup p { text-shadow: none; }
 
 /* --- MiniMap Positioning --- */
 .leaflet-control-minimap {
-    margin-bottom: 90px !important; /* Move above the WIP banner */
+    margin-bottom: 120px !important; /* Move above the WIP banner */
 }
