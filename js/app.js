@@ -130,14 +130,23 @@ function formatPropertiesForPopup(properties, hasFollowingDescription) {
 }
 
 // --- NEW: Unified Popup Content Generator ---
-function createPopupContent(data) {
+function createPopupContent(data, type) {
     // Part 1: Build the header, which is always visible.
     let headerHtml = '';
     if (data.name) {
+        // Escape both single and double quotes for the onclick attribute
+        const escapedName = data.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        let shareButtonHtml = '';
+        if (type) {
+            // Using an SVG icon to match the site theme
+            const linkIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+            shareButtonHtml = ` <button class="share-btn" onclick="copyFeatureLink(this, '${type}', '${escapedName}')" title="Share this location">${linkIconSvg}</button>`;
+        }
+
         if (data.wikiLink) {
-            headerHtml += `<h3><a href="${data.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${data.name}">${data.name}</a></h3>`;
+            headerHtml += `<div class="popup-header-row"><h3><a href="${data.wikiLink}" target="_blank" rel="noopener noreferrer" title="Visit wiki page for ${data.name}">${data.name}</a></h3>${shareButtonHtml}</div>`;
         } else {
-            headerHtml += `<h3>${data.name}</h3>`;
+            headerHtml += `<div class="popup-header-row"><h3>${data.name}</h3>${shareButtonHtml}</div>`;
         }
     }
     if (data.pronunciation) {
@@ -672,6 +681,85 @@ function populateFilters(pointsOfInterest, mapId) {
     // Set initial state of the master toggle
     updateToggleAllCheckboxState();
 }
+// Global function for onclick
+window.copyFeatureLink = function(btn, type, name) {
+    const url = new URL(window.location.href);
+    // Clean existing params
+    url.searchParams.delete('poi');
+    url.searchParams.delete('region');
+    url.searchParams.delete('line');
+
+    url.searchParams.set(type, name);
+
+    navigator.clipboard.writeText(url.toString()).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✔';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+        }, 1500);
+    }).catch(err => {
+        console.error('Failed to copy link: ', err);
+        alert("Failed to copy link to clipboard.");
+    });
+};
+
+function checkAndFocusFeature() {
+    const params = new URLSearchParams(window.location.search);
+    const poiName = params.get('poi');
+    const regionName = params.get('region');
+    const lineName = params.get('line');
+
+    if (poiName) {
+        // Search allMapMarkers
+        const marker = allMapMarkers.find(m => m.poiData && m.poiData.name === poiName);
+        if (marker) {
+            // Ensure marker is visible (add to group if not)
+            if (!currentMarkerGroup.hasLayer(marker)) {
+                currentMarkerGroup.addLayer(marker);
+            }
+            // Also ensure the marker group is on the map (it should be)
+            if (!map.hasLayer(currentMarkerGroup)) {
+                 currentMarkerGroup.addTo(map);
+            }
+
+            map.setView(marker.getLatLng(), Math.max(map.getZoom(), 2), { animate: false });
+            marker.openPopup();
+        } else {
+            console.warn("POI not found for focus:", poiName);
+        }
+    } else if (regionName) {
+         // Search currentRegionGroup
+         let targetLayer = null;
+         currentRegionGroup.eachLayer(layer => {
+             if (layer.regionData && layer.regionData.name === regionName) {
+                 targetLayer = layer;
+             }
+         });
+
+         if (targetLayer) {
+             map.fitBounds(targetLayer.getBounds(), { animate: false });
+             targetLayer.openPopup();
+         } else {
+             console.warn("Region not found for focus:", regionName);
+         }
+    } else if (lineName) {
+        // Search currentRoadGroup
+         let targetLayer = null;
+         currentRoadGroup.eachLayer(layer => {
+             if (layer.roadData && layer.roadData.name === lineName) {
+                 targetLayer = layer;
+             }
+         });
+
+         if (targetLayer) {
+             map.fitBounds(targetLayer.getBounds(), { animate: false });
+             targetLayer.openPopup();
+         } else {
+             console.warn("Line not found for focus:", lineName);
+         }
+    }
+}
+
 // --- Function to Load/Switch Map ---
 function loadMap(mapId, updateHash = true) {
     // --- Show loading indicator ---
@@ -841,7 +929,14 @@ function loadMap(mapId, updateHash = true) {
                 loadingIndicator.style.display = 'none';
             }
         }
-        map.fitBounds(currentBounds);
+
+        // Check if we need to focus a feature instead of default fitBounds
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('poi') || params.has('region') || params.has('line')) {
+             checkAndFocusFeature();
+        } else {
+             map.fitBounds(currentBounds);
+        }
     }
 
     preloadImg.onload = function () { finishLoading(); };
@@ -893,7 +988,7 @@ function loadMap(mapId, updateHash = true) {
                     // The ReferenceError for 'marker' is unusual here unless L.marker itself has an issue.
                     if (marker) {
                         marker.poiData = point; //
-                        const popupContent = createPopupContent(point);
+                        const popupContent = createPopupContent(point, 'poi');
                         marker.bindPopup(popupContent, {
                             minWidth: 250 // Set a min-width for consistency
                         });
@@ -1083,7 +1178,7 @@ function addRegionsToMap(mapId) {
         if (region.description) {
             popupContent += `<p>${region.description}</p>`;
         }
-        polygon.bindPopup(createPopupContent(region), {
+        polygon.bindPopup(createPopupContent(region, 'region'), {
             minWidth: 250 // Set a min-width for consistency
         });
 
@@ -1335,7 +1430,7 @@ function addRoadsToMap(mapId) {
         }
 
         if (popupContent) {
-            polyline.bindPopup(createPopupContent(road), { // Use unified creator
+            polyline.bindPopup(createPopupContent(road, 'line'), { // Use unified creator
                 minWidth: 250
             });
         }
