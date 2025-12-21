@@ -861,10 +861,10 @@ body.dark-theme #bottom-link-bar a:hover { color: var(--text-primary); }
 /* WIP Popup */
 #wip-popup {
     position: fixed;
-    bottom: 43px;
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Center horizontally */
-    right: auto;
+    bottom: 40px;
+    left: auto;
+    transform: none;
+    right: 10px;
     z-index: 999;
     padding: 8px 12px;
     border: 1px solid var(--glass-border-light);
@@ -1020,20 +1020,21 @@ body.dark-theme #wip-popup p { text-shadow: none; }
 }
 @media (max-width: 600px) { /* Adjust breakpoint as needed */
     #wip-popup {
-            /* Center horizontally */
-            left: 50%;
-            transform: translateX(-50%);
-            /* Remove right positioning */
-            right: auto;
-            /* Position it above the search bar */
-            /* (search bar is bottom: 40px, estimate its height + spacing) */
-            bottom: 85px; /* Adjust this value as needed */
-            /* Ensure it doesn't overlap the toggle button */
-            max-width: calc(100% - 30px); /* Prevent full width */
+            /* Keep it at bottom right on small screens too, or adjust if needed */
+            left: auto;
+            transform: none;
+            right: 10px;
+            bottom: 60px; /* Above bottom bar which might wrap */
+            max-width: calc(100% - 30px);
     }
     #wip-popup.fade-out {
             opacity: 0;
             transform: translateY(15px); /* Optional slide down */
             pointer-events: none; /* Prevent interaction after fading */
     }
+}
+
+/* --- MiniMap Positioning --- */
+.leaflet-control-minimap {
+    margin-bottom: 120px !important; /* Move above the WIP banner */
 }
