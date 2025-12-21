@@ -21,6 +21,9 @@ const map = L.map('map', {
     zoomControl: false // Disable default zoom, using custom styled one
 });
 
+// Register URL update listeners
+map.on('moveend zoomend', updateURLWithMapView);
+
 // NOW Initialize measurementLayerGroup
 measurementLayerGroup = L.layerGroup().addTo(map);
 
@@ -708,6 +711,7 @@ function checkAndFocusFeature() {
     const poiName = params.get('poi');
     const regionName = params.get('region');
     const lineName = params.get('line');
+    let focused = false;
 
     if (poiName) {
         // Search allMapMarkers
@@ -724,6 +728,7 @@ function checkAndFocusFeature() {
 
             map.setView(marker.getLatLng(), Math.max(map.getZoom(), 2), { animate: false });
             marker.openPopup();
+            focused = true;
         } else {
             console.warn("POI not found for focus:", poiName);
         }
@@ -739,7 +744,8 @@ function checkAndFocusFeature() {
          if (targetLayer) {
              map.fitBounds(targetLayer.getBounds(), { animate: false });
              targetLayer.openPopup();
-         } else {
+             focused = true;
+        } else {
              console.warn("Region not found for focus:", regionName);
          }
     } else if (lineName) {
@@ -754,10 +760,47 @@ function checkAndFocusFeature() {
          if (targetLayer) {
              map.fitBounds(targetLayer.getBounds(), { animate: false });
              targetLayer.openPopup();
+             focused = true;
          } else {
              console.warn("Line not found for focus:", lineName);
          }
     }
+    return focused;
+}
+
+// --- Map View URL State Management ---
+let viewUpdateTimeout;
+function updateURLWithMapView() {
+    // Don't update if map is not loaded or valid
+    if (!map || !currentlyLoadedMapId) return;
+
+    clearTimeout(viewUpdateTimeout);
+    viewUpdateTimeout = setTimeout(() => {
+        // Double check in case map was unloaded during timeout
+        if (!map || !currentlyLoadedMapId) return;
+
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+
+        // Round to reasonable precision to avoid ugly URLs
+        const lat = parseFloat(center.lat.toFixed(4));
+        const lng = parseFloat(center.lng.toFixed(4));
+
+        const url = new URL(window.location.href);
+        const currentView = url.searchParams.get('view');
+        const newView = `${lat},${lng},${zoom}`;
+
+        // Only update if changed
+        if (currentView !== newView) {
+            url.searchParams.set('view', newView);
+
+            // Reconstruct URL preserving hash
+            const newUrl = `${url.pathname}${url.search}${window.location.hash}`;
+
+            // Use replaceState to avoid cluttering history
+            history.replaceState(history.state, '', newUrl);
+        }
+    }, 500); // 500ms debounce
 }
 
 // --- Function to Load/Switch Map ---
@@ -932,10 +975,24 @@ function loadMap(mapId, updateHash = true) {
 
         // Check if we need to focus a feature instead of default fitBounds
         const params = new URLSearchParams(window.location.search);
+        let featureFocused = false;
         if (params.has('poi') || params.has('region') || params.has('line')) {
-             checkAndFocusFeature();
-        } else {
-             map.fitBounds(currentBounds);
+             featureFocused = checkAndFocusFeature();
+        }
+
+        if (!featureFocused) {
+             // Check for view parameter
+             const viewParam = params.get('view');
+             if (viewParam) {
+                 const [lat, lng, zoom] = viewParam.split(',').map(Number);
+                 if (!isNaN(lat) && !isNaN(lng) && !isNaN(zoom)) {
+                     map.setView([lat, lng], zoom, { animate: false });
+                 } else {
+                     map.fitBounds(currentBounds);
+                 }
+             } else {
+                 map.fitBounds(currentBounds);
+             }
         }
     }
 
