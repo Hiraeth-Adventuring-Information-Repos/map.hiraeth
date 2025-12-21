@@ -7,6 +7,8 @@ let regionsVisible = false; // Overall region visibility toggle
 let currentRoadGroup = null; // Holds currently displayed road layers (and lines)
 // let regionFiltersPanelVisible = false; // No longer needed as separate panel
 
+let miniMapControl = null; // Global MiniMap control instance
+
 // --- Measurement Tool State ---
 let isMeasuring = false; // Existing
 let measurementStartPoint = null; // Existing
@@ -855,6 +857,8 @@ function loadMap(mapId, updateHash = true) {
 
     // Remove previous layers
     if (currentImageLayer) map.removeLayer(currentImageLayer);
+    if (miniMapControl) miniMapControl.remove();
+    miniMapControl = null;
     if (currentMarkerGroup) map.removeLayer(currentMarkerGroup);
     if (currentRegionGroup) map.removeLayer(currentRegionGroup);
     if (currentRoadGroup) map.removeLayer(currentRoadGroup);
@@ -994,6 +998,16 @@ function loadMap(mapId, updateHash = true) {
                  map.fitBounds(currentBounds);
              }
         }
+
+        // Initialize MiniMap with a separate layer AFTER the map view is set
+        const miniMapLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds);
+        miniMapControl = new L.Control.MiniMap(miniMapLayer, {
+            toggleDisplay: true,
+            minimized: false,
+            width: 200,
+            height: 200,
+            zoomLevelOffset: -4 // Adjust as needed for better visibility
+        }).addTo(map);
     }
 
     preloadImg.onload = function () { finishLoading(); };
