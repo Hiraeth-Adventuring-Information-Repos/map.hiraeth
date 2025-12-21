@@ -1016,7 +1016,8 @@ function loadMap(mapId, updateHash = true) {
             zoomLevelFixed: miniMapZoom, // Fix the zoom level to show the whole map
             centerFixed: L.latLngBounds(currentBounds).getCenter(), // Fix center to the middle of the map
             aimingRectOptions: { color: "#ff7800", weight: 3, clickable: false },
-            shadowRectOptions: { color: "#000000", weight: 1, clickable: false, opacity: 0, fillOpacity: 0 }
+            shadowRectOptions: { color: "#000000", weight: 1, clickable: false, opacity: 0, fillOpacity: 0 },
+            mapOptions: { minZoom: -100, crs: L.CRS.Simple } // Allow very low zoom levels for the mini map
         }).addTo(map);
     }
 
