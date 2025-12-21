@@ -1001,13 +1001,22 @@ function loadMap(mapId, updateHash = true) {
 
         // Initialize MiniMap with a separate layer AFTER the map view is set
         const miniMapLayer = L.imageOverlay(selectedMap.imageUrl, currentBounds);
+
+        // Calculate the zoom level to fit the map in the minimap container (200x200)
+        // Since we are using CRS.Simple, the zoom level is log2(scale).
+        // We want the largest dimension of the map to fit into 200px.
+        const maxDim = Math.max(mapHeight, mapWidth);
+        const miniMapZoom = Math.log2(200 / maxDim);
+
         miniMapControl = new L.Control.MiniMap(miniMapLayer, {
             toggleDisplay: true,
             minimized: false,
             width: 200,
             height: 200,
-            zoomLevelFixed: -3, // Fix the zoom level to show the whole map (or close to it)
-            centerFixed: false
+            zoomLevelFixed: miniMapZoom, // Fix the zoom level to show the whole map
+            centerFixed: L.latLngBounds(currentBounds).getCenter(), // Fix center to the middle of the map
+            aimingRectOptions: { color: "#ff7800", weight: 3, clickable: false },
+            shadowRectOptions: { color: "#000000", weight: 1, clickable: false, opacity: 0, fillOpacity: 0 }
         }).addTo(map);
     }
 

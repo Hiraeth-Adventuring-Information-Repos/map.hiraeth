@@ -1037,3 +1037,8 @@ body.dark-theme #wip-popup p { text-shadow: none; }
             pointer-events: none; /* Prevent interaction after fading */
     }
 }
+
+/* --- MiniMap Positioning --- */
+.leaflet-control-minimap {
+    margin-bottom: 90px !important; /* Move above the WIP banner */
+}
