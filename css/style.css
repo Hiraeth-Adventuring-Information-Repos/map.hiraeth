@@ -862,7 +862,9 @@ body.dark-theme #bottom-link-bar a:hover { color: var(--text-primary); }
 #wip-popup {
     position: fixed;
     bottom: 43px;
-    right: 15px;
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center horizontally */
+    right: auto;
     z-index: 999;
     padding: 8px 12px;
     border: 1px solid var(--glass-border-light);
