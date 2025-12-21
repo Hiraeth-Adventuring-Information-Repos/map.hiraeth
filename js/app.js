@@ -1006,7 +1006,8 @@ function loadMap(mapId, updateHash = true) {
             minimized: false,
             width: 200,
             height: 200,
-            zoomLevelOffset: -4 // Adjust as needed for better visibility
+            zoomLevelFixed: -3, // Fix the zoom level to show the whole map (or close to it)
+            centerFixed: false
         }).addTo(map);
     }
 
