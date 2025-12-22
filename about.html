@@ -70,7 +70,7 @@
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
+            min-height: 100vh;
             font-family: var(--font-main);
             color: var(--text-primary);
             background-color: var(--bg-base);
@@ -322,6 +322,91 @@
         input:checked + .slider { background-color: var(--text-highlight); }
         input:checked + .slider:before { transform: translateX(22px); }
 
+        /* --- Embed Tool Styles --- */
+        .embed-tool-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tool-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.5);
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        body.dark-theme .tool-input {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            background: var(--text-highlight);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .tool-btn:hover {
+            opacity: 0.9;
+        }
+
+        .result-box {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        body.dark-theme .result-box {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .result-box.hidden {
+            display: none;
+        }
+
+        #embed-url {
+            font-family: monospace;
+            word-break: break-all;
+            margin-right: 10px;
+            font-size: 0.95rem;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .copy-btn:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        body.dark-theme .copy-btn:hover {
+             background: rgba(255,255,255,0.1);
+        }
+
     </style>
 </head>
 <body>
@@ -407,6 +492,23 @@
             </div>
         </section>
 
+        <!-- Tools Section -->
+        <section class="card">
+            <h2>Tools</h2>
+            <div class="embed-tool-container">
+                <h3>Embed Link Generator</h3>
+                <p>Create a simplified link for embedding maps on other websites. This version hides the sidebar, search bar, and other UI controls, providing a clean viewport focused on the map content.</p>
+                <div class="input-group">
+                    <input type="text" id="embed-input" placeholder="Paste your map link here..." class="tool-input">
+                    <button id="generate-embed-btn" class="tool-btn">Generate Link</button>
+                </div>
+                <div id="embed-result" class="result-box hidden">
+                    <span id="embed-url"></span>
+                    <button id="copy-embed-btn" class="copy-btn" title="Copy to Clipboard">📋 Copy</button>
+                </div>
+            </div>
+        </section>
+
         <!-- Footer / Back Link -->
         <div class="back-link-wrapper">
             <a href="index.html" class="back-button">&laquo; Return to Map Viewer</a>
@@ -438,6 +540,55 @@
         // --- Load Saved Theme on Page Load ---
         const savedTheme = localStorage.getItem('theme') || 'light';
         applyTheme(savedTheme);
+
+        // --- Embed Link Generator Logic ---
+        const generateBtn = document.getElementById('generate-embed-btn');
+        const embedInput = document.getElementById('embed-input');
+        const resultBox = document.getElementById('embed-result');
+        const resultUrl = document.getElementById('embed-url');
+        const copyBtn = document.getElementById('copy-embed-btn');
+
+        generateBtn.addEventListener('click', () => {
+            const inputValue = embedInput.value.trim();
+            if (!inputValue) return;
+
+            try {
+                const url = new URL(inputValue);
+
+                // Add embed flag
+                url.searchParams.set('embed', 'true');
+
+                // Remove view-specific parameters to ensure a clean default view
+                // unless specific feature focus is present (which we keep)
+                url.searchParams.delete('view');
+                url.searchParams.delete('zoom');
+                url.searchParams.delete('x');
+                url.searchParams.delete('y');
+                url.searchParams.delete('lat');
+                url.searchParams.delete('lng');
+
+                // Note: We explicitly preserve 'poi', 'region', 'line', and the hash (mapId)
+                // so specific features remain linked.
+
+                resultUrl.textContent = url.toString();
+                resultBox.classList.remove('hidden');
+
+                // Reset copy button
+                copyBtn.innerHTML = '📋 Copy';
+            } catch (e) {
+                alert("Invalid URL. Please paste a full link (e.g., https://atlas.hiraeth.com/...)");
+            }
+        });
+
+        copyBtn.addEventListener('click', () => {
+            const textToCopy = resultUrl.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyBtn.innerHTML = '✔ Copied!';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '📋 Copy';
+                }, 2000);
+            });
+        });
     </script>
 
 </body>
