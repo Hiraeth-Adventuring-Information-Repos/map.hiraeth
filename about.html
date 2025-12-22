@@ -555,17 +555,25 @@
             try {
                 const url = new URL(inputValue);
 
-                // Add embed flag
-                url.searchParams.set('embed', 'true');
+                // Construct new search params to ensure 'embed' is first
+                const oldParams = url.searchParams;
+                const newParams = new URLSearchParams();
 
-                // Remove view-specific parameters to ensure a clean default view
-                // unless specific feature focus is present (which we keep)
-                url.searchParams.delete('view');
-                url.searchParams.delete('zoom');
-                url.searchParams.delete('x');
-                url.searchParams.delete('y');
-                url.searchParams.delete('lat');
-                url.searchParams.delete('lng');
+                // 1. Add embed flag first
+                newParams.set('embed', 'true');
+
+                // 2. Add remaining valid params
+                // List of params to exclude (view-specific + embed itself)
+                const excluded = ['view', 'zoom', 'x', 'y', 'lat', 'lng', 'embed'];
+
+                oldParams.forEach((value, key) => {
+                    if (!excluded.includes(key)) {
+                        newParams.append(key, value);
+                    }
+                });
+
+                // Update URL with new params
+                url.search = newParams.toString();
 
                 // Note: We explicitly preserve 'poi', 'region', 'line', and the hash (mapId)
                 // so specific features remain linked.

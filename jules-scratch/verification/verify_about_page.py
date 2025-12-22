@@ -12,24 +12,8 @@ async def run():
         cwd = os.getcwd()
         await page.goto(f'file://{cwd}/about.html')
 
-        # 1. Take a screenshot of the whole page to verify the background fix and new section
-        # We need to simulate a long page to test the min-height: 100vh fix
-        await page.set_viewport_size({"width": 1280, "height": 800})
-
-        # Toggle Dark Mode to test the background - Click the LABEL, not the input
-        await page.click('.theme-switch')
-
-        # Scroll to bottom
-        await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-
-        # Add a short delay for smooth scroll/render
-        await page.wait_for_timeout(500)
-
-        await page.screenshot(path='jules-scratch/verification/about_page_dark.png', full_page=True)
-        print("Screenshot saved to jules-scratch/verification/about_page_dark.png")
-
-        # 2. Test the Embed Tool
-        # Input a dummy URL
+        # Test the Embed Tool
+        # Input a dummy URL with existing params
         test_url = "https://atlas.hiraeth.com/?view=10,10,5&poi=Castle&map=world-1"
         await page.fill('#embed-input', test_url)
         await page.click('#generate-embed-btn')
@@ -45,6 +29,13 @@ async def run():
         assert "poi=Castle" in result_text, "Output SHOULD contain poi parameter"
         assert "map=world-1" in result_text, "Output SHOULD contain map parameter"
 
+        # NEW ASSERTION: Check that embed=true is the FIRST parameter
+        # It should look like ...?embed=true&...
+        # We need to parse the query string part
+        query_part = result_text.split('?')[1]
+        assert query_part.startswith('embed=true'), f"embed=true should be the first parameter. Got: {query_part}"
+
+        print("All assertions passed!")
         await browser.close()
 
 if __name__ == "__main__":
