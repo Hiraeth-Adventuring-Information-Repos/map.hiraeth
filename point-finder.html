@@ -119,6 +119,56 @@
             gap: 8px;
         }
 
+        /* --- Map Selection Tabs --- */
+        .map-source-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        .source-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            font-size: 0.9em;
+        }
+        .source-tab:hover {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+        }
+        .source-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* --- Map Tree --- */
+        #server-map-tree {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            padding: 5px;
+            border-radius: var(--radius);
+        }
+
+        /* Tree Styles copied/adapted from main app */
+        .tree-list, .nested-tree-list { list-style: none; padding-left: 15px; margin: 0; }
+        .tree-list { padding-left: 5px; }
+        .tree-item { cursor: pointer; padding: 4px; margin: 1px 0; border-radius: 2px; display: flex; align-items: center; color: var(--text-muted); }
+        .tree-item:hover { background-color: var(--bg-hover); color: var(--text-main); }
+        .tree-item.active { background-color: rgba(0, 122, 204, 0.2); color: var(--text-main); border-left: 3px solid var(--accent); }
+
+        .tree-folder { cursor: pointer; padding: 4px; margin: 1px 0; font-weight: bold; color: var(--text-main); display: flex; align-items: center; }
+        .tree-folder-icon { margin-right: 5px; width: 14px; height: 14px; display: inline-block; transition: transform 0.2s; }
+        .tree-folder.closed .tree-folder-icon { transform: rotate(-90deg); }
+        .tree-folder.closed + .nested-tree-list { display: none; }
+        .tree-folder-icon::before { content: "▼"; font-size: 10px; }
+
+
         .mode-selector {
             display: flex;
             border-bottom: 1px solid var(--border-color);
@@ -495,18 +545,35 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="file-controls">
-                <div class="control-row">
-                    <label for="jsonFileInput">1. Load JSON File</label>
-                    <input type="file" id="jsonFileInput" accept=".json">
+
+                <div class="map-source-tabs">
+                    <div class="source-tab active" data-source="server">Server Maps</div>
+                    <div class="source-tab" data-source="local">Local File</div>
                 </div>
-                <div class="control-row">
-                     <label for="subMapSelect">2. Select Map</label>
-                     <select id="subMapSelect" disabled>
-                        <option value="">-- Load file first --</option>
-                     </select>
+
+                <!-- Server Maps View -->
+                <div id="source-server-content">
+                    <div id="server-map-tree">
+                        <div style="padding:10px; text-align:center; color: #666;">Loading maps...</div>
+                    </div>
+                    <button id="refreshMapListBtn" class="secondary" style="margin-top: 5px; width:100%; font-size: 0.8em;">Refresh List</button>
                 </div>
-                <div class="control-row inline">
-                     <button id="loadSubMapBtn" disabled style="flex:1">Load Map</button>
+
+                <!-- Local File View -->
+                <div id="source-local-content" class="hidden">
+                    <div class="control-row">
+                        <label for="jsonFileInput">1. Load JSON File</label>
+                        <input type="file" id="jsonFileInput" accept=".json">
+                    </div>
+                    <div class="control-row">
+                         <label for="subMapSelect">2. Select Map</label>
+                         <select id="subMapSelect" disabled>
+                            <option value="">-- Load file first --</option>
+                         </select>
+                    </div>
+                    <div class="control-row inline">
+                         <button id="loadSubMapBtn" disabled style="flex:1">Load Map</button>
+                    </div>
                 </div>
 
                  <!-- Map Settings Collapsible? -->
@@ -541,6 +608,7 @@
                      <div style="text-align: center;"><span id="coords-display">[Y, X]</span></div>
                      <div class="control-row">
                         <label for="editPointSelect">Edit Existing Point:</label>
+                        <input type="text" id="editPointFilter" placeholder="Filter points..." style="margin-bottom: 4px; font-size: 0.8em; padding: 4px;">
                         <select id="editPointSelect">
                             <option value="">-- Select Point --</option>
                         </select>
@@ -589,6 +657,7 @@
                      <div style="text-align: center;"><span id="region-vertices-count" style="color: var(--accent);">0 vertices</span></div>
                      <div class="control-row">
                         <label for="editRegionSelect">Edit Existing Region:</label>
+                        <input type="text" id="editRegionFilter" placeholder="Filter regions..." style="margin-bottom: 4px; font-size: 0.8em; padding: 4px;">
                         <select id="editRegionSelect"><option value="">-- Select Region --</option></select>
                      </div>
                  </div>
@@ -665,6 +734,7 @@
                      <div style="text-align: center;"><span id="line-vertices-count" style="color: var(--accent);">0 vertices</span></div>
                      <div class="control-row">
                         <label for="editLineSelect">Edit Existing Line:</label>
+                        <input type="text" id="editLineFilter" placeholder="Filter lines..." style="margin-bottom: 4px; font-size: 0.8em; padding: 4px;">
                         <select id="editLineSelect"><option value="">-- Select Line --</option></select>
                      </div>
                  </div>
@@ -820,9 +890,18 @@
         const editVerticesBtn = document.getElementById('editVerticesBtn');
         const cancelRegionEditBtn = document.getElementById('cancelRegionEditBtn');
         const editRegionSelect = document.getElementById('editRegionSelect');
+        const editPointFilter = document.getElementById('editPointFilter');
+        const editRegionFilter = document.getElementById('editRegionFilter');
         const regionVerticesCount = document.getElementById('region-vertices-count');
         const clearRegionsBtn = document.getElementById('clearRegionsBtn');
         const showAllRegionsToggle = document.getElementById('showAllRegionsToggle');
+
+        // --- Server Map Elements ---
+        const sourceTabs = document.querySelectorAll('.source-tab');
+        const sourceServerContent = document.getElementById('source-server-content');
+        const sourceLocalContent = document.getElementById('source-local-content');
+        const serverMapTree = document.getElementById('server-map-tree');
+        const refreshMapListBtn = document.getElementById('refreshMapListBtn');
 
         // Line Elements
         const lineNameInput = document.getElementById('lineName');
@@ -845,6 +924,7 @@
         const editLineVerticesBtn = document.getElementById('editLineVerticesBtn');
         const cancelLineEditBtn = document.getElementById('cancelLineEditBtn');
         const editLineSelect = document.getElementById('editLineSelect');
+        const editLineFilter = document.getElementById('editLineFilter');
         const lineVerticesCountDisplay = document.getElementById('line-vertices-count');
 
 
@@ -900,6 +980,8 @@
         
         let showAllRegionsWhileEditing = false;
         let otherRegionsLayerGroup = null;
+
+        let serverMapData = []; // Cached server map data
 
 
         const poiTypeGroups = {
@@ -1033,6 +1115,108 @@
             loadSubMapBtn.disabled = foundMaps.length === 0;
         }
 
+        // --- NEW: Server Map Fetching Logic ---
+        async function fetchServerMaps() {
+            serverMapTree.innerHTML = '<div style="padding:10px; text-align:center; color: #888;">Fetching maps...</div>';
+            try {
+                const response = await fetch('maps/maps.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const maps = await response.json();
+
+                // Process maps recursively (similar to js/app.js)
+                serverMapData = await processMapData(maps);
+                renderMapTree(serverMapData, serverMapTree);
+                showToast("Map list updated", "success");
+            } catch (e) {
+                console.error("Error fetching maps:", e);
+                serverMapTree.innerHTML = `<div style="padding:10px; text-align:center; color: var(--danger);">Error loading maps: ${e.message}</div>`;
+                showToast("Error loading maps", "error");
+            }
+        }
+
+        async function processMapData(maps) {
+            const processedMaps = [];
+            for (let map of maps) {
+                if (map.children && Array.isArray(map.children) && map.children.length > 0 && typeof map.children[0] === 'string') {
+                    const childIds = map.children;
+                    map.children = [];
+                    const childPromises = childIds.map(childId => processChild(childId, 1));
+                    map.children = await Promise.all(childPromises);
+                }
+                processedMaps.push(map);
+            }
+            return processedMaps;
+        }
+
+        async function processChild(childId, level = 0) {
+            if (level > 5 || !childId || typeof childId !== 'string') {
+                return { id: childId, name: String(childId || 'Invalid Child'), status: 'error', error: true };
+            }
+            try {
+                const response = await fetch(`maps/${childId}.json`);
+                if (response.ok) {
+                    let childData = await response.json();
+                    if (childData.children && Array.isArray(childData.children) && childData.children.length > 0 && typeof childData.children[0] === 'string') {
+                        const subChildIds = childData.children;
+                        childData.children = [];
+                        const subChildPromises = subChildIds.map(subId => processChild(subId, level + 1));
+                        childData.children = await Promise.all(subChildPromises);
+                    }
+                    childData.id = childData.id || childId;
+                    childData.name = childData.name || childId;
+                    return childData;
+                } else {
+                    return { id: childId, name: childId, status: 'coming-soon', error: 'not found' };
+                }
+            } catch (error) {
+                return { id: childId, name: childId, status: 'error', error: error.message };
+            }
+        }
+
+        function createTreeItem(item) {
+            const li = document.createElement('li');
+            if (item.type === 'folder' || (item.children && item.children.length > 0 && !item.imageUrl)) { // Treat as folder if children but no image
+                 const folderDiv = document.createElement('div');
+                 folderDiv.className = 'tree-folder closed';
+                 folderDiv.innerHTML = `<span class="tree-folder-icon"></span><span>${item.name || 'Unnamed'}</span>`;
+                 folderDiv.onclick = (e) => { e.stopPropagation(); folderDiv.classList.toggle('closed'); };
+                 li.appendChild(folderDiv);
+                 const nestedUl = document.createElement('ul');
+                 nestedUl.className = 'nested-tree-list';
+                 item.children.forEach(child => nestedUl.appendChild(createTreeItem(child)));
+                 li.appendChild(nestedUl);
+            } else {
+                const mapDiv = document.createElement('div');
+                mapDiv.className = 'tree-item';
+                mapDiv.textContent = item.name || item.id;
+                if (item.status === 'coming-soon') {
+                    mapDiv.style.opacity = '0.6'; mapDiv.style.fontStyle = 'italic';
+                    mapDiv.title = "Coming Soon / Not Found";
+                } else {
+                    mapDiv.onclick = () => {
+                        document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+                        mapDiv.classList.add('active');
+                        // Ensure parent folder data structure is preserved if needed, but for editor, loading the specific map object is key.
+                        // We treat the selected item as the 'root' for export purposes currently.
+                        masterMapData = [item];
+                        loadMap(item);
+                    }
+                }
+                li.appendChild(mapDiv);
+            }
+            return li;
+        }
+
+        // Redefining renderMapTree to use the helper properly
+        function renderMapTree(items, containerElement) {
+            containerElement.innerHTML = '';
+            const list = document.createElement('ul');
+            list.className = 'tree-list';
+            items.forEach(item => list.appendChild(createTreeItem(item)));
+            containerElement.appendChild(list);
+        }
+
+
         function populateTypeDropdown() {
             poiTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
             for (const groupName in poiTypeGroups) {
@@ -1047,45 +1231,72 @@
                 poiTypeSelect.appendChild(optgroup);
             }
         }
-        function populatePointEditDropdown() {
+        function populatePointEditDropdown(filterText = '') {
             const previouslySelectedName = (currentlyEditingPointIndex >= 0 && currentlyEditingPointIndex < collectedPoints.length)
                                           ? collectedPoints[currentlyEditingPointIndex].name : null;
             editPointSelect.innerHTML = '<option value="">--Select Point to Edit--</option>';
             const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
+
             sortedPoints.forEach(point => {
+                if (filterText && !point.name.toLowerCase().includes(filterText.toLowerCase())) return;
                 const option = document.createElement('option');
                 option.value = point.name; option.textContent = point.name;
                 editPointSelect.appendChild(option);
             });
-            editPointSelect.value = previouslySelectedName || "";
+
+            // Re-select if still in filtered list
+            const options = Array.from(editPointSelect.options);
+            if (previouslySelectedName && options.some(o => o.value === previouslySelectedName)) {
+                editPointSelect.value = previouslySelectedName;
+            } else {
+                editPointSelect.value = "";
+            }
             editPointSelect.disabled = collectedPoints.length === 0;
         }
-        function populateRegionEditDropdown() {
+        function populateRegionEditDropdown(filterText = '') {
              const previouslySelectedName = (currentlyEditingRegionIndex >= 0 && currentlyEditingRegionIndex < collectedRegions.length)
                                           ? collectedRegions[currentlyEditingRegionIndex].name : null;
             editRegionSelect.innerHTML = '<option value="">--Select Region to Edit--</option>';
             const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
+
             sortedRegions.forEach(region => {
+                if (filterText && !region.name.toLowerCase().includes(filterText.toLowerCase())) return;
                 const option = document.createElement('option');
                 option.value = region.name; option.textContent = region.name;
                 editRegionSelect.appendChild(option);
             });
-            editRegionSelect.value = previouslySelectedName || "";
+
+            const options = Array.from(editRegionSelect.options);
+            if (previouslySelectedName && options.some(o => o.value === previouslySelectedName)) {
+                editRegionSelect.value = previouslySelectedName;
+            } else {
+                editRegionSelect.value = "";
+            }
             editRegionSelect.disabled = collectedRegions.length === 0;
         }
-        function populateLineEditDropdown() { 
+        function populateLineEditDropdown(filterText = '') {
             const previouslySelectedValue = (currentlyEditingLineIndex >= 0 && currentlyEditingLineIndex < collectedLines.length)
                                           ? (collectedLines[currentlyEditingLineIndex].name || collectedLines[currentlyEditingLineIndex].id)
                                           : null;
             editLineSelect.innerHTML = '<option value="">--Select Line to Edit--</option>';
             const sortedLines = [...collectedLines].sort((a, b) => (a.name || "Unnamed Line").localeCompare(b.name || "Unnamed Line"));
+
             sortedLines.forEach(line => {
+                const displayName = line.name || `Line ID: ${line.id.substring(0,10)}...`;
+                if (filterText && !displayName.toLowerCase().includes(filterText.toLowerCase())) return;
+
                 const option = document.createElement('option');
                 option.value = line.name || line.id;
-                option.textContent = line.name || `Line ID: ${line.id.substring(0,10)}...`;
+                option.textContent = displayName;
                 editLineSelect.appendChild(option);
             });
-            editLineSelect.value = previouslySelectedValue || "";
+
+            const options = Array.from(editLineSelect.options);
+            if (previouslySelectedValue && options.some(o => o.value === previouslySelectedValue)) {
+                editLineSelect.value = previouslySelectedValue;
+            } else {
+                editLineSelect.value = "";
+            }
             editLineSelect.disabled = collectedLines.length === 0;
         }
 
@@ -2467,7 +2678,28 @@
             // Init Text Toolbar
             new TextToolbar(['pointDescription', 'regionDescription', 'lineDescription', 'mapBlurb']);
 
-            setStatus('Load a JSON file to begin.');
+            // Init Server Maps
+            fetchServerMaps();
+
+            // Tab Logic
+            sourceTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    sourceTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const source = tab.dataset.source;
+                    if(source === 'server') {
+                        sourceServerContent.classList.remove('hidden');
+                        sourceLocalContent.classList.add('hidden');
+                    } else {
+                        sourceServerContent.classList.add('hidden');
+                        sourceLocalContent.classList.remove('hidden');
+                    }
+                });
+            });
+
+            refreshMapListBtn.addEventListener('click', fetchServerMaps);
+
+            setStatus('Select a map from the list or load a JSON file.');
 
             document.addEventListener('keydown', (e) => {
                 if ((e.key === 'Delete' || e.key === 'Backspace') && activeVertexMarker) {
@@ -2572,6 +2804,11 @@
                     toggleOtherRegionsVisibility(showAllRegionsWhileEditing, currentlyEditingRegionIndex);
                 }
             });
+
+            // Edit Filters
+            editPointFilter.addEventListener('input', (e) => populatePointEditDropdown(e.target.value));
+            editRegionFilter.addEventListener('input', (e) => populateRegionEditDropdown(e.target.value));
+            editLineFilter.addEventListener('input', (e) => populateLineEditDropdown(e.target.value));
 
             viewJsonBtn.addEventListener('click', exportMapData);
             copyJsonBtn.addEventListener('click', copyCompleteJson);
