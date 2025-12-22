@@ -21,18 +21,18 @@
             --bg-base: #fdfaf6;
             --bg-pattern-start: #fdfaf6;
             --bg-pattern-end: #f4f0eb;
-
+            
             --text-primary: #5c3a35; /* Rich Brown */
             --text-secondary: #8c6b5d;
             --text-highlight: #d4a36a; /* Gold/Bronze */
-
+            
             --glass-bg: rgba(253, 250, 246, 0.85);
             --glass-border: rgba(140, 107, 93, 0.2);
             --glass-shadow: 0 8px 32px rgba(92, 58, 53, 0.1);
-
+            
             --hero-gradient: linear-gradient(135deg, #6b2c25 0%, #3e1b17 100%);
             --hero-text: #fdfaf6;
-
+            
             --key-bg: #fdfaf6;
             --key-border: #dcd3c8;
             --key-shadow: 0 2px 0 #bcaaa4;
@@ -66,7 +66,7 @@
 
         /* --- Base Reset & Typography --- */
         * { box-sizing: border-box; }
-
+        
         html, body {
             margin: 0;
             padding: 0;
@@ -112,7 +112,7 @@
             position: relative;
             overflow: hidden;
         }
-
+        
         /* Decorative decorative circle in hero */
         .hero-header::before {
             content: '';
@@ -193,7 +193,7 @@
             padding-left: 20px;
             list-style-type: none;
         }
-
+        
         .guide-section li {
             margin-bottom: 12px;
             position: relative;
@@ -253,7 +253,7 @@
             text-align: center;
             margin-top: 40px;
         }
-
+        
         .back-button {
             display: inline-block;
             padding: 12px 30px;
@@ -265,7 +265,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
-
+        
         .back-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(0,0,0,0.15);
@@ -297,7 +297,7 @@
             font-weight: 600;
             color: var(--text-primary);
         }
-
+        
         .theme-switch {
             position: relative;
             display: inline-block;
@@ -305,20 +305,20 @@
             height: 24px;
             flex-shrink: 0;
         }
-
+        
         .theme-switch input { opacity: 0; width: 0; height: 0; }
-
+        
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
             background-color: #ccc; transition: .4s;
             border-radius: 34px;
         }
-
+        
         .slider:before {
             position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
             background-color: white; transition: .4s; border-radius: 50%;
         }
-
+        
         input:checked + .slider { background-color: var(--text-highlight); }
         input:checked + .slider:before { transform: translateX(22px); }
 
@@ -374,7 +374,7 @@
             justify-content: space-between;
             margin-top: 10px;
         }
-
+        
         body.dark-theme .result-box {
             background: rgba(255, 255, 255, 0.05);
         }
@@ -402,7 +402,7 @@
         .copy-btn:hover {
             background: rgba(0,0,0,0.1);
         }
-
+        
         body.dark-theme .copy-btn:hover {
              background: rgba(255,255,255,0.1);
         }
@@ -421,7 +421,7 @@
     </div>
 
     <div class="page-wrapper">
-
+        
         <!-- Hero Header -->
         <header class="hero-header">
             <h1 class="hero-title">About Hiraeth</h1>
@@ -449,7 +449,7 @@
         <section class="card">
             <h2>Traveler's Guide</h2>
             <div class="guide-grid">
-
+                
                 <!-- Left Column: Interactions -->
                 <div class="guide-section">
                     <h3>Navigation & Interaction</h3>
@@ -474,7 +474,7 @@
                 <div class="guide-section">
                     <h3>Keyboard Shortcuts</h3>
                     <p>Master these keys to navigate the realm swiftly.</p>
-
+                    
                     <div class="shortcut-grid">
                         <kbd>+</kbd> <span class="shortcut-desc">Zoom In</span>
                         <kbd>-</kbd> <span class="shortcut-desc">Zoom Out</span>
@@ -492,7 +492,7 @@
             </div>
         </section>
 
-        <!-- Tools Section -->
+        <!-- Tools Section (Commented Out)
         <section class="card">
             <h2>Tools</h2>
             <div class="embed-tool-container">
@@ -508,6 +508,7 @@
                 </div>
             </div>
         </section>
+        -->
 
         <!-- Footer / Back Link -->
         <div class="back-link-wrapper">
@@ -541,7 +542,7 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         applyTheme(savedTheme);
 
-        // --- Embed Link Generator Logic ---
+        /* --- Embed Link Generator Logic (Commented Out) ---
         const generateBtn = document.getElementById('generate-embed-btn');
         const embedInput = document.getElementById('embed-input');
         const resultBox = document.getElementById('embed-result');
@@ -554,18 +555,18 @@
 
             try {
                 const url = new URL(inputValue);
-
+                
                 // Construct new search params to ensure 'embed' is first
                 const oldParams = url.searchParams;
                 const newParams = new URLSearchParams();
-
+                
                 // 1. Add embed flag first
                 newParams.set('embed', 'true');
 
                 // 2. Add remaining valid params
-                // List of params to exclude (view-specific + embed itself)
-                const excluded = ['view', 'zoom', 'x', 'y', 'lat', 'lng', 'embed'];
-
+                // Only exclude 'embed' itself to avoid duplication
+                const excluded = ['embed'];
+                
                 oldParams.forEach((value, key) => {
                     if (!excluded.includes(key)) {
                         newParams.append(key, value);
@@ -580,7 +581,7 @@
 
                 resultUrl.textContent = url.toString();
                 resultBox.classList.remove('hidden');
-
+                
                 // Reset copy button
                 copyBtn.innerHTML = '📋 Copy';
             } catch (e) {
@@ -597,6 +598,7 @@
                 }, 2000);
             });
         });
+        */
     </script>
 
 </body>
