@@ -162,11 +162,14 @@
         .tree-item:hover { background-color: var(--bg-hover); color: var(--text-main); }
         .tree-item.active { background-color: rgba(0, 122, 204, 0.2); color: var(--text-main); border-left: 3px solid var(--accent); }
 
-        .tree-folder { cursor: pointer; padding: 4px; margin: 1px 0; font-weight: bold; color: var(--text-main); display: flex; align-items: center; }
-        .tree-folder-icon { margin-right: 5px; width: 14px; height: 14px; display: inline-block; transition: transform 0.2s; }
+        .tree-folder { padding: 4px; margin: 1px 0; font-weight: bold; color: var(--text-main); display: flex; align-items: center; }
+        .tree-folder-icon { cursor: pointer; margin-right: 5px; width: 14px; height: 14px; display: inline-block; transition: transform 0.2s; user-select: none; }
         .tree-folder.closed .tree-folder-icon { transform: rotate(-90deg); }
         .tree-folder.closed + .nested-tree-list { display: none; }
         .tree-folder-icon::before { content: "▼"; font-size: 10px; }
+        .tree-folder-name { cursor: pointer; }
+        .tree-folder-name:hover { text-decoration: underline; }
+        .tree-folder-name.active { color: var(--accent); }
 
 
         .mode-selector {
@@ -1175,29 +1178,76 @@
 
         function createTreeItem(item) {
             const li = document.createElement('li');
-            if (item.type === 'folder' || (item.children && item.children.length > 0 && !item.imageUrl)) { // Treat as folder if children but no image
+
+            // Determine if it should be treated as a folder (expandable container)
+            // It is a folder if it explicitly says type="folder" OR if it has children.
+            const isFolder = item.type === 'folder' || (item.children && item.children.length > 0);
+
+            // Determine if it is ALSO a map (can be loaded)
+            const isMap = !!item.imageUrl;
+
+            if (isFolder) {
                  const folderDiv = document.createElement('div');
-                 folderDiv.className = 'tree-folder closed';
-                 folderDiv.innerHTML = `<span class="tree-folder-icon"></span><span>${item.name || 'Unnamed'}</span>`;
-                 folderDiv.onclick = (e) => { e.stopPropagation(); folderDiv.classList.toggle('closed'); };
+                 folderDiv.className = 'tree-folder closed'; // Default closed
+
+                 // 1. Toggle Icon
+                 const iconSpan = document.createElement('span');
+                 iconSpan.className = 'tree-folder-icon';
+                 iconSpan.onclick = (e) => {
+                     e.stopPropagation();
+                     folderDiv.classList.toggle('closed');
+                 };
+                 folderDiv.appendChild(iconSpan);
+
+                 // 2. Name Label
+                 const nameSpan = document.createElement('span');
+                 nameSpan.className = 'tree-folder-name';
+                 nameSpan.textContent = item.name || 'Unnamed';
+
+                 if (isMap) {
+                     // It's a map folder: Name click loads map
+                     nameSpan.title = "Click to load map";
+                     nameSpan.onclick = (e) => {
+                         e.stopPropagation();
+
+                         // Update active state
+                         document.querySelectorAll('.tree-item, .tree-folder-name').forEach(el => el.classList.remove('active'));
+                         nameSpan.classList.add('active');
+
+                         // Load the map
+                         masterMapData = [item];
+                         loadMap(item);
+                     };
+                 } else {
+                     // It's just a folder: Name click toggles
+                     nameSpan.onclick = (e) => {
+                         e.stopPropagation();
+                         folderDiv.classList.toggle('closed');
+                     };
+                 }
+                 folderDiv.appendChild(nameSpan);
                  li.appendChild(folderDiv);
-                 const nestedUl = document.createElement('ul');
-                 nestedUl.className = 'nested-tree-list';
-                 item.children.forEach(child => nestedUl.appendChild(createTreeItem(child)));
-                 li.appendChild(nestedUl);
+
+                 // 3. Children
+                 if (item.children && item.children.length > 0) {
+                     const nestedUl = document.createElement('ul');
+                     nestedUl.className = 'nested-tree-list';
+                     item.children.forEach(child => nestedUl.appendChild(createTreeItem(child)));
+                     li.appendChild(nestedUl);
+                 }
             } else {
+                // Leaf Node Map
                 const mapDiv = document.createElement('div');
                 mapDiv.className = 'tree-item';
                 mapDiv.textContent = item.name || item.id;
-                if (item.status === 'coming-soon') {
+
+                if (item.status === 'coming-soon' || item.error) {
                     mapDiv.style.opacity = '0.6'; mapDiv.style.fontStyle = 'italic';
-                    mapDiv.title = "Coming Soon / Not Found";
+                    mapDiv.title = item.error || "Coming Soon";
                 } else {
                     mapDiv.onclick = () => {
-                        document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+                        document.querySelectorAll('.tree-item, .tree-folder-name').forEach(el => el.classList.remove('active'));
                         mapDiv.classList.add('active');
-                        // Ensure parent folder data structure is preserved if needed, but for editor, loading the specific map object is key.
-                        // We treat the selected item as the 'root' for export purposes currently.
                         masterMapData = [item];
                         loadMap(item);
                     }
