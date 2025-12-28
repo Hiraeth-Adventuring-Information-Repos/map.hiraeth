@@ -22,6 +22,11 @@
     --glass-bg-light: rgba(253, 250, 246, 0.75); /* Based on bg-primary w/ alpha */
     --glass-border-light: rgba(160, 82, 45, 0.3); /* Based on Shelf Color w/ alpha */
 
+    /* Star Field Variables */
+    --stars-small: 1px;
+    --stars-medium: 2px;
+    --stars-large: 3px;
+
     /* Scrollbar Variables (Light) */
     --scrollbar-track: rgba(0, 0, 0, 0.05);
     --scrollbar-thumb: rgba(160, 82, 45, 0.5);
@@ -81,20 +86,20 @@ body.dark-theme {
     100% { background-position: 0% 50%; }
 }
 
-/* --- /* --- Keyframes for Twinkling Stars --- */
+/* --- Keyframes for Twinkling Stars --- */
+@keyframes twinkle {
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.7; transform: scale(1); }
+}
 
 /* --- Base Dark Theme Map Style --- */
+body.dark-theme #map-container {
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+}
+
 body.dark-theme #map {
-    /* Set the background image */
-    background-image: url('../images/night-sky.webp');
-
-    /* Ensure it tiles */
-    background-repeat: repeat;
-
-    /* Fallback color if image fails */
-    background-color: #050510;
-
-    /* These might no longer be strictly necessary, but often harmless */
+    background: transparent;
     position: relative;
     overflow: hidden;
 }
@@ -252,69 +257,44 @@ body:not(.dark-theme) #map::after {
 body.embedded-view #search-control-container {
     bottom: 10px; /* Adjust from 40px when bottom bar is hidden */
 }
-/* --- Enhanced Dark Theme Stars --- */
-body.dark-theme #map::before {
-    content: '';
+/* --- Generative Dark Theme Stars --- */
+/*
+   Star field is generated via CSS box-shadows.
+   See css/stars.css for the actual star definitions to keep this file clean.
+*/
+#star-field {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
     pointer-events: none;
-    background-image:
-        radial-gradient(circle, rgba(255, 255, 255, 0.9) 1px, transparent 1.5px),
-        radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.5px, transparent 1px);
-    background-size:
-        75px 75px,
-        50px 50px;
-    background-position:
-        0 0,
-        25px 25px;
-    animation: twinkleEnhanced 8s infinite;
-    opacity: 1; /* Ensure visible */
+    z-index: 0; /* Behind map content but above map background color */
 }
 
-body.dark-theme #map::after {
-    content: '';
+/* Base styles for stars */
+.star-layer {
+    content: ' ';
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    background-image:
-        radial-gradient(circle, rgba(255, 255, 255, 0.8) 0.7px, transparent 1px),
-        radial-gradient(circle, rgba(255, 255, 255, 0.7) 0.3px, transparent 0.6px);
-    background-size:
-        60px 60px,
-        35px 35px;
-    background-position:
-        15px 15px,
-        40px 40px;
-    animation: twinkleSubtle 5s infinite;
-    animation-delay: 2s;
-    opacity: 1; /* Ensure visible */
+    background: transparent;
 }
 
-/* Third star layer for more variety */
-body.dark-theme #map > div:first-child::before { /* Target inner Leaflet container */
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0; /* Keep behind map elements */
-    pointer-events: none;
-    background-image:
-        radial-gradient(circle, rgba(220, 240, 255, 0.9) 0.2px, transparent 0.5px);
-    background-size: 30px 30px;
-    background-position: 5px 10px;
-    animation: twinkleEnhanced 6s infinite;
-    animation-delay: 1s;
-    opacity: 1; /* Ensure visible */
+/* Specific layers */
+.stars-small {
+    width: var(--stars-small);
+    height: var(--stars-small);
+}
+
+.stars-medium {
+    width: var(--stars-medium);
+    height: var(--stars-medium);
+}
+
+.stars-large {
+    width: var(--stars-large);
+    height: var(--stars-large);
 }
 /* --- End Theme Effects --- */
 
