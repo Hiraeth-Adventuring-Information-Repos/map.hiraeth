@@ -889,6 +889,7 @@ function loadMap(mapId, updateHash = true) {
         if (loadingIndicator) {
             if (loadingProgressInterval) clearInterval(loadingProgressInterval);
             loadingIndicator.style.display = 'none';
+            loadingIndicator.classList.remove('initial-loader');
         }
         return;
     }
@@ -908,6 +909,7 @@ function loadMap(mapId, updateHash = true) {
         if (loadingIndicator) {
             if (loadingProgressInterval) clearInterval(loadingProgressInterval);
             loadingIndicator.style.display = 'none';
+            loadingIndicator.classList.remove('initial-loader');
         }
         return;
     }
@@ -944,7 +946,10 @@ function loadMap(mapId, updateHash = true) {
             if (loadingTextEl) loadingTextEl.textContent = "Error: Invalid map data.";
             if (progressBarEl) progressBarEl.style.width = '0%';
             if (spinnerEl) spinnerEl.style.display = 'none';
-            setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+                loadingIndicator.classList.remove('initial-loader');
+            }, 3000);
         }
         return;
     }
@@ -969,11 +974,13 @@ function loadMap(mapId, updateHash = true) {
                     if (loadingProgressInterval) clearInterval(loadingProgressInterval);
                     loadingProgressInterval = null;
                     loadingIndicator.style.display = 'none';
+                    loadingIndicator.classList.remove('initial-loader');
                 }, 300);
             } else {
                 if (loadingProgressInterval) clearInterval(loadingProgressInterval);
                 loadingProgressInterval = null;
                 loadingIndicator.style.display = 'none';
+                loadingIndicator.classList.remove('initial-loader');
             }
         }
 
@@ -1050,7 +1057,10 @@ function loadMap(mapId, updateHash = true) {
             if (progressBarEl) progressBarEl.style.width = '0%';
             if (loadingTextEl) loadingTextEl.textContent = "Error loading map image.";
             if (spinnerEl) spinnerEl.style.display = 'none';
-            setTimeout(() => { loadingIndicator.style.display = 'none'; }, 3000);
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+                loadingIndicator.classList.remove('initial-loader');
+            }, 3000);
         }
         if (currentImageLayer) map.removeLayer(currentImageLayer);
         currentImageLayer = null;
@@ -2183,11 +2193,6 @@ async function loadMapData() {
 
         if (loadingIndicator && loadingIndicator.querySelector('.progress-bar')) {
             loadingIndicator.querySelector('.progress-bar').style.width = '100%';
-        }
-
-        // Hide loading indicator *before* initializing the rest of the app
-        if (loadingIndicator) {
-            setTimeout(() => { loadingIndicator.style.display = 'none'; }, 200); // Short delay
         }
 
         // --- Keyboard Shortcut Logic ---

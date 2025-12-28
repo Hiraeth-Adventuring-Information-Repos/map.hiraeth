@@ -914,6 +914,20 @@ body.dark-theme #wip-popup p { text-shadow: none; }
     min-width: 250px;
 }
 
+#loading-indicator.initial-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+    border-radius: 0;
+    justify-content: center;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    z-index: 9999;
+}
+
 .loading-text {
     margin: 10px 0;
 }
@@ -927,12 +941,21 @@ body.dark-theme #wip-popup p { text-shadow: none; }
     overflow: hidden;
 }
 
+#loading-indicator.initial-loader .progress-container {
+    background-color: var(--border-color);
+    width: 300px; /* Fixed width for initial loader */
+}
+
 .progress-bar {
     height: 100%;
     width: 0%; /* Starts at 0% */
     background-color: #2196F3;
     border-radius: 5px;
     transition: width 0.3s ease;
+}
+
+#loading-indicator.initial-loader .progress-bar {
+    background-color: var(--slider-bg); /* Use theme color */
 }
 
 .spinner {
@@ -943,6 +966,14 @@ body.dark-theme #wip-popup p { text-shadow: none; }
     height: 20px;
     animation: spin 1s linear infinite;
     margin-right: 10px; /* Space between spinner and text */
+}
+
+#loading-indicator.initial-loader .spinner {
+    border-color: var(--border-color);
+    border-left-color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
 }
 
 @keyframes spin {
