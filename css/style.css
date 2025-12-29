@@ -228,12 +228,16 @@ body.dark-theme #map {
 }
 
 /* --- Moving Clouds Effect (Light Mode Only) --- */
+/* Base sky gradient on the map container itself */
+body:not(.dark-theme) #map {
+    background: linear-gradient(to top, #fdfaf6 0%, #BFE9FF 100%);
+}
+
 body:not(.dark-theme) #map::before,
 body:not(.dark-theme) #map::after {
     background-image: url('../images/clouds.webp');
     background-repeat: repeat-x;
-    background-size: auto 300px;
-    background-color: #87CEEB;
+    background-size: auto 400px; /* Increased size slightly */
     width: 100%;
     animation-name: moveClouds;
     animation-timing-function: linear;
@@ -246,12 +250,22 @@ body:not(.dark-theme) #map::after {
     left: 0;
     height: 100%;
     pointer-events: none;
+    mix-blend-mode: soft-light; /* Blend with gradient */
+    filter: sepia(10%); /* Subtle antique touch */
 }
+
 body:not(.dark-theme) #map::before {
-    background-position: 0 5%; opacity: 0.45; animation-duration: 75s;
+    background-position: 0 10%;
+    opacity: 0.6;
+    animation-duration: 90s; /* Slower drift */
 }
+
 body:not(.dark-theme) #map::after {
-    background-position: 0 20%; opacity: 0.3; animation-duration: 110s; animation-delay: -10s;
+    background-position: 0 40%;
+    opacity: 0.4;
+    animation-duration: 140s;
+    animation-delay: -20s;
+    transform: scaleX(-1); /* Flip second layer for variety */
 }
 
 body.embedded-view #search-control-container {
