@@ -23,9 +23,9 @@
     --glass-border-light: rgba(160, 82, 45, 0.3); /* Based on Shelf Color w/ alpha */
 
     /* Star Field Variables */
-    --stars-small: 1px;
-    --stars-medium: 2px;
-    --stars-large: 3px;
+    --stars-small: 2px;
+    --stars-medium: 3px;
+    --stars-large: 4px;
 
     /* Scrollbar Variables (Light) */
     --scrollbar-track: rgba(0, 0, 0, 0.05);
@@ -88,9 +88,9 @@ body.dark-theme {
 
 /* --- Keyframes for Twinkling Stars --- */
 @keyframes twinkle {
-    0% { opacity: 0.7; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-    100% { opacity: 0.7; transform: scale(1); }
+    0% { opacity: 0.2; }
+    50% { opacity: 1; }
+    100% { opacity: 0.2; }
 }
 
 /* --- Base Dark Theme Map Style --- */
@@ -99,7 +99,7 @@ body.dark-theme #map-container {
 }
 
 body.dark-theme #map {
-    background: transparent;
+    background: transparent !important;
     position: relative;
     overflow: hidden;
 }
