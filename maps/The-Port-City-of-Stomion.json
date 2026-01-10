@@ -1,0 +1,537 @@
+{
+    "id": "The-Port-City-of-Stomion",
+    "name": "The Port City of Stomion",
+    "width": 4096,
+    "height": 3072,
+    "imageUrl": "maps/The-Port-City-of-Stomion.webp",
+    "scalePixels": 50,
+    "scaleKilometers": 3600,
+    "blurb": "",
+    "pointsOfInterest": [
+      {
+        "coords": [
+          2066,
+          2119
+        ],
+        "name": "Arcane Academy",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1928,
+          2752
+        ],
+        "name": "Baths of the Devine Mother",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1829,
+          1728
+        ],
+        "name": "Beccin Embassy",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1662,
+          1606
+        ],
+        "name": "Beccin Embasy",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1003,
+          2329
+        ],
+        "name": "Chimgate",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2647,
+          3573
+        ],
+        "name": "Govenor's Castle",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "Maybe after an ancient governor?",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2370,
+          3174
+        ],
+        "name": "Govenors Gate",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1654,
+          1195
+        ],
+        "name": "Hags Hovel",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          798,
+          1458
+        ],
+        "name": "HARBOUR AUTHORITY",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1611,
+          2365
+        ],
+        "name": "House of Coin God",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2020,
+          1776
+        ],
+        "name": "House of the Lost and Wayward",
+        "pronunciation": "",
+        "type": "Temple",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1446,
+          2161
+        ],
+        "name": "Imperial Offices",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1612,
+          2509
+        ],
+        "name": "Iron Coffers' Hall",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2466,
+          2763
+        ],
+        "name": "Mayor's Manor",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2146,
+          2896
+        ],
+        "name": "MERCHANT GATE",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1469,
+          2332
+        ],
+        "name": "Merchant Senate",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1676,
+          1451
+        ],
+        "name": "Ol' Fort",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1380,
+          2729
+        ],
+        "name": "Old Gate",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1733,
+          2794
+        ],
+        "name": "Ossurian Forges Embassy",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2033,
+          1998
+        ],
+        "name": "Outdoor Theater",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1384,
+          1560
+        ],
+        "name": "Some sort of sorcerers district center?",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1459,
+          2610
+        ],
+        "name": "Station",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          876,
+          823
+        ],
+        "name": "THE ADMIRALITY",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1210,
+          2205
+        ],
+        "name": "THE ARTISAN'S GUILD",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1247,
+          2360
+        ],
+        "name": "THE ARTISAN'S MARKET",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1456,
+          2244
+        ],
+        "name": "The Bath of Some god",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1505,
+          2512
+        ],
+        "name": "THE GREAT WAREHOUSE",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          486,
+          583
+        ],
+        "name": "THE HIGH BEACON",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1348,
+          2077
+        ],
+        "name": "The High Hammer of Matrix",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1616,
+          2134
+        ],
+        "name": "The House of some other god?",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1006,
+          2083
+        ],
+        "name": "THE JEWELER'S GUILD",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2046,
+          1693
+        ],
+        "name": "The North Gate",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1728,
+          2603
+        ],
+        "name": "The Observatory",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          641,
+          821
+        ],
+        "name": "THE RAILDOCK",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          986,
+          1015
+        ],
+        "name": "THE WATERLILY",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "Brothal",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1120,
+          1775
+        ],
+        "name": "THE WATERLOCK",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1602,
+          1905
+        ],
+        "name": "The Watertowers",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2163,
+          1991
+        ],
+        "name": "Tourney Grounds",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1822,
+          2237
+        ],
+        "name": "Trading House",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          2255,
+          2500
+        ],
+        "name": "Wizard's Tower",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      }
+    ],
+    "regions": [],
+    "filterGroups": {
+      "Regions": {}
+    },
+    "lines": []
+  }
