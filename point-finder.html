@@ -1037,21 +1037,36 @@
             }, 3000);
         }
 
+        const defaultRegionTypes = [
+            "Political", "Geographic", "Climate", "Cultural",
+            "Settlement", "Water", "Forest", "Mountain", "Other"
+        ];
+
         function populateRegionTypeDropdowns() {
+            // Clear the current list
             regionTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
+            
+            // Reset inputs
             regionValueInput.value = '';
             regionValueOptions.innerHTML = '';
             regionValueInput.disabled = true;
 
+            // Create a Set to hold unique types (starting with our defaults)
+            const availableTypes = new Set(defaultRegionTypes);
+
+            // If the loaded map has custom types, add them to the set
             if (currentMapObject && currentMapObject.filterGroups && currentMapObject.filterGroups.Regions) {
-                const regionTypes = Object.keys(currentMapObject.filterGroups.Regions);
-                regionTypes.sort().forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = type;
-                    regionTypeSelect.appendChild(option);
-                });
+                const mapTypes = Object.keys(currentMapObject.filterGroups.Regions);
+                mapTypes.forEach(type => availableTypes.add(type));
             }
+
+            // Sort and create the HTML options
+            Array.from(availableTypes).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                regionTypeSelect.appendChild(option);
+            });
         }
 
         function toggleOtherRegionsVisibility(show, exceptIndex = -1) {
@@ -1550,18 +1565,41 @@
 
 
         function setRegionCreationState(creating) {
-            isCreatingRegion = creating; tempRegionVertices = [];
-            startRegionBtn.classList.toggle('hidden', creating); finishRegionBtn.classList.toggle('hidden', !creating);
-            cancelRegionBtn.classList.toggle('hidden', !creating); clearRegionsBtn.classList.toggle('hidden', creating);
+            isCreatingRegion = creating; 
+            tempRegionVertices = [];
+            
+            // Toggle Buttons
+            startRegionBtn.classList.toggle('hidden', creating); 
+            finishRegionBtn.classList.toggle('hidden', !creating);
+            cancelRegionBtn.classList.toggle('hidden', !creating); 
+            clearRegionsBtn.classList.toggle('hidden', creating);
+            
+            // Toggle Map Class
             mapElement.classList.toggle('region-creation-mode', creating);
-            if (!creating && tempRegionLayer) { map.removeLayer(tempRegionLayer); tempRegionLayer = null; }
+            
+            // Cleanup temp layer if stopping
+            if (!creating && tempRegionLayer) { 
+                map.removeLayer(tempRegionLayer); 
+                tempRegionLayer = null; 
+            }
+
             if (creating) {
+                // FIX: Show other regions immediately if the box is already checked
+                if (showAllRegionsWhileEditing) {
+                    toggleOtherRegionsVisibility(true, -1);
+                }
+
                 displayProperties(regionPropertiesContainer, {});
                 addRegionPropertyBtn.disabled = false;
             } else {
+                // FIX: Hide them when we stop creating
+                toggleOtherRegionsVisibility(false);
+                
                 addRegionPropertyBtn.disabled = true;
             }
-            updateRegionVerticesCount(); updateStatus();
+            
+            updateRegionVerticesCount(); 
+            updateStatus();
         }
         function setLineCreationState(creating) { 
             isCreatingLine = creating;
@@ -2809,8 +2847,11 @@
 
             regionTypeSelect.addEventListener('change', () => {
                 const selectedType = regionTypeSelect.value;
+                
                 regionValueOptions.innerHTML = '';
                 regionValueInput.value = '';
+
+                regionValueInput.disabled = !selectedType;
 
                 if (selectedType && currentMapObject && currentMapObject.filterGroups && currentMapObject.filterGroups.Regions && currentMapObject.filterGroups.Regions[selectedType]) {
                     const values = currentMapObject.filterGroups.Regions[selectedType];
@@ -2819,11 +2860,9 @@
                         option.value = value;
                         regionValueOptions.appendChild(option);
                     });
-                    regionValueInput.disabled = false;
-                } else {
-                    regionValueInput.disabled = true;
-                }
-                const lowerCaseType = selectedType.toLowerCase();
+                } 
+
+                const lowerCaseType = selectedType ? selectedType.toLowerCase() : '';
                 if (regionTypeColors[lowerCaseType]) {
                     regionColorInput.value = regionTypeColors[lowerCaseType].color;
                     regionFillColorInput.value = regionTypeColors[lowerCaseType].fillColor;
