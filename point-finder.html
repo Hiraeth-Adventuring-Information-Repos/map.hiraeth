@@ -7,450 +7,876 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* --- Oldschool Style --- */
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-panel: #252526;
+            --bg-hover: #2a2d2e;
+            --bg-input: #3c3c3c;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #3e3e42;
+            --accent: #007acc;
+            --accent-hover: #0062a3;
+            --danger: #f44336;
+            --success: #4caf50;
+            --radius: 4px;
+            --spacing: 12px;
+            --sidebar-width: 380px;
+            --sidebar-collapsed-width: 0px;
+            --header-height: 40px;
+        }
+
         body {
-            font-family: "MS Sans Serif", "Tahoma", "Verdana", sans-serif;
-            margin: 0; padding: 0; display: flex; flex-direction: column;
-            height: 100vh; background-color: #c0c0c0; color: #000000;
-            font-size: 12px;
-        }
-        .controls {
-            padding: 8px 10px; background-color: #c0c0c0;
-            border-bottom: 2px solid #808080; display: flex; flex-wrap: wrap;
-            gap: 8px; align-items: flex-start;
-        }
-        .mode-selector {
-            display: flex; margin-bottom: 8px;
-        }
-        .mode-tab {
-            padding: 4px 10px; cursor: pointer; background-color: #c0c0c0;
-            border: 1px solid #808080; border-left-color: #ffffff;
-            border-top-color: #ffffff; font-weight: bold;
-            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf;
-        }
-        .mode-tab.active {
-            background-color: #a0a0a0;
-            border: 1px solid #808080; border-right-color: #ffffff;
-            border-bottom-color: #ffffff;
-            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-        }
-        .control-group {
-            display: flex; flex-direction: column; gap: 4px; padding: 6px;
-            border: 1px solid #808080; border-right-color: #ffffff;
-            border-bottom-color: #ffffff; background-color: #c0c0c0;
-            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-        }
-        .control-row { display: flex; align-items: center; gap: 5px; width: 100%; }
-        .controls label {
-            font-weight: normal; white-space: nowrap; font-size: 1em;
-            min-width: 75px; text-align: right; padding-right: 5px;
-        }
-        .controls input[type="text"], .controls select, .controls textarea, .controls input[type="number"], .controls input[type="color"] {
-            padding: 3px 5px; border: 1px solid #808080; background-color: #ffffff;
-            color: #000000; font-family: inherit; font-size: 1em; flex-grow: 1;
-            box-shadow: inset 1px 1px 1px #404040; box-sizing: border-box;
-        }
-        .controls input[type="checkbox"] {
-            /* Custom styling for checkbox to match the retro theme */
-            appearance: none; -webkit-appearance: none;
-            width: 13px; height: 13px;
-            background-color: #ffffff;
-            border: 1px solid #808080;
-            box-shadow: inset 1px 1px 1px #404040;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             margin: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        /* --- Layout --- */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            height: 100%;
             position: relative;
-            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
             flex-shrink: 0;
+            z-index: 100;
+            transition: width 0.3s ease, transform 0.3s ease;
+            position: relative;
         }
-        .controls input[type="checkbox"]:checked::after {
-            content: '✔';
-            position: absolute;
-            top: -2px; left: 1px;
-            font-size: 12px;
-            color: #000000;
+
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+            border-right: none;
         }
-        .controls input[type="color"] {
-            width: 40px; height: 24px; padding: 0; cursor: pointer;
+
+        .map-area {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: #111;
+            transition: margin-left 0.3s ease;
         }
-        .controls input[type="number"] {
-            width: 60px;
-        }
-        .controls select {
-             appearance: none;
-             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-             background-repeat: no-repeat; background-position: right 5px top 50%;
-             background-size: .65em auto; padding-right: 1.5em;
-        }
-        #fileLoader { min-width: 200px; }
-        #pointDescription, #regionDescription, #mapBlurb, #lineDescription { height: 4.5em; resize: vertical; } /* Renamed roadDescription */
-        .controls button, .output-buttons button, .summary-actions button, .json-modal-copy, .json-modal-close {
-            padding: 4px 10px; cursor: pointer; color: #000000;
-            border: 1px solid #808080; border-left-color: #ffffff;
-            border-top-color: #ffffff; background-color: #c0c0c0;
-            font-size: 1em;
-            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf;
-            text-align: center;
-        }
-        .controls button:active, .output-buttons button:active, .summary-actions button:active, .json-modal-copy:active, .json-modal-close:active {
-             border: 1px solid #808080; border-right-color: #ffffff;
-             border-bottom-color: #ffffff;
-             box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-             background-color: #b0b0b0;
-        }
-        .controls button:disabled, .output-buttons button:disabled, .summary-actions button:disabled {
-            color: #808080; background-color: #c0c0c0; cursor: default;
-            box-shadow: none; border: 1px solid #a0a0a0;
-        }
-        .hidden { display: none !important; }
+
         #map {
-            flex-grow: 1; width: 100%; background-color: #a0a0a0;
-            border-top: 2px solid #808080; border-bottom: 2px solid #808080;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
-        /* #map.disabled-map { pointer-events: none; opacity: 0.7; } */ /* This line is commented out or removed to ensure map is clickable */
-        #map.region-creation-mode, #map.vertex-adding-mode, #map.vertex-editing-mode, 
-        #map.line-creation-mode, #map.line-vertex-editing-mode { cursor: crosshair !important; } 
 
-        .bottom-section {
-             display: flex; flex-direction: column;
-             border-top: 2px solid #808080; background-color: #c0c0c0;
+        /* Drag & Drop Overlay */
+        #drop-zone {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 122, 204, 0.2);
+            border: 4px dashed var(--accent);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Let events pass through initially */
         }
-        .info-area { display: flex; padding: 8px 10px; gap: 10px; align-items: flex-start; }
-        .left-info { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 180px; }
-        .coords-section { display: flex; align-items: center; gap: 8px; }
+        #drop-zone.active {
+            display: flex;
+            pointer-events: auto;
+        }
+        .drop-message {
+            font-size: 2em;
+            color: var(--text-main);
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        /* --- Sidebar Components --- */
+        .sidebar-header {
+            padding: var(--spacing);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .file-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* --- Map Selection Tabs --- */
+        .map-source-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        .source-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            font-size: 0.9em;
+        }
+        .source-tab:hover {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+        }
+        .source-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* --- Map Tree --- */
+        #server-map-tree {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            padding: 5px;
+            border-radius: var(--radius);
+        }
+
+        /* Tree Styles copied/adapted from main app */
+        .tree-list, .nested-tree-list { list-style: none; padding-left: 15px; margin: 0; }
+        .tree-list { padding-left: 5px; }
+        .tree-item { cursor: pointer; padding: 4px; margin: 1px 0; border-radius: 2px; display: flex; align-items: center; color: var(--text-muted); }
+        .tree-item:hover { background-color: var(--bg-hover); color: var(--text-main); }
+        .tree-item.active { background-color: rgba(0, 122, 204, 0.2); color: var(--text-main); border-left: 3px solid var(--accent); }
+
+        .tree-folder { padding: 4px; margin: 1px 0; font-weight: bold; color: var(--text-main); display: flex; align-items: center; }
+        .tree-folder-icon { cursor: pointer; margin-right: 5px; width: 14px; height: 14px; display: inline-block; transition: transform 0.2s; user-select: none; }
+        .tree-folder.closed .tree-folder-icon { transform: rotate(-90deg); }
+        .tree-folder.closed + .nested-tree-list { display: none; }
+        .tree-folder-icon::before { content: "▼"; font-size: 10px; }
+        .tree-folder-name { cursor: pointer; }
+        .tree-folder-name:hover { text-decoration: underline; }
+        .tree-folder-name.active { color: var(--accent); }
+
+
+        .mode-selector {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .mode-tab:hover {
+            color: var(--text-main);
+            background-color: var(--bg-hover);
+        }
+
+        .mode-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .sidebar-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: var(--spacing);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing);
+        }
+
+        .sidebar-footer {
+            padding: var(--spacing);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+        }
+
+        /* --- Forms & Controls --- */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-row.inline {
+             flex-direction: row;
+             align-items: center;
+             justify-content: space-between;
+        }
+
+        label {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        textarea,
+        select {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: var(--radius);
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="file"] {
+             padding: 4px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        /* Toolbar Styling */
+        .text-toolbar {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 2px;
+            background: #2d2d30;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .text-toolbar + textarea {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
+        .toolbar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        .toolbar-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+
+        button {
+            background-color: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #3e3e42;
+            border-color: #555;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button#addPointBtn,
+        button#startRegionBtn,
+        button#startLineBtn,
+        button#finishRegionBtn,
+        button#finishLineBtn,
+        button#savePointChangesBtn,
+        button#saveRegionChangesBtn,
+        button#saveLineChangesBtn {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        button#addPointBtn:hover:not(:disabled),
+        button#startRegionBtn:hover:not(:disabled),
+        button#startLineBtn:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+        }
+
+        button#cancelPointEditBtn, button#cancelRegionBtn, button#cancelRegionEditBtn, button#cancelLineBtn, button#cancelLineEditBtn {
+             background-color: transparent;
+             border-color: var(--danger);
+             color: var(--danger);
+        }
+        button#cancelPointEditBtn:hover, button#cancelRegionBtn:hover, button#cancelRegionEditBtn:hover, button#cancelLineBtn:hover, button#cancelLineEditBtn:hover {
+             background-color: rgba(244, 67, 54, 0.1);
+        }
+
+        .control-group-properties {
+            background-color: #2d2d30;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .property-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .property-row input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .remove-property-btn {
+            padding: 0 8px;
+            color: var(--danger);
+            border-color: var(--border-color);
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Info Sections --- */
+        .info-block {
+            background: #2d2d30;
+            padding: 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+
+        .info-block .instructions {
+            display: block;
+            margin-bottom: 8px;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
         #coords-display {
-            font-weight: normal; font-family: "Courier New", monospace; background-color: #ffffff;
-            padding: 3px 6px; border: 1px solid #808080; box-shadow: inset 1px 1px 1px #404040;
-            min-width: 90px; text-align: center;
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+            color: var(--accent);
         }
-        .instructions { font-size: 0.9em; color: #404040; }
-        #status { font-style: normal; color: #000000; font-size: 0.9em; margin-top: 4px; padding: 3px; border: 1px solid transparent; }
-        #status.error { color: #ff0000; font-weight: bold; border: 1px dotted #ff0000; }
-        #status.success { color: #008000; font-weight: bold; border: 1px dotted #008000; }
-        .edit-selection { margin-top: 8px; }
-        .edit-selection label { font-weight: normal; font-size: 1em; margin-bottom: 3px; display: block; text-align: left; }
-        #editPointSelect, #editRegionSelect, #editLineSelect { width: 100%; } 
-        .map-summary {
-            flex-grow: 1; display: flex; flex-direction: column; gap: 6px;
-            padding: 6px; border: 1px solid #808080; border-right-color: #ffffff;
-            border-bottom-color: #ffffff; background-color: #c0c0c0;
-            box-shadow: inset 1px 1px 0px #404040, inset -1px -1px 0px #dfdfdf;
-        }
-        .map-summary h3 { margin: 0 0 5px 0; font-size: 1.1em; }
-        .summary-stats p { margin: 2px 0; font-size: 1em; }
-        .summary-stats span { font-weight: bold; }
-        .summary-actions { display: flex; gap: 8px; margin-top: 8px; }
-        .summary-actions button { font-size: 0.9em; }
 
-        .leaflet-popup-content-wrapper { background: #f0f0f0; color: #000000; border: 1px solid #808080; border-radius: 0; box-shadow: 2px 2px 3px rgba(0,0,0,0.3); }
-        .leaflet-popup-content { font-family: inherit; font-size: 1em; margin: 8px 10px; }
-        .leaflet-popup-tip-container { width: 20px; height: 10px; }
-        .leaflet-popup-tip { background: #f0f0f0; border: 1px solid #808080; border-left: none; border-top: none; box-shadow: none; }
-        .leaflet-marker-icon { filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5)); }
-        
+        .summary-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .summary-stats p { margin: 0; color: var(--text-muted); }
+        .summary-stats span { color: var(--text-main); font-weight: bold; }
+
+        .summary-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .summary-actions button { flex: 1; font-size: 0.85em; }
+
+        /* --- Status Bar & Toasts --- */
+        #status-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 6px 12px;
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #status { color: var(--text-main); }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 40px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+        .toast {
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--accent);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            max-width: 300px;
+        }
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.info { border-left-color: var(--accent); }
+
+
+        /* --- Leaflet Overrides --- */
+        .leaflet-container { background: #111; }
+
+        /* Markers for editing */
         .vertex-marker, .line-vertex-marker { 
-            background-color: rgba(255, 0, 0, 0.7);
-            border: 1px solid #fff;
+            background-color: var(--danger);
+            border: 2px solid white;
             border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.5);
             cursor: grab;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
-        .vertex-marker:active, .line-vertex-marker:active { cursor: grabbing; }
-        .new-vertex-marker, .new-line-vertex-marker { 
-            background-color: rgba(0, 255, 0, 0.7);
-            border: 1px solid #fff;
+        .vertex-marker.active, .line-vertex-marker.active {
+            background-color: #00ffff;
+            border-color: #0000ff;
+        }
+        .new-vertex-marker, .new-line-vertex-marker {
+            background-color: var(--success);
+            border: 1px solid white;
             border-radius: 50%;
-            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+            opacity: 0.8;
         }
-        /* .editing-poi-marker class is not strictly needed if using L.circleMarker with specific styles */
 
-
+        /* --- Modal --- */
         .json-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.6); display: flex;
-            justify-content: center; align-items: center; z-index: 1000;
-            padding: 20px; box-sizing: border-box;
+            background-color: rgba(0,0,0,0.7); backdrop-filter: blur(2px);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
         }
         .json-modal-content {
-            background-color: #c0c0c0; border: 1px solid #808080;
-            border-left-color: #ffffff; border-top-color: #ffffff;
-            box-shadow: inset -1px -1px 0px #404040, inset 1px 1px 0px #dfdfdf, 3px 3px 5px rgba(0,0,0,0.3);
-            width: 90%; max-width: 800px; max-height: 90vh;
-            display: flex; flex-direction: column; padding: 10px;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 80%; max-width: 900px; height: 80vh;
+            display: flex; flex-direction: column; padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
         .json-modal-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #808080;
+            margin-bottom: 15px;
         }
-        .json-modal-header h3 { margin: 0; font-size: 1.1em; font-weight: bold; }
-        .json-modal-close { font-size: 1.4em; font-weight: bold; line-height: 1; padding: 0px 6px 2px 6px; }
+        .json-modal-header h3 { margin: 0; color: var(--text-main); }
+        .json-modal-close {
+            background: none; border: none; font-size: 1.5em; color: var(--text-muted); padding: 0;
+        }
+        .json-modal-close:hover { color: var(--text-main); background: none; }
         .json-modal-textarea {
-            width: 100%; flex-grow: 1; min-height: 200px;
-            font-family: "Courier New", monospace; font-size: 0.95em;
-            border: 1px solid #808080; background-color: #ffffff; color: #000000;
-            padding: 10px; box-sizing: border-box; margin-bottom: 10px;
-            resize: none; box-shadow: inset 1px 1px 1px #404040;
-            white-space: pre; overflow: auto;
+            flex-grow: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        .json-modal-copy { align-self: flex-end; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Input Color overrides */
+        input[type="color"] {
+            padding: 0; border: none; height: 32px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <div class="control-group">
-            <div class="mode-selector">
-                <div class="mode-tab active" data-mode="points">Points</div>
-                <div class="mode-tab" data-mode="regions">Regions</div>
-                <div class="mode-tab" data-mode="lines">Lines</div> </div>
-            <div class="control-row">
-                 <label for="mapFileSelect">Load Map File:</label>
-                 <select id="mapFileSelect"></select>
-            </div>
-            <div class="control-row">
-                <label for="subMapSelect">Select Map:</label>
-                <select id="subMapSelect" disabled>
-                    <option value="">-- Load a file first --</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <button id="loadSubMapBtn" disabled>Load Selected Map</button>
-            </div>
-             <div class="control-row">
-                <label for="mapBlurb">Map Blurb:</label>
-                <textarea id="mapBlurb" placeholder="Brief description (HTML allowed)"></textarea>
-            </div>
-             <div class="control-row">
-                <label for="scalePixels">Scale (Pixels):</label>
-                <input type="number" id="scalePixels" value="3" min="1">
-            </div>
-            <div class="control-row">
-                <label for="scaleKilometers">Scale (Units):</label>
-                <input type="number" id="scaleKilometers" value="1" min="0.1" step="0.1">
-            </div>
-            <div class="control-row">
-                 <button id="exportMapDataBtn" disabled>View/Export All Data (JSON)</button>
-            </div>
-        </div>
+<div id="drop-zone">
+    <div class="drop-message">Drop JSON file here to load</div>
+</div>
 
-        <div class="control-group point-controls">
-            <div class="control-row">
-                <label for="pointName">Point Name:</label>
-                <input type="text" id="pointName" placeholder="Click map or select point">
-            </div>
-            <div class="control-row">
-                <label for="poiTypeSelect">Type:</label>
-                <select id="poiTypeSelect">
-                    <option value="">--Select Type--</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <label for="pointDescription">Description:</label>
-                <textarea id="pointDescription"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="pointWikiLink">Wiki Link:</label>
-                <input type="text" id="pointWikiLink" placeholder="Optional URL">
-            </div>
-            <div class="control-row">
-                <button id="addPointBtn" disabled>Add New Point</button>
-                <button id="savePointChangesBtn" class="hidden">Save Changes</button>
-                <button id="cancelPointEditBtn" class="hidden">Cancel Edit</button>
-                <button id="clearPointsBtn" disabled>Clear All Points</button>
-            </div>
-        </div>
+<div class="toast-container" id="toastContainer"></div>
 
-        <div class="control-group region-controls hidden">
-            <div class="control-row">
-                <label for="regionName">Region Name:</label>
-                <input type="text" id="regionName" placeholder="Enter region name">
-            </div>
-            <div class="control-row">
-                <label for="regionTypeSelect">Type:</label>
-                <select id="regionTypeSelect">
-                    <option value="">--Select Type--</option>
-                    <option value="political">Political</option>
-                    <option value="terrain">Terrain</option>
-                    <option value="climate">Climate</option>
-                    <option value="cultural">Cultural</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <label for="regionColor">Border Color:</label>
-                <input type="color" id="regionColor" value="#3388ff">
-            </div>
-            <div class="control-row">
-                <label for="regionFillColor">Fill Color:</label>
-                <input type="color" id="regionFillColor" value="#3388ff">
-            </div>
-            <div class="control-row">
-                <label for="regionOpacity">Fill Opacity:</label>
-                <input type="number" id="regionOpacity" min="0.0" max="1.0" step="0.05" value="0.2">
-            </div>
-            <div class="control-row">
-                <label for="regionDescription">Description:</label>
-                <textarea id="regionDescription"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="regionWikiLink">Wiki Link:</label>
-                <input type="text" id="regionWikiLink" placeholder="Optional URL">
-            </div>
-            <div class="control-row">
-                <button id="startRegionBtn" disabled>Start Region</button>
-                <button id="finishRegionBtn" class="hidden">Finish Region</button>
-                <button id="cancelRegionBtn" class="hidden">Cancel</button>
-                <button id="clearRegionsBtn" disabled>Clear All Regions</button>
-            </div>
-            <div class="control-row">
-                <button id="saveRegionChangesBtn" class="hidden">Save Changes</button>
-                <button id="addVerticesBtn" class="hidden">Add Vertices</button>
-                <button id="editVerticesBtn" class="hidden">Edit Vertices</button>
-                <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
-            </div>
-            <!-- ADDED: Toggle for showing other regions during an edit -->
-            <div class="control-row">
-                 <label for="showAllRegionsToggle">Show Others:</label>
-                 <input type="checkbox" id="showAllRegionsToggle">
-                 <span style="font-size: 0.9em; flex-grow: 1; text-align: left;">Show other regions while editing</span>
-            </div>
-        </div>
+<div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="file-controls">
 
-        <div class="control-group line-controls hidden">
-            <div class="control-row">
-                <label for="lineName">Line Name:</label>
-                <input type="text" id="lineName" placeholder="Enter line name (optional)">
-            </div>
-            <div class="control-row">
-                <label for="lineTypeSelect">Type:</label>
-                <select id="lineTypeSelect">
-                    <option value="">--Select Type--</option>
-                    <option value="highway">Highway</option>
-                    <option value="main_road">Main Road</option>
-                    <option value="street">Street</option>
-                    <option value="path">Path</option>
-                    <option value="track">Track</option>
-                    <option value="river">River</option>
-                    <option value="stream">Stream</option>
-                    <option value="cliff">Cliff Edge</option>
-                    <option value="border">Border</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div class="control-row">
-                <label for="lineColor">Line Color:</label>
-                <input type="color" id="lineColor" value="#808080">
-            </div>
-            <div class="control-row">
-                <label for="lineWeight">Line Weight:</label>
-                <input type="number" id="lineWeight" min="1" max="20" step="1" value="3">
-            </div>
-            <div class="control-row">
-                <label for="lineDashArray">Dash Array:</label>
-                <input type="text" id="lineDashArray" placeholder="e.g., 5, 5 (optional)">
-            </div>
-            <div class="control-row">
-                <label for="lineDescription">Description:</label>
-                <textarea id="lineDescription"></textarea>
-            </div>
-            <div class="control-row">
-                <label for="lineWikiLink">Wiki Link:</label>
-                <input type="text" id="lineWikiLink" placeholder="Optional URL">
-            </div>
-            <div class="control-row">
-                <button id="startLineBtn" disabled>Start Line</button>
-                <button id="finishLineBtn" class="hidden">Finish Line</button>
-                <button id="cancelLineBtn" class="hidden">Cancel</button>
-                <button id="clearLinesBtn" disabled>Clear All Lines</button>
-            </div>
-            <div class="control-row">
-                <button id="saveLineChangesBtn" class="hidden">Save Changes</button>
-                <button id="addLineVerticesBtn" class="hidden">Add Vertices</button>
-                <button id="editLineVerticesBtn" class="hidden">Edit Vertices</button>
-                <button id="cancelLineEditBtn" class="hidden">Cancel Edit</button>
-            </div>
-        </div>
-        <span id="status">Load a maps.json file to begin.</span>
-    </div>
+                <div class="map-source-tabs">
+                    <div class="source-tab active" data-source="server">Server Maps</div>
+                    <div class="source-tab" data-source="local">Local File</div>
+                </div>
 
-    <div id="map"></div>
-
-    <div class="bottom-section">
-        <div class="info-area">
-            <div class="left-info">
-                <div class="point-info">
-                    <span class="instructions">Click map for new coords or drag existing:</span>
-                    <div class="coords-section">
-                        <span id="coords-display">[Y, X]</span>
+                <!-- Server Maps View -->
+                <div id="source-server-content">
+                    <div id="server-map-tree">
+                        <div style="padding:10px; text-align:center; color: #666;">Loading maps...</div>
                     </div>
-                    <div class="edit-selection">
+                    <button id="refreshMapListBtn" class="secondary" style="margin-top: 5px; width:100%; font-size: 0.8em;">Refresh List</button>
+                </div>
+
+                <!-- Local File View -->
+                <div id="source-local-content" class="hidden">
+                    <div class="control-row">
+                        <label for="jsonFileInput">1. Load JSON File</label>
+                        <input type="file" id="jsonFileInput" accept=".json">
+                    </div>
+                    <div class="control-row">
+                         <label for="subMapSelect">2. Select Map</label>
+                         <select id="subMapSelect" disabled>
+                            <option value="">-- Load file first --</option>
+                         </select>
+                    </div>
+                    <div class="control-row inline">
+                         <button id="loadSubMapBtn" disabled style="flex:1">Load Map</button>
+                    </div>
+                </div>
+
+                 <!-- Map Settings Collapsible? -->
+                 <details style="margin-top: 8px; font-size:0.9em; color: var(--text-muted);">
+                     <summary style="cursor: pointer;">Map Settings</summary>
+                     <div class="control-row" style="margin-top: 5px;">
+                        <label>Scale (Pixels/Units):</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="scalePixels" value="3" min="1" placeholder="Px">
+                            <input type="number" id="scaleUnits" value="1" min="0.1" step="0.1" placeholder="Km">
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label>Blurb:</label>
+                        <textarea id="mapBlurb" placeholder="Brief description..."></textarea>
+                    </div>
+                 </details>
+            </div>
+        </div>
+
+        <div class="mode-selector">
+            <div class="mode-tab active" data-mode="points">Points</div>
+            <div class="mode-tab" data-mode="regions">Regions</div>
+            <div class="mode-tab" data-mode="lines">Lines</div>
+        </div>
+
+        <div class="sidebar-content">
+            <!-- POINTS CONTENT -->
+            <div class="point-info hidden"> <!-- Used by JS to toggle -->
+                 <div class="info-block">
+                     <span class="instructions">Click map to set coordinates:</span>
+                     <div style="text-align: center;"><span id="coords-display">[Y, X]</span></div>
+                     <div class="control-row">
                         <label for="editPointSelect">Edit Existing Point:</label>
+                        <input type="text" id="editPointFilter" placeholder="Filter points..." style="margin-bottom: 4px; font-size: 0.8em; padding: 4px;">
                         <select id="editPointSelect">
-                            <option value="">--Select Point to Edit--</option>
+                            <option value="">-- Select Point --</option>
                         </select>
-                    </div>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="control-group point-controls hidden"> <!-- Used by JS to toggle -->
+                <div class="control-row">
+                    <label>Name & Pronunciation:</label>
+                    <input type="text" id="pointName" placeholder="Name">
+                    <input type="text" id="pointPronunciation" placeholder="Pronunciation (opt)">
                 </div>
-                <div class="region-info hidden">
-                    <span class="instructions">Click map to place vertices:</span>
-                    <div class="coords-section">
-                        <span id="region-vertices-count">0 vertices</span>
-                    </div>
-                    <div class="edit-selection">
-                        <label for="editRegionSelect">Edit Existing Region:</label>
-                        <select id="editRegionSelect">
-                            <option value="">--Select Region to Edit--</option>
-                        </select>
-                    </div>
+                <div class="control-row">
+                    <label>Type:</label>
+                    <select id="poiTypeSelect"><option value="">--Select Type--</option></select>
                 </div>
-                <div class="line-info hidden"> <span class="instructions">Click map to place line vertices:</span>
-                    <div class="coords-section">
-                        <span id="line-vertices-count">0 vertices</span> </div>
-                    <div class="edit-selection">
-                        <label for="editLineSelect">Edit Existing Line:</label> <select id="editLineSelect">
-                            <option value="">--Select Line to Edit--</option>
-                        </select>
-                    </div>
+                <div class="control-row">
+                    <label>Description:</label>
+                    <textarea id="pointDescription" placeholder="Detailed description..."></textarea>
+                </div>
+                <div class="control-row">
+                    <label>Summary & Wiki:</label>
+                    <textarea id="pointSummary" placeholder="Short summary..." style="min-height: 40px;"></textarea>
+                    <input type="text" id="pointWikiLink" placeholder="Wiki URL">
+                </div>
+
+                <div class="control-group-properties" id="point-properties-container">
+                    <label>Custom Properties:</label>
+                </div>
+                <button id="addPointPropertyBtn" class="secondary" style="font-size: 0.8em; align-self: flex-start;">+ Add Property</button>
+
+                <div class="control-row" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="addPointBtn" disabled>Add Point</button>
+                    <button id="savePointChangesBtn" class="hidden">Save Changes</button>
+                    <button id="cancelPointEditBtn" class="hidden">Cancel</button>
+                    <button id="clearPointsBtn" disabled style="grid-column: span 2; background: #333; color: #888;">Clear All Points</button>
                 </div>
             </div>
 
-            <div class="map-summary">
-                <h3>Map Data Summary</h3>
-                <div class="summary-stats">
-                    <p>Points: <span id="points-count">0</span></p>
-                    <p>Regions: <span id="regions-count">0</span></p>
-                    <p>Lines: <span id="lines-count">0</span></p> </div>
-                <div class="summary-actions">
-                    <button id="viewJsonBtn" disabled>View Complete JSON</button>
-                    <button id="copyJsonBtn" disabled>Copy Complete JSON</button>
+
+            <!-- REGIONS CONTENT -->
+            <div class="region-info hidden">
+                 <div class="info-block">
+                     <span class="instructions">Click map to add vertices for polygon.</span>
+                     <div style="text-align: center;"><span id="region-vertices-count" style="color: var(--accent);">0 vertices</span></div>
+                     <div class="control-row">
+                        <label for="editRegionSelect">Edit Existing Region:</label>
+                        <input type="text" id="editRegionFilter" placeholder="Filter regions..." style="margin-bottom: 4px; font-size: 0.8em; padding: 4px;">
+                        <select id="editRegionSelect"><option value="">-- Select Region --</option></select>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="control-group region-controls hidden">
+                <div class="control-row">
+                    <label>Name & Pronunciation:</label>
+                    <input type="text" id="regionName" placeholder="Region Name">
+                    <input type="text" id="regionPronunciation" placeholder="Pronunciation (opt)">
                 </div>
+                <div class="control-row">
+                    <label>Category:</label>
+                    <select id="regionTypeSelect">
+                        <option value="">--Select Type--</option>
+                        <option value="Temp">Temp</option>
+                        <option value="main_road">Main Road</option>
+                        <option value="street">Street</option>
+                        <option value="path">Path</option>
+                        <option value="track">Track</option>
+                        <option value="river">River</option>
+                        <option value="stream">Stream</option>
+                        <option value="cliff">Cliff Edge</option>
+                        <option value="border">Border</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <label>Sub-Category:</label>
+                    <input type="text" id="regionValueInput" list="regionValueOptions" placeholder="Value..." disabled>
+                    <datalist id="regionValueOptions"></datalist>
+                </div>
+                <div class="control-row inline">
+                     <div style="flex:1">
+                        <label>Stroke:</label>
+                        <input type="color" id="regionColor" value="#3388ff" style="width: 100%;">
+                     </div>
+                     <div style="flex:1; margin-left: 8px;">
+                        <label>Fill:</label>
+                        <input type="color" id="regionFillColor" value="#3388ff" style="width: 100%;">
+                     </div>
+                     <div style="flex:1; margin-left: 8px;">
+                        <label>Opacity:</label>
+                        <input type="number" id="regionOpacity" min="0" max="1" step="0.1" value="0.2">
+                     </div>
+                </div>
+                <div class="control-row">
+                    <label>Description & Wiki:</label>
+                    <textarea id="regionDescription" placeholder="Description..."></textarea>
+                    <input type="text" id="regionWikiLink" placeholder="Wiki URL">
+                </div>
+                 <div class="control-row">
+                    <textarea id="regionSummary" placeholder="Short summary..." style="min-height: 40px;"></textarea>
+                </div>
+
+                 <div class="control-group-properties" id="region-properties-container">
+                    <label>Custom Properties:</label>
+                </div>
+                <button id="addRegionPropertyBtn" class="secondary" style="font-size: 0.8em; align-self: flex-start;">+ Add Property</button>
+
+                <div class="control-row" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="startRegionBtn" disabled>Start Region</button>
+                    <button id="finishRegionBtn" class="hidden">Finish Region</button>
+                    <button id="saveRegionChangesBtn" class="hidden">Save Changes</button>
+                    <button id="cancelRegionBtn" class="hidden">Cancel</button>
+                    <button id="cancelRegionEditBtn" class="hidden">Cancel Edit</button>
+                </div>
+
+                <div class="control-row inline" id="region-vertex-tools" style="margin-top: 5px;"> <!-- Removed hidden class -->
+                     <button id="addVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Add Vertices</button>
+                     <button id="editVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Edit Vertices</button>
+                </div>
+
+                <div class="control-row inline" style="margin-top: 5px;">
+                     <input type="checkbox" id="showAllRegionsToggle" style="width: auto;">
+                     <label for="showAllRegionsToggle" style="margin-left: 5px; flex: 1;">Show others while editing</label>
+                </div>
+
+                <button id="clearRegionsBtn" disabled style="margin-top: 5px; background: #333; color: #888; width: 100%;">Clear All Regions</button>
+            </div>
+
+            <!-- LINES CONTENT -->
+             <div class="line-info hidden">
+                 <div class="info-block">
+                     <span class="instructions">Click map to trace path.</span>
+                     <div style="text-align: center;"><span id="line-vertices-count" style="color: var(--accent);">0 vertices</span></div>
+                     <div class="control-row">
+                        <label for="editLineSelect">Edit Existing Line:</label>
+                        <input type="text" id="editLineFilter" placeholder="Filter lines..." style="margin-bottom: 4px; font-size: 0.8em; padding: 4px;">
+                        <select id="editLineSelect"><option value="">-- Select Line --</option></select>
+                     </div>
+                 </div>
+            </div>
+
+            <div class="control-group line-controls hidden">
+                 <div class="control-row">
+                    <label>Name & Pronunciation:</label>
+                    <input type="text" id="lineName" placeholder="Line Name">
+                    <input type="text" id="linePronunciation" placeholder="Pronunciation (opt)">
+                </div>
+                 <div class="control-row">
+                    <label>Type:</label>
+                    <select id="lineTypeSelect">
+                        <option value="">--Select Type--</option>
+                        <option value="highway">Highway</option>
+                        <option value="main_road">Main Road</option>
+                        <option value="street">Street</option>
+                        <option value="path">Path</option>
+                        <option value="track">Track</option>
+                        <option value="river">River</option>
+                        <option value="stream">Stream</option>
+                        <option value="cliff">Cliff Edge</option>
+                        <option value="border">Border</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                 <div class="control-row inline">
+                     <div style="flex:1">
+                        <label>Color:</label>
+                        <input type="color" id="lineColor" value="#808080" style="width: 100%;">
+                     </div>
+                     <div style="flex:1; margin-left: 8px;">
+                        <label>Weight:</label>
+                        <input type="number" id="lineWeight" min="1" max="20" value="3">
+                     </div>
+                 </div>
+                 <div class="control-row">
+                     <label>Dash Array (e.g. "5, 5"):</label>
+                     <input type="text" id="lineDashArray">
+                 </div>
+                  <div class="control-row">
+                    <label>Description & Wiki:</label>
+                    <textarea id="lineDescription" placeholder="Description..."></textarea>
+                    <input type="text" id="lineWikiLink" placeholder="Wiki URL">
+                </div>
+                 <div class="control-row">
+                    <textarea id="lineSummary" placeholder="Short summary..." style="min-height: 40px;"></textarea>
+                </div>
+
+                 <div class="control-group-properties" id="line-properties-container">
+                    <label>Custom Properties:</label>
+                </div>
+                <button id="addLinePropertyBtn" class="secondary" style="font-size: 0.8em; align-self: flex-start;">+ Add Property</button>
+
+                 <div class="control-row" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button id="startLineBtn" disabled>Start Line</button>
+                    <button id="finishLineBtn" class="hidden">Finish Line</button>
+                    <button id="saveLineChangesBtn" class="hidden">Save Changes</button>
+                    <button id="cancelLineBtn" class="hidden">Cancel</button>
+                    <button id="cancelLineEditBtn" class="hidden">Cancel Edit</button>
+                </div>
+                 <div class="control-row inline" style="margin-top: 5px;">
+                     <button id="addLineVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Add Vertices</button>
+                     <button id="editLineVerticesBtn" class="hidden" style="flex:1; font-size: 0.8em;">Edit Vertices</button>
+                </div>
+                 <button id="clearLinesBtn" disabled style="margin-top: 5px; background: #333; color: #888; width: 100%;">Clear All Lines</button>
+
+            </div>
+
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="summary-stats">
+                <p>Points: <span id="points-count">0</span></p>
+                <p>Regions: <span id="regions-count">0</span></p>
+                <p>Lines: <span id="lines-count">0</span></p>
+            </div>
+            <div class="summary-actions">
+                <button id="viewJsonBtn" disabled>View JSON</button>
+                <button id="copyJsonBtn" disabled>Copy JSON</button>
+                <button id="exportMapDataBtn" class="hidden" disabled>View/Export</button> <!-- Kept for ID compatibility but hidden or merged -->
             </div>
         </div>
-    </div>
+    </aside>
+
+    <main class="map-area">
+        <div id="map"></div>
+        <div id="status-bar-container">
+             <span id="status">Load a JSON file to begin.</span>
+             <span style="opacity: 0.6; font-size: 0.8em;">Jules Map Editor</span>
+        </div>
+    </main>
+</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
     <script src="https://unpkg.com/leaflet-geometryutil"></script>
+    <script src="js/libs/text-toolbar.js"></script>
 
-
+    <!-- Paste Original JS Logic Here with minimal tweaks -->
     <script>
         // --- DOM Element References ---
         const mapElement = document.getElementById('map');
-        const mapFileSelect = document.getElementById('mapFileSelect');
+        const jsonFileInput = document.getElementById('jsonFileInput');
         const subMapSelect = document.getElementById('subMapSelect');
         const loadSubMapBtn = document.getElementById('loadSubMapBtn');
         const exportMapDataBtn = document.getElementById('exportMapDataBtn');
         const statusDisplay = document.getElementById('status');
         const modeTabs = document.querySelectorAll('.mode-tab');
+        const sidebar = document.getElementById('sidebar');
+        const dropZone = document.getElementById('drop-zone');
+        const toastContainer = document.getElementById('toastContainer');
 
         const scalePixelsInput = document.getElementById('scalePixels');
-        const scaleKilometersInput = document.getElementById('scaleKilometers');
+        const scaleUnitsInput = document.getElementById('scaleUnits');
         const mapBlurbInput = document.getElementById('mapBlurb');
 
         const pointNameInput = document.getElementById('pointName');
+        const pointPronunciationInput = document.getElementById('pointPronunciation');
         const poiTypeSelect = document.getElementById('poiTypeSelect');
         const pointDescriptionInput = document.getElementById('pointDescription');
+        const pointSummaryInput = document.getElementById('pointSummary');
         const pointWikiLinkInput = document.getElementById('pointWikiLink');
+        const pointPropertiesContainer = document.getElementById('point-properties-container');
+        const addPointPropertyBtn = document.getElementById('addPointPropertyBtn');
         const addPointBtn = document.getElementById('addPointBtn');
         const savePointChangesBtn = document.getElementById('savePointChangesBtn');
         const cancelPointEditBtn = document.getElementById('cancelPointEditBtn');
@@ -459,12 +885,18 @@
         const clearPointsBtn = document.getElementById('clearPointsBtn');
 
         const regionNameInput = document.getElementById('regionName');
+        const regionPronunciationInput = document.getElementById('regionPronunciation');
         const regionTypeSelect = document.getElementById('regionTypeSelect');
+        const regionValueInput = document.getElementById('regionValueInput');
+        const regionValueOptions = document.getElementById('regionValueOptions');
         const regionColorInput = document.getElementById('regionColor');
         const regionFillColorInput = document.getElementById('regionFillColor');
         const regionOpacityInput = document.getElementById('regionOpacity');
         const regionDescriptionInput = document.getElementById('regionDescription');
+        const regionSummaryInput = document.getElementById('regionSummary');
         const regionWikiLinkInput = document.getElementById('regionWikiLink');
+        const regionPropertiesContainer = document.getElementById('region-properties-container');
+        const addRegionPropertyBtn = document.getElementById('addRegionPropertyBtn');
         const startRegionBtn = document.getElementById('startRegionBtn');
         const finishRegionBtn = document.getElementById('finishRegionBtn');
         const cancelRegionBtn = document.getElementById('cancelRegionBtn');
@@ -473,19 +905,31 @@
         const editVerticesBtn = document.getElementById('editVerticesBtn');
         const cancelRegionEditBtn = document.getElementById('cancelRegionEditBtn');
         const editRegionSelect = document.getElementById('editRegionSelect');
+        const editPointFilter = document.getElementById('editPointFilter');
+        const editRegionFilter = document.getElementById('editRegionFilter');
         const regionVerticesCount = document.getElementById('region-vertices-count');
         const clearRegionsBtn = document.getElementById('clearRegionsBtn');
-        // ADDED: Reference to the new toggle
         const showAllRegionsToggle = document.getElementById('showAllRegionsToggle');
 
-        // Line Elements (Renamed from Road)
+        // --- Server Map Elements ---
+        const sourceTabs = document.querySelectorAll('.source-tab');
+        const sourceServerContent = document.getElementById('source-server-content');
+        const sourceLocalContent = document.getElementById('source-local-content');
+        const serverMapTree = document.getElementById('server-map-tree');
+        const refreshMapListBtn = document.getElementById('refreshMapListBtn');
+
+        // Line Elements
         const lineNameInput = document.getElementById('lineName');
+        const linePronunciationInput = document.getElementById('linePronunciation');
         const lineTypeSelect = document.getElementById('lineTypeSelect');
         const lineColorInput = document.getElementById('lineColor');
         const lineWeightInput = document.getElementById('lineWeight');
         const lineDashArrayInput = document.getElementById('lineDashArray');
         const lineDescriptionInput = document.getElementById('lineDescription');
+        const lineSummaryInput = document.getElementById('lineSummary');
         const lineWikiLinkInput = document.getElementById('lineWikiLink');
+        const linePropertiesContainer = document.getElementById('line-properties-container');
+        const addLinePropertyBtn = document.getElementById('addLinePropertyBtn');
         const startLineBtn = document.getElementById('startLineBtn');
         const finishLineBtn = document.getElementById('finishLineBtn');
         const cancelLineBtn = document.getElementById('cancelLineBtn');
@@ -495,6 +939,7 @@
         const editLineVerticesBtn = document.getElementById('editLineVerticesBtn');
         const cancelLineEditBtn = document.getElementById('cancelLineEditBtn');
         const editLineSelect = document.getElementById('editLineSelect');
+        const editLineFilter = document.getElementById('editLineFilter');
         const lineVerticesCountDisplay = document.getElementById('line-vertices-count');
 
 
@@ -542,26 +987,16 @@
 
         let isCreatingLine = false; 
         let tempLineVertices = [];  
-        let tempLineLayer = null;   
+        let tempLineLayer = null;    
         let isEditingLineVertices = false; 
         let editingLineVisualsLayerGroup = null; 
         let editingLinePolylineLayer = null; 
+        let activeVertexMarker = null; 
         
-        // ADDED: State for showing/hiding other regions
         let showAllRegionsWhileEditing = false;
         let otherRegionsLayerGroup = null;
 
-        // --- Hardcoded Map Files ---
-        // To add more files, add a new line here following the format:
-        // "Display Name": "path/to/your/file.json"
-        const HARDCODED_MAP_FILES = {
-            "All Maps (Manifest)": "maps/maps.json",
-            "Icebeach": "maps/icebeach.json",
-            "Cursed Old-Lin": "maps/Cursed-Old-Lin.json",
-            "Arfordir": "maps/Arfordir.json",
-            "Gelwood": "maps/gelwood.json",
-            "Southern Thalassia": "maps/southern-thalassia.json"
-        };
+        let serverMapData = []; // Cached server map data
 
 
         const poiTypeGroups = {
@@ -572,13 +1007,68 @@
             "Unknown": ["Unknown"]
         };
         const regionTypeColors = {
-            "political": { color: "#3388ff", fillColor: "#3388ff" }, "terrain": { color: "#33aa33", fillColor: "#33aa33" },
-            "climate": { color: "#aa33aa", fillColor: "#aa33aa" }, "cultural": { color: "#aaaa33", fillColor: "#aaaa33" },
+            "political": { color: "#3388ff", fillColor: "#3388ff" }, 
+            "geographic": { color: "#33aa33", fillColor: "#33aa33" },
+            "climate": { color: "#aa33aa", fillColor: "#aa33aa" }, 
+            "cultural": { color: "#aaaa33", fillColor: "#aaaa33" },
             "other": { color: "#aa3333", fillColor: "#aa3333" }
         };
 
         // --- Helper Functions ---
-        // ADDED: New function to show/hide other regions
+
+        // Show Toast Function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('visible');
+            });
+
+            // Remove after delay
+            setTimeout(() => {
+                toast.classList.remove('visible');
+                setTimeout(() => {
+                    if (toast.parentNode) toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        const defaultRegionTypes = [
+            "Political", "Geographic", "Climate", "Cultural",
+            "Settlement", "Water", "Forest", "Mountain", "Other"
+        ];
+
+        function populateRegionTypeDropdowns() {
+            // Clear the current list
+            regionTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
+            
+            // Reset inputs
+            regionValueInput.value = '';
+            regionValueOptions.innerHTML = '';
+            regionValueInput.disabled = true;
+
+            // Create a Set to hold unique types (starting with our defaults)
+            const availableTypes = new Set(defaultRegionTypes);
+
+            // If the loaded map has custom types, add them to the set
+            if (currentMapObject && currentMapObject.filterGroups && currentMapObject.filterGroups.Regions) {
+                const mapTypes = Object.keys(currentMapObject.filterGroups.Regions);
+                mapTypes.forEach(type => availableTypes.add(type));
+            }
+
+            // Sort and create the HTML options
+            Array.from(availableTypes).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                regionTypeSelect.appendChild(option);
+            });
+        }
+
         function toggleOtherRegionsVisibility(show, exceptIndex = -1) {
             if (otherRegionsLayerGroup) {
                 map.removeLayer(otherRegionsLayerGroup);
@@ -632,7 +1122,7 @@
                 if (!items || !Array.isArray(items)) return;
                 items.forEach(item => {
                     if (item && typeof item === 'object') {
-                        if (item.imageUrl) {
+                        if (item.imageUrl && item.id && item.name) {
                             foundMaps.push({ id: item.id, name: item.name });
                         }
                         if (item.children && Array.isArray(item.children)) {
@@ -645,15 +1135,164 @@
             findMapsRecursive(mapData);
 
             foundMaps.sort((a,b) => a.name.localeCompare(b.name)).forEach(mapInfo => {
-                 const option = document.createElement('option');
-                 option.value = mapInfo.id;
-                 option.textContent = mapInfo.name;
-                 subMapSelect.appendChild(option);
+               const option = document.createElement('option');
+               option.value = mapInfo.id;
+               option.textContent = mapInfo.name;
+               subMapSelect.appendChild(option);
             });
             
-            subMapSelect.disabled = false;
-            loadSubMapBtn.disabled = false;
+            subMapSelect.disabled = foundMaps.length === 0;
+            loadSubMapBtn.disabled = foundMaps.length === 0;
         }
+
+        // --- NEW: Server Map Fetching Logic ---
+        async function fetchServerMaps() {
+            serverMapTree.innerHTML = '<div style="padding:10px; text-align:center; color: #888;">Fetching maps...</div>';
+            try {
+                const response = await fetch('maps/maps.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const maps = await response.json();
+
+                // Process maps recursively (similar to js/app.js)
+                serverMapData = await processMapData(maps);
+                renderMapTree(serverMapData, serverMapTree);
+                showToast("Map list updated", "success");
+            } catch (e) {
+                console.error("Error fetching maps:", e);
+                serverMapTree.innerHTML = `<div style="padding:10px; text-align:center; color: var(--danger);">Error loading maps: ${e.message}</div>`;
+                showToast("Error loading maps", "error");
+            }
+        }
+
+        async function processMapData(maps) {
+            const processedMaps = [];
+            for (let map of maps) {
+                if (map.children && Array.isArray(map.children) && map.children.length > 0 && typeof map.children[0] === 'string') {
+                    const childIds = map.children;
+                    map.children = [];
+                    const childPromises = childIds.map(childId => processChild(childId, 1));
+                    map.children = await Promise.all(childPromises);
+                }
+                processedMaps.push(map);
+            }
+            return processedMaps;
+        }
+
+        async function processChild(childId, level = 0) {
+            if (level > 5 || !childId || typeof childId !== 'string') {
+                return { id: childId, name: String(childId || 'Invalid Child'), status: 'error', error: true };
+            }
+            try {
+                const response = await fetch(`maps/${childId}.json`);
+                if (response.ok) {
+                    let childData = await response.json();
+                    if (childData.children && Array.isArray(childData.children) && childData.children.length > 0 && typeof childData.children[0] === 'string') {
+                        const subChildIds = childData.children;
+                        childData.children = [];
+                        const subChildPromises = subChildIds.map(subId => processChild(subId, level + 1));
+                        childData.children = await Promise.all(subChildPromises);
+                    }
+                    childData.id = childData.id || childId;
+                    childData.name = childData.name || childId;
+                    return childData;
+                } else {
+                    return { id: childId, name: childId, status: 'coming-soon', error: 'not found' };
+                }
+            } catch (error) {
+                return { id: childId, name: childId, status: 'error', error: error.message };
+            }
+        }
+
+        function createTreeItem(item) {
+            const li = document.createElement('li');
+
+            // Determine if it should be treated as a folder (expandable container)
+            // It is a folder if it explicitly says type="folder" OR if it has children.
+            const isFolder = item.type === 'folder' || (item.children && item.children.length > 0);
+
+            // Determine if it is ALSO a map (can be loaded)
+            const isMap = !!item.imageUrl;
+
+            if (isFolder) {
+                 const folderDiv = document.createElement('div');
+                 folderDiv.className = 'tree-folder closed'; // Default closed
+
+                 // 1. Toggle Icon
+                 const iconSpan = document.createElement('span');
+                 iconSpan.className = 'tree-folder-icon';
+                 iconSpan.onclick = (e) => {
+                     e.stopPropagation();
+                     folderDiv.classList.toggle('closed');
+                 };
+                 folderDiv.appendChild(iconSpan);
+
+                 // 2. Name Label
+                 const nameSpan = document.createElement('span');
+                 nameSpan.className = 'tree-folder-name';
+                 nameSpan.textContent = item.name || 'Unnamed';
+
+                 if (isMap) {
+                     // It's a map folder: Name click loads map
+                     nameSpan.title = "Click to load map";
+                     nameSpan.onclick = (e) => {
+                         e.stopPropagation();
+
+                         // Update active state
+                         document.querySelectorAll('.tree-item, .tree-folder-name').forEach(el => el.classList.remove('active'));
+                         nameSpan.classList.add('active');
+
+                         // Load the map
+                         masterMapData = [item];
+                         loadMap(item);
+                     };
+                 } else {
+                     // It's just a folder: Name click toggles
+                     nameSpan.onclick = (e) => {
+                         e.stopPropagation();
+                         folderDiv.classList.toggle('closed');
+                     };
+                 }
+                 folderDiv.appendChild(nameSpan);
+                 li.appendChild(folderDiv);
+
+                 // 3. Children
+                 if (item.children && item.children.length > 0) {
+                     const nestedUl = document.createElement('ul');
+                     nestedUl.className = 'nested-tree-list';
+                     item.children.forEach(child => nestedUl.appendChild(createTreeItem(child)));
+                     li.appendChild(nestedUl);
+                 }
+            } else {
+                // Leaf Node Map
+                const mapDiv = document.createElement('div');
+                mapDiv.className = 'tree-item';
+                mapDiv.textContent = item.name || item.id;
+
+                if (item.status === 'coming-soon' || item.error) {
+                    mapDiv.style.opacity = '0.6'; mapDiv.style.fontStyle = 'italic';
+                    mapDiv.title = item.error || "Coming Soon";
+                } else {
+                    mapDiv.onclick = () => {
+                        document.querySelectorAll('.tree-item, .tree-folder-name').forEach(el => el.classList.remove('active'));
+                        mapDiv.classList.add('active');
+                        masterMapData = [item];
+                        loadMap(item);
+                    }
+                }
+                li.appendChild(mapDiv);
+            }
+            return li;
+        }
+
+        // Redefining renderMapTree to use the helper properly
+        function renderMapTree(items, containerElement) {
+            containerElement.innerHTML = '';
+            const list = document.createElement('ul');
+            list.className = 'tree-list';
+            items.forEach(item => list.appendChild(createTreeItem(item)));
+            containerElement.appendChild(list);
+        }
+
 
         function populateTypeDropdown() {
             poiTypeSelect.innerHTML = '<option value="">--Select Type--</option>';
@@ -669,45 +1308,72 @@
                 poiTypeSelect.appendChild(optgroup);
             }
         }
-        function populatePointEditDropdown() {
+        function populatePointEditDropdown(filterText = '') {
             const previouslySelectedName = (currentlyEditingPointIndex >= 0 && currentlyEditingPointIndex < collectedPoints.length)
                                           ? collectedPoints[currentlyEditingPointIndex].name : null;
             editPointSelect.innerHTML = '<option value="">--Select Point to Edit--</option>';
             const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
+
             sortedPoints.forEach(point => {
+                if (filterText && !point.name.toLowerCase().includes(filterText.toLowerCase())) return;
                 const option = document.createElement('option');
                 option.value = point.name; option.textContent = point.name;
                 editPointSelect.appendChild(option);
             });
-            editPointSelect.value = previouslySelectedName || "";
+
+            // Re-select if still in filtered list
+            const options = Array.from(editPointSelect.options);
+            if (previouslySelectedName && options.some(o => o.value === previouslySelectedName)) {
+                editPointSelect.value = previouslySelectedName;
+            } else {
+                editPointSelect.value = "";
+            }
             editPointSelect.disabled = collectedPoints.length === 0;
         }
-        function populateRegionEditDropdown() {
+        function populateRegionEditDropdown(filterText = '') {
              const previouslySelectedName = (currentlyEditingRegionIndex >= 0 && currentlyEditingRegionIndex < collectedRegions.length)
                                           ? collectedRegions[currentlyEditingRegionIndex].name : null;
             editRegionSelect.innerHTML = '<option value="">--Select Region to Edit--</option>';
             const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
+
             sortedRegions.forEach(region => {
+                if (filterText && !region.name.toLowerCase().includes(filterText.toLowerCase())) return;
                 const option = document.createElement('option');
                 option.value = region.name; option.textContent = region.name;
                 editRegionSelect.appendChild(option);
             });
-            editRegionSelect.value = previouslySelectedName || "";
+
+            const options = Array.from(editRegionSelect.options);
+            if (previouslySelectedName && options.some(o => o.value === previouslySelectedName)) {
+                editRegionSelect.value = previouslySelectedName;
+            } else {
+                editRegionSelect.value = "";
+            }
             editRegionSelect.disabled = collectedRegions.length === 0;
         }
-        function populateLineEditDropdown() { 
+        function populateLineEditDropdown(filterText = '') {
             const previouslySelectedValue = (currentlyEditingLineIndex >= 0 && currentlyEditingLineIndex < collectedLines.length)
                                           ? (collectedLines[currentlyEditingLineIndex].name || collectedLines[currentlyEditingLineIndex].id)
                                           : null;
             editLineSelect.innerHTML = '<option value="">--Select Line to Edit--</option>';
             const sortedLines = [...collectedLines].sort((a, b) => (a.name || "Unnamed Line").localeCompare(b.name || "Unnamed Line"));
+
             sortedLines.forEach(line => {
+                const displayName = line.name || `Line ID: ${line.id.substring(0,10)}...`;
+                if (filterText && !displayName.toLowerCase().includes(filterText.toLowerCase())) return;
+
                 const option = document.createElement('option');
                 option.value = line.name || line.id;
-                option.textContent = line.name || `Line ID: ${line.id.substring(0,10)}...`;
+                option.textContent = displayName;
                 editLineSelect.appendChild(option);
             });
-            editLineSelect.value = previouslySelectedValue || "";
+
+            const options = Array.from(editLineSelect.options);
+            if (previouslySelectedValue && options.some(o => o.value === previouslySelectedValue)) {
+                editLineSelect.value = previouslySelectedValue;
+            } else {
+                editLineSelect.value = "";
+            }
             editLineSelect.disabled = collectedLines.length === 0;
         }
 
@@ -734,21 +1400,30 @@
             exportMapDataBtn.disabled = !mapLoaded; viewJsonBtn.disabled = !mapLoaded; copyJsonBtn.disabled = !mapLoaded;
         }
 
-        function setStatus(message, type = 'info') { statusDisplay.textContent = message; statusDisplay.className = type; }
+        function setStatus(message, type = 'info') {
+            statusDisplay.textContent = message;
+            statusDisplay.className = type;
+        }
 
         function updateStatus() {
-            if (!currentMapObject) { setStatus('Select a map file from the top dropdown to start.'); return; }
+            if (!currentMapObject) { setStatus('Load a JSON file to begin.'); return; }
             if (currentMode === 'points') {
                 setStatus(isEditingPoint ? 'Editing point. Drag marker or click map to move. Modify details and Save or Cancel.' : 'Click map for new point or select existing point to edit.');
             } else if (currentMode === 'regions') {
                 if (isCreatingRegion) setStatus('Creating region. Click map to add vertices. Click Finish when done.');
                 else if (isAddingVerticesToRegion) setStatus(`Adding vertices to region '${collectedRegions[addingVerticesData.index].name}'. Click map to add, or click Stop.`);
-                else if (isEditingVertices) setStatus(`Editing vertices for region '${collectedRegions[currentlyEditingRegionIndex].name}'. Drag vertices to move, or click Stop.`);
+                else if (isEditingVertices) {
+                    if (activeVertexMarker) setStatus(`Vertex selected. Drag to move, or press Delete/Backspace to remove.`);
+                    else setStatus(`Editing vertices for region '${collectedRegions[currentlyEditingRegionIndex].name}'. Drag vertices, click one to select for deletion, or click Stop.`);
+                }
                 else if (isEditingRegion) setStatus('Editing region. Modify details, Save Changes, Add Vertices, Edit Vertices, or Cancel.');
                 else setStatus('Fill in region details and click Start Region, or select existing region to edit.');
             } else if (currentMode === 'lines') { 
                 if (isCreatingLine) setStatus('Creating line. Click map to add vertices. Click Finish Line when done.');
-                else if (isEditingLineVertices) setStatus(`Editing line vertices for '${collectedLines[currentlyEditingLineIndex].name || collectedLines[currentlyEditingLineIndex].id}'. Drag vertices or click Stop.`);
+                else if (isEditingLineVertices) {
+                    if (activeVertexMarker) setStatus(`Vertex selected. Drag to move, or press Delete/Backspace to remove.`);
+                    else setStatus(`Editing line vertices for '${collectedLines[currentlyEditingLineIndex].name || collectedLines[currentlyEditingLineIndex].id}'. Drag vertices, click one to select for deletion, or click Stop.`);
+                }
                 else if (isEditingLine) setStatus('Editing line. Modify details, Save Changes, Edit Vertices, or Cancel.');
                 else setStatus('Fill in line details and click Start Line, or select existing line to edit.');
             }
@@ -769,13 +1444,12 @@
 
                 if (currentlyEditingPointIndex !== -1) {
                     const point = collectedPoints[currentlyEditingPointIndex];
-                    // Use L.circleMarker for better visibility and distinction during editing
                     editingPointMarker = L.circleMarker(point.coords, { 
                         draggable: true, 
-                        color: 'magenta', // Distinct color
+                        color: 'magenta',
                         fillColor: '#ff00ff',
                         fillOpacity: 0.5,
-                        radius: 10 // Adjust size as needed
+                        radius: 10
                     }).addTo(map);
                     
                     editingPointMarker.on('dragend', function(event) {
@@ -798,13 +1472,16 @@
             clearPointsBtn.classList.toggle('hidden', editing);
 
             if (!editing) {
-                pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
                 coordsDisplay.textContent = '[Y, X]';
                 lastClickedCoordsArray = null;
                 addPointBtn.disabled = !currentMapObject; 
                 editPointSelect.value = "";
+                displayProperties(pointPropertiesContainer, {});
+                addPointPropertyBtn.disabled = true;
             } else {
                 addPointBtn.disabled = true; 
+                addPointPropertyBtn.disabled = false;
             }
             updateStatus();
         }
@@ -820,16 +1497,28 @@
             startRegionBtn.classList.toggle('hidden', editing); saveRegionChangesBtn.classList.toggle('hidden', !editing);
             addVerticesBtn.classList.toggle('hidden', !editing); editVerticesBtn.classList.toggle('hidden', !editing);
             cancelRegionEditBtn.classList.toggle('hidden', !editing); clearRegionsBtn.classList.toggle('hidden', editing);
-            mapElement.classList.toggle('disabled-map', editing && !isAddingVerticesToRegion && !isEditingVertices);
+
             if (!editing) {
                 if (!isCreatingRegion) {
-                    regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+                    regionNameInput.value = ''; 
+                    regionPronunciationInput.value = '';
+                    regionTypeSelect.value = '';
+                    regionValueInput.value = '';
+                    regionValueOptions.innerHTML = '';
+                    regionValueInput.disabled = true;
+                    regionDescriptionInput.value = ''; 
+                    regionSummaryInput.value = '';
+                    regionWikiLinkInput.value = '';
                     regionColorInput.value = '#3388ff'; regionFillColorInput.value = '#3388ff'; regionOpacityInput.value = '0.2';
+                    displayProperties(regionPropertiesContainer, {});
                 }
                 startRegionBtn.disabled = !currentMapObject; editRegionSelect.value = ""; clearEditingVisuals();
-                // MODIFIED: Clear background regions when editing stops
                 toggleOtherRegionsVisibility(false);
-            } else { startRegionBtn.disabled = true; }
+                addRegionPropertyBtn.disabled = true;
+            } else {
+                startRegionBtn.disabled = true;
+                addRegionPropertyBtn.disabled = false;
+            }
             updateStatus();
         }
 
@@ -852,14 +1541,15 @@
             editLineVerticesBtn.classList.toggle('hidden', !editing || isEditingLineVertices);
             cancelLineEditBtn.classList.toggle('hidden', !editing);
             clearLinesBtn.classList.toggle('hidden', editing);
-            mapElement.classList.toggle('disabled-map', editing && !isCreatingLine && !isEditingLineVertices);
 
             if (!editing) {
-                lineNameInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
-                lineWeightInput.value = '3'; lineDashArrayInput.value = ''; lineDescriptionInput.value = '';
+                lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineColorInput.value = '#808080';
+                lineWeightInput.value = '3'; lineDashArrayInput.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = '';
                 lineWikiLinkInput.value = ''; startLineBtn.disabled = !currentMapObject; editLineSelect.value = "";
                 if (tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
                 clearLineEditingVisuals();
+                displayProperties(linePropertiesContainer, {});
+                addLinePropertyBtn.disabled = true;
             } else {
                 startLineBtn.disabled = true;
                 addLineVerticesBtn.classList.toggle('hidden', !editing || isEditingLineVertices);
@@ -868,18 +1558,48 @@
                      saveLineChangesBtn.classList.add('hidden');
                      cancelLineEditBtn.classList.add('hidden');
                 }
+                addLinePropertyBtn.disabled = false;
             }
             updateStatus();
         }
 
 
         function setRegionCreationState(creating) {
-            isCreatingRegion = creating; tempRegionVertices = [];
-            startRegionBtn.classList.toggle('hidden', creating); finishRegionBtn.classList.toggle('hidden', !creating);
-            cancelRegionBtn.classList.toggle('hidden', !creating); clearRegionsBtn.classList.toggle('hidden', creating);
+            isCreatingRegion = creating; 
+            tempRegionVertices = [];
+            
+            // Toggle Buttons
+            startRegionBtn.classList.toggle('hidden', creating); 
+            finishRegionBtn.classList.toggle('hidden', !creating);
+            cancelRegionBtn.classList.toggle('hidden', !creating); 
+            clearRegionsBtn.classList.toggle('hidden', creating);
+            
+            // Toggle Map Class
             mapElement.classList.toggle('region-creation-mode', creating);
-            if (!creating && tempRegionLayer) { map.removeLayer(tempRegionLayer); tempRegionLayer = null; }
-            updateRegionVerticesCount(); updateStatus();
+            
+            // Cleanup temp layer if stopping
+            if (!creating && tempRegionLayer) { 
+                map.removeLayer(tempRegionLayer); 
+                tempRegionLayer = null; 
+            }
+
+            if (creating) {
+                // FIX: Show other regions immediately if the box is already checked
+                if (showAllRegionsWhileEditing) {
+                    toggleOtherRegionsVisibility(true, -1);
+                }
+
+                displayProperties(regionPropertiesContainer, {});
+                addRegionPropertyBtn.disabled = false;
+            } else {
+                // FIX: Hide them when we stop creating
+                toggleOtherRegionsVisibility(false);
+                
+                addRegionPropertyBtn.disabled = true;
+            }
+            
+            updateRegionVerticesCount(); 
+            updateStatus();
         }
         function setLineCreationState(creating) { 
             isCreatingLine = creating;
@@ -889,9 +1609,14 @@
             cancelLineBtn.classList.toggle('hidden', !creating);
             clearLinesBtn.classList.toggle('hidden', creating);
             mapElement.classList.toggle('line-creation-mode', creating); 
-            mapElement.classList.toggle('disabled-map', isEditingLine && !creating);
 
             if (!creating && tempLineLayer) { map.removeLayer(tempLineLayer); tempLineLayer = null; }
+            if (creating) {
+                displayProperties(linePropertiesContainer, {});
+                addLinePropertyBtn.disabled = false;
+            } else {
+                addLinePropertyBtn.disabled = true;
+            }
             updateLineVerticesCount(); updateStatus();
         }
 
@@ -909,12 +1634,24 @@
         function resetUIForNewMap() {
             setStatus('Select a map and click Load.');
             coordsDisplay.textContent = '[Y, X]';
-            pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
-            regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
-            lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
-            scalePixelsInput.value = '3'; scaleKilometersInput.value = '1'; mapBlurbInput.value = '';
+            pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
+            displayProperties(pointPropertiesContainer, {});
+            regionNameInput.value = '';
+            regionPronunciationInput.value = '';
+            regionTypeSelect.value = '';
+            regionValueInput.value = '';
+            regionValueOptions.innerHTML = '';
+            regionValueInput.disabled = true;
+            regionDescriptionInput.value = '';
+            regionSummaryInput.value = '';
+            regionWikiLinkInput.value = '';
+            displayProperties(regionPropertiesContainer, {});
+            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = ''; lineWikiLinkInput.value = '';
+            displayProperties(linePropertiesContainer, {});
+            scalePixelsInput.value = '3'; scaleUnitsInput.value = '1'; mapBlurbInput.value = '';
             
             addPointBtn.disabled = true; startRegionBtn.disabled = true; startLineBtn.disabled = true;
+            addPointPropertyBtn.disabled = true; addRegionPropertyBtn.disabled = true; addLinePropertyBtn.disabled = true;
             clearPointsBtn.disabled = true; clearRegionsBtn.disabled = true; clearLinesBtn.disabled = true;
             exportMapDataBtn.disabled = true; viewJsonBtn.disabled = true; copyJsonBtn.disabled = true;
             
@@ -923,16 +1660,18 @@
             lastClickedCoordsArray = null;
             collectedPoints = []; collectedRegions = []; collectedLines = [];
             
-            if (imageLayer && map) {
-                map.eachLayer(layer => {
-                    if (layer !== imageLayer && layer !== map) { 
+            if (map) {
+                 map.eachLayer(layer => {
+                    // Do not remove the map container itself, just overlays and features
+                    if (layer._url === undefined) { 
                         map.removeLayer(layer);
                     }
                 });
-                map.removeLayer(imageLayer);
-                imageLayer = null;
+                if (imageLayer) {
+                     map.removeLayer(imageLayer);
+                }
             }
-
+            imageLayer = null;
             currentMapObject = null; currentBounds = null; 
             
             setPointEditingState(false); setRegionEditingState(false); setRegionCreationState(false);
@@ -942,51 +1681,61 @@
             updateRegionVerticesCount(); updateLineVerticesCount();
         }
 
-        async function handleMapFileSelection(event) {
-            const filePath = event.target.value;
-            if (!filePath) {
-                resetUIForNewMap();
-                subMapSelect.innerHTML = '<option value="">-- Load a file first --</option>';
-                subMapSelect.disabled = true;
-                loadSubMapBtn.disabled = true;
-                return;
-            }
+        // Refactored file processing to reuse for drop and input
+        function processFile(file) {
+            setStatus(`Loading ${file.name}...`, 'info');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const jsonObject = JSON.parse(e.target.result);
+                    
+                    if (Array.isArray(jsonObject)) {
+                        masterMapData = jsonObject;
+                        populateSubMapSelector(masterMapData);
+                        setStatus("Manifest file loaded. Select a map.", "success");
+                        resetUIForNewMap();
+                        subMapSelect.disabled = false;
+                        loadSubMapBtn.disabled = false;
 
-            try {
-                setStatus(`Loading ${filePath}...`, 'info');
-                const response = await fetch(filePath);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const jsonObject = await response.json();
-                
-                if (Array.isArray(jsonObject)) {
-                    // This is a manifest file like maps.json
-                    masterMapData = jsonObject;
-                    populateSubMapSelector(masterMapData);
-                    setStatus("Manifest file loaded. Select a map from the dropdown.", "success");
-                    resetUIForNewMap();
-                    subMapSelect.disabled = false;
-                    loadSubMapBtn.disabled = false;
-                } else if (typeof jsonObject === 'object' && jsonObject !== null && jsonObject.imageUrl) {
-                    // This is a single map object file
-                    masterMapData = [jsonObject]; // Store as an array of one for consistent export
-                    subMapSelect.innerHTML = `<option value="${jsonObject.id || ''}">${jsonObject.name || 'Single Map'}</option>`;
+                        // Auto-load if only one map available
+                        const allMaps = [];
+                        function collect(items) { items.forEach(i => { if(i.imageUrl) allMaps.push(i); if(i.children) collect(i.children); }) }
+                        collect(masterMapData);
+
+                        if (allMaps.length === 1) {
+                            subMapSelect.value = allMaps[0].id;
+                            loadMapFromSelector(); // Auto load
+                        }
+
+                    } else if (typeof jsonObject === 'object' && jsonObject !== null && jsonObject.imageUrl) {
+                        masterMapData = [jsonObject];
+                        subMapSelect.innerHTML = `<option value="${jsonObject.id || ''}" selected>${jsonObject.name || 'Single Map'}</option>`;
+                        subMapSelect.disabled = true;
+                        loadSubMapBtn.disabled = true;
+                        await loadMap(jsonObject);
+                    } else {
+                        throw new Error("Invalid JSON format. Must be an array of map objects or a single map object.");
+                    }
+
+                } catch(error) {
+                    setStatus(`Error loading map file '${file.name}': ${error.message}`, 'error');
+                    console.error(error);
+                    masterMapData = [];
+                    subMapSelect.innerHTML = '<option value="">-- Load failed --</option>';
                     subMapSelect.disabled = true;
                     loadSubMapBtn.disabled = true;
-                    await loadMap(jsonObject); // Load the single map immediately
-                } else {
-                    throw new Error("Invalid JSON format. Must be an array of map objects or a single map object with an 'imageUrl' property.");
+                    resetUIForNewMap();
                 }
-            } catch(error) {
-                setStatus(`Error loading map file '${filePath}': ${error.message}`, 'error');
-                console.error(error);
-                masterMapData = [];
-                subMapSelect.innerHTML = '<option value="">-- Load failed --</option>';
-                subMapSelect.disabled = true;
-                loadSubMapBtn.disabled = true;
-                resetUIForNewMap();
+            };
+            reader.onerror = () => {
+                 setStatus(`Error reading file: ${file.name}`, 'error');
             }
+            reader.readAsText(file);
+        }
+
+        function handleJsonFileLoad(event) {
+            const file = event.target.files[0];
+            if (file) processFile(file);
         }
 
         async function loadMapFromSelector() {
@@ -998,9 +1747,9 @@
                 for (const item of items) {
                     if (item.id === id) return item;
                      if (item.children && Array.isArray(item.children)) {
-                        const found = findMapById(item.children, id);
-                        if(found) return found;
-                    }
+                         const found = findMapById(item.children, id);
+                         if(found) return found;
+                     }
                 }
                 return null;
             }
@@ -1020,14 +1769,15 @@
             }
             
             resetUIForNewMap();
-            currentMapObject = mapData; // Set the current map context
+            currentMapObject = mapData;
 
             loadSubMapBtn.disabled = true; setStatus('Loading image and map data...');
             
             try {
                 const img = new Image();
                 await new Promise((resolve, reject) => {
-                    img.onload = resolve; img.onerror = () => reject(new Error(`Could not load image file: ${mapData.imageUrl}`));
+                    img.onload = resolve; 
+                    img.onerror = () => reject(new Error(`Could not load image file: ${mapData.imageUrl}. Ensure the URL is correct and accessible.`));
                     img.src = mapData.imageUrl;
                 });
 
@@ -1042,18 +1792,22 @@
                 map.fitBounds(currentBounds);
                 
                 scalePixelsInput.value = currentMapObject.scalePixels || 3;
-                scaleKilometersInput.value = currentMapObject.scaleKilometers || 1;
+                scaleUnitsInput.value = currentMapObject.scaleKilometers || currentMapObject.scaleUnits || 1; 
                 mapBlurbInput.value = currentMapObject.blurb || "";
                 
+                populateRegionTypeDropdowns();
+
                 let pointsImported = 0, regionsImported = 0, linesImported = 0; 
                 if (currentMapObject.pointsOfInterest) { importPoints(currentMapObject.pointsOfInterest, true); pointsImported = currentMapObject.pointsOfInterest.length; }
                 if (currentMapObject.regions) { importRegions(currentMapObject.regions, true); regionsImported = currentMapObject.regions.length; }
-                if (currentMapObject.roads) { importLines(currentMapObject.roads, true); linesImported = currentMapObject.roads.length; } 
+                const lineData = currentMapObject.lines || currentMapObject.roads;
+                if (lineData) { importLines(lineData, true); linesImported = lineData.length; } 
 
                 let finalStatus = `Loaded: ${currentMapObject.name}. `;
                 finalStatus += `Imported ${pointsImported} points, ${regionsImported} regions, ${linesImported} lines. `; 
                 finalStatus += `${currentMode === 'points' ? 'Click map for new point' : (currentMode === 'regions' ? 'Fill in region details' : 'Fill in line details')}.`; 
                 setStatus(finalStatus, 'success');
+                showToast(`Map "${currentMapObject.name}" Loaded!`, 'success');
                 
                 addPointBtn.disabled = false; startRegionBtn.disabled = false; startLineBtn.disabled = false; 
                 exportMapDataBtn.disabled = false; viewJsonBtn.disabled = false; copyJsonBtn.disabled = false;
@@ -1062,7 +1816,7 @@
                 setStatus(`Error loading map: ${error.message}`, 'error'); 
                 console.error("Map Loading Error:", error); 
                 resetUIForNewMap();
-                if (masterMapData.length > 1) { // If it was a manifest, re-enable selector
+                if (masterMapData.length > 1) {
                     subMapSelect.disabled = false;
                     loadSubMapBtn.disabled = false;
                 }
@@ -1082,7 +1836,7 @@
                     else {
                         const lat = Number(item.coords[0]), lng = Number(item.coords[1]);
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, type: item.type || "Unknown", description: item.description || "", wikiLink: item.wikiLink || "" });
+                            collectedPoints.push({ coords: [Math.round(lat), Math.round(lng)], name: pointName, pronunciation: item.pronunciation || "", type: item.type || "Unknown", description: item.description || "", summary: item.summary || "", wikiLink: item.wikiLink || "", properties: item.properties || {} });
                             existingNames.add(pointName); addedCount++;
                         } else { console.warn("Skipping point with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1100,7 +1854,7 @@
                     else {
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
-                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: item.type || "", description: item.description || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity || 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]) });
+                            collectedRegions.push({ id: item.id || `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: item.pronunciation || "", type: item.type || "", value: item.value || "", description: item.description || "", summary: item.summary || "", wikiLink: item.wikiLink || "", color: item.color || "#3388ff", fillColor: item.fillColor || "#3388ff", fillOpacity: item.fillOpacity ?? 0.2, coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]), properties: item.properties || {} });
                             existingNames.add(regionName); addedCount++;
                         } else { console.warn("Skipping region with invalid coordinates:", item); skippedCount++; }
                     }
@@ -1120,11 +1874,12 @@
                         const validCoords = item.coordinates.every(coord => Array.isArray(coord) && coord.length === 2 && !isNaN(Number(coord[0])) && !isNaN(Number(coord[1])));
                         if (validCoords) {
                             collectedLines.push({ 
-                                id: lineId, name: item.name || "", type: item.type || "",
-                                description: item.description || "", wikiLink: item.wikiLink || "",
+                                id: lineId, name: item.name || "", pronunciation: item.pronunciation || "", type: item.type || "",
+                                description: item.description || "", summary: item.summary || "", wikiLink: item.wikiLink || "",
                                 color: item.color || "#808080", weight: item.weight || 3,
                                 dashArray: item.dashArray || "",
-                                coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))])
+                                coordinates: item.coordinates.map(coord => [Math.round(Number(coord[0])), Math.round(Number(coord[1]))]),
+                                properties: item.properties || {}
                             });
                             existingIds.add(lineId); addedCount++;
                         } else { console.warn("Skipping line with invalid coordinates:", item); skippedCount++; }
@@ -1141,25 +1896,38 @@
             const index = collectedPoints.findIndex(p => p.name === pointName);
             if (index === -1) { setPointEditingState(false); return; }
             const point = collectedPoints[index];
-            pointNameInput.value = point.name; poiTypeSelect.value = point.type || "";
-            pointDescriptionInput.value = point.description || ""; pointWikiLinkInput.value = point.wikiLink || "";
+            pointNameInput.value = point.name;
+            pointPronunciationInput.value = point.pronunciation || "";
+            poiTypeSelect.value = point.type || "";
+            pointDescriptionInput.value = point.description || "";
+            pointSummaryInput.value = point.summary || "";
+            pointWikiLinkInput.value = point.wikiLink || "";
             coordsDisplay.textContent = `[${point.coords[0]}, ${point.coords[1]}]`;
             lastClickedCoordsArray = [...point.coords];
+            displayProperties(pointPropertiesContainer, point.properties);
             setPointEditingState(true, point.name);
         }
         function loadRegionForEditing(regionName) { 
             const index = collectedRegions.findIndex(r => r.name === regionName);
             if (index === -1) { setRegionEditingState(false); return; }
             const region = collectedRegions[index];
-            regionNameInput.value = region.name; regionTypeSelect.value = region.type || "";
-            regionDescriptionInput.value = region.description || ""; regionWikiLinkInput.value = region.wikiLink || "";
-            regionColorInput.value = region.color || "#3388ff"; regionFillColorInput.value = region.fillColor || "#3388ff";
-            regionOpacityInput.value = region.fillOpacity || 0.2;
-            clearEditingVisuals(); editingVisualsLayerGroup = L.layerGroup().addTo(map);
-            editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity || 0.2, weight: 3, dashArray: "5, 5" });
+            regionNameInput.value = region.name;
+            regionPronunciationInput.value = region.pronunciation || "";
+            regionTypeSelect.value = region.type || "";
+            regionTypeSelect.dispatchEvent(new Event('change'));
+            regionValueInput.value = region.value || "";
+            regionDescriptionInput.value = region.description || "";
+            regionSummaryInput.value = region.summary || "";
+            regionWikiLinkInput.value = region.wikiLink || "";
+            regionColorInput.value = region.color || "#3388ff";
+            regionFillColorInput.value = region.fillColor || "#3388ff";
+            regionOpacityInput.value = region.fillOpacity ?? 0.2;
+            displayProperties(regionPropertiesContainer, region.properties);
+            clearEditingVisuals();
+            editingVisualsLayerGroup = L.layerGroup().addTo(map);
+            editingPolygonLayer = L.polygon(region.coordinates, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity ?? 0.2, weight: 3, dashArray: "5, 5" });
             editingVisualsLayerGroup.addLayer(editingPolygonLayer);
             map.fitBounds(editingPolygonLayer.getBounds().pad(0.1));
-            // MODIFIED: Show other regions if the toggle is checked
             if (showAllRegionsWhileEditing) {
                 toggleOtherRegionsVisibility(true, index);
             }
@@ -1171,10 +1939,15 @@
 
             if (index === -1) { setLineEditState(false); return; }
             const line = collectedLines[index];
-            lineNameInput.value = line.name || ""; lineTypeSelect.value = line.type || "";
+            lineNameInput.value = line.name || "";
+            linePronunciationInput.value = line.pronunciation || "";
+            lineTypeSelect.value = line.type || "";
             lineColorInput.value = line.color || "#808080"; lineWeightInput.value = line.weight || 3;
-            lineDashArrayInput.value = line.dashArray || ""; lineDescriptionInput.value = line.description || "";
+            lineDashArrayInput.value = line.dashArray || "";
+            lineDescriptionInput.value = line.description || "";
+            lineSummaryInput.value = line.summary || "";
             lineWikiLinkInput.value = line.wikiLink || "";
+            displayProperties(linePropertiesContainer, line.properties);
 
             if (tempLineLayer) map.removeLayer(tempLineLayer);
             tempLineLayer = L.polyline(line.coordinates, {
@@ -1189,17 +1962,23 @@
         function savePointChanges() {
             if (!isEditingPoint || currentlyEditingPointIndex < 0 || currentlyEditingPointIndex >= collectedPoints.length) return;
             const originalPoint = collectedPoints[currentlyEditingPointIndex];
-            const newName = pointNameInput.value.trim(), newType = poiTypeSelect.value;
-            const newDescription = pointDescriptionInput.value.trim(), newWikiLink = pointWikiLinkInput.value.trim();
+            const newName = pointNameInput.value.trim(), newPronunciation = pointPronunciationInput.value.trim(), newType = poiTypeSelect.value;
+            const newDescription = pointDescriptionInput.value.trim(), newSummary = pointSummaryInput.value.trim(), newWikiLink = pointWikiLinkInput.value.trim();
             if (!newName) { alert("Point Name cannot be empty."); pointNameInput.focus(); return; }
             if (!newType) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
             if (newName !== originalPoint.name && collectedPoints.some((p, i) => i !== currentlyEditingPointIndex && p.name === newName)) {
                 alert(`Another point named "${newName}" already exists.`); pointNameInput.focus(); return;
             }
-            originalPoint.name = newName; originalPoint.type = newType;
-            originalPoint.description = newDescription; originalPoint.wikiLink = newWikiLink;
+            originalPoint.name = newName;
+            originalPoint.pronunciation = newPronunciation;
+            originalPoint.type = newType;
+            originalPoint.description = newDescription;
+            originalPoint.summary = newSummary;
+            originalPoint.wikiLink = newWikiLink;
+            originalPoint.properties = collectProperties(pointPropertiesContainer);
             if (lastClickedCoordsArray) originalPoint.coords = [...lastClickedCoordsArray];
             updatePointsOutput(); setStatus(`Point "${newName}" updated.`, 'success');
+            showToast('Point Updated', 'success');
             setPointEditingState(false);
         }
         function cancelPointEditing() {
@@ -1209,8 +1988,8 @@
         function saveRegionChanges() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || currentlyEditingRegionIndex >= collectedRegions.length) return;
             const originalRegion = collectedRegions[currentlyEditingRegionIndex];
-            const newName = regionNameInput.value.trim(), newType = regionTypeSelect.value;
-            const newDescription = regionDescriptionInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
+            const newName = regionNameInput.value.trim(), newPronunciation = regionPronunciationInput.value.trim(), newType = regionTypeSelect.value, newValue = regionValueInput.value.trim();
+            const newDescription = regionDescriptionInput.value.trim(), newSummary = regionSummaryInput.value.trim(), newWikiLink = regionWikiLinkInput.value.trim();
             const newColor = regionColorInput.value, newFillColor = regionFillColorInput.value;
             const newOpacity = parseFloat(regionOpacityInput.value);
             if (!newName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
@@ -1218,10 +1997,18 @@
             if (newName !== originalRegion.name && collectedRegions.some((r, i) => i !== currentlyEditingRegionIndex && r.name === newName)) {
                 alert(`Another region named "${newName}" already exists.`); regionNameInput.focus(); return;
             }
-            originalRegion.name = newName; originalRegion.type = newType; originalRegion.description = newDescription;
+            originalRegion.name = newName;
+            originalRegion.pronunciation = newPronunciation;
+            originalRegion.type = newType;
+            originalRegion.value = newValue;
+            originalRegion.description = newDescription;
+            originalRegion.summary = newSummary;
             originalRegion.wikiLink = newWikiLink; originalRegion.color = newColor; originalRegion.fillColor = newFillColor;
             originalRegion.fillOpacity = newOpacity; originalRegion.id = `region-${newName.toLowerCase().replace(/\s+/g, '-')}`;
-            updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success'); setRegionEditingState(false);
+            originalRegion.properties = collectProperties(regionPropertiesContainer);
+            updateRegionsOutput(); setStatus(`Region "${newName}" updated.`, 'success');
+            showToast('Region Updated', 'success');
+            setRegionEditingState(false);
         }
         function cancelRegionEditing() { 
             setRegionEditingState(false); setStatus('Region editing cancelled.');
@@ -1229,16 +2016,22 @@
         function saveLineChanges() { 
             if (!isEditingLine || currentlyEditingLineIndex < 0 || currentlyEditingLineIndex >= collectedLines.length) return;
             const originalLine = collectedLines[currentlyEditingLineIndex];
-            const newName = lineNameInput.value.trim(), newType = lineTypeSelect.value;
+            const newName = lineNameInput.value.trim(), newPronunciation = linePronunciationInput.value.trim(), newType = lineTypeSelect.value;
             const newColor = lineColorInput.value, newWeight = parseInt(lineWeightInput.value);
             const newDashArray = lineDashArrayInput.value.trim();
-            const newDescription = lineDescriptionInput.value.trim(), newWikiLink = lineWikiLinkInput.value.trim();
+            const newDescription = lineDescriptionInput.value.trim(), newSummary = lineSummaryInput.value.trim(), newWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(newWeight) || newWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
 
-            originalLine.name = newName; originalLine.type = newType; originalLine.color = newColor;
+            originalLine.name = newName;
+            originalLine.pronunciation = newPronunciation;
+            originalLine.type = newType; originalLine.color = newColor;
             originalLine.weight = newWeight; originalLine.dashArray = newDashArray;
-            originalLine.description = newDescription; originalLine.wikiLink = newWikiLink;
+            originalLine.description = newDescription;
+            originalLine.summary = newSummary;
+            originalLine.wikiLink = newWikiLink;
+            originalLine.properties = collectProperties(linePropertiesContainer);
             updateLinesOutput(); setStatus(`Line "${newName || originalLine.id}" updated.`, 'success');
+            showToast('Line Updated', 'success');
             setLineEditState(false);
         }
         function cancelLineEdit() { 
@@ -1289,32 +2082,41 @@
 
         function finishRegionCreation() { 
             if (!isCreatingRegion || tempRegionVertices.length < 3) { alert("A region needs at least 3 vertices."); return; }
-            const regionName = regionNameInput.value.trim(), regionType = regionTypeSelect.value;
+            const regionName = regionNameInput.value.trim(), regionPronunciation = regionPronunciationInput.value.trim(), regionType = regionTypeSelect.value, regionValue = regionValueInput.value.trim();
             const regionColor = regionColorInput.value, regionFillColor = regionFillColorInput.value;
             const regionOpacity = parseFloat(regionOpacityInput.value);
-            const regionDescription = regionDescriptionInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
+            const regionDescription = regionDescriptionInput.value.trim(), regionSummary = regionSummaryInput.value.trim(), regionWikiLink = regionWikiLinkInput.value.trim();
             if (!regionName) { alert("Region Name cannot be empty."); regionNameInput.focus(); return; }
+            if (!regionType) { alert("Please select a region category."); regionTypeSelect.focus(); return; }
+            if (!regionValue) { alert("Please enter a region sub-category."); regionValueInput.focus(); return; }
             if (isNaN(regionOpacity) || regionOpacity < 0 || regionOpacity > 1) { alert("Invalid Opacity (0.0-1.0)."); regionOpacityInput.focus(); return; }
             if (collectedRegions.some(r => r.name === regionName)) { alert(`A region named "${regionName}" already exists.`); regionNameInput.focus(); return; }
-            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, type: regionType, description: regionDescription, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices] });
-            updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success'); setRegionCreationState(false);
-            regionNameInput.value = ''; regionTypeSelect.value = ''; regionDescriptionInput.value = ''; regionWikiLinkInput.value = '';
+            const properties = collectProperties(regionPropertiesContainer);
+            collectedRegions.push({ id: `region-${regionName.toLowerCase().replace(/\s+/g, '-')}`, name: regionName, pronunciation: regionPronunciation, type: regionType, value: regionValue, description: regionDescription, summary: regionSummary, wikiLink: regionWikiLink, color: regionColor, fillColor: regionFillColor, fillOpacity: regionOpacity, coordinates: [...tempRegionVertices], properties: properties });
+            updateRegionsOutput(); setStatus(`Region "${regionName}" created.`, 'success');
+            showToast('Region Created', 'success');
+            setRegionCreationState(false);
+            regionNameInput.value = ''; regionPronunciationInput.value = ''; regionTypeSelect.value = ''; regionValueInput.value = ''; regionDescriptionInput.value = ''; regionSummaryInput.value = ''; regionWikiLinkInput.value = '';
+            regionValueOptions.innerHTML = '';
+            regionValueInput.disabled = true;
         }
         function cancelRegionCreation() { 
              if (!isCreatingRegion) return; setRegionCreationState(false); setStatus('Region creation cancelled.');
         }
         function finishLineCreation() { 
             if (!isCreatingLine || tempLineVertices.length < 2) { alert("A line needs at least 2 vertices."); return; }
-            const lineName = lineNameInput.value.trim(), lineType = lineTypeSelect.value;
+            const lineName = lineNameInput.value.trim(), linePronunciation = linePronunciationInput.value.trim(), lineType = lineTypeSelect.value;
             const lineColor = lineColorInput.value, lineWeight = parseInt(lineWeightInput.value);
             const lineDashArray = lineDashArrayInput.value.trim();
-            const lineDescription = lineDescriptionInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
+            const lineDescription = lineDescriptionInput.value.trim(), lineSummary = lineSummaryInput.value.trim(), lineWikiLink = lineWikiLinkInput.value.trim();
             if (isNaN(lineWeight) || lineWeight < 1) { alert("Invalid Line Weight."); lineWeightInput.focus(); return; }
             const lineId = `line-${currentMapObject.id || 'map'}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; 
-            collectedLines.push({ id: lineId, name: lineName, type: lineType, description: lineDescription, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices] });
-            updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success'); 
+            const properties = collectProperties(linePropertiesContainer);
+            collectedLines.push({ id: lineId, name: lineName, pronunciation: linePronunciation, type: lineType, description: lineDescription, summary: lineSummary, wikiLink: lineWikiLink, color: lineColor, weight: lineWeight, dashArray: lineDashArray, coordinates: [...tempLineVertices], properties: properties });
+            updateLinesOutput(); setStatus(`Line "${lineName || lineId}" created.`, 'success');
+            showToast('Line Created', 'success');
             setLineCreationState(false);
-            lineNameInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineWikiLinkInput.value = '';
+            lineNameInput.value = ''; linePronunciationInput.value = ''; lineTypeSelect.value = ''; lineDescriptionInput.value = ''; lineSummaryInput.value = ''; lineWikiLinkInput.value = '';
             lineColorInput.value = '#808080'; lineWeightInput.value = '3'; lineDashArrayInput.value = '';
         }
         function cancelLineCreation() { 
@@ -1322,7 +2124,7 @@
             setLineCreationState(false); setStatus('Line creation cancelled.');
         }
 
-        // --- Region Vertex Editing Logic (Full) ---
+        // --- Region Vertex Editing Logic ---
         function startAddingVertices() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0) return;
             if (isEditingVertices) { alert("Stop editing vertices first."); return; }
@@ -1360,7 +2162,7 @@
         }
         function startEditingVertices() { 
             if (!isEditingRegion || currentlyEditingRegionIndex < 0) return;
-            if (isAddingVerticesToRegion) { alert("Stop adding vertices first."); return; }
+            if (isAddingVerticesToRegion) { alert("Stop editing vertices first."); return; }
             if (isEditingVertices) stopEditingVertices(true);
             else { setVertexEditingState(true); createVertexMarkers(); }
         }
@@ -1389,14 +2191,21 @@
             if (!isEditingRegion || currentlyEditingRegionIndex < 0 || !editingPolygonLayer) return;
             clearEditingVisuals(); editingVisualsLayerGroup = L.layerGroup().addTo(map);
             const region = collectedRegions[currentlyEditingRegionIndex]; const latLngs = region.coordinates;
-            editingPolygonLayer = L.polygon(latLngs, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity || 0.2, weight: 3, dashArray: "5, 5" }).addTo(editingVisualsLayerGroup);
+            editingPolygonLayer = L.polygon(latLngs, { color: region.color || "#3388ff", fillColor: region.fillColor || "#3388ff", fillOpacity: region.fillOpacity ?? 0.2, weight: 3, dashArray: "5, 5" }).addTo(editingVisualsLayerGroup);
             latLngs.forEach((latLng, index) => addVertexMarker(latLng, index));
             addMidpointMarkers();
         }
         function addVertexMarker(latLng, index) { 
-             const marker = L.marker(latLng, { draggable: true, icon: L.divIcon({ className: 'vertex-marker', iconSize: [10, 10], iconAnchor: [5, 5] }), isVertexMarker: true, vertexIndex: index }).addTo(editingVisualsLayerGroup);
+             const marker = L.marker(latLng, { draggable: true, icon: L.divIcon({ className: 'vertex-marker', iconSize: [12, 12], iconAnchor: [6, 6] }), isVertexMarker: true, vertexIndex: index }).addTo(editingVisualsLayerGroup);
              marker.on('drag', updatePolygonFromMarkers);
              marker.on('dragend', () => { const newLatLng = marker.getLatLng(); marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]); updatePolygonFromMarkers(); });
+             marker.on('click', (e) => {
+                 L.DomEvent.stopPropagation(e); 
+                 if (activeVertexMarker && activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
+                 activeVertexMarker = marker;
+                 if (marker._icon) marker._icon.classList.add('active');
+                 updateStatus();
+             });
              return marker;
         }
         function addMidpointMarkers() { 
@@ -1413,7 +2222,8 @@
                     editingVisualsLayerGroup.removeLayer(marker);
                     const currentLatLngs = editingPolygonLayer.getLatLngs()[0];
                     currentLatLngs.splice(segmentStartIndex + 1, 0, L.latLng(newCoord));
-                    editingPolygonLayer.setLatLngs(currentLatLngs); recreateAllVertexMarkers();
+                    editingPolygonLayer.setLatLngs(currentLatLngs);
+                    recreateAllVertexMarkers();
                     setStatus('Added new vertex. Continue dragging or Stop Editing.', 'info');
                 });
             }
@@ -1435,6 +2245,7 @@
         }
         function clearEditingVisuals() { 
             if (editingVisualsLayerGroup) { map.removeLayer(editingVisualsLayerGroup); editingVisualsLayerGroup = null; editingPolygonLayer = null; }
+            activeVertexMarker = null;
         }
 
         // --- Line Vertex Editing Logic ---
@@ -1443,12 +2254,12 @@
             editVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
             addVerticesBtn.textContent = isAddingVerticesToRegion ? 'Stop Adding Vertices' : 'Add Vertices';
             mapElement.classList.toggle('vertex-editing-mode', editing);
-            mapElement.classList.toggle('disabled-map', !editing && isEditingRegion && !isAddingVerticesToRegion);
             
             saveRegionChangesBtn.disabled = editing || isAddingVerticesToRegion;
             cancelRegionEditBtn.disabled = editing || isAddingVerticesToRegion;
             regionNameInput.disabled = editing || isAddingVerticesToRegion;
             regionTypeSelect.disabled = editing || isAddingVerticesToRegion;
+            regionValueInput.disabled = editing || isAddingVerticesToRegion;
             editRegionSelect.disabled = editing || isAddingVerticesToRegion;
             startRegionBtn.disabled = true;
 
@@ -1460,19 +2271,20 @@
                     }
                 });
             }
+            if(!editing) activeVertexMarker = null;
             updateStatus();
         }
         function setVertexAddingState(adding) {
             isAddingVerticesToRegion = adding;
             addVerticesBtn.textContent = adding ? 'Stop Adding Vertices' : 'Add Vertices';
             mapElement.classList.toggle('vertex-adding-mode', adding);
-            mapElement.classList.toggle('disabled-map', !adding && isEditingRegion && !isEditingVertices);
             
             saveRegionChangesBtn.disabled = adding || isEditingVertices;
             cancelRegionEditBtn.disabled = adding || isEditingVertices;
             editVerticesBtn.disabled = adding;
             regionNameInput.disabled = adding || isEditingVertices;
             regionTypeSelect.disabled = adding || isEditingVertices;
+            regionValueInput.disabled = adding || isEditingVertices;
             editRegionSelect.disabled = adding || isEditingVertices;
             startRegionBtn.disabled = true;
 
@@ -1482,7 +2294,6 @@
             isEditingLineVertices = editing;
             editLineVerticesBtn.textContent = editing ? 'Stop Editing Vertices' : 'Edit Vertices';
             mapElement.classList.toggle('line-vertex-editing-mode', editing);
-            mapElement.classList.toggle('disabled-map', !editing && isEditingLine && !isCreatingLine);
 
             saveLineChangesBtn.disabled = editing;
             addLineVerticesBtn.disabled = editing;
@@ -1501,6 +2312,7 @@
                     }
                 });
             }
+            if(!editing) activeVertexMarker = null;
             updateStatus();
         }
 
@@ -1571,7 +2383,7 @@
         function addLineVertexMarker(latLng, index) {
             const marker = L.marker(latLng, {
                 draggable: true,
-                icon: L.divIcon({ className: 'line-vertex-marker', iconSize: [10, 10], iconAnchor: [5, 5] }),
+                icon: L.divIcon({ className: 'line-vertex-marker', iconSize: [12, 12], iconAnchor: [6, 6] }),
                 isLineVertexMarker: true, vertexIndex: index
             }).addTo(editingLineVisualsLayerGroup);
             marker.on('drag', updateLinePolylineFromMarkers);
@@ -1579,6 +2391,13 @@
                 const newLatLng = marker.getLatLng();
                 marker.setLatLng([Math.round(newLatLng.lat), Math.round(newLatLng.lng)]);
                 updateLinePolylineFromMarkers();
+            });
+            marker.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                if (activeVertexMarker && activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
+                activeVertexMarker = marker;
+                if (marker._icon) marker._icon.classList.add('active');
+                updateStatus();
             });
             return marker;
         }
@@ -1641,35 +2460,30 @@
                 editingLineVisualsLayerGroup = null;
                 editingLinePolylineLayer = null;
             }
+            activeVertexMarker = null;
         }
 
 
         function generateCompleteMapData() {
              if (!currentMapObject) {
-                alert("No map is currently loaded for saving.");
-                return null;
-            }
-            // Deep clone the master data to avoid modifying it directly before export
+                 alert("No map is currently loaded for saving.");
+                 return null;
+             }
             const updatedMasterData = JSON.parse(JSON.stringify(masterMapData));
-
-            // Find the map object we were editing in the cloned data.
-            // This works whether masterMapData has one or many maps.
             let mapToUpdate = null;
             function findMapByIdRecursive(items, id) {
                  for (const item of items) {
-                    if (item.id === id) return item;
-                    if (item.children && Array.isArray(item.children)) {
-                        const found = findMapByIdRecursive(item.children, id);
-                        if(found) return found;
-                    }
-                }
-                return null;
+                     if (item.id === id) return item;
+                     if (item.children && Array.isArray(item.children)) {
+                         const found = findMapByIdRecursive(item.children, id);
+                         if(found) return found;
+                     }
+                 }
+                 return null;
             }
             mapToUpdate = findMapByIdRecursive(updatedMasterData, currentMapObject.id);
 
             if (!mapToUpdate) {
-                // If we loaded a single file, the `updatedMasterData` is an array with one item.
-                // And `currentMapObject.id` should match its id. If not, something is wrong.
                 if (updatedMasterData.length === 1 && updatedMasterData[0].id === currentMapObject.id) {
                      mapToUpdate = updatedMasterData[0];
                 } else {
@@ -1678,35 +2492,50 @@
                 }
             }
             
-            // Update the found map object with the collected data and settings
             const sortedPoints = [...collectedPoints].sort((a, b) => a.name.localeCompare(b.name));
             const sortedRegions = [...collectedRegions].sort((a, b) => a.name.localeCompare(b.name));
             const sortedLines = [...collectedLines].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
 
             mapToUpdate.scalePixels = parseInt(scalePixelsInput.value) || 3;
-            mapToUpdate.scaleKilometers = parseFloat(scaleKilometersInput.value) || 1;
+            mapToUpdate.scaleKilometers = parseFloat(scaleUnitsInput.value) || 1;
             mapToUpdate.blurb = mapBlurbInput.value || "";
 
             mapToUpdate.pointsOfInterest = sortedPoints.map(p => ({
-                coords: p.coords, name: p.name || "", type: p.type || "Unknown",
-                description: p.description || "", wikiLink: p.wikiLink || ""
+                coords: p.coords, name: p.name || "", pronunciation: p.pronunciation || "", type: p.type || "Unknown",
+                description: p.description || "", summary: p.summary || "", wikiLink: p.wikiLink || "",
+                properties: p.properties || {}
             }));
 
             mapToUpdate.regions = sortedRegions.map(r => ({
                 id: r.id || `region-${(r.name || "untitled").toLowerCase().replace(/\s+/g, '-')}`, name: r.name || "",
-                description: r.description || "", type: r.type || "", color: r.color || "#3388ff",
+                pronunciation: r.pronunciation || "", description: r.description || "", summary: r.summary || "", type: r.type || "", value: r.value || "", color: r.color || "#3388ff",
                 fillColor: r.fillColor || "#3388ff", fillOpacity: r.fillOpacity ?? 0.2,
-                wikiLink: r.wikiLink || "", coordinates: r.coordinates || []
+                wikiLink: r.wikiLink || "", coordinates: r.coordinates || [],
+                properties: r.properties || {}
             }));
+
+            const filterGroups = { Regions: {} };
+            sortedRegions.forEach(region => {
+                if (region.type && region.value) {
+                    if (!filterGroups.Regions[region.type]) {
+                        filterGroups.Regions[region.type] = [];
+                    }
+                    if (!filterGroups.Regions[region.type].includes(region.value)) {
+                        filterGroups.Regions[region.type].push(region.value);
+                    }
+                }
+            });
+            mapToUpdate.filterGroups = filterGroups;
             
-            mapToUpdate.roads = sortedLines.map(l => ({
-                id: l.id, name: l.name || "", type: l.type || "", color: l.color || "#808080",
+            mapToUpdate.lines = sortedLines.map(l => ({
+                id: l.id, name: l.name || "", pronunciation: l.pronunciation || "", type: l.type || "", color: l.color || "#808080",
                 weight: l.weight || 3, dashArray: l.dashArray || "",
-                description: l.description || "", wikiLink: l.wikiLink || "",
-                coordinates: l.coordinates || []
+                description: l.description || "", summary: l.summary || "", wikiLink: l.wikiLink || "",
+                coordinates: l.coordinates || [],
+                properties: l.properties || {}
             }));
+            delete mapToUpdate.roads;
             
-            // If we loaded a single map file, we should return an object, not an array.
             if (masterMapData.length === 1 && updatedMasterData.length === 1 && masterMapData[0].id === mapToUpdate.id) {
                 return mapToUpdate;
             }
@@ -1750,7 +2579,10 @@
             if (!finalData) { setStatus('Copy failed.', 'error'); return; }
             const jsonString = JSON.stringify(finalData, null, 2);
             navigator.clipboard.writeText(jsonString)
-                .then(() => setStatus('Complete map JSON copied!', 'success'))
+                .then(() => {
+                    setStatus('Complete map JSON copied!', 'success');
+                    showToast('Map JSON copied to clipboard!', 'success');
+                })
                 .catch(err => { setStatus('Failed to copy JSON.', 'error'); console.error("Copy JSON error:", err); });
         }
 
@@ -1759,14 +2591,18 @@
             map = L.map('map', { crs: L.CRS.Simple, minZoom: -5, maxZoom: 5, center: [0, 0], zoom: 0, doubleClickZoom: false });
             
             map.on('click', (e) => {
-                if (!currentMapObject) return; // Don't do anything if no map is loaded
+                if (activeVertexMarker) {
+                    if (activeVertexMarker._icon) activeVertexMarker._icon.classList.remove('active');
+                    activeVertexMarker = null;
+                    updateStatus();
+                }
 
-                // This outer if handles ALL editing/creation modes to prevent fall-through to new item creation.
+                if (!currentMapObject) return;
+
                 if (isEditingPoint || 
                     (currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) ||
                     (currentMode === 'lines' && (isCreatingLine || isEditingLineVertices))) {
                     
-                    // Specific logic for POINT EDITING click-to-move
                     if (currentMode === 'points' && isEditingPoint && editingPointMarker) {
                         const newCoords = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
                         lastClickedCoordsArray = newCoords;
@@ -1774,11 +2610,9 @@
                         editingPointMarker.setLatLng(e.latlng); 
                         setStatus('Point position updated by click. Modify details and Save or Cancel.');
                     } 
-                    // Specific logic for REGION vertex placement
                     else if (currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion)) {
                         handleMapClickForRegion(e);
                     } 
-                    // Specific logic for LINE vertex placement
                     else if (currentMode === 'lines' && isCreatingLine) { 
                         handleMapClickForLineCreation(e);
                     }
@@ -1788,69 +2622,251 @@
                 if (currentMode === 'points') {
                     lastClickedCoordsArray = [Math.round(e.latlng.lat), Math.round(e.latlng.lng)];
                     coordsDisplay.textContent = `[${lastClickedCoordsArray[0]}, ${lastClickedCoordsArray[1]}]`;
-                    pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
+                    pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
                     addPointBtn.disabled = !currentMapObject;
+                    addPointPropertyBtn.disabled = false;
                     setStatus('Coordinates captured. Enter point details and Add.'); pointNameInput.focus();
                 }
             });
 
             map.on('mousemove', (e) => {
                  if (!isEditingPoint && 
-                    !(currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) && 
-                    !(currentMode === 'lines' && (isCreatingLine || isEditingLineVertices)) 
+                     !(currentMode === 'regions' && (isCreatingRegion || isAddingVerticesToRegion || isEditingVertices)) && 
+                     !(currentMode === 'lines' && (isCreatingLine || isEditingLineVertices)) 
                  ) {
                     coordsDisplay.textContent = `[${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}]`;
                 }
             });
         }
+        
+        function handleVertexDelete() {
+            if (!activeVertexMarker) return;
 
-        function populateMapFileSelector() {
-            mapFileSelect.innerHTML = '<option value="">-- Select a map file --</option>';
-            for (const [name, path] of Object.entries(HARDCODED_MAP_FILES)) {
-                const option = document.createElement('option');
-                option.value = path;
-                option.textContent = name;
-                mapFileSelect.appendChild(option);
+            if (currentMode === 'regions' && isEditingVertices && editingPolygonLayer) {
+                const latLngs = editingPolygonLayer.getLatLngs()[0];
+                if (latLngs.length <= 3) {
+                    alert("A region must have at least 3 vertices.");
+                    return;
+                }
+                latLngs.splice(activeVertexMarker.options.vertexIndex, 1);
+                editingPolygonLayer.setLatLngs(latLngs);
+                activeVertexMarker = null;
+                recreateAllVertexMarkers();
+                setStatus('Vertex deleted.', 'info');
+            } else if (currentMode === 'lines' && isEditingLineVertices && editingLinePolylineLayer) {
+                const latLngs = editingLinePolylineLayer.getLatLngs();
+                if (latLngs.length <= 2) {
+                    alert("A line must have at least 2 vertices.");
+                    return;
+                }
+                latLngs.splice(activeVertexMarker.options.vertexIndex, 1);
+                editingLinePolylineLayer.setLatLngs(latLngs);
+                activeVertexMarker = null;
+                recreateAllLineVertexMarkers();
+                setStatus('Vertex deleted.', 'info');
             }
         }
+
+        // --- Custom Properties Logic ---
+        function addPropertyRow(container, key = "", value = "") {
+            const row = document.createElement('div');
+            row.className = 'property-row';
+
+            const keyInput = document.createElement('input');
+            keyInput.type = 'text';
+            keyInput.className = 'property-key';
+            keyInput.placeholder = 'Property Name';
+            keyInput.value = key;
+
+            const valueInput = document.createElement('input');
+            valueInput.type = 'text';
+            valueInput.className = 'property-value';
+            valueInput.placeholder = 'Value';
+            valueInput.value = value;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'X';
+            removeBtn.className = 'remove-property-btn';
+            removeBtn.title = 'Remove this property';
+            removeBtn.onclick = () => row.remove();
+
+            row.appendChild(keyInput);
+            row.appendChild(valueInput);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function displayProperties(container, properties) {
+            // Find the label and clear everything after it
+            const label = container.querySelector('label');
+            while (label && label.nextSibling) {
+                container.removeChild(label.nextSibling);
+            }
+
+            if (properties && typeof properties === 'object') {
+                for (const key in properties) {
+                    if (Object.hasOwnProperty.call(properties, key)) {
+                        addPropertyRow(container, key, properties[key]);
+                    }
+                }
+            }
+        }
+
+        function collectProperties(container) {
+            const properties = {};
+            const rows = container.querySelectorAll('.property-row');
+            rows.forEach(row => {
+                const keyInput = row.querySelector('.property-key');
+                const valueInput = row.querySelector('.property-value');
+                const key = keyInput.value.trim();
+                const value = valueInput.value.trim();
+                if (key) { // Only save if a key is present
+                    properties[key] = value;
+                }
+            });
+            return properties;
+        }
+
+        // --- Drag and Drop Logic ---
+        function initDragAndDrop() {
+            let dragCounter = 0;
+
+            document.body.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                dragCounter++;
+                dropZone.classList.add('active');
+            });
+
+            document.body.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dragCounter--;
+                if (dragCounter === 0) {
+                    dropZone.classList.remove('active');
+                }
+            });
+
+            document.body.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Necessary to allow dropping
+            });
+
+            document.body.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                dragCounter = 0;
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type === "application/json" || file.name.endsWith('.json')) {
+                        processFile(file);
+                    } else {
+                        showToast('Only JSON files are supported', 'error');
+                    }
+                }
+            });
+        }
+
 
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             initMap(); 
             populateTypeDropdown();
-            populateMapFileSelector();
             setMode('points');
-            resetUIForNewMap(); // Start with a clean slate
-            setStatus('Select a map file from the top dropdown to start.');
+            resetUIForNewMap(); 
+            initDragAndDrop();
 
+            // Init Text Toolbar
+            new TextToolbar(['pointDescription', 'regionDescription', 'lineDescription', 'mapBlurb']);
 
-            mapFileSelect.addEventListener('change', handleMapFileSelection);
+            // Init Server Maps
+            fetchServerMaps();
+
+            // Tab Logic
+            sourceTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    sourceTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const source = tab.dataset.source;
+                    if(source === 'server') {
+                        sourceServerContent.classList.remove('hidden');
+                        sourceLocalContent.classList.add('hidden');
+                    } else {
+                        sourceServerContent.classList.add('hidden');
+                        sourceLocalContent.classList.remove('hidden');
+                    }
+                });
+            });
+
+            refreshMapListBtn.addEventListener('click', fetchServerMaps);
+
+            setStatus('Select a map from the list or load a JSON file.');
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.key === 'Delete' || e.key === 'Backspace') && activeVertexMarker) {
+                    e.preventDefault();
+                    handleVertexDelete();
+                }
+            });
+
+            jsonFileInput.addEventListener('change', handleJsonFileLoad);
             loadSubMapBtn.addEventListener('click', loadMapFromSelector);
             exportMapDataBtn.addEventListener('click', exportMapData);
 
             modeTabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+
+            addPointPropertyBtn.addEventListener('click', () => addPropertyRow(pointPropertiesContainer));
+            addRegionPropertyBtn.addEventListener('click', () => addPropertyRow(regionPropertiesContainer));
+            addLinePropertyBtn.addEventListener('click', () => addPropertyRow(linePropertiesContainer));
+
 
             addPointBtn.addEventListener('click', () => {
                 if (!lastClickedCoordsArray) { 
                     alert("Click on the map to set coordinates for the new point."); 
                     return; 
                 }
-                const name = pointNameInput.value.trim(), type = poiTypeSelect.value;
+                const name = pointNameInput.value.trim(), pronunciation = pointPronunciationInput.value.trim(), type = poiTypeSelect.value;
                 if (!name) { alert("Point Name cannot be empty."); pointNameInput.focus(); return; }
                 if (!type) { alert("Please select a Point Type."); poiTypeSelect.focus(); return; }
                 if (collectedPoints.some(p => p.name === name)) { alert(`Point "${name}" already exists.`); pointNameInput.focus(); return; }
                 
+                const properties = collectProperties(pointPropertiesContainer);
                 const coordsToUse = lastClickedCoordsArray;
-                collectedPoints.push({ coords: coordsToUse, name: name, type: type, description: pointDescriptionInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim() });
+                collectedPoints.push({ coords: coordsToUse, name: name, pronunciation: pronunciation, type: type, description: pointDescriptionInput.value.trim(), summary: pointSummaryInput.value.trim(), wikiLink: pointWikiLinkInput.value.trim(), properties: properties });
                 updatePointsOutput(); setStatus(`Point "${name}" added.`, 'success');
-                pointNameInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointWikiLinkInput.value = '';
-                coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true;
+                showToast('Point Added', 'success');
+                pointNameInput.value = ''; pointPronunciationInput.value = ''; poiTypeSelect.value = ''; pointDescriptionInput.value = ''; pointSummaryInput.value = ''; pointWikiLinkInput.value = '';
+                displayProperties(pointPropertiesContainer, {});
+                coordsDisplay.textContent = '[Y, X]'; lastClickedCoordsArray = null; addPointBtn.disabled = true; addPointPropertyBtn.disabled = true;
             });
             editPointSelect.addEventListener('change', (e) => e.target.value ? loadPointForEditing(e.target.value) : cancelPointEditing());
             savePointChangesBtn.addEventListener('click', savePointChanges);
             cancelPointEditBtn.addEventListener('click', cancelPointEditing);
             clearPointsBtn.addEventListener('click', () => {
                 if (confirm('Clear all points for this map?')) { collectedPoints = []; updatePointsOutput(); setPointEditingState(false); setStatus('All points cleared.'); }
+            });
+
+            regionTypeSelect.addEventListener('change', () => {
+                const selectedType = regionTypeSelect.value;
+                
+                regionValueOptions.innerHTML = '';
+                regionValueInput.value = '';
+
+                regionValueInput.disabled = !selectedType;
+
+                if (selectedType && currentMapObject && currentMapObject.filterGroups && currentMapObject.filterGroups.Regions && currentMapObject.filterGroups.Regions[selectedType]) {
+                    const values = currentMapObject.filterGroups.Regions[selectedType];
+                    values.sort().forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        regionValueOptions.appendChild(option);
+                    });
+                } 
+
+                const lowerCaseType = selectedType ? selectedType.toLowerCase() : '';
+                if (regionTypeColors[lowerCaseType]) {
+                    regionColorInput.value = regionTypeColors[lowerCaseType].color;
+                    regionFillColorInput.value = regionTypeColors[lowerCaseType].fillColor;
+                }
             });
 
             startRegionBtn.addEventListener('click', startRegionCreation);
@@ -1867,7 +2883,6 @@
             regionColorInput.addEventListener('input', () => { const c = regionColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ color: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ color: c }); });
             regionFillColorInput.addEventListener('input', () => { const c = regionFillColorInput.value; if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillColor: c }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillColor: c }); });
             regionOpacityInput.addEventListener('input', () => { const o = parseFloat(regionOpacityInput.value); if (!isNaN(o)) { if (tempRegionLayer && isCreatingRegion) tempRegionLayer.setStyle({ fillOpacity: o }); if (editingPolygonLayer && (isEditingRegion || isEditingVertices)) editingPolygonLayer.setStyle({ fillOpacity: o }); }});
-            regionTypeSelect.addEventListener('change', (e) => { const t = e.target.value; if (regionTypeColors[t] && !isEditingRegion && !isCreatingRegion) { regionColorInput.value = regionTypeColors[t].color; regionFillColorInput.value = regionTypeColors[t].fillColor; }});
 
             // Line Event Listeners 
             startLineBtn.addEventListener('click', startLineCreation);
@@ -1884,14 +2899,17 @@
             lineWeightInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ weight: parseInt(lineWeightInput.value) || 3 }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({weight: parseInt(lineWeightInput.value) || 3 }); });
             lineDashArrayInput.addEventListener('input', () => { if (tempLineLayer && isCreatingLine) tempLineLayer.setStyle({ dashArray: lineDashArrayInput.value.trim() || null }); if (editingLinePolylineLayer && isEditingLineVertices) editingLinePolylineLayer.setStyle({dashArray: lineDashArrayInput.value.trim() || null}); });
             
-            // ADDED: Listener for the new toggle
             showAllRegionsToggle.addEventListener('change', (e) => {
                 showAllRegionsWhileEditing = e.target.checked;
-                // If we are currently editing a region, update the view immediately
                 if (isEditingRegion) {
                     toggleOtherRegionsVisibility(showAllRegionsWhileEditing, currentlyEditingRegionIndex);
                 }
             });
+
+            // Edit Filters
+            editPointFilter.addEventListener('input', (e) => populatePointEditDropdown(e.target.value));
+            editRegionFilter.addEventListener('input', (e) => populateRegionEditDropdown(e.target.value));
+            editLineFilter.addEventListener('input', (e) => populateLineEditDropdown(e.target.value));
 
             viewJsonBtn.addEventListener('click', exportMapData);
             copyJsonBtn.addEventListener('click', copyCompleteJson);

@@ -1,0 +1,525 @@
+{
+  "id": "castgate",
+  "name": "Castgate",
+  "width": 8192,
+  "height": 8192,
+  "imageUrl": "maps/castgate.webp",
+  "scalePixels": 50,
+  "scaleKilometers": 3600,
+  "blurb": "Encased within a dome that holds the winter at bay, Castgate's picturesque beauty was earned through legendary battles against a goddess and an undead horde. Though its streets bustle with prosperity from gems and ships, the common folk work in the shadow of the very magic that shelters them.",
+  "pointsOfInterest": [
+    {
+      "coords": [
+        5059,
+        5380
+      ],
+      "name": "Athenaeum Embasy & Minterals House",
+      "pronunciation": "",
+      "type": "Point of Interest",
+      "description": "",
+      "summary": "",
+      "wikiLink": "",
+      "properties": {}
+    },
+    {
+      "coords": [
+        4122,
+        5008
+      ],
+      "name": "Bleak's Stand",
+      "pronunciation": "",
+      "type": "Landmark",
+      "description": "An imposing column of polished obsidian, this monument was rededicated to commemorate the townspeople and adventurers who died during the devastating attack by The Cave Mother.",
+      "summary": "",
+      "wikiLink": "",
+      "properties": {}
+    },
+    {
+      "coords": [
+        2256,
+        2892
+      ],
+      "name": "Chai en' Steep Inn",
+      "pronunciation": "",
+      "type": "Landmark",
+      "description": "Attached to the popular tea house, the Chai en' Steep Inn provides a cozy atmosphere for travelers, offering comfortable lodging with soft bedding and lantern-lit hallways.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-fireside-newt-%26-chai",
+      "properties": {}
+    },
+    {
+      "coords": [
+        3744,
+        7840
+      ],
+      "name": "Dwarf Brewery",
+      "pronunciation": "",
+      "type": "Point of Interest",
+      "description": "",
+      "summary": "",
+      "wikiLink": "",
+      "properties": {}
+    },
+    {
+      "coords": [
+        4356,
+        4628
+      ],
+      "name": "Frostviel",
+      "pronunciation": "",
+      "type": "Temple",
+      "description": "This grand temple, built from pale stone with stained-glass windows, is a place of worship dedicated to the deity Matrix. It also serves as a sanctuary, offering food and shelter to those in need.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-frostviel---temple-t",
+      "properties": {}
+    },
+    {
+      "coords": [
+        6888,
+        4584
+      ],
+      "name": "School for Adventures",
+      "pronunciation": "",
+      "type": "Point of Interest",
+      "description": "",
+      "summary": "",
+      "wikiLink": "",
+      "properties": {}
+    },
+    {
+      "coords": [
+        5569,
+        5906
+      ],
+      "name": "The Crystal Needle",
+      "pronunciation": "",
+      "type": "Landmark",
+      "description": "This elegant spire of clear quartz hums with magical energy and serves as a meeting place for scholars and mages. Some believe it helps channel power to the town's protective Firmament.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-the-crystal-needle",
+      "properties": {}
+    },
+    {
+      "coords": [
+        2254,
+        2235
+      ],
+      "name": "The Fireside Newt",
+      "pronunciation": "",
+      "type": "Tavern",
+      "description": "This enchanting waterside tea house is a tranquil retreat where patrons can watch whimsical, color-changing Firenewts that bask in tabletop hearths and indicate the perfect tea temperature. Its proprietor, Tessan, is famous for brewing teas that can soothe ailments.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-fireside-newt-%26-chai",
+      "properties": {}
+    },
+    {
+      "coords": [
+        1488,
+        4178
+      ],
+      "name": "The Frozen Rose",
+      "pronunciation": "",
+      "type": "Point of Interest",
+      "description": "Once a derelict tavern, this building was revitalized by the adventuring party Sub Rosa and transformed into a thriving hub for adventurers and locals. Featuring frosted glass windows and a carved white rose emblem, the tavern is run by the quiet barkeep Thorn and serves as an informal guildhall for The Argentum Compact. Its walls are decorated with trophies from Sub Rosa’s adventures, making it a symbol of the town’s enduring resilience.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-the-frozen-rose",
+      "properties": {}
+    },
+    {
+      "coords": [
+        2448,
+        2992
+      ],
+      "name": "The Mourning Arch",
+      "pronunciation": "",
+      "type": "Landmark",
+      "description": "Located on the edge of town, this carved stone archway is a somber monument marking the gravesite of those who died during the eternal winter.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-the-mourning-arch",
+      "properties": {}
+    },
+    {
+      "coords": [
+        3435,
+        5829
+      ],
+      "name": "The Shrine of Hestia",
+      "pronunciation": "",
+      "type": "Landmark",
+      "description": "This sacred shrine at the heart of Casgate's main square is a stone lantern with an eternal flame that allows people of all languages to understand one another while nearby.",
+      "summary": "",
+      "wikiLink": "https://www.hiraeth.wiki/books/players-guide-to-icebeach/page/casgate#bkmrk-shrine-of-hestia",
+      "properties": {}
+    }
+  ],
+  "regions": [
+    {
+      "id": "region-devarin-&-docie-docks",
+      "name": "Devarin & Docie Docks",
+      "pronunciation": "",
+      "description": "These are the town's very nice docks, featuring many shops and places for visitors and residents to enjoy.",
+      "summary": "",
+      "type": "",
+      "value": "",
+      "color": "#3388ff",
+      "fillColor": "#3388ff",
+      "fillOpacity": 0.1,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          4496,
+          4576
+        ],
+        [
+          4512,
+          4904
+        ],
+        [
+          4232,
+          4916
+        ],
+        [
+          3788,
+          4916
+        ],
+        [
+          3532,
+          4592
+        ],
+        [
+          3440,
+          4444
+        ],
+        [
+          3176,
+          4456
+        ],
+        [
+          3180,
+          4078
+        ],
+        [
+          2848,
+          4084
+        ],
+        [
+          2382,
+          3458
+        ],
+        [
+          2380,
+          3132
+        ],
+        [
+          2510,
+          3134
+        ],
+        [
+          3706,
+          3272
+        ],
+        [
+          4058,
+          3868
+        ],
+        [
+          4296,
+          3856
+        ],
+        [
+          4576,
+          3536
+        ],
+        [
+          5112,
+          3256
+        ],
+        [
+          5976,
+          2792
+        ],
+        [
+          6144,
+          2912
+        ],
+        [
+          6128,
+          3352
+        ],
+        [
+          5744,
+          3368
+        ],
+        [
+          5520,
+          3712
+        ],
+        [
+          5328,
+          3856
+        ],
+        [
+          5312,
+          4216
+        ],
+        [
+          4864,
+          4208
+        ],
+        [
+          4872,
+          4568
+        ]
+      ],
+      "properties": {}
+    },
+    {
+      "id": "region-druid's-guardian",
+      "name": "Druid's Grove",
+      "pronunciation": "",
+      "description": "Located just outside the magical dome, this sprawling grove was cultivated by a druid and is said to be protected by treants. It serves as a serene escape and a reminder of the balance between civilization and nature.",
+      "summary": "",
+      "type": "Grove",
+      "value": "",
+      "color": "#263e0f",
+      "fillColor": "#00f900",
+      "fillOpacity": 0.05,
+      "wikiLink": "",
+      "coordinates": [
+        [
+          7167,
+          4149
+        ],
+        [
+          7153,
+          3855
+        ],
+        [
+          7112,
+          3567
+        ],
+        [
+          7024,
+          3255
+        ],
+        [
+          6828,
+          2839
+        ],
+        [
+          6642,
+          2547
+        ],
+        [
+          6575,
+          2608
+        ],
+        [
+          6483,
+          2623
+        ],
+        [
+          6381,
+          2697
+        ],
+        [
+          6325,
+          2828
+        ],
+        [
+          6248,
+          2869
+        ],
+        [
+          6152,
+          2912
+        ],
+        [
+          6178,
+          3364
+        ],
+        [
+          6220,
+          3650
+        ],
+        [
+          6294,
+          3864
+        ],
+        [
+          6434,
+          4081
+        ],
+        [
+          6483,
+          4304
+        ],
+        [
+          6679,
+          4199
+        ],
+        [
+          6877,
+          4149
+        ]
+      ],
+      "properties": {}
+    }
+  ],
+  "filterGroups": {
+    "Regions": {}
+  },
+  "lines": [
+    {
+      "id": "line-castgate-1758422464720-fx2ow",
+      "name": "The Firmament",
+      "pronunciation": "",
+      "type": "other",
+      "color": "#000000",
+      "weight": 3,
+      "dashArray": "",
+      "description": "",
+      "summary": "",
+      "wikiLink": "",
+      "coordinates": [
+        [
+          6992,
+          3104
+        ],
+        [
+          7152,
+          3504
+        ],
+        [
+          7224,
+          4160
+        ],
+        [
+          7072,
+          5104
+        ],
+        [
+          6808,
+          5664
+        ],
+        [
+          6432,
+          6136
+        ],
+        [
+          6040,
+          6456
+        ],
+        [
+          5704,
+          6656
+        ],
+        [
+          5336,
+          6816
+        ],
+        [
+          4976,
+          6992
+        ],
+        [
+          4520,
+          7128
+        ],
+        [
+          3960,
+          7208
+        ],
+        [
+          3358,
+          7098
+        ],
+        [
+          2960,
+          6982
+        ],
+        [
+          2388,
+          6728
+        ],
+        [
+          1978,
+          6458
+        ],
+        [
+          1232,
+          5640
+        ],
+        [
+          720,
+          4576
+        ],
+        [
+          640,
+          4176
+        ],
+        [
+          752,
+          3600
+        ],
+        [
+          1120,
+          2816
+        ],
+        [
+          1496,
+          2184
+        ],
+        [
+          1788,
+          1808
+        ],
+        [
+          2048,
+          1548
+        ],
+        [
+          2252,
+          1372
+        ],
+        [
+          2364,
+          1284
+        ],
+        [
+          2544,
+          1156
+        ],
+        [
+          2784,
+          1060
+        ],
+        [
+          3396,
+          996
+        ],
+        [
+          4164,
+          1100
+        ],
+        [
+          5832,
+          1796
+        ],
+        [
+          6500,
+          2280
+        ],
+        [
+          6712,
+          2576
+        ],
+        [
+          6992,
+          3112
+        ]
+      ],
+      "properties": {}
+    }
+  ]
+}
