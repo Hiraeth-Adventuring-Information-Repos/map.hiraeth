@@ -4,8 +4,8 @@
     "width": 4096,
     "height": 3072,
     "imageUrl": "maps/The-Port-City-of-Stomion.webp",
-    "scalePixels": 50,
-    "scaleKilometers": 3600,
+    "scalePixels": 4080,
+    "scaleKilometers": 13,
     "blurb": "",
     "pointsOfInterest": [
       {
@@ -56,6 +56,32 @@
         "pronunciation": "",
         "type": "Point of Interest",
         "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1920,
+          1773
+        ],
+        "name": "Breads and Gregs",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1104,
+          1451
+        ],
+        "name": "Cat and Hound",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "The Cat and Hound is owned by two sister. Before owning the tavern, one of the owners worked there under the previous owner, while the other served as a soldier in service to the nation. The tavern is named after the soldier's ex lover who was a felis, she was the hound. It is a tavern of comfortable quality, and its main draw is the cheap food.",
         "summary": "",
         "wikiLink": "",
         "properties": {}
@@ -192,6 +218,19 @@
       },
       {
         "coords": [
+          840,
+          1342
+        ],
+        "name": "The Shop",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "Welcome to The Shop! Back in the glory days, this facility was a premier, open-floor smithy. Now? It’s a survival rig adapted for the grind. We stripped the layout and partitioned it into flats to house a crew of makers and their families. The main floor got squeezed, but it remains the beating heart of the operation: a high-traffic, communal fabrication zone where every discipline from leather-working to cold forging collides. We keep a resident fabricator on site, bunked in a solo unit. They machine the components, true the grinding wheels, and repair the communal gear. In exchange for keeping the shop running, the rest of the crew knows when to look the other way. If a shipment of non-standard, unregistered materials hits the loading dock? We didn't see a thing. The heat is high, and the quarters are tight. We don't act loud; we just hammer hard.",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
           2466,
           2763
         ],
@@ -211,8 +250,8 @@
         "name": "MERCHANT GATE",
         "pronunciation": "",
         "type": "Point of Interest",
-        "description": "",
-        "summary": "",
+        "description": "Rising above the smog of the lower city, Merchant's Hill is the residential enclave of Stomion's 'Old Money.' It is a neighborhood of fading but dignified elegance, home to wealthy regional merchants and ancient families who cling to the pre-occupation past. While the residents possess little actual political authority—having been stripped of real power by the Beccin administration—they maintain a stubborn veneer of influence through social exclusion and a culture that is 'snobby, but not overly rude.' \n\nThe district is visually defined by its unique lighting: rather than uniform municipal posts, the streets are illuminated by ornate, distinct oil lamps. Each lamp is commissioned and zealously maintained by the owner of the nearest manor as a fierce display of status and wealth. The area is not gated but is heavily patrolled by the City Watch, who politely ensure that the uninvited do not linger. Notable residents include Veylan Wollif, the envoy for the Iron Coffer. The district’s crown jewel is the Public Observatory, a place of quiet contemplation where the elite watch the stars, ignoring the industrial smoke rising from the districts below.",
+        "summary": "Merchant's Hill is an elite residential district for the city's 'Old Money,' characterized by owner-maintained ornate street lamps, polite social exclusion, and the Public Observatory.",
         "wikiLink": "",
         "properties": {}
       },
@@ -237,7 +276,7 @@
         "name": "Ol' Fort",
         "pronunciation": "",
         "type": "Point of Interest",
-        "description": "",
+        "description": "City Goverment",
         "summary": "",
         "wikiLink": "",
         "properties": {}
@@ -287,6 +326,19 @@
           1560
         ],
         "name": "Some sort of sorcerers district center?",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1822,
+          2237
+        ],
+        "name": "State Goverment Building",
         "pronunciation": "",
         "type": "Point of Interest",
         "description": "",
@@ -452,6 +504,19 @@
       },
       {
         "coords": [
+          1972,
+          1833
+        ],
+        "name": "The Rested Raven",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "The Rested Raven is owned by an unmarried elven woman and her elven boyfriend. Both of the owners are law-abiding citizens with notable personality quirks. Before owning the tavern, he sailed around the world, while she studied to be a wizard. The inspiration for the tavern's name was a misinterpretation of another famous tavern's name. It is a tavern of modest quality.",
+        "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
           986,
           1015
         ],
@@ -504,19 +569,6 @@
       },
       {
         "coords": [
-          1822,
-          2237
-        ],
-        "name": "Trading House",
-        "pronunciation": "",
-        "type": "Point of Interest",
-        "description": "",
-        "summary": "",
-        "wikiLink": "",
-        "properties": {}
-      },
-      {
-        "coords": [
           2255,
           2500
         ],
@@ -544,11 +596,271 @@
     ],
     "regions": [
       {
+        "id": "region-academy-gardens",
+        "name": "Academy Gardens",
+        "pronunciation": "",
+        "description": "Dominating the center of this district is the prestigious Arcane Academy, a structure on an island carved by the serpentine loops of the river. The surrounding district is a lush, meticulously manicured parkland where wealthy citizens promenade and students practice their craft; the air is frequently punctuated by the crackle of minor illusions and colorful explosions from outdoor lessons. Maintenance is a magical affair, with three head lawnkeepers commanding a small army of unseen servants to keep every blade of grass in place, while second-year students are tasked with lighting the district's magical lamps as dusk falls. Despite its open gates and public accessibility, the Gardens maintain a strict standard of order, enforced by nightly sweeps that ensure no vagrants linger after dark. While the surface is a haven of learning and recreation, the river water—though safe to drink—has begun to taste foul. Rumors persist that the pristine grounds hide a darker purpose: a dangerous subterranean complex known as The Deep Cuts.",
+        "summary": "The Academy Gardens is a wealthy, magically lit park district centered on the Arcane Academy, where students practice spells.",
+        "type": "Political",
+        "value": "District",
+        "color": "#1D8348",
+        "fillColor": "#27AE60",
+        "fillOpacity": 0.05,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2121,
+            1846
+          ],
+          [
+            2214,
+            1977
+          ],
+          [
+            2304,
+            2099
+          ],
+          [
+            2290,
+            2112
+          ],
+          [
+            2300,
+            2123
+          ],
+          [
+            2246,
+            2475
+          ],
+          [
+            2211,
+            2495
+          ],
+          [
+            2143,
+            2460
+          ],
+          [
+            2066,
+            2469
+          ],
+          [
+            2022,
+            2481
+          ],
+          [
+            2016,
+            2461
+          ],
+          [
+            1970,
+            2470
+          ],
+          [
+            1817,
+            2470
+          ],
+          [
+            1840,
+            2439
+          ],
+          [
+            1822,
+            2424
+          ],
+          [
+            1810,
+            2401
+          ],
+          [
+            1834,
+            2368
+          ],
+          [
+            1868,
+            2354
+          ],
+          [
+            1864,
+            2313
+          ],
+          [
+            1885,
+            2307
+          ],
+          [
+            1891,
+            2251
+          ],
+          [
+            1868,
+            2213
+          ],
+          [
+            1806,
+            2211
+          ],
+          [
+            1802,
+            2149
+          ],
+          [
+            1815,
+            2095
+          ],
+          [
+            1841,
+            2049
+          ],
+          [
+            1860,
+            2007
+          ],
+          [
+            1874,
+            1986
+          ],
+          [
+            2091,
+            1808
+          ]
+        ],
+        "properties": {}
+      },
+      {
+        "id": "region-Aelindor-isle",
+        "name": "Aelindor's Isle",
+        "pronunciation": "",
+        "description": "Separated from the mainland by a single, heavily fortified bridge connecting to the Bulwark, Aelindor's Isle is a restricted enclave of manicured gardens and sheer cliffs that hosts the seat of the State's administration. The island is dominated by Castle Aelindor, a structure of ancient Elven architecture named after the legendary hero said to have slain a dragon on the very rock. While the dragon's bones are dismissed as myth, the slayer's legendary weapon is rumored to still exist, hidden in plain sight within the castle's halls, unrecognized by its current occupants. The current Governor, a weak-willed administrator who placates the occupying forces, rules from an office that overlooks the city rather than the sea. This dominance is visually reinforced by a Melanoptera, a black Beccin airship that hovers perpetually over the castle spires. The grounds are patrolled by the 'Black Guard,' elite Beccin VIP soldiers who watch over the mixed staff of locals and imperial ambassadors, while prisoners rot in the dungeons below.",
+        "summary": "Aelindor's Isle is a restricted government district housing the an ancient Elven castle.",
+        "type": "Political",
+        "value": "District",
+        "color": "#F1C40F",
+        "fillColor": "#8E44AD",
+        "fillOpacity": 0.05,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2369,
+            3170
+          ],
+          [
+            2422,
+            3116
+          ],
+          [
+            2484,
+            3088
+          ],
+          [
+            2528,
+            3081
+          ],
+          [
+            2550,
+            3063
+          ],
+          [
+            2589,
+            3068
+          ],
+          [
+            2591,
+            3092
+          ],
+          [
+            2648,
+            3142
+          ],
+          [
+            2672,
+            3178
+          ],
+          [
+            2649,
+            3221
+          ],
+          [
+            2666,
+            3253
+          ],
+          [
+            2697,
+            3304
+          ],
+          [
+            2721,
+            3307
+          ],
+          [
+            2717,
+            3338
+          ],
+          [
+            2749,
+            3371
+          ],
+          [
+            2782,
+            3489
+          ],
+          [
+            2780,
+            3563
+          ],
+          [
+            2807,
+            3697
+          ],
+          [
+            2874,
+            3798
+          ],
+          [
+            2682,
+            3742
+          ],
+          [
+            2559,
+            3694
+          ],
+          [
+            2474,
+            3655
+          ],
+          [
+            2430,
+            3623
+          ],
+          [
+            2316,
+            3634
+          ],
+          [
+            2182,
+            3509
+          ],
+          [
+            2187,
+            3427
+          ],
+          [
+            2208,
+            3323
+          ],
+          [
+            2247,
+            3229
+          ]
+        ],
+        "properties": {}
+      },
+      {
         "id": "region-brighttfyr",
         "name": "Brighttfyr",
         "pronunciation": "",
-        "description": "",
-        "summary": "",
+        "description": "Perched at the extreme downriver tip of Stomion, Brighttfyr is a blinding sanctuary of glass and stone dedicated to the illumination of the world. Named after the legendary priest who sealed a gate to the Shadowfell five centuries ago, the district is dominated by the High Beacon—a massive, non-magical oil lamp whose brilliance pierces the night and guides sailors through the treacherous mouth of the river. The area is a rhythmic duality of worship; the Beacon House serves Origin, God of the Northern Star, while a smaller, embedded temple serves Bethtox, the Sun God. Life here revolves around the 'Changing of the Light,' a ceaseless cycle of four liturgical shifts—morning, afternoon, evening, and night—ensuring the district is humming with activity long after the rest of the city sleeps. Clerics live in austere, communal office-quarters, seemingly ignoring the politics of the occupying Beccin Empire in favor of their eternal duties. While the public is welcome to walk the bright, salt-sprayed streets or seek anti-undead rites from the priests of Bethtox, rumors persist of ancient, secret tunnels beneath the rock—defensive passages designed to keep the lamp lit even if the city falls to war or darkness.",
+        "summary": "Brighttfyr is a holy district at the city's edge where clerics of the Sun and North Star maintain a ceaseless watch over the High Beacon and the spiritual safety of the harbor.",
         "type": "Political",
         "value": "District",
         "color": "#76448A",
@@ -691,8 +1003,8 @@
         "id": "region-coin's-curve",
         "name": "Coin's Curve",
         "pronunciation": "",
-        "description": "",
-        "summary": "",
+        "description": "Defined by the sharp bend of the railway tracks that border it, Coin's Curve is the cold, beating financial heart of Stomion. The district is a fortress of commerce where the constant rhythmic clatter of passing trains is affectionately regarded by the merchants and bankers as 'the sound of money.' Sturdy stone buildings, such as the Iron Coffers' Hall, line impeccably clean streets that are almost entirely devoid of residential life, emptying out completely into a silent stone canyon at night. This district operates as a semi-autonomous zone with its own strict laws and private security force; flashy but formidable guards in heavy plate armor enforce a rigorous dress code, barring entry to vagrants and anyone without explicit business. While the surface is dedicated to offices and counting houses, the true wealth of the district is rumored to lie deep beneath the street level, where secretive vaults are hewn into the high-quality bedrock.",
+        "summary": "Coin's Curve is a strictly guarded, semi-autonomous financial district named for the railway tracks that flank it, where private security protects the city's wealth in deep underground vaults.",
         "type": "Political",
         "value": "District",
         "color": "#9C640C",
@@ -792,391 +1104,11 @@
         "properties": {}
       },
       {
-        "id": "region-eastgate",
-        "name": "Eastgate",
-        "pronunciation": "",
-        "description": "",
-        "summary": "",
-        "type": "Political",
-        "value": "District",
-        "color": "#943126",
-        "fillColor": "#D98880",
-        "fillOpacity": 0.05,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            2025,
-            1711
-          ],
-          [
-            2092,
-            1803
-          ],
-          [
-            2072,
-            1817
-          ],
-          [
-            2029,
-            1854
-          ],
-          [
-            2018,
-            1864
-          ],
-          [
-            1960,
-            1913
-          ],
-          [
-            1950,
-            1920
-          ],
-          [
-            1886,
-            1973
-          ],
-          [
-            1864,
-            1994
-          ],
-          [
-            1853,
-            2020
-          ],
-          [
-            1847,
-            2021
-          ],
-          [
-            1827,
-            2011
-          ],
-          [
-            1831,
-            2005
-          ],
-          [
-            1776,
-            1976
-          ],
-          [
-            1788,
-            1950
-          ],
-          [
-            1795,
-            1928
-          ],
-          [
-            1798,
-            1911
-          ],
-          [
-            1801,
-            1890
-          ],
-          [
-            1796,
-            1866
-          ],
-          [
-            1794,
-            1848
-          ],
-          [
-            1787,
-            1814
-          ],
-          [
-            1799,
-            1805
-          ],
-          [
-            1826,
-            1797
-          ],
-          [
-            1908,
-            1757
-          ],
-          [
-            1943,
-            1736
-          ],
-          [
-            1997,
-            1697
-          ]
-        ],
-        "properties": {}
-      },
-      {
-        "id": "region-gov-isle",
-        "name": "Gov Isle",
-        "pronunciation": "",
-        "description": "",
-        "summary": "",
-        "type": "Political",
-        "value": "District",
-        "color": "#F1C40F",
-        "fillColor": "#8E44AD",
-        "fillOpacity": 0.05,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            2369,
-            3170
-          ],
-          [
-            2422,
-            3116
-          ],
-          [
-            2484,
-            3088
-          ],
-          [
-            2528,
-            3081
-          ],
-          [
-            2550,
-            3063
-          ],
-          [
-            2589,
-            3068
-          ],
-          [
-            2591,
-            3092
-          ],
-          [
-            2648,
-            3142
-          ],
-          [
-            2672,
-            3178
-          ],
-          [
-            2649,
-            3221
-          ],
-          [
-            2666,
-            3253
-          ],
-          [
-            2697,
-            3304
-          ],
-          [
-            2721,
-            3307
-          ],
-          [
-            2717,
-            3338
-          ],
-          [
-            2749,
-            3371
-          ],
-          [
-            2782,
-            3489
-          ],
-          [
-            2780,
-            3563
-          ],
-          [
-            2807,
-            3697
-          ],
-          [
-            2874,
-            3798
-          ],
-          [
-            2682,
-            3742
-          ],
-          [
-            2559,
-            3694
-          ],
-          [
-            2474,
-            3655
-          ],
-          [
-            2430,
-            3623
-          ],
-          [
-            2316,
-            3634
-          ],
-          [
-            2182,
-            3509
-          ],
-          [
-            2187,
-            3427
-          ],
-          [
-            2208,
-            3323
-          ],
-          [
-            2247,
-            3229
-          ]
-        ],
-        "properties": {}
-      },
-      {
-        "id": "region-green",
-        "name": "Green",
-        "pronunciation": "",
-        "description": "",
-        "summary": "",
-        "type": "Political",
-        "value": "District",
-        "color": "#1D8348",
-        "fillColor": "#27AE60",
-        "fillOpacity": 0.05,
-        "wikiLink": "",
-        "coordinates": [
-          [
-            2121,
-            1846
-          ],
-          [
-            2214,
-            1977
-          ],
-          [
-            2304,
-            2099
-          ],
-          [
-            2290,
-            2112
-          ],
-          [
-            2300,
-            2123
-          ],
-          [
-            2246,
-            2475
-          ],
-          [
-            2211,
-            2495
-          ],
-          [
-            2143,
-            2460
-          ],
-          [
-            2066,
-            2469
-          ],
-          [
-            2022,
-            2481
-          ],
-          [
-            2016,
-            2461
-          ],
-          [
-            1970,
-            2470
-          ],
-          [
-            1817,
-            2470
-          ],
-          [
-            1840,
-            2439
-          ],
-          [
-            1822,
-            2424
-          ],
-          [
-            1810,
-            2401
-          ],
-          [
-            1834,
-            2368
-          ],
-          [
-            1868,
-            2354
-          ],
-          [
-            1864,
-            2313
-          ],
-          [
-            1885,
-            2307
-          ],
-          [
-            1891,
-            2251
-          ],
-          [
-            1868,
-            2213
-          ],
-          [
-            1806,
-            2211
-          ],
-          [
-            1802,
-            2149
-          ],
-          [
-            1815,
-            2095
-          ],
-          [
-            1841,
-            2049
-          ],
-          [
-            1860,
-            2007
-          ],
-          [
-            1874,
-            1986
-          ],
-          [
-            2091,
-            1808
-          ]
-        ],
-        "properties": {}
-      },
-      {
         "id": "region-harrowholm",
         "name": "Harrowholm",
         "pronunciation": "",
-        "description": "",
-        "summary": "",
+        "description": "Connected to the city by a long, defensible stone bridge, Harrowholm is a small, fortified island that serves as the seat of Stomion’s municipal government. The district is named for 'The Harrowing,' a tragic historical event where the city's ancient noble family sacrificed themselves to seal a gate to the Shadowfell—an act that infused their surviving bloodline with latent sorcerous power. The island is dominated by a distinctive round tower which houses the headquarters of the City Watch on its lower levels, while the upper levels serve as the residence for the current Mayor, Thaddeus Vane, and his family. Mayor Vane is widely regarded as a weak leader who works far too comfortably with the Beccin occupiers, creating a local government that operates autonomously in name only. He rules with a small circle of appointed officials, protected from the tax-paying populace that elected him by the surrounding waters and the City Watch barracks beneath his floorboards. Rumors persist among the guards that the island is haunted by the shadows of the original noble sacrifice, and deep beneath the tower lies a dungeon that holds more than just common criminals.",
+        "summary": "Harrowholm is the fortified island seat of the City Mayor and City Watch, named for an ancient noble sacrifice that haunts the site.",
         "type": "Political",
         "value": "District",
         "color": "#186A3B",
@@ -1263,8 +1195,8 @@
         "id": "region-highhammer",
         "name": "Highhammer",
         "pronunciation": "",
-        "description": "",
-        "summary": "",
+        "description": "A district of imposing stone and polished brass, Highhammer stands as a meticulously curated monument to Dwarven industry and destiny. This area is kept unnervingly clean—a 'model district' designed to showcase the might of the Ossurian Forges to the occupied populace. The skyline is dominated by The High Hammer of Matrix, a temple dedicated to the God of the Forge and Destiny who liberated the dwarves from their ancient oppressor. The temple is marked by a colossal, ornamental hammer suspended above its entrance, a symbol of the destiny forged within. The streets are lined with the high-end showrooms of the Beccin Empire's military industrial complex, displaying gleaning weapons and marvels. While these storefronts are open to the public, the workshops behind them are restricted zones. The district is primarily inhabited by Dwarves—both Ossurian expats and local artisans. It is also the location of the 'Old Furnace.'",
+        "summary": "Highhammer is a pristine, Dwarf-majority district housing the Temple of Matrix and the showrooms of the Ossurian Forges.",
         "type": "Political",
         "value": "District",
         "color": "#6E2C00",
@@ -2191,6 +2123,126 @@
           [
             1027,
             1081
+          ]
+        ],
+        "properties": {}
+      },
+      {
+        "id": "region-northgate",
+        "name": "Northgate",
+        "pronunciation": "",
+        "description": "Renamed for its location adjacent to the city's North Gate, this district is a bustling hub of overland travelers. The streets are perpetually active with wagons hauling lumber and fresh produce from the northern fields. It is a welcoming, family-safe neighborhood characterized by practical homes, local bakeries, and taverns that specialize in hearty stews and warm beds for weary road-weary visitors. While a small contingent of Beccin Imperial guards maintains a visible presence at the gate itself, the district's true anchor is the House of the Lost and Wayward. It is a respectable funeral parlor and counseling center staffed by doctor-like professionals and funded by open donations.",
+        "summary": "Northgate is a busy, family-friendly district defined by overland trade and traveler amenities, funeral parlor, and conselor center.",
+        "type": "Political",
+        "value": "District",
+        "color": "#943126",
+        "fillColor": "#D98880",
+        "fillOpacity": 0.05,
+        "wikiLink": "",
+        "coordinates": [
+          [
+            2025,
+            1711
+          ],
+          [
+            2092,
+            1803
+          ],
+          [
+            2072,
+            1817
+          ],
+          [
+            2029,
+            1854
+          ],
+          [
+            2018,
+            1864
+          ],
+          [
+            1960,
+            1913
+          ],
+          [
+            1950,
+            1920
+          ],
+          [
+            1886,
+            1973
+          ],
+          [
+            1864,
+            1994
+          ],
+          [
+            1853,
+            2020
+          ],
+          [
+            1847,
+            2021
+          ],
+          [
+            1827,
+            2011
+          ],
+          [
+            1831,
+            2005
+          ],
+          [
+            1776,
+            1976
+          ],
+          [
+            1788,
+            1950
+          ],
+          [
+            1795,
+            1928
+          ],
+          [
+            1798,
+            1911
+          ],
+          [
+            1801,
+            1890
+          ],
+          [
+            1796,
+            1866
+          ],
+          [
+            1794,
+            1848
+          ],
+          [
+            1787,
+            1814
+          ],
+          [
+            1799,
+            1805
+          ],
+          [
+            1826,
+            1797
+          ],
+          [
+            1908,
+            1757
+          ],
+          [
+            1943,
+            1736
+          ],
+          [
+            1997,
+            1697
           ]
         ],
         "properties": {}
