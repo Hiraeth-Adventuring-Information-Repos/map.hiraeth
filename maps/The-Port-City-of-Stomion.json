@@ -36,19 +36,6 @@
       },
       {
         "coords": [
-          1829,
-          1728
-        ],
-        "name": "Something Else",
-        "pronunciation": "",
-        "type": "Point of Interest",
-        "description": "",
-        "summary": "",
-        "wikiLink": "",
-        "properties": {}
-      },
-      {
-        "coords": [
           1662,
           1606
         ],
@@ -218,19 +205,6 @@
       },
       {
         "coords": [
-          840,
-          1342
-        ],
-        "name": "The Shop",
-        "pronunciation": "",
-        "type": "Point of Interest",
-        "description": "Welcome to The Shop! Back in the glory days, this facility was a premier, open-floor smithy. Now? It’s a survival rig adapted for the grind. We stripped the layout and partitioned it into flats to house a crew of makers and their families. The main floor got squeezed, but it remains the beating heart of the operation: a high-traffic, communal fabrication zone where every discipline from leather-working to cold forging collides. We keep a resident fabricator on site, bunked in a solo unit. They machine the components, true the grinding wheels, and repair the communal gear. In exchange for keeping the shop running, the rest of the crew knows when to look the other way. If a shipment of non-standard, unregistered materials hits the loading dock? We didn't see a thing. The heat is high, and the quarters are tight. We don't act loud; we just hammer hard.",
-        "summary": "A place of creators and workers.",
-        "wikiLink": "",
-        "properties": {}
-      },
-      {
-        "coords": [
           2466,
           2763
         ],
@@ -330,6 +304,19 @@
         "type": "Point of Interest",
         "description": "Suspended between the central spires like a glittering jewel in a stone web, the Oikos Atrium is a colossal, crystalline geodesic dome that houses the last breath of the Old World. It serves as the private botanical conservatory and primary social salon for those in the Synedrion of Blood. Inside, the air is perfumed and perfectly humidified, maintained by complex weather wards that nurture flora extinct everywhere else in Eschatia. Silver-ferns from the Lost Age and glowing moon-blooming lotuses. It is here that 'The Season' takes place: a perpetual cycle of tea ceremonies, marriage negotiations, and high-stakes political maneuvering disguised as leisure. By ancient treaty, no violence is permitted within the glass, making it the only place where rival Great Houses can meet face-to-face to trade secrets.",
         "summary": "A suspended glass conservatory preserving extinct magical flora, serving as the neutral social hub for the Great Houses' political maneuvering and high-society events.",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          1829,
+          1728
+        ],
+        "name": "Something Else",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "",
+        "summary": "",
         "wikiLink": "",
         "properties": {}
       },
@@ -512,6 +499,19 @@
         "type": "Point of Interest",
         "description": "The Rested Raven is owned by an unmarried elven woman and her elven boyfriend. Both of the owners are law-abiding citizens with notable personality quirks. Before owning the tavern, he sailed around the world, while she studied to be a wizard. The inspiration for the tavern's name was a misinterpretation of another famous tavern's name. It is a tavern of modest quality.",
         "summary": "",
+        "wikiLink": "",
+        "properties": {}
+      },
+      {
+        "coords": [
+          840,
+          1342
+        ],
+        "name": "The Shop",
+        "pronunciation": "",
+        "type": "Point of Interest",
+        "description": "Welcome to The Shop! Back in the glory days, this facility was a premier, open-floor smithy. Now? It’s a survival rig adapted for the grind. We stripped the layout and partitioned it into flats to house a crew of makers and their families. The main floor got squeezed, but it remains the beating heart of the operation: a high-traffic, communal fabrication zone where every discipline from leather-working to cold forging collides. We keep a resident fabricator on site, bunked in a solo unit. They machine the components, true the grinding wheels, and repair the communal gear. In exchange for keeping the shop running, the rest of the crew knows when to look the other way. If a shipment of non-standard, unregistered materials hits the loading dock? We didn't see a thing. The heat is high, and the quarters are tight. We don't act loud; we just hammer hard.",
+        "summary": "A place of creators and workers.",
         "wikiLink": "",
         "properties": {}
       },
@@ -745,20 +745,48 @@
             3170
           ],
           [
-            2422,
+            2427,
             3116
           ],
           [
-            2484,
-            3088
+            2446,
+            3106
+          ],
+          [
+            2470,
+            3095
+          ],
+          [
+            2499,
+            3090
+          ],
+          [
+            2517,
+            3086
           ],
           [
             2528,
             3081
           ],
           [
-            2550,
-            3063
+            2545,
+            3073
+          ],
+          [
+            2553,
+            3062
+          ],
+          [
+            2559,
+            3061
+          ],
+          [
+            2566,
+            3065
+          ],
+          [
+            2588,
+            3065
           ],
           [
             2589,
@@ -769,88 +797,612 @@
             3092
           ],
           [
-            2648,
-            3142
+            2591,
+            3100
           ],
           [
-            2672,
-            3178
+            2596,
+            3104
           ],
           [
-            2649,
-            3221
+            2599,
+            3108
+          ],
+          [
+            2599,
+            3114
+          ],
+          [
+            2597,
+            3119
+          ],
+          [
+            2592,
+            3123
+          ],
+          [
+            2586,
+            3124
+          ],
+          [
+            2538,
+            3202
+          ],
+          [
+            2544,
+            3205
+          ],
+          [
+            2542,
+            3211
+          ],
+          [
+            2545,
+            3213
+          ],
+          [
+            2583,
+            3213
+          ],
+          [
+            2604,
+            3183
+          ],
+          [
+            2610,
+            3187
+          ],
+          [
+            2592,
+            3213
+          ],
+          [
+            2628,
+            3214
+          ],
+          [
+            2630,
+            3212
+          ],
+          [
+            2635,
+            3209
+          ],
+          [
+            2640,
+            3208
+          ],
+          [
+            2645,
+            3209
+          ],
+          [
+            2650,
+            3215
+          ],
+          [
+            2650,
+            3223
+          ],
+          [
+            2650,
+            3225
+          ],
+          [
+            2654,
+            3227
+          ],
+          [
+            2655,
+            3240
+          ],
+          [
+            2659,
+            3246
           ],
           [
             2666,
-            3253
+            3248
           ],
           [
-            2697,
-            3304
+            2668,
+            3264
           ],
           [
-            2721,
-            3307
+            2673,
+            3275
           ],
           [
-            2717,
-            3338
+            2685,
+            3283
           ],
           [
-            2749,
-            3371
+            2685,
+            3290
+          ],
+          [
+            2691,
+            3298
+          ],
+          [
+            2698,
+            3299
+          ],
+          [
+            2705,
+            3303
+          ],
+          [
+            2710,
+            3303
+          ],
+          [
+            2713,
+            3305
+          ],
+          [
+            2720,
+            3305
+          ],
+          [
+            2725,
+            3312
+          ],
+          [
+            2726,
+            3319
+          ],
+          [
+            2722,
+            3329
+          ],
+          [
+            2718,
+            3333
+          ],
+          [
+            2718,
+            3349
+          ],
+          [
+            2723,
+            3354
+          ],
+          [
+            2737,
+            3358
+          ],
+          [
+            2737,
+            3367
+          ],
+          [
+            2739,
+            3375
+          ],
+          [
+            2741,
+            3377
+          ],
+          [
+            2751,
+            3377
+          ],
+          [
+            2755,
+            3378
+          ],
+          [
+            2756,
+            3380
+          ],
+          [
+            2762,
+            3403
+          ],
+          [
+            2759,
+            3408
+          ],
+          [
+            2759,
+            3419
+          ],
+          [
+            2768,
+            3434
+          ],
+          [
+            2768,
+            3461
+          ],
+          [
+            2776,
+            3472
+          ],
+          [
+            2777,
+            3482
           ],
           [
             2782,
             3489
           ],
           [
-            2780,
-            3563
+            2787,
+            3494
+          ],
+          [
+            2785,
+            3528
+          ],
+          [
+            2782,
+            3536
+          ],
+          [
+            2782,
+            3559
+          ],
+          [
+            2794,
+            3598
+          ],
+          [
+            2794,
+            3618
+          ],
+          [
+            2803,
+            3633
+          ],
+          [
+            2803,
+            3651
           ],
           [
             2807,
-            3697
+            3668
+          ],
+          [
+            2805,
+            3676
+          ],
+          [
+            2809,
+            3684
+          ],
+          [
+            2809,
+            3693
+          ],
+          [
+            2814,
+            3701
+          ],
+          [
+            2821,
+            3712
+          ],
+          [
+            2831,
+            3719
+          ],
+          [
+            2837,
+            3726
+          ],
+          [
+            2840,
+            3736
+          ],
+          [
+            2849,
+            3747
+          ],
+          [
+            2854,
+            3758
+          ],
+          [
+            2860,
+            3776
+          ],
+          [
+            2862,
+            3781
+          ],
+          [
+            2866,
+            3786
+          ],
+          [
+            2873,
+            3789
           ],
           [
             2874,
-            3798
+            3796
           ],
           [
-            2682,
-            3742
+            2868,
+            3794
           ],
           [
-            2559,
-            3694
+            2858,
+            3788
           ],
           [
-            2474,
-            3655
+            2844,
+            3788
           ],
           [
-            2430,
+            2821,
+            3776
+          ],
+          [
+            2811,
+            3775
+          ],
+          [
+            2795,
+            3770
+          ],
+          [
+            2784,
+            3762
+          ],
+          [
+            2771,
+            3759
+          ],
+          [
+            2759,
+            3755
+          ],
+          [
+            2745,
+            3754
+          ],
+          [
+            2734,
+            3752
+          ],
+          [
+            2727,
+            3747
+          ],
+          [
+            2718,
+            3746
+          ],
+          [
+            2713,
+            3740
+          ],
+          [
+            2706,
+            3736
+          ],
+          [
+            2692,
+            3738
+          ],
+          [
+            2677,
+            3726
+          ],
+          [
+            2671,
+            3723
+          ],
+          [
+            2667,
+            3719
+          ],
+          [
+            2661,
+            3716
+          ],
+          [
+            2647,
+            3708
+          ],
+          [
+            2618,
+            3706
+          ],
+          [
+            2611,
+            3703
+          ],
+          [
+            2598,
+            3704
+          ],
+          [
+            2577,
+            3697
+          ],
+          [
+            2569,
+            3688
+          ],
+          [
+            2562,
+            3682
+          ],
+          [
+            2521,
+            3681
+          ],
+          [
+            2501,
+            3664
+          ],
+          [
+            2488,
+            3657
+          ],
+          [
+            2482,
+            3639
+          ],
+          [
+            2470,
+            3632
+          ],
+          [
+            2460,
+            3620
+          ],
+          [
+            2451,
+            3618
+          ],
+          [
+            2439,
+            3613
+          ],
+          [
+            2413,
+            3613
+          ],
+          [
+            2395,
+            3617
+          ],
+          [
+            2357,
+            3615
+          ],
+          [
+            2343,
+            3623
+          ],
+          [
+            2324,
             3623
           ],
           [
             2316,
-            3634
+            3620
           ],
           [
-            2182,
-            3509
+            2304,
+            3620
+          ],
+          [
+            2289,
+            3610
+          ],
+          [
+            2283,
+            3609
+          ],
+          [
+            2271,
+            3601
+          ],
+          [
+            2264,
+            3590
+          ],
+          [
+            2250,
+            3576
+          ],
+          [
+            2245,
+            3574
+          ],
+          [
+            2234,
+            3563
+          ],
+          [
+            2227,
+            3552
+          ],
+          [
+            2215,
+            3540
+          ],
+          [
+            2198,
+            3514
+          ],
+          [
+            2189,
+            3505
           ],
           [
             2187,
-            3427
+            3494
           ],
           [
-            2208,
-            3323
+            2190,
+            3484
           ],
           [
-            2247,
-            3229
+            2190,
+            3456
+          ],
+          [
+            2211,
+            3407
+          ],
+          [
+            2214,
+            3382
+          ],
+          [
+            2225,
+            3367
+          ],
+          [
+            2226,
+            3352
+          ],
+          [
+            2225,
+            3335
+          ],
+          [
+            2219,
+            3325
+          ],
+          [
+            2218,
+            3316
+          ],
+          [
+            2231,
+            3285
+          ],
+          [
+            2244,
+            3276
+          ],
+          [
+            2255,
+            3251
+          ],
+          [
+            2256,
+            3239
+          ],
+          [
+            2289,
+            3219
+          ],
+          [
+            2300,
+            3210
+          ],
+          [
+            2325,
+            3201
           ]
         ],
         "properties": {}
