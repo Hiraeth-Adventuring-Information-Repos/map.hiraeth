@@ -717,6 +717,41 @@ function saveAtlasStructure(repoRoot, payload) {
     };
 }
 
+function saveWorkspaceDocuments(repoRoot, payload, options = {}) {
+    const mapPayload = payload?.map;
+    const atlasPayload = payload?.atlas;
+    const mapErrors = validateMapDocument(mapPayload?.document);
+    const atlasErrors = validateAtlasManifestDocument(atlasPayload?.document);
+    const errors = [...mapErrors, ...atlasErrors];
+    if (errors.length > 0) {
+        throw new Error(errors.join(' '));
+    }
+
+    const mapTarget = resolveMapTargetPath(repoRoot, mapPayload);
+    const atlasTarget = {
+        relativePath: 'maps/maps.json',
+        fullPath: resolveRepoPath(repoRoot, 'maps/maps.json')
+    };
+    const writeDocuments = options.writeDocuments || writeWithValidation;
+    writeDocuments(repoRoot, [
+        {
+            fullPath: mapTarget.fullPath,
+            content: prettyJson(mapPayload.document)
+        },
+        {
+            fullPath: atlasTarget.fullPath,
+            content: prettyJson(atlasPayload.document)
+        }
+    ]);
+
+    return {
+        ok: true,
+        saved: [mapTarget.relativePath, atlasTarget.relativePath],
+        atlas: 'maps/atlas-index.json',
+        readiness: getPublishReadiness(repoRoot)
+    };
+}
+
 function readRequestBody(request) {
     return new Promise((resolve, reject) => {
         let body = '';
@@ -813,6 +848,20 @@ async function handleApiRequest(repoRoot, request, response, url, options = {}) 
             sendJson(response, 200, saveMapDocument(repoRoot, payload));
         } catch (error) {
             sendJson(response, 400, { ok: false, error: error.message || 'Could not save map.' });
+        }
+        return true;
+    }
+
+    if (url.pathname === '/api/editor/save-workspace' && request.method === 'POST') {
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Editor save request was not authorized.' });
+            return true;
+        }
+        try {
+            const payload = await readRequestBody(request);
+            sendJson(response, 200, saveWorkspaceDocuments(repoRoot, payload));
+        } catch (error) {
+            sendJson(response, 400, { ok: false, error: error.message || 'Could not save editor changes.' });
         }
         return true;
     }
@@ -988,6 +1037,7 @@ module.exports = {
     resolveMapTargetPath,
     saveAtlasStructure,
     saveMapDocument,
+    saveWorkspaceDocuments,
     startEditorServer,
     validateAtlasManifestDocument,
     validateMapDocument,

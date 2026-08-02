@@ -38,6 +38,10 @@
         localSaveAvailable: false,
         localSaveMessage: '',
         editorDirty: false,
+        saveInProgress: false,
+        saveError: false,
+        inspectorCollapsed: false,
+        inspectorWidth: 0,
         publishReadiness: {
             items: {},
             changedFiles: [],
@@ -51,6 +55,7 @@
 
     const dom = {
         appShell: document.getElementById('map-editor-app'),
+        workspace: document.querySelector('.map-editor-workspace'),
         atlasTree: document.getElementById('editor-atlas-tree'),
         treeSearch: document.getElementById('editor-tree-search'),
         reloadButton: document.getElementById('reload-editor-btn'),
@@ -60,6 +65,9 @@
         mapEmptyCopy: document.getElementById('editor-map-empty-copy'),
         mapEmptyDetail: document.getElementById('editor-map-empty-detail'),
         exportStatus: document.getElementById('editor-export-status'),
+        saveBar: document.getElementById('editor-save-bar'),
+        saveStateChip: document.getElementById('editor-save-state-chip'),
+        saveStateTitle: document.getElementById('editor-save-state-title'),
         currentMapId: document.getElementById('editor-current-map-id'),
         featureSummary: document.getElementById('editor-feature-summary'),
         selectedFeatureChip: document.getElementById('editor-selected-feature-chip'),
@@ -77,6 +85,10 @@
         cancelDrawButton: document.getElementById('editor-cancel-draw-btn'),
         deleteSelectionButton: document.getElementById('editor-delete-selection-btn'),
         resetViewButton: document.getElementById('editor-reset-view-btn'),
+        toggleInspectorButton: document.getElementById('editor-toggle-inspector-btn'),
+        collapseInspectorButton: document.getElementById('editor-collapse-inspector-btn'),
+        inspector: document.getElementById('editor-inspector'),
+        inspectorResizer: document.getElementById('editor-inspector-resizer'),
         saveCurrentMapButton: document.getElementById('save-current-map-btn'),
         saveAtlasStructureButton: document.getElementById('save-atlas-structure-btn'),
         exportCurrentMapButton: document.getElementById('export-current-map-btn'),
@@ -294,6 +306,59 @@
     function setExportStatus(message, isError = false) {
         dom.exportStatus.textContent = message;
         dom.exportStatus.style.color = isError ? '#dc2626' : '';
+        state.saveError = Boolean(isError);
+        refreshSaveControls();
+    }
+
+    function refreshSaveControls() {
+        if (!dom.saveBar) return;
+        let saveState = 'clean';
+        let chip = 'Saved';
+        let title = 'All changes saved';
+
+        if (state.saveInProgress) {
+            saveState = 'saving';
+            chip = 'Saving';
+            title = 'Validating and saving both files';
+        } else if (state.saveError) {
+            saveState = 'error';
+            chip = 'Attention';
+            title = 'The last action needs attention';
+        } else if (!state.currentMap) {
+            saveState = 'clean';
+            chip = 'No map';
+            title = 'Choose a map to begin editing';
+        } else if (state.editorDirty) {
+            saveState = 'dirty';
+            chip = 'Unsaved';
+            title = state.localSaveAvailable
+                ? 'Map and atlas changes are ready to save'
+                : 'Changes are unsaved; start a Studio draft to save them';
+        } else if (!state.localSaveAvailable) {
+            saveState = 'locked';
+            chip = 'Read only';
+            title = 'Start a Studio draft to enable saving';
+        }
+
+        dom.saveBar.dataset.state = saveState;
+        dom.saveStateChip.textContent = chip;
+        dom.saveStateTitle.textContent = title;
+
+        const canSaveWorkspace = Boolean(
+            state.localSaveAvailable &&
+            state.currentMap &&
+            state.editorDirty &&
+            !state.saveInProgress
+        );
+        dom.saveCurrentMapButton.disabled = !canSaveWorkspace;
+        dom.saveCurrentMapButton.setAttribute('aria-disabled', String(!canSaveWorkspace));
+        dom.saveCurrentMapButton.title = canSaveWorkspace
+            ? 'Save the current map and atlas structure together.'
+            : (state.localSaveMessage || title);
+
+        const canSaveAtlas = Boolean(state.localSaveAvailable && !state.saveInProgress);
+        dom.saveAtlasStructureButton.disabled = !canSaveAtlas;
+        dom.saveAtlasStructureButton.setAttribute('aria-disabled', String(!canSaveAtlas));
     }
 
     const publishReadinessItems = [
@@ -539,7 +604,11 @@
     function markCurrentMapDirty(detail = 'Unsaved editor changes.') {
         if (!state.currentMap) return;
         state.editorDirty = true;
+        state.saveError = false;
+        dom.exportStatus.textContent = detail;
+        dom.exportStatus.style.color = '';
         setReadinessItem('currentMapSaved', 'warn', detail);
+        refreshSaveControls();
     }
 
     function refreshBuildPreviewButtonState() {
@@ -560,15 +629,7 @@
     function setLocalSaveAvailability(available, message = '') {
         state.localSaveAvailable = Boolean(available);
         state.localSaveMessage = String(message || '').trim();
-        const title = state.localSaveAvailable
-            ? 'Save directly to the local map files.'
-            : (state.localSaveMessage || 'Run npm run editor to enable direct saves.');
-        [dom.saveCurrentMapButton, dom.saveAtlasStructureButton].forEach((button) => {
-            if (!button) return;
-            button.disabled = !state.localSaveAvailable;
-            button.title = title;
-            button.setAttribute('aria-disabled', String(!state.localSaveAvailable));
-        });
+        refreshSaveControls();
         refreshBuildPreviewButtonState();
     }
 
@@ -625,6 +686,96 @@
             }
         };
         requestAnimationFrame(resetViewport);
+    }
+
+    function clampInspectorWidth(value) {
+        const workspaceWidth = dom.workspace?.getBoundingClientRect().width || window.innerWidth;
+        const responsiveMaximum = Math.max(320, Math.min(560, workspaceWidth * 0.52));
+        return Math.round(Math.min(responsiveMaximum, Math.max(280, Number(value) || 360)));
+    }
+
+    function applyInspectorWidth(value, persist = true) {
+        if (!dom.workspace) return;
+        state.inspectorWidth = clampInspectorWidth(value);
+        dom.workspace.style.setProperty('--editor-inspector-width', `${state.inspectorWidth}px`);
+        if (persist) {
+            try {
+                localStorage.setItem('mapEditorInspectorWidth', String(state.inspectorWidth));
+            } catch (error) {
+                // Storage is optional; the layout still works for this session.
+            }
+        }
+        queueMapViewportReset();
+    }
+
+    function setInspectorCollapsed(collapsed) {
+        state.inspectorCollapsed = Boolean(collapsed);
+        if (dom.workspace) {
+            dom.workspace.dataset.inspectorCollapsed = String(state.inspectorCollapsed);
+        }
+        if (dom.toggleInspectorButton) {
+            dom.toggleInspectorButton.textContent = state.inspectorCollapsed ? 'Show details' : 'Hide details';
+            dom.toggleInspectorButton.setAttribute('aria-expanded', String(!state.inspectorCollapsed));
+        }
+        if (dom.collapseInspectorButton) {
+            dom.collapseInspectorButton.textContent = state.inspectorCollapsed ? 'Show' : 'Hide';
+        }
+        try {
+            localStorage.setItem('mapEditorInspectorCollapsed', String(state.inspectorCollapsed));
+        } catch (error) {
+            // Storage is optional; the layout still works for this session.
+        }
+        queueMapViewportReset();
+    }
+
+    function initializeInspectorLayout() {
+        let storedWidth = 0;
+        let storedCollapsed = false;
+        try {
+            storedWidth = Number(localStorage.getItem('mapEditorInspectorWidth') || 0);
+            storedCollapsed = localStorage.getItem('mapEditorInspectorCollapsed') === 'true';
+        } catch (error) {
+            storedWidth = 0;
+            storedCollapsed = false;
+        }
+        applyInspectorWidth(storedWidth || 360, false);
+        setInspectorCollapsed(storedCollapsed);
+    }
+
+    function registerInspectorResize() {
+        if (!dom.inspectorResizer || !dom.inspector) return;
+        let startX = 0;
+        let startWidth = 0;
+
+        const finishResize = () => {
+            dom.inspectorResizer.dataset.resizing = 'false';
+            try {
+                localStorage.setItem('mapEditorInspectorWidth', String(state.inspectorWidth));
+            } catch (error) {
+                // Storage is optional; the layout still works for this session.
+            }
+        };
+
+        dom.inspectorResizer.addEventListener('pointerdown', (event) => {
+            if (window.matchMedia('(max-width: 900px)').matches) return;
+            startX = event.clientX;
+            startWidth = dom.inspector.getBoundingClientRect().width;
+            dom.inspectorResizer.dataset.resizing = 'true';
+            dom.inspectorResizer.setPointerCapture(event.pointerId);
+            event.preventDefault();
+        });
+        dom.inspectorResizer.addEventListener('pointermove', (event) => {
+            if (dom.inspectorResizer.dataset.resizing !== 'true') return;
+            applyInspectorWidth(startWidth + (startX - event.clientX), false);
+        });
+        dom.inspectorResizer.addEventListener('pointerup', finishResize);
+        dom.inspectorResizer.addEventListener('pointercancel', finishResize);
+        dom.inspectorResizer.addEventListener('keydown', (event) => {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+            const delta = event.key === 'ArrowLeft' ? 24 : -24;
+            applyInspectorWidth((state.inspectorWidth || dom.inspector.getBoundingClientRect().width) + delta);
+            event.preventDefault();
+        });
     }
 
     function clearMapVisualLayers() {
@@ -1374,7 +1525,7 @@
             status: getMapSettingsTextValue(currentMap?.status),
             visibility: getMapSettingsTextValue(currentMap?.visibility),
             group: getMapSettingsTextValue(currentMap?.group || currentMap?.category),
-            dataUrl: getMapSettingsTextValue(currentMap?.dataUrl),
+            dataUrl: getMapSettingsTextValue(currentMap?.dataUrl || state.currentMapDataUrl),
             order: currentLocation ? currentLocation.index : 0,
             imageUrl: getMapSettingsTextValue(currentMap?.imageUrl),
             mobileImageUrl: getMapSettingsTextValue(currentMap?.mobileImageUrl),
@@ -1864,7 +2015,11 @@
     }
 
     async function saveCurrentMapJson() {
-        if (!state.currentMap) return;
+        if (!state.currentMap || !state.editorDirty || state.saveInProgress) return;
+        state.saveInProgress = true;
+        state.saveError = false;
+        dom.exportStatus.style.color = '';
+        refreshSaveControls();
         try {
             const exportedDocument = utils.serializeMapDocumentState({
                 masterMapData: state.atlasTree,
@@ -1875,25 +2030,44 @@
                 lineCollectionKey: state.lineCollectionKey,
                 mapSettings: readMapSettingsForm()
             });
+            const exportedManifest = utils.serializeFlatManifestState({
+                masterMapData: state.atlasTree,
+                currentMapId: state.currentMap.id,
+                mapSettings: readMapSettingsForm()
+            });
             const currentMapDataUrl = getCurrentMapDataUrl();
             const fileName = getExportFileName(currentMapDataUrl, state.currentMap.id);
-            setExportStatus(`Saving ${fileName}...`);
-            const result = await saveEditorDocument('/api/editor/save-map', {
-                mapId: state.currentMap.id,
-                dataUrl: currentMapDataUrl,
-                fileName,
-                document: exportedDocument
+            dom.exportStatus.textContent = `Saving ${fileName} and maps.json...`;
+            const result = await saveEditorDocument('/api/editor/save-workspace', {
+                map: {
+                    mapId: state.currentMap.id,
+                    dataUrl: currentMapDataUrl,
+                    fileName,
+                    document: exportedDocument
+                },
+                atlas: {
+                    document: exportedManifest
+                }
             });
-            setExportStatus(`Saved ${result.saved} and regenerated ${result.atlas}.`);
             state.editorDirty = false;
-            setReadinessItem('currentMapSaved', 'pass', `Saved ${result.saved}.`);
+            state.saveError = false;
+            dom.exportStatus.style.color = '';
+            const savedFiles = Array.isArray(result.saved) ? result.saved.join(' and ') : String(result.saved || fileName);
+            dom.exportStatus.textContent = `Saved ${savedFiles}; validation passed.`;
+            setReadinessItem('currentMapSaved', 'pass', `Saved ${savedFiles}.`);
             setReadinessItem('atlasRegenerated', 'pass', `Regenerated ${result.atlas}.`);
             setReadinessItem('dataValidation', 'pass', 'Validation passed.');
             applyServerReadiness(result.readiness);
         } catch (error) {
             console.error(error);
-            setExportStatus(error.message || 'Could not save the current map.', true);
+            state.saveError = true;
+            dom.exportStatus.textContent = error.message || 'Could not save editor changes.';
+            dom.exportStatus.style.color = '#dc2626';
             setReadinessItem('currentMapSaved', 'fail', error.message || 'Save failed.');
+        } finally {
+            state.saveInProgress = false;
+            refreshSaveControls();
+            refreshBuildPreviewButtonState();
         }
     }
 
@@ -1913,6 +2087,10 @@
     }
 
     async function saveAtlasStructure() {
+        if (state.saveInProgress) return;
+        state.saveInProgress = true;
+        state.saveError = false;
+        refreshSaveControls();
         try {
             const exportedManifest = utils.serializeFlatManifestState({
                 masterMapData: state.atlasTree,
@@ -1931,6 +2109,9 @@
             console.error(error);
             setExportStatus(error.message || 'Could not save maps.json.', true);
             setReadinessItem('atlasRegenerated', 'fail', error.message || 'Atlas save failed.');
+        } finally {
+            state.saveInProgress = false;
+            refreshSaveControls();
         }
     }
 
@@ -2041,8 +2222,9 @@
         renderFeatureInspector();
         setSelectionStatus(`Editing "${state.currentMap.name || state.currentMap.id}".`);
         renderMapLayers(true);
-        setExportStatus('');
         state.editorDirty = false;
+        state.saveError = false;
+        setExportStatus('All changes are saved.');
         setReadinessItem('currentMapSaved', 'pass', 'No unsaved editor changes.');
 
         dom.appShell.setAttribute('data-mode', 'edit');
@@ -2093,6 +2275,9 @@
                 setSelectionStatus(error.message || 'Could not apply map settings.');
             }
         });
+        dom.mapSettingsForm.addEventListener('input', () => {
+            markCurrentMapDirty('Map metadata changed.');
+        });
 
         dom.featureForm.addEventListener('change', updateSelectedFeatureFromForm);
         dom.featureForm.addEventListener('click', (event) => {
@@ -2133,6 +2318,7 @@
         }, 300);
 
         dom.featureForm.addEventListener('input', (event) => {
+            markCurrentMapDirty('Feature fields changed.');
             const field = event.target.dataset.field;
             if (
                 !field ||
@@ -2181,6 +2367,17 @@
                 queueMapViewportReset();
             }
         });
+        if (dom.toggleInspectorButton) {
+            dom.toggleInspectorButton.addEventListener('click', () => {
+                setInspectorCollapsed(!state.inspectorCollapsed);
+            });
+        }
+        if (dom.collapseInspectorButton) {
+            dom.collapseInspectorButton.addEventListener('click', () => {
+                setInspectorCollapsed(true);
+            });
+        }
+        registerInspectorResize();
         if (dom.chooseMapButton) {
             dom.chooseMapButton.addEventListener('click', () => {
                 dom.appShell.setAttribute('data-mode', 'select');
@@ -2197,6 +2394,13 @@
         }
         dom.exportCurrentMapButton.addEventListener('click', exportCurrentMapJson);
         dom.exportAtlasStructureButton.addEventListener('click', exportAtlasStructure);
+        document.addEventListener('keydown', async (event) => {
+            if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
+            event.preventDefault();
+            if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+            await delay(350);
+            if (!dom.saveCurrentMapButton.disabled) await saveCurrentMapJson();
+        });
     }
 
     async function detectLocalSaveApi() {
@@ -2229,6 +2433,7 @@
     async function initializeEditor() {
         try {
             initializeMap();
+            initializeInspectorLayout();
             registerEventListeners();
             renderPublishReadiness();
             detectLocalSaveApi();

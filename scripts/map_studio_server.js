@@ -446,7 +446,8 @@ function createMapStudioServer(options = {}) {
 
         const isEditorMutation = request.method === 'POST' && (
             url.pathname === '/api/editor/save-map' ||
-            url.pathname === '/api/editor/save-atlas'
+            url.pathname === '/api/editor/save-atlas' ||
+            url.pathname === '/api/editor/save-workspace'
         );
         if (isEditorMutation) {
             if (editorMutationRunning || mapMutationRunning || publishJob?.status === 'running' || hasRunningPreviewBuild(repoRoot)) {

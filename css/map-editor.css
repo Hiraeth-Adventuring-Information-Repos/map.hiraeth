@@ -57,11 +57,20 @@
 }
 
 .map-editor-workspace {
+    --editor-inspector-width: clamp(300px, 28vw, 430px);
     flex: 1 1 auto;
     min-height: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    grid-template-columns: minmax(0, 1fr) var(--editor-inspector-width);
     gap: 0;
+}
+
+.map-editor-workspace[data-inspector-collapsed="true"] {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.map-editor-workspace[data-inspector-collapsed="true"] .map-editor-inspector {
+    display: none;
 }
 
 .map-editor-shell[data-mode="select"] .map-editor-workspace {
@@ -117,6 +126,52 @@
 .map-editor-inspector {
     border-left: 1px solid var(--editor-panel-border);
     overflow-y: auto;
+    position: relative;
+    min-width: 280px;
+}
+
+.map-editor-inspector-resizer {
+    position: absolute;
+    inset: 0 auto 0 -5px;
+    width: 10px;
+    cursor: ew-resize;
+    touch-action: none;
+    z-index: 12;
+}
+
+.map-editor-inspector-resizer::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 4px;
+    width: 2px;
+    background: transparent;
+    transition: background-color 0.18s ease;
+}
+
+.map-editor-inspector-resizer:hover::after,
+.map-editor-inspector-resizer:focus-visible::after,
+.map-editor-inspector-resizer[data-resizing="true"]::after {
+    background: color-mix(in srgb, var(--text-secondary) 58%, transparent);
+}
+
+.map-editor-inspector-resizer:focus-visible {
+    outline: 2px solid var(--focus-ring, #0f5fbf);
+    outline-offset: -2px;
+}
+
+.map-editor-inspector-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -4px 0 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--editor-panel-border);
+}
+
+.map-editor-inspector-heading h2,
+.map-editor-inspector-heading p {
+    margin: 0;
 }
 
 .map-editor-canvas-panel {
@@ -315,6 +370,8 @@ details[open] .map-editor-section-header h2::before {
 }
 
 .map-editor-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: 14px 18px;
     border-bottom: 1px solid var(--editor-panel-border);
     background: var(--editor-toolbar-bg);
@@ -324,16 +381,28 @@ details[open] .map-editor-section-header h2::before {
 }
 
 .map-editor-toolbar-group {
+    grid-column: 1;
+    grid-row: 1;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .map-editor-status {
+    grid-column: 1 / -1;
+    grid-row: 2;
     margin: 0;
     min-width: 0;
     color: var(--text-secondary);
-    text-align: right;
+    text-align: left;
+}
+
+.map-editor-inspector-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .map-editor-toolbar-hint {
@@ -346,7 +415,7 @@ details[open] .map-editor-section-header h2::before {
 .map-editor-map-frame {
     position: relative;
     flex: 1;
-    min-height: 480px;
+    min-height: 260px;
     display: flex;
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--bg-primary) 94%, transparent), color-mix(in srgb, var(--bg-secondary) 92%, transparent));
@@ -355,7 +424,7 @@ details[open] .map-editor-section-header h2::before {
 #editor-map {
     flex: 1 1 auto;
     width: 100%;
-    min-height: 480px;
+    min-height: 260px;
     background-color: var(--bg-secondary);
     transition: background-color var(--theme-transition-base) var(--theme-transition-ease);
     position: relative;
@@ -394,16 +463,124 @@ details[open] .map-editor-section-header h2::before {
     color: var(--text-secondary);
 }
 
-.map-editor-export-bar {
-    padding: 14px 18px;
+.map-editor-save-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
     border-top: 1px solid var(--editor-panel-border);
-    background: var(--editor-toolbar-bg);
+    background: color-mix(in srgb, var(--editor-toolbar-bg) 92%, var(--bg-primary));
+    box-shadow: 0 -8px 24px rgba(45, 32, 24, 0.05);
+    position: relative;
+    z-index: 15;
+}
+
+.map-editor-save-bar[data-state="dirty"] {
+    border-top-color: color-mix(in srgb, #a85a2a 46%, var(--editor-panel-border));
+    background: color-mix(in srgb, #f4dfc2 28%, var(--editor-toolbar-bg));
+}
+
+.map-editor-save-bar[data-state="error"] {
+    border-top-color: color-mix(in srgb, #a63b32 58%, var(--editor-panel-border));
+}
+
+.map-editor-save-summary,
+.map-editor-save-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.map-editor-save-summary > div {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+}
+
+.map-editor-save-state-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px;
+    min-height: 28px;
+    padding: 3px 9px;
+    border: 1px solid var(--editor-panel-border);
+    border-radius: 999px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.map-editor-save-bar[data-state="dirty"] .map-editor-save-state-chip {
+    border-color: color-mix(in srgb, #a85a2a 50%, var(--editor-panel-border));
+    color: color-mix(in srgb, #8a431f 82%, var(--text-primary));
+}
+
+.map-editor-primary-save {
+    min-width: 128px;
+    background: var(--accent-color, #6b2c25);
+    border-color: var(--accent-color, #6b2c25);
+    color: #fff;
+    font-weight: 700;
+}
+
+.map-editor-primary-save:disabled {
+    background: color-mix(in srgb, var(--bg-secondary) 84%, transparent);
+    border-color: var(--editor-panel-border);
+    color: var(--text-secondary);
+}
+
+.map-editor-shortcut-hint {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.map-editor-more-actions {
+    position: relative;
+}
+
+.map-editor-more-actions > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 8px 11px;
+    border: 1px solid var(--editor-panel-border);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    white-space: nowrap;
+}
+
+.map-editor-more-actions > summary::-webkit-details-marker {
+    display: none;
+}
+
+.map-editor-more-actions-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    display: grid;
+    gap: 6px;
+    width: 190px;
+    padding: 8px;
+    border: 1px solid var(--editor-panel-border);
+    border-radius: 10px;
+    background: var(--bg-primary);
+    box-shadow: 0 14px 32px rgba(35, 25, 18, 0.16);
+}
+
+.map-editor-more-actions-menu button {
+    width: 100%;
+    text-align: left;
 }
 
 #editor-export-status {
     color: var(--text-secondary);
     min-width: 0;
-    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .map-editor-section + .map-editor-section {
@@ -748,20 +925,7 @@ details[open] .map-editor-section-header h2::before {
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.32);
 }
 
-@media (max-width: 1180px) {
-    .map-editor-workspace {
-        grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
-    }
-
-    .map-editor-inspector {
-        grid-column: 1 / -1;
-        min-height: auto;
-        border-left: none;
-        border-top: 1px solid var(--editor-panel-border);
-    }
-}
-
-@media (max-width: 820px) {
+@media (max-width: 900px) {
     .map-editor-publish-panel {
         grid-template-columns: 1fr;
     }
@@ -774,6 +938,26 @@ details[open] .map-editor-section-header h2::before {
     .map-editor-workspace {
         grid-template-columns: 1fr;
         overflow-y: auto;
+    }
+
+    .map-editor-workspace[data-inspector-collapsed="true"] {
+        grid-template-columns: 1fr;
+    }
+
+    .map-editor-canvas-panel {
+        min-height: min(720px, calc(100vh - 120px));
+    }
+
+    .map-editor-inspector {
+        min-width: 0;
+        height: auto;
+        overflow: visible;
+        border-left: none;
+        border-top: 1px solid var(--editor-panel-border);
+    }
+
+    .map-editor-inspector-resizer {
+        display: none;
     }
 
     .map-editor-sidebar {
@@ -794,6 +978,30 @@ details[open] .map-editor-section-header h2::before {
     .map-editor-status,
     #editor-export-status {
         text-align: left;
+    }
+
+    .map-editor-save-bar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .map-editor-save-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 560px) {
+    .map-editor-save-summary {
+        align-items: flex-start;
+    }
+
+    .map-editor-shortcut-hint {
+        display: none;
+    }
+
+    .map-editor-primary-save {
+        flex: 1;
     }
 }
 

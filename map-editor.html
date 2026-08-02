@@ -109,7 +109,7 @@
             color: #10131f;
         }
     </style>
-    <script src="js/app-config.js?v=0.1.48"></script>
+    <script src="js/app-config.js?v=0.1.49"></script>
     <script>
         window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
 
@@ -248,6 +248,7 @@
                     <button id="editor-reset-view-btn" type="button">Reset View</button>
                 </div>
                 <p id="editor-selection-status" class="map-editor-status" aria-live="polite" aria-atomic="true">Loading atlas data...</p>
+                <button id="editor-toggle-inspector-btn" class="map-editor-inspector-toggle" type="button" aria-expanded="true" aria-controls="editor-inspector">Hide details</button>
             </div>
             <div class="map-editor-toolbar-hint">
                 Click a feature to select it. Drag POI markers to move them, and drag orange vertex handles to reshape regions and lines.
@@ -262,16 +263,38 @@
                 </div>
             </div>
 
-            <div class="map-editor-export-bar">
-                <button id="save-current-map-btn" type="button" disabled>Save Current Map</button>
-                <button id="save-atlas-structure-btn" type="button" disabled>Save Atlas Structure</button>
-                <button id="export-current-map-btn" type="button">Export Current Map JSON</button>
-                <button id="export-atlas-structure-btn" type="button">Export Atlas Structure</button>
-                <span id="editor-export-status" aria-live="polite" aria-atomic="true"></span>
+            <div id="editor-save-bar" class="map-editor-save-bar" data-state="clean">
+                <div class="map-editor-save-summary">
+                    <span id="editor-save-state-chip" class="map-editor-save-state-chip">Saved</span>
+                    <div>
+                        <strong id="editor-save-state-title">All changes saved</strong>
+                        <span id="editor-export-status" aria-live="polite" aria-atomic="true">Choose a map to begin editing.</span>
+                    </div>
+                </div>
+                <div class="map-editor-save-actions">
+                    <span class="map-editor-shortcut-hint" aria-hidden="true">⌘S</span>
+                    <button id="save-current-map-btn" class="map-editor-primary-save" type="button" disabled>Save changes</button>
+                    <details class="map-editor-more-actions">
+                        <summary>More actions</summary>
+                        <div class="map-editor-more-actions-menu">
+                            <button id="save-atlas-structure-btn" type="button" disabled>Save atlas only</button>
+                            <button id="export-current-map-btn" type="button">Export map JSON</button>
+                            <button id="export-atlas-structure-btn" type="button">Export atlas JSON</button>
+                        </div>
+                    </details>
+                </div>
             </div>
         </main>
 
-        <aside class="map-editor-inspector">
+        <aside id="editor-inspector" class="map-editor-inspector">
+            <div id="editor-inspector-resizer" class="map-editor-inspector-resizer" role="separator" aria-label="Resize details panel" aria-orientation="vertical" tabindex="0"></div>
+            <div class="map-editor-inspector-heading">
+                <div>
+                    <p class="map-editor-eyebrow">Editing panel</p>
+                    <h2>Map details</h2>
+                </div>
+                <button id="editor-collapse-inspector-btn" type="button">Hide</button>
+            </div>
             <details class="map-editor-section" open>
                 <summary class="map-editor-section-header">
                     <h2>Map Metadata</h2>

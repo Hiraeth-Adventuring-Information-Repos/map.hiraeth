@@ -15,6 +15,7 @@ const {
     isSameOriginWriteRequest,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
+    saveWorkspaceDocuments,
     validateAtlasManifestDocument,
     validateMapDocument
 } = require('../scripts/editor_server.js');
@@ -178,6 +179,28 @@ assert.match(validateAtlasManifestDocument([
 assert.match(validateAtlasManifestDocument([
     { id: 'child', name: 'Child', parentId: 'missing' }
 ]).join(' '), /unknown parentId/);
+
+let workspaceWrites = null;
+const workspaceSaveResult = saveWorkspaceDocuments(repoRoot, {
+    map: {
+        mapId: 'map',
+        dataUrl: 'maps/map.json',
+        document: { id: 'map', name: 'Map', pointsOfInterest: [], regions: [], lines: [] }
+    },
+    atlas: {
+        document: [{ id: 'map', name: 'Map', dataUrl: 'maps/map.json' }]
+    }
+}, {
+    writeDocuments: (_root, writes) => { workspaceWrites = writes; }
+});
+assert.deepEqual(workspaceSaveResult.saved, ['maps/map.json', 'maps/maps.json']);
+assert.equal(workspaceWrites.length, 2);
+assert.equal(path.basename(workspaceWrites[0].fullPath), 'map.json');
+assert.equal(path.basename(workspaceWrites[1].fullPath), 'maps.json');
+assert.throws(() => saveWorkspaceDocuments(repoRoot, {
+    map: { mapId: 'map', document: { id: '', name: '' } },
+    atlas: { document: [] }
+}, { writeDocuments: () => {} }), /id is required/);
 
 assert.equal(typeof createEditorServer({ repoRoot }).listen, 'function');
 

@@ -15,7 +15,7 @@
     }
   },
   "assets": {
-    "version": "0.1.48",
+    "version": "0.1.49",
     "cloudTexture": "images/clouds.webp",
     "previewImage": "images/hiraeth-maps-preview.png",
     "poiIcons": {

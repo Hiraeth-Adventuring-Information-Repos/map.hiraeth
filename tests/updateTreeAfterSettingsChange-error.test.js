@@ -52,6 +52,8 @@ global.beginDrawMode = () => {};
 global.deleteSelectedFeature = () => {};
 global.queueMapViewportReset = () => {};
 global.markCurrentMapDirty = () => {};
+global.setInspectorCollapsed = () => {};
+global.registerInspectorResize = () => {};
 
 // Proxy dom to automatically return a mocked element with addEventListener
 global.dom = new Proxy({}, {
