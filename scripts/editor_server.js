@@ -97,7 +97,8 @@ function parseHostHeader(hostHeader) {
         const parsed = new URL(`http://${rawHost}`);
         return {
             hostname: normalizeHost(parsed.hostname),
-            port: parsed.port || '80'
+            port: parsed.port || '80',
+            explicitPort: parsed.port || ''
         };
     } catch (error) {
         return null;
@@ -123,27 +124,37 @@ function isSameLocalEditorOrigin(originValue, hostHeader) {
     }
 }
 
-function isSameRequestOrigin(originValue, hostHeader) {
+function isSameRequestOrigin(originValue, hostHeader, forwardedProtocol = '') {
     const requestHost = parseHostHeader(hostHeader);
     if (!requestHost) return false;
 
     try {
         const originUrl = new URL(originValue);
         if (originUrl.protocol !== 'http:' && originUrl.protocol !== 'https:') return false;
+        const normalizedForwardedProtocol = String(forwardedProtocol || '')
+            .split(',')[0]
+            .trim()
+            .toLowerCase();
+        const requestProtocol = normalizedForwardedProtocol === 'http' || normalizedForwardedProtocol === 'https'
+            ? `${normalizedForwardedProtocol}:`
+            : '';
         const originPort = originUrl.port || getDefaultPortForProtocol(originUrl.protocol);
+        const requestPort = requestHost.explicitPort || getDefaultPortForProtocol(requestProtocol || 'http:');
         return normalizeHost(originUrl.hostname) === requestHost.hostname &&
-            originPort === requestHost.port;
+            (!requestProtocol || originUrl.protocol === requestProtocol) &&
+            originPort === requestPort;
     } catch (error) {
         return false;
     }
 }
 
 function isSameOriginWriteRequest(request) {
+    const forwardedProtocol = String(request.headers['x-forwarded-proto'] || '').trim();
     const origin = String(request.headers.origin || '').trim();
-    if (origin) return isSameRequestOrigin(origin, request.headers.host);
+    if (origin) return isSameRequestOrigin(origin, request.headers.host, forwardedProtocol);
 
     const referer = String(request.headers.referer || '').trim();
-    if (referer) return isSameRequestOrigin(referer, request.headers.host);
+    if (referer) return isSameRequestOrigin(referer, request.headers.host, forwardedProtocol);
 
     return false;
 }

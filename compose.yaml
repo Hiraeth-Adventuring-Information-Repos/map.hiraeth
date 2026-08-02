@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     environment:
       MAP_STUDIO_REPO_ROOT: /workspace
-      MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
-      MAP_STUDIO_HEALTH_HOST: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
+      MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local},127.0.0.1
+      MAP_STUDIO_HEALTH_HOST: 127.0.0.1
       MAP_STUDIO_PASSWORD_FILE: /run/secrets/map_studio_password
       MAP_STUDIO_SECURE_COOKIES: "true"
       MAP_STUDIO_GITHUB_OWNER: ${MAP_STUDIO_GITHUB_OWNER:-}

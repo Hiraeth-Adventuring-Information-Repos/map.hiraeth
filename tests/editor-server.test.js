@@ -12,6 +12,7 @@ const {
     getPublishReadiness,
     isAllowedEditorWriteRequest,
     isLoopbackHost,
+    isSameOriginWriteRequest,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
     validateAtlasManifestDocument,
@@ -72,6 +73,21 @@ assert.equal(isAllowedEditorWriteRequest({
     }
 }), false);
 assert.equal(isAllowedEditorWriteRequest({ headers: { host: '127.0.0.1:8010' } }), false);
+
+assert.equal(isSameOriginWriteRequest({
+    headers: {
+        host: 'map-studio.local',
+        origin: 'https://map-studio.local',
+        'x-forwarded-proto': 'https'
+    }
+}), true);
+assert.equal(isSameOriginWriteRequest({
+    headers: {
+        host: 'map-studio.local',
+        origin: 'http://map-studio.local',
+        'x-forwarded-proto': 'https'
+    }
+}), false);
 
 assert.equal(
     resolveMapTargetPath(repoRoot, { dataUrl: 'maps/IceBeach.json' }).relativePath,
