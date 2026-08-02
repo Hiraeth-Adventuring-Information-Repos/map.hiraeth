@@ -1,0 +1,63 @@
+services:
+  map-studio:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      MAP_STUDIO_REPO_ROOT: /workspace
+      MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
+      MAP_STUDIO_HEALTH_HOST: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
+      MAP_STUDIO_PASSWORD_FILE: /run/secrets/map_studio_password
+      MAP_STUDIO_SECURE_COOKIES: "true"
+      MAP_STUDIO_GITHUB_OWNER: ${MAP_STUDIO_GITHUB_OWNER:-}
+      MAP_STUDIO_GITHUB_REPO: ${MAP_STUDIO_GITHUB_REPO:-map.hiraeth}
+      MAP_STUDIO_GITHUB_APP_ID: ${MAP_STUDIO_GITHUB_APP_ID:-}
+      MAP_STUDIO_GITHUB_INSTALLATION_ID: ${MAP_STUDIO_GITHUB_INSTALLATION_ID:-}
+      MAP_STUDIO_GITHUB_PRIVATE_KEY_FILE: /run/secrets/github_app_private_key
+      MAP_STUDIO_GITHUB_TOKEN_FILE: /run/secrets/github_token
+    secrets:
+      - map_studio_password
+      - github_app_private_key
+      - github_token
+    volumes:
+      - type: bind
+        source: .
+        target: /workspace
+      - map_studio_cache:/var/cache/map-studio
+    networks:
+      - studio_internal
+
+  studio-proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      map-studio:
+        condition: service_healthy
+    environment:
+      MAP_STUDIO_HOSTNAME: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - studio_internal
+
+secrets:
+  map_studio_password:
+    file: ${MAP_STUDIO_PASSWORD_SECRET_FILE:-./.secrets/map-studio-password.txt}
+  github_app_private_key:
+    file: ${MAP_STUDIO_GITHUB_PRIVATE_KEY_SECRET_FILE:-./deploy/empty-secret}
+  github_token:
+    file: ${MAP_STUDIO_GITHUB_TOKEN_SECRET_FILE:-./deploy/empty-secret}
+
+volumes:
+  map_studio_cache:
+  caddy_data:
+  caddy_config:
+
+networks:
+  studio_internal:
+    driver: bridge

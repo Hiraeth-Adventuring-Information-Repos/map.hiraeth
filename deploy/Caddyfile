@@ -1,0 +1,9 @@
+{$MAP_STUDIO_HOSTNAME:map-studio.local} {
+    tls internal
+    encode zstd gzip
+    reverse_proxy map-studio:8010
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+    }
+}

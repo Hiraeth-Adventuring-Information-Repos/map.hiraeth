@@ -11,8 +11,10 @@
     <script>
         (function resolveMapEditorLocalAccess() {
             const hostname = window.location.hostname;
+            const pathname = window.location.pathname || "";
             const localHostnames = new Set(["localhost", "::1", "[::1]"]);
-            const isLocalAccess = window.location.protocol === "file:" ||
+            const isStudioAccess = pathname === "/studio/editor";
+            const isLocalAccess = isStudioAccess || window.location.protocol === "file:" ||
                 localHostnames.has(hostname) ||
                 /^127\./.test(hostname) ||
                 hostname.endsWith(".localhost");

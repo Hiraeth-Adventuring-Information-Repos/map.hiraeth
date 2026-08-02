@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Hiraeth Map Studio</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="stylesheet" href="/css/map-studio.css">
+    <script src="/js/map-studio.js" defer></script>
+</head>
+<body>
+    <main class="studio-shell">
+        <section class="studio-login" id="studio-login" aria-labelledby="login-title" hidden>
+            <div class="studio-card login-card">
+                <p class="eyebrow">Hiraeth Maintainer Tools</p>
+                <h1 id="login-title">Map Studio</h1>
+                <p class="lede">Sign in to edit maps, preview changes, and prepare a reviewed publication.</p>
+                <form id="login-form">
+                    <label for="studio-password">Studio password</label>
+                    <input id="studio-password" name="password" type="password" autocomplete="current-password" required>
+                    <button type="submit">Sign in</button>
+                    <p id="login-status" class="form-status" role="status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+
+        <section id="studio-dashboard" hidden>
+            <header class="studio-header">
+                <div>
+                    <p class="eyebrow">Hiraeth Maintainer Tools</p>
+                    <h1>Map Studio</h1>
+                    <p class="lede">Edit locally, verify the exact preview, then publish through review.</p>
+                </div>
+                <button id="logout-button" class="secondary-button" type="button">Sign out</button>
+            </header>
+
+            <section class="status-strip" aria-labelledby="studio-status-title">
+                <div>
+                    <p class="status-label">Workspace</p>
+                    <h2 id="studio-status-title">Checking readiness…</h2>
+                    <p id="studio-status-summary">Connecting to the map workspace.</p>
+                </div>
+                <span id="studio-status-chip" class="status-chip pending">Checking</span>
+            </section>
+
+            <section class="studio-card workflow-card" aria-labelledby="workflow-title">
+                <div class="workflow-copy">
+                    <p class="eyebrow">Safe publishing</p>
+                    <h2 id="workflow-title">Draft workspace</h2>
+                    <p id="workflow-summary">Start an isolated map draft before editing.</p>
+                </div>
+                <form id="workflow-form" class="workflow-form">
+                    <label for="draft-title">Change title</label>
+                    <input id="draft-title" name="title" type="text" maxlength="100" placeholder="Add the New Map of…" required>
+                    <label for="draft-description">Review notes</label>
+                    <textarea id="draft-description" name="description" rows="3" placeholder="What changed, and what should the reviewer check?"></textarea>
+                    <div class="workflow-actions">
+                        <button id="start-draft-button" type="button">Start draft</button>
+                        <button id="publish-button" type="button" disabled>Create draft pull request</button>
+                        <button id="finish-draft-button" class="secondary-button" type="button" disabled>Sync merged draft</button>
+                    </div>
+                    <p id="workflow-status" class="form-status" role="status" aria-live="polite"></p>
+                </form>
+            </section>
+
+            <div class="studio-grid">
+                <article class="studio-card action-card">
+                    <span class="card-number">01</span>
+                    <h2>Edit maps</h2>
+                    <p>Open the visual editor to update map metadata, points, regions, lines, and atlas organization.</p>
+                    <a class="primary-action" href="/studio/editor">Open map editor</a>
+                </article>
+
+                <article class="studio-card action-card">
+                    <span class="card-number">02</span>
+                    <h2>Review preview</h2>
+                    <p>Build from the editor, then inspect the same optimized bundle used by GitHub Pages.</p>
+                    <a class="secondary-action" href="/preview/" target="_blank" rel="noopener">Open live preview</a>
+                </article>
+
+                <article class="studio-card action-card muted-card" id="new-map-card">
+                    <span class="card-number">03</span>
+                    <h2>Create a map</h2>
+                    <p>Upload artwork and let Studio create the map document, atlas entry, and initial configuration.</p>
+                    <button id="new-map-button" type="button" disabled>New map</button>
+                    <p class="availability-note">Start a draft to create a map.</p>
+                </article>
+            </div>
+
+            <section id="publish-progress" class="studio-card progress-card" hidden aria-live="polite">
+                <h2>Publication progress</h2>
+                <p id="publish-progress-status">Preparing validation…</p>
+                <pre id="publish-output"></pre>
+            </section>
+
+            <details class="studio-card readiness-card">
+                <summary>Workspace details</summary>
+                <pre id="workspace-details">Loading…</pre>
+            </details>
+        </section>
+
+        <dialog id="new-map-dialog" class="studio-dialog" aria-labelledby="new-map-title">
+            <form id="new-map-form" class="new-map-form">
+                <div class="dialog-header">
+                    <div>
+                        <p class="eyebrow">Guided creation</p>
+                        <h2 id="new-map-title">Create a new map</h2>
+                    </div>
+                    <button id="close-new-map-button" class="icon-button" type="button" aria-label="Close new map dialog">×</button>
+                </div>
+
+                <div class="form-grid">
+                    <label>Map name
+                        <input id="new-map-name" name="name" type="text" maxlength="120" required>
+                    </label>
+                    <label>Stable map ID
+                        <input id="new-map-id" name="id" type="text" maxlength="80" pattern="[A-Za-z0-9][A-Za-z0-9_-]*" required>
+                    </label>
+                    <label>Parent map or folder
+                        <select id="new-map-parent" name="parentId">
+                            <option value="">Top level</option>
+                        </select>
+                    </label>
+                    <label>WebP artwork
+                        <input id="new-map-file" name="artwork" type="file" accept="image/webp,.webp" required>
+                    </label>
+                    <label>Scale pixels <span>(optional)</span>
+                        <input id="new-map-scale-pixels" name="scalePixels" type="number" min="0" step="1">
+                    </label>
+                    <label>Scale kilometers <span>(optional)</span>
+                        <input id="new-map-scale-kilometers" name="scaleKilometers" type="number" min="0" step="0.01">
+                    </label>
+                </div>
+
+                <label>Atlas description
+                    <textarea id="new-map-selector-description" name="selectorDescription" rows="2" maxlength="500"></textarea>
+                </label>
+                <label>Map introduction
+                    <textarea id="new-map-blurb" name="blurb" rows="4" maxlength="5000"></textarea>
+                </label>
+
+                <div class="dialog-actions">
+                    <button id="cancel-new-map-button" class="secondary-button" type="button">Cancel</button>
+                    <button id="create-new-map-button" type="submit">Create and validate map</button>
+                </div>
+                <p id="new-map-status" class="form-status" role="status" aria-live="polite"></p>
+            </form>
+        </dialog>
+    </main>
+</body>
+</html>

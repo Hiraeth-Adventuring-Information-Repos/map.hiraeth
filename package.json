@@ -1,6 +1,7 @@
 {
   "scripts": {
     "editor": "node scripts/editor_server.js",
+    "studio": "node scripts/map_studio_server.js",
     "generate:atlas": "node scripts/generate_atlas_index.js",
     "generate:tiles": "node scripts/generate_tiles.js",
     "validate:data": "node scripts/validate_map_data.js",

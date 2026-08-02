@@ -123,6 +123,31 @@ function isSameLocalEditorOrigin(originValue, hostHeader) {
     }
 }
 
+function isSameRequestOrigin(originValue, hostHeader) {
+    const requestHost = parseHostHeader(hostHeader);
+    if (!requestHost) return false;
+
+    try {
+        const originUrl = new URL(originValue);
+        if (originUrl.protocol !== 'http:' && originUrl.protocol !== 'https:') return false;
+        const originPort = originUrl.port || getDefaultPortForProtocol(originUrl.protocol);
+        return normalizeHost(originUrl.hostname) === requestHost.hostname &&
+            originPort === requestHost.port;
+    } catch (error) {
+        return false;
+    }
+}
+
+function isSameOriginWriteRequest(request) {
+    const origin = String(request.headers.origin || '').trim();
+    if (origin) return isSameRequestOrigin(origin, request.headers.host);
+
+    const referer = String(request.headers.referer || '').trim();
+    if (referer) return isSameRequestOrigin(referer, request.headers.host);
+
+    return false;
+}
+
 function isAllowedEditorWriteRequest(request) {
     const origin = String(request.headers.origin || '').trim();
     if (origin) return isSameLocalEditorOrigin(origin, request.headers.host);
@@ -233,7 +258,7 @@ function snapshotFile(fullPath) {
     return {
         fullPath,
         existed: fs.existsSync(fullPath),
-        content: fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : null
+        content: fs.existsSync(fullPath) ? fs.readFileSync(fullPath) : null
     };
 }
 
@@ -605,6 +630,12 @@ function startPreviewBuildJob(repoRoot) {
     return job;
 }
 
+function hasRunningPreviewBuild(repoRoot) {
+    return Array.from(previewBuildJobs.values()).some((job) => {
+        return job.repoRoot === repoRoot && job.status === 'running';
+    });
+}
+
 function writeWithValidation(repoRoot, writes) {
     const atlasPath = resolveRepoPath(repoRoot, 'maps/atlas-index.json');
     const generatedDir = resolveRepoPath(repoRoot, 'maps/generated');
@@ -618,7 +649,11 @@ function writeWithValidation(repoRoot, writes) {
     try {
         writes.forEach((write) => {
             fs.mkdirSync(path.dirname(write.fullPath), { recursive: true });
-            fs.writeFileSync(write.fullPath, write.content);
+            if (write.sourcePath) {
+                fs.copyFileSync(write.sourcePath, write.fullPath);
+            } else {
+                fs.writeFileSync(write.fullPath, write.content);
+            }
         });
         regenerateAndValidate(repoRoot);
     } catch (error) {
@@ -701,12 +736,17 @@ function sendJson(response, statusCode, payload) {
     response.end(JSON.stringify(payload));
 }
 
-async function handleApiRequest(repoRoot, request, response, url) {
+async function handleApiRequest(repoRoot, request, response, url, options = {}) {
+    const authorizeWriteRequest = options.authorizeWriteRequest || isAllowedEditorWriteRequest;
+    const isSaveAvailable = options.isSaveAvailable || (() => true);
     if (url.pathname === '/api/editor/status' && request.method === 'GET') {
+        const saveEnabled = Boolean(isSaveAvailable(request));
         sendJson(response, 200, {
             ok: true,
-            saveEnabled: true,
-            message: 'Local map editor save server is running.',
+            saveEnabled,
+            message: saveEnabled
+                ? 'Map editor save server is ready.'
+                : 'Start an authorized Map Studio draft to enable saves.',
             readiness: getPublishReadiness(repoRoot)
         });
         return true;
@@ -732,8 +772,8 @@ async function handleApiRequest(repoRoot, request, response, url) {
     }
 
     if (url.pathname === '/api/editor/build-preview' && request.method === 'POST') {
-        if (!isAllowedEditorWriteRequest(request)) {
-            sendJson(response, 403, { ok: false, error: 'Preview builds must come from the local editor origin.' });
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Preview build request was not authorized.' });
             return true;
         }
         try {
@@ -753,8 +793,8 @@ async function handleApiRequest(repoRoot, request, response, url) {
     }
 
     if (url.pathname === '/api/editor/save-map' && request.method === 'POST') {
-        if (!isAllowedEditorWriteRequest(request)) {
-            sendJson(response, 403, { ok: false, error: 'Editor save requests must come from the local editor origin.' });
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Editor save request was not authorized.' });
             return true;
         }
         try {
@@ -767,8 +807,8 @@ async function handleApiRequest(repoRoot, request, response, url) {
     }
 
     if (url.pathname === '/api/editor/save-atlas' && request.method === 'POST') {
-        if (!isAllowedEditorWriteRequest(request)) {
-            sendJson(response, 403, { ok: false, error: 'Editor save requests must come from the local editor origin.' });
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Atlas save request was not authorized.' });
             return true;
         }
         try {
@@ -843,10 +883,15 @@ function sendStaticFile(response, fullPath) {
 
 function createEditorServer(options = {}) {
     const repoRoot = path.resolve(options.repoRoot || path.resolve(__dirname, '..'));
+    const authorizeWriteRequest = options.authorizeWriteRequest || isAllowedEditorWriteRequest;
+    const isSaveAvailable = options.isSaveAvailable || (() => true);
     return http.createServer(async (request, response) => {
         const url = new URL(request.url || '/', `http://${request.headers.host || `${DEFAULT_HOST}:${DEFAULT_PORT}`}`);
 
-        if (await handleApiRequest(repoRoot, request, response, url)) return;
+        if (await handleApiRequest(repoRoot, request, response, url, {
+            authorizeWriteRequest,
+            isSaveAvailable
+        })) return;
 
         if (request.method !== 'GET' && request.method !== 'HEAD') {
             sendJson(response, 405, { ok: false, error: 'Method not allowed.' });
@@ -924,13 +969,16 @@ module.exports = {
     createEditorServer,
     getChangedFileGroups,
     getPublishReadiness,
+    hasRunningPreviewBuild,
     isAllowedEditorWriteRequest,
     isLoopbackHost,
+    isSameOriginWriteRequest,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
     saveAtlasStructure,
     saveMapDocument,
     startEditorServer,
     validateAtlasManifestDocument,
-    validateMapDocument
+    validateMapDocument,
+    writeWithValidation
 };

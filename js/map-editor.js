@@ -36,6 +36,7 @@
         vertexLayer: null,
         draftLayer: null,
         localSaveAvailable: false,
+        localSaveMessage: '',
         editorDirty: false,
         publishReadiness: {
             items: {},
@@ -547,7 +548,9 @@
         const disabled = !state.localSaveAvailable || state.editorDirty || runningBuild;
         dom.buildLivePreviewButton.disabled = disabled;
         let title = 'Build dist/ and preview the exact Pages bundle.';
-        if (!state.localSaveAvailable) title = 'Run npm run editor to enable preview builds.';
+        if (!state.localSaveAvailable) {
+            title = state.localSaveMessage || 'Run npm run editor to enable preview builds.';
+        }
         else if (state.editorDirty) title = 'Save current map changes before building preview.';
         else if (runningBuild) title = 'Preview build is running.';
         dom.buildLivePreviewButton.title = title;
@@ -556,9 +559,10 @@
 
     function setLocalSaveAvailability(available, message = '') {
         state.localSaveAvailable = Boolean(available);
+        state.localSaveMessage = String(message || '').trim();
         const title = state.localSaveAvailable
             ? 'Save directly to the local map files.'
-            : (message || 'Run npm run editor to enable direct saves.');
+            : (state.localSaveMessage || 'Run npm run editor to enable direct saves.');
         [dom.saveCurrentMapButton, dom.saveAtlasStructureButton].forEach((button) => {
             if (!button) return;
             button.disabled = !state.localSaveAvailable;
@@ -1830,11 +1834,21 @@
             throw new Error('Direct saves require the local editor server. Run npm run editor.');
         }
 
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        if (window.location.pathname === '/studio/editor') {
+            const sessionResponse = await fetch('/api/studio/session', { cache: 'no-store' });
+            const session = sessionResponse.ok ? await sessionResponse.json() : null;
+            if (!session || session.authenticated !== true || !session.csrfToken) {
+                throw new Error('Your Map Studio session has expired. Sign in again.');
+            }
+            headers['X-CSRF-Token'] = session.csrfToken;
+        }
+
         const response = await fetch(endpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers,
             body: JSON.stringify(payload)
         });
         let result = null;
@@ -2192,13 +2206,20 @@
             const response = await fetch('/api/editor/status', { cache: 'no-store' });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const payload = await response.json();
-            if (!payload || payload.saveEnabled !== true) {
-                throw new Error('Save API is not enabled.');
+            if (!payload || typeof payload.saveEnabled !== 'boolean') {
+                throw new Error('Save API returned an invalid status.');
             }
-            setLocalSaveAvailability(true);
-            setReadinessItem('saveServer', 'pass', 'Connected.');
             applyServerReadiness(payload.readiness);
-            setExportStatus('Direct saves enabled.');
+            if (payload.saveEnabled) {
+                setLocalSaveAvailability(true);
+                setReadinessItem('saveServer', 'pass', 'Connected.');
+                setExportStatus('Direct saves enabled.');
+            } else {
+                const message = payload.message || 'Start an authorized Map Studio draft to enable saves.';
+                setLocalSaveAvailability(false, message);
+                setReadinessItem('saveServer', 'warn', message);
+                setExportStatus(message);
+            }
         } catch (error) {
             setLocalSaveAvailability(false);
             setReadinessItem('saveServer', 'fail', 'Run npm run editor.');
@@ -2231,7 +2252,10 @@
             }(state.atlasTree));
             renderAtlasTree();
 
-            const initialMap = utils.collectMapSelectionEntries(state.atlasTree).find((entry) => !entry.disabled);
+            const requestedMapId = new URLSearchParams(window.location.search).get('map');
+            const selectionEntries = utils.collectMapSelectionEntries(state.atlasTree);
+            const initialMap = selectionEntries.find((entry) => entry.id === requestedMapId && !entry.disabled) ||
+                selectionEntries.find((entry) => !entry.disabled);
             if (initialMap) {
                 await selectMap(initialMap.id);
             } else {
