@@ -83,14 +83,30 @@ function getWorkspaceState(repoRoot, githubConfiguration = {}) {
     const branch = getCurrentBranch(repoRoot);
     const changedPaths = getChangedPaths(repoRoot);
     const activeDraft = branch.startsWith('map-studio/');
+    const onMain = branch === 'main';
+    const detached = !branch;
+    const editable = Boolean(branch && !onMain);
     const unsupportedChanges = changedPaths.filter((changedPath) => !isPublishablePath(changedPath));
+    const publishableChanges = changedPaths.filter(isPublishablePath);
+    const githubReady = githubConfiguration?.configured === true;
+    const clean = changedPaths.length === 0;
     return {
         branch,
         baseBranch: 'main',
         activeDraft,
+        mode: detached ? 'detached' : (activeDraft ? 'studio-draft' : (onMain ? 'main' : 'working-branch')),
+        editable,
         changedPaths,
+        publishableChanges,
         unsupportedChanges,
-        clean: changedPaths.length === 0,
+        clean,
+        capabilities: {
+            canStartDraft: onMain && clean,
+            canEdit: editable,
+            canCreateMap: editable,
+            canPublish: activeDraft && publishableChanges.length > 0 && unsupportedChanges.length === 0 && githubReady,
+            canFinishDraft: activeDraft && clean && githubReady
+        },
         github: githubConfiguration
     };
 }
@@ -102,7 +118,8 @@ function getAuthenticatedGitArgs(args) {
 
 async function startDraft({ repoRoot, title, githubClient }) {
     assertRepository(repoRoot);
-    const state = getWorkspaceState(repoRoot, githubClient.getConfiguration());
+    const githubConfiguration = githubClient.getConfiguration();
+    const state = getWorkspaceState(repoRoot, githubConfiguration);
     if (state.activeDraft) return state;
     if (state.branch !== 'main') {
         throw new Error(`Map Studio must start drafts from main, not ${state.branch || 'detached HEAD'}.`);
@@ -111,13 +128,15 @@ async function startDraft({ repoRoot, title, githubClient }) {
         throw new Error('The Map Studio workspace has uncommitted files. Resolve them before starting a draft.');
     }
 
-    const token = await githubClient.getToken();
-    const authEnv = { MAP_STUDIO_GIT_TOKEN: token, GIT_TERMINAL_PROMPT: '0' };
-    runGit(repoRoot, getAuthenticatedGitArgs(['fetch', '--prune', 'origin', 'main']), { env: authEnv });
-    runGit(repoRoot, ['merge', '--ff-only', 'origin/main']);
+    if (githubConfiguration.configured === true) {
+        const token = await githubClient.getToken();
+        const authEnv = { MAP_STUDIO_GIT_TOKEN: token, GIT_TERMINAL_PROMPT: '0' };
+        runGit(repoRoot, getAuthenticatedGitArgs(['fetch', '--prune', 'origin', 'main']), { env: authEnv });
+        runGit(repoRoot, ['merge', '--ff-only', 'origin/main']);
+    }
     const branch = makeDraftBranch(title);
     runGit(repoRoot, ['switch', '-c', branch]);
-    return getWorkspaceState(repoRoot, githubClient.getConfiguration());
+    return getWorkspaceState(repoRoot, githubConfiguration);
 }
 
 async function finishMergedDraft({ repoRoot, githubClient }) {

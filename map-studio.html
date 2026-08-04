@@ -7,6 +7,7 @@
     <title>Hiraeth Map Studio</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="stylesheet" href="/css/map-studio.css">
+    <script src="/js/map-studio-model.js" defer></script>
     <script src="/js/map-studio.js" defer></script>
 </head>
 <body>
@@ -25,79 +26,128 @@
             </div>
         </section>
 
-        <section id="studio-dashboard" hidden>
-            <header class="studio-header">
-                <div>
-                    <p class="eyebrow">Hiraeth Maintainer Tools</p>
-                    <h1>Map Studio</h1>
-                    <p class="lede">Edit locally, verify the exact preview, then publish through review.</p>
+        <section id="studio-dashboard" class="studio-dashboard" hidden>
+            <header class="studio-appbar">
+                <a class="studio-brand" href="/studio" aria-label="Map Studio overview">
+                    <span class="studio-brand-mark" aria-hidden="true">H</span>
+                    <span><strong>Map Studio</strong><small>Hiraeth maintainer workspace</small></span>
+                </a>
+                <nav class="studio-topnav" aria-label="Studio tools">
+                    <a href="/studio/editor">Editor</a>
+                    <a href="/preview/" target="_blank" rel="noopener">Preview</a>
+                </nav>
+                <div class="studio-appbar-actions">
+                    <span id="studio-branch-chip" class="branch-chip">Checking branch…</span>
+                    <button id="logout-button" class="quiet-button" type="button">Sign out</button>
                 </div>
-                <button id="logout-button" class="secondary-button" type="button">Sign out</button>
             </header>
 
-            <section class="status-strip" aria-labelledby="studio-status-title">
-                <div>
-                    <p class="status-label">Workspace</p>
-                    <h2 id="studio-status-title">Checking readiness…</h2>
-                    <p id="studio-status-summary">Connecting to the map workspace.</p>
-                </div>
-                <span id="studio-status-chip" class="status-chip pending">Checking</span>
-            </section>
-
-            <section class="studio-card workflow-card" aria-labelledby="workflow-title">
-                <div class="workflow-copy">
-                    <p class="eyebrow">Safe publishing</p>
-                    <h2 id="workflow-title">Draft workspace</h2>
-                    <p id="workflow-summary">Start an isolated map draft before editing.</p>
-                </div>
-                <form id="workflow-form" class="workflow-form">
-                    <label for="draft-title">Change title</label>
-                    <input id="draft-title" name="title" type="text" maxlength="100" placeholder="Add the New Map of…" required>
-                    <label for="draft-description">Review notes</label>
-                    <textarea id="draft-description" name="description" rows="3" placeholder="What changed, and what should the reviewer check?"></textarea>
-                    <div class="workflow-actions">
-                        <button id="start-draft-button" type="button">Start draft</button>
-                        <button id="publish-button" type="button" disabled>Create draft pull request</button>
-                        <button id="finish-draft-button" class="secondary-button" type="button" disabled>Sync merged draft</button>
+            <main class="studio-content">
+                <section class="studio-intro" aria-labelledby="studio-overview-title">
+                    <div>
+                        <p class="eyebrow">Workspace overview</p>
+                        <h1 id="studio-overview-title">Make map changes with a clear way back.</h1>
+                        <p class="lede">Draft, edit, validate, and hand off for review without leaving the Studio.</p>
                     </div>
-                    <p id="workflow-status" class="form-status" role="status" aria-live="polite"></p>
-                </form>
-            </section>
+                </section>
 
-            <div class="studio-grid">
-                <article class="studio-card action-card">
-                    <span class="card-number">01</span>
-                    <h2>Edit maps</h2>
-                    <p>Open the visual editor to update map metadata, points, regions, lines, and atlas organization.</p>
-                    <a class="primary-action" href="/studio/editor">Open map editor</a>
-                </article>
+                <section class="status-strip" aria-labelledby="studio-status-title">
+                    <span class="status-icon" aria-hidden="true">●</span>
+                    <div>
+                        <p class="status-label">Current state</p>
+                        <h2 id="studio-status-title">Checking workspace…</h2>
+                        <p id="studio-status-summary">Connecting to the map workspace.</p>
+                    </div>
+                    <span id="studio-status-chip" class="status-chip neutral">Checking</span>
+                </section>
 
-                <article class="studio-card action-card">
-                    <span class="card-number">02</span>
-                    <h2>Review preview</h2>
-                    <p>Build from the editor, then inspect the same optimized bundle used by GitHub Pages.</p>
-                    <a class="secondary-action" href="/preview/" target="_blank" rel="noopener">Open live preview</a>
-                </article>
+                <section class="studio-pipeline" aria-labelledby="pipeline-title">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Workflow</p>
+                            <h2 id="pipeline-title">From draft to review</h2>
+                        </div>
+                        <p>Each stage exposes the next safe action.</p>
+                    </div>
+                    <ol class="pipeline-steps">
+                        <li id="pipeline-draft" data-state="blocked"><span>1</span><div><strong>Draft</strong><small>Create an isolated branch</small></div></li>
+                        <li id="pipeline-edit" data-state="blocked"><span>2</span><div><strong>Edit</strong><small>Maps and atlas data</small></div></li>
+                        <li id="pipeline-validate" data-state="blocked"><span>3</span><div><strong>Validate</strong><small>Build and inspect preview</small></div></li>
+                        <li id="pipeline-review" data-state="blocked"><span>4</span><div><strong>Review</strong><small>Create a draft pull request</small></div></li>
+                    </ol>
+                </section>
 
-                <article class="studio-card action-card muted-card" id="new-map-card">
-                    <span class="card-number">03</span>
-                    <h2>Create a map</h2>
-                    <p>Upload artwork and let Studio create the map document, atlas entry, and initial configuration.</p>
-                    <button id="new-map-button" type="button" disabled>New map</button>
-                    <p class="availability-note">Start a draft to create a map.</p>
-                </article>
-            </div>
+                <section class="studio-card workflow-card" aria-labelledby="workflow-title">
+                    <div class="workflow-copy">
+                        <p class="eyebrow">Next action</p>
+                        <h2 id="workflow-title">Draft workspace</h2>
+                        <p id="workflow-summary">Start an isolated map draft before editing.</p>
+                        <div id="workspace-capability-note" class="capability-note" role="note">
+                            Checking local editing and GitHub capabilities…
+                        </div>
+                    </div>
+                    <form id="workflow-form" class="workflow-form">
+                        <div class="field-row">
+                            <label for="draft-title">Change title</label>
+                            <span>Used for the draft branch and pull request</span>
+                        </div>
+                        <input id="draft-title" name="title" type="text" maxlength="100" placeholder="Add the New Map of…" required>
+                        <details class="review-notes-details">
+                            <summary>Add review notes</summary>
+                            <label class="sr-only" for="draft-description">Review notes</label>
+                            <textarea id="draft-description" name="description" rows="3" placeholder="What changed, and what should the reviewer check?"></textarea>
+                        </details>
+                        <div class="workflow-actions">
+                            <button id="start-draft-button" type="button">Start local draft</button>
+                            <a id="continue-editing-link" class="primary-action" href="/studio/editor" hidden>Continue editing</a>
+                            <button id="publish-button" type="button" disabled>Create draft pull request</button>
+                            <button id="finish-draft-button" class="secondary-button" type="button" disabled>Sync merged draft</button>
+                        </div>
+                        <p id="workflow-status" class="form-status" role="status" aria-live="polite"></p>
+                    </form>
+                </section>
 
-            <section id="publish-progress" class="studio-card progress-card" hidden aria-live="polite">
-                <h2>Publication progress</h2>
-                <p id="publish-progress-status">Preparing validation…</p>
-                <pre id="publish-output"></pre>
-            </section>
+                <section class="tool-section" aria-labelledby="tools-title">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Tools</p>
+                            <h2 id="tools-title">Work on the atlas</h2>
+                        </div>
+                    </div>
+                    <div class="studio-grid">
+                        <article class="studio-card action-card">
+                            <span class="action-icon" aria-hidden="true">✦</span>
+                            <div><h3>Edit existing maps</h3><p>Update metadata, points, regions, lines, and atlas organization.</p></div>
+                            <a id="open-editor-link" class="secondary-action" href="/studio/editor">Open editor</a>
+                        </article>
 
-            <details class="studio-card readiness-card">
-                <summary>Workspace details</summary>
-                <pre id="workspace-details">Loading…</pre>
-            </details>
+                        <article class="studio-card action-card" id="new-map-card">
+                            <span class="action-icon" aria-hidden="true">＋</span>
+                            <div><h3>Create a map</h3><p>Turn WebP artwork into a validated map document and atlas entry.</p></div>
+                            <button id="new-map-button" type="button" disabled>New map</button>
+                            <p class="availability-note">Start a draft or use a working branch.</p>
+                        </article>
+
+                        <article class="studio-card action-card">
+                            <span class="action-icon" aria-hidden="true">✓</span>
+                            <div><h3>Inspect the preview</h3><p>Review the optimized bundle that will be published to GitHub Pages.</p></div>
+                            <a class="secondary-action" href="/preview/" target="_blank" rel="noopener">Open preview</a>
+                        </article>
+                    </div>
+                </section>
+
+                <section id="publish-progress" class="studio-card progress-card" hidden aria-live="polite">
+                    <div class="section-heading"><div><p class="eyebrow">Background job</p><h2>Publication progress</h2></div></div>
+                    <p id="publish-progress-status">Preparing validation…</p>
+                    <pre id="publish-output"></pre>
+                </section>
+
+                <details class="studio-card readiness-card">
+                    <summary>Technical workspace details</summary>
+                    <p>Branch, changed paths, validation state, and connected publishing provider.</p>
+                    <pre id="workspace-details">Loading…</pre>
+                </details>
+            </main>
         </section>
 
         <dialog id="new-map-dialog" class="studio-dialog" aria-labelledby="new-map-title">

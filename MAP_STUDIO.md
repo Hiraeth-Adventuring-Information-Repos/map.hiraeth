@@ -10,7 +10,7 @@ Public deployment remains review-gated: Studio never merges a pull request or pu
 - Docker Engine with Docker Compose
 - A LAN hostname that resolves to the Docker host, such as `map-studio.local`
 - A strong Studio password
-- A GitHub App installed only on this repository, or a fine-grained repository token for initial testing
+- A GitHub App installed only on this repository, or a fine-grained repository token, when automated pull requests are desired
 
 Do not run the Compose service from a developer checkout containing unrelated work. Studio deliberately refuses to publish non-map files, and it switches its dedicated clone between `main` and `map-studio/*` draft branches.
 
@@ -103,7 +103,7 @@ Use the password stored in `.secrets/map-studio-password.txt`.
 ## Maintainer workflow
 
 1. Open Map Studio and enter a concise change title.
-2. Click **Start draft**. Studio fetches `origin/main`, fast-forwards its clean workspace, and creates a unique `map-studio/*` branch.
+2. Click **Start local draft**. Studio creates a unique `map-studio/*` branch. When GitHub is connected it first fetches and fast-forwards `origin/main`; offline drafts deliberately skip that network synchronization.
 3. Open the visual editor and save map data normally, or use **New map** to upload WebP artwork and create the JSON and atlas entry automatically.
 4. Build and inspect the live preview.
 5. Return to Studio and click **Create draft pull request**.
@@ -127,7 +127,7 @@ Studio reads the image dimensions with ImageMagick, creates `maps/<id>.webp` and
 - The original `npm run editor` command remains loopback-only.
 - LAN mode requires an allowlisted Host header, authenticated HttpOnly/SameSite session, exact same-origin requests, and a per-session CSRF token.
 - Login attempts are rate-limited.
-- Map writes are disabled unless the Git workspace is on an active `map-studio/*` branch.
+- Map writes are disabled on `main` and detached HEAD. A named non-main branch can be edited locally; automated Studio publishing remains restricted to active `map-studio/*` drafts.
 - Publishing rejects every changed path except `maps/**` and the four synchronized asset-version files.
 - Git credentials are supplied to one command through the process environment and are not persisted in the remote URL or credential store.
 - The application runs as a non-root container user and does not mount the Docker socket.
@@ -153,3 +153,37 @@ docker compose up -d --build
 ```
 
 The tile cache, Caddy certificate authority, and Caddy configuration are persistent named volumes. The Git repository remains the dedicated host clone mounted at `/workspace`; back it up like any other maintainer working copy, especially if a draft has not been pushed yet.
+
+## Product architecture
+
+Map Studio is organized around one workspace lifecycle rather than a collection of unrelated tools:
+
+1. **Draft** establishes a reversible Git boundary.
+2. **Edit** changes map and atlas documents through transactional APIs.
+3. **Validate** regenerates derived data and the exact Pages preview.
+4. **Review** creates a draft pull request without merging it.
+
+The server is the authority for capabilities such as `canEdit`, `canCreateMap`, and `canPublish`. The browser renders those capabilities and their reasons; it must not invent a second set of Git or security rules. `js/map-studio-model.js` turns the server state into a testable presentation model so new workspace states do not add scattered button conditionals.
+
+The editor follows three stable inspector surfaces:
+
+- **Map** contains frequently edited visitor-facing metadata.
+- **Features** contains feature discovery, selection, content, and geometry.
+- **Advanced** contains paths, dimensions, calibration, and atlas placement.
+
+New fields should join one of those surfaces through a reusable field definition instead of adding another always-open section. New background work should use the existing job-status pattern and expose a resumable state, recent output, and a clear recovery action.
+
+### Long-term completion gates
+
+The current capability model and inspector structure are foundations, not the end of the product. Map Studio should not be described as mature until all of these gates are met:
+
+- [ ] Each Studio draft uses its own persistent Git worktree instead of switching the mounted checkout.
+- [ ] Map and feature edits have command-based undo and redo, including geometry operations.
+- [ ] Map and feature forms are schema-driven, with field help, validation, and extension points in one registry.
+- [ ] New-map creation previews artwork, supports preprocessing where safe, and explains every generated file before writing.
+- [ ] GitHub setup has an in-product capability check and concrete remediation without exposing secrets.
+- [ ] Interrupted save, validation, upload, and publish jobs can be resumed or safely abandoned after a restart.
+- [ ] Browser tests cover draft start, map creation, edit/save, preview build, pull-request preparation, and recovery paths at desktop and narrow widths.
+- [ ] A maintainer can complete the common workflow without opening technical workspace JSON or knowing repository internals.
+
+Until those gates are complete, changes should improve the lifecycle and shared state model instead of introducing another standalone card, modal, or one-off endpoint.

@@ -109,7 +109,7 @@
             color: #10131f;
         }
     </style>
-    <script src="js/app-config.js?v=0.1.49"></script>
+    <script src="js/app-config.js?v=0.1.50"></script>
     <script>
         window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
 
@@ -183,7 +183,26 @@
         </div>
     </section>
 
-    <div id="map-editor-app" class="map-editor-shell" data-mode="select">
+    <div id="map-editor-app" class="map-editor-shell" data-mode="select" data-loading="true">
+        <header class="map-editor-appbar">
+            <div class="map-editor-brand">
+                <span class="map-editor-brand-mark" aria-hidden="true">H</span>
+                <div>
+                    <strong>Map Editor</strong>
+                    <span>Hiraeth Map Studio</span>
+                </div>
+            </div>
+            <div class="map-editor-context" aria-live="polite">
+                <span>Current map</span>
+                <strong id="editor-context-name">Choose a map</strong>
+            </div>
+            <nav class="map-editor-app-actions" aria-label="Editor navigation">
+                <button id="editor-undo-btn" type="button" disabled aria-keyshortcuts="Control+Z Meta+Z">Undo</button>
+                <button id="editor-redo-btn" type="button" disabled aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z">Redo</button>
+                <button id="editor-choose-map-btn" type="button">Switch map</button>
+                <a id="editor-studio-home-link" href="/studio">Studio overview</a>
+            </nav>
+        </header>
         <section class="map-editor-publish-panel" aria-labelledby="publish-readiness-title">
             <div class="map-editor-publish-main">
                 <div>
@@ -219,6 +238,11 @@
             </details>
         </section>
 
+        <div id="editor-loading-state" class="map-editor-loading-state" role="status" aria-live="polite">
+            <span class="map-editor-loading-spinner" aria-hidden="true"></span>
+            <div><strong>Loading atlas workspace</strong><span>Preparing maps, features, and save status…</span></div>
+        </div>
+
         <div class="map-editor-workspace">
         <aside class="map-editor-sidebar">
             <div class="map-editor-panel-header">
@@ -232,20 +256,21 @@
             <label class="map-editor-search-label" for="editor-tree-search">Atlas Search</label>
             <input id="editor-tree-search" type="search" placeholder="Find a map or folder">
 
-            <div id="editor-atlas-tree" class="map-editor-tree" aria-label="Atlas tree"></div>
+            <div id="editor-atlas-tree" class="map-editor-tree" aria-label="Atlas tree"><p class="map-editor-placeholder">Loading maps…</p></div>
         </aside>
 
         <main class="map-editor-canvas-panel">
             <div class="map-editor-toolbar">
                 <div class="map-editor-toolbar-group">
-                    <button id="editor-choose-map-btn" type="button">⬅ Choose Map</button>
+                    <span class="map-editor-toolbar-label">Create</span>
                     <button id="editor-add-poi-btn" type="button">Add POI</button>
                     <button id="editor-add-region-btn" type="button">Draw Region</button>
                     <button id="editor-add-line-btn" type="button">Draw Line</button>
                     <button id="editor-finish-draw-btn" type="button" hidden>Finish Draft</button>
                     <button id="editor-cancel-draw-btn" type="button" hidden>Cancel Draft</button>
-                    <button id="editor-delete-selection-btn" type="button">Delete Selected</button>
-                    <button id="editor-reset-view-btn" type="button">Reset View</button>
+                    <span class="map-editor-toolbar-divider" aria-hidden="true"></span>
+                    <button id="editor-delete-selection-btn" class="map-editor-danger-action" type="button">Delete selected</button>
+                    <button id="editor-reset-view-btn" class="map-editor-quiet-action" type="button">Reset view</button>
                 </div>
                 <p id="editor-selection-status" class="map-editor-status" aria-live="polite" aria-atomic="true">Loading atlas data...</p>
                 <button id="editor-toggle-inspector-btn" class="map-editor-inspector-toggle" type="button" aria-expanded="true" aria-controls="editor-inspector">Hide details</button>
@@ -291,22 +316,47 @@
             <div class="map-editor-inspector-heading">
                 <div>
                     <p class="map-editor-eyebrow">Editing panel</p>
-                    <h2>Map details</h2>
+                    <h2>Details</h2>
                 </div>
                 <button id="editor-collapse-inspector-btn" type="button">Hide</button>
             </div>
-            <details class="map-editor-section" open>
-                <summary class="map-editor-section-header">
-                    <h2>Map Metadata</h2>
-                    <span id="editor-current-map-id" class="map-editor-chip">No map</span>
-                </summary>
 
-                <form id="map-settings-form" class="map-editor-form">
+            <div class="map-editor-inspector-context">
+                <div><span>Map</span><strong id="editor-current-map-id">No map</strong></div>
+            </div>
+
+            <div class="map-editor-inspector-tabs" role="tablist" aria-label="Inspector sections">
+                <button id="editor-tab-overview" type="button" role="tab" aria-selected="true" aria-controls="editor-panel-overview" data-inspector-tab="overview">Map</button>
+                <button id="editor-tab-features" type="button" role="tab" aria-selected="false" aria-controls="editor-panel-features" data-inspector-tab="features">Features <span id="editor-feature-summary">0</span></button>
+                <button id="editor-tab-advanced" type="button" role="tab" aria-selected="false" aria-controls="editor-panel-advanced" data-inspector-tab="advanced">Advanced</button>
+            </div>
+
+            <form id="map-settings-form" class="map-editor-form map-editor-inspector-form">
+                <section id="editor-panel-overview" class="map-editor-tab-panel" role="tabpanel" aria-labelledby="editor-tab-overview" data-inspector-panel="overview">
+                    <div class="map-editor-panel-intro">
+                        <h3>Map overview</h3>
+                        <p>The name and descriptions maintainers and visitors see most often.</p>
+                    </div>
                     <label>Name<input id="map-name-input" name="name" type="text"></label>
-                    <label>Type<input id="map-type-input" name="type" type="text"></label>
                     <label>Status<input id="map-status-input" name="status" type="text"></label>
                     <label>Visibility<input id="map-visibility-input" name="visibility" type="text"></label>
                     <label>Group<input id="map-group-input" name="group" type="text"></label>
+                    <label class="map-editor-textarea-label">Selector Description
+                        <span class="map-editor-field-help">Short copy used in the map chooser.</span>
+                        <textarea id="map-selector-description-input" name="selectorDescription" rows="4" placeholder="Short text for the map chooser"></textarea>
+                    </label>
+                    <label class="map-editor-textarea-label">Blurb
+                        <span class="map-editor-field-help">Longer introduction shown with the selected map.</span>
+                        <textarea id="map-blurb-input" name="blurb" rows="6"></textarea>
+                    </label>
+                </section>
+
+                <section id="editor-panel-advanced" class="map-editor-tab-panel" role="tabpanel" aria-labelledby="editor-tab-advanced" data-inspector-panel="advanced" hidden>
+                    <div class="map-editor-panel-intro">
+                        <h3>Advanced configuration</h3>
+                        <p>File paths, dimensions, calibration, and atlas placement. Change these deliberately.</p>
+                    </div>
+                    <label>Type<input id="map-type-input" name="type" type="text"></label>
                     <label>Data URL<input id="map-data-url-input" name="dataUrl" type="text"></label>
                     <label>Parent Folder
                         <select id="map-parent-id-select" name="parentId"></select>
@@ -322,55 +372,65 @@
                     <label>Scale Unit Name<input id="map-scale-unit-input" name="scaleUnitName" type="text"></label>
                     <label>Background Color<input id="map-background-color-input" name="backgroundColor" type="text"></label>
                     <label>Atmosphere<input id="map-atmosphere-input" name="atmosphere" type="text"></label>
+                    <fieldset class="map-editor-coordinate-fieldset">
+                        <legend>Geographic bounds</legend>
+                        <p class="map-editor-field-help">Optional latitude and longitude calibration for coordinate display.</p>
                     <div class="map-editor-form-grid">
                         <label>North<input id="map-lat-north-input" name="latLonBounds.north" type="number" step="0.0001"></label>
                         <label>South<input id="map-lat-south-input" name="latLonBounds.south" type="number" step="0.0001"></label>
                         <label>East<input id="map-lat-east-input" name="latLonBounds.east" type="number" step="0.0001"></label>
                         <label>West<input id="map-lat-west-input" name="latLonBounds.west" type="number" step="0.0001"></label>
                     </div>
-                    <label class="map-editor-textarea-label">Blurb
-                        <textarea id="map-blurb-input" name="blurb" rows="5"></textarea>
-                    </label>
-                    <label class="map-editor-textarea-label">Selector Description
-                        <textarea id="map-selector-description-input" name="selectorDescription" rows="4" placeholder="Short text for the map chooser"></textarea>
-                    </label>
-                </form>
-            </details>
+                    </fieldset>
+                </section>
+            </form>
 
-            <details class="map-editor-section" open>
-                <summary class="map-editor-section-header">
-                    <h2>Features</h2>
-                    <span id="editor-feature-summary" class="map-editor-chip">0 selected</span>
-                </summary>
+            <section id="editor-panel-features" class="map-editor-tab-panel" role="tabpanel" aria-labelledby="editor-tab-features" data-inspector-panel="features" hidden>
+                <div class="map-editor-panel-intro">
+                    <h3>Map features</h3>
+                    <p>Find a feature, select it on the map, then edit its content and geometry.</p>
+                </div>
+                <div class="map-editor-selected-feature-heading">
+                    <div><span>Selected feature</span><strong id="editor-selected-feature-chip">None</strong></div>
+                </div>
+                <div id="editor-feature-inspector-empty" class="map-editor-placeholder">
+                    Select a POI, region, or line on the map or from the list.
+                </div>
+                <form id="editor-feature-form" class="map-editor-form" hidden></form>
 
-                <div class="map-editor-feature-controls" style="display: flex; gap: 10px; margin-top: 14px; margin-bottom: 10px;">
-                    <select id="editor-feature-type-select" aria-label="Feature Type" style="padding: 4px;">
+                <div class="map-editor-feature-browser-heading">
+                    <strong>Find another feature</strong>
+                    <span>Search or filter this map</span>
+                </div>
+                <div class="map-editor-feature-controls">
+                    <select id="editor-feature-type-select" aria-label="Feature Type">
                         <option value="points">POIs</option>
                         <option value="regions">Regions</option>
                         <option value="lines">Lines</option>
                     </select>
-                    <input id="editor-feature-search" type="search" aria-label="Search Features" placeholder="Search features..." style="flex: 1; padding: 4px;">
+                    <input id="editor-feature-search" type="search" aria-label="Search Features" placeholder="Search features…">
                 </div>
 
                 <div id="editor-unified-feature-list" class="map-editor-feature-list"></div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <button id="editor-feature-show-more-btn" type="button" style="padding: 4px 10px;" hidden>Show More</button>
+                <div class="map-editor-show-more-wrap">
+                    <button id="editor-feature-show-more-btn" type="button" hidden>Show more</button>
                 </div>
-            </details>
-
-            <details class="map-editor-section" open>
-                <summary class="map-editor-section-header">
-                    <h2>Selected Feature</h2>
-                    <span id="editor-selected-feature-chip" class="map-editor-chip">None</span>
-                </summary>
-
-                <div id="editor-feature-inspector-empty" class="map-editor-placeholder">
-                    Select a POI, region, or line to edit its fields.
-                </div>
-                <form id="editor-feature-form" class="map-editor-form" hidden></form>
-            </details>
+            </section>
         </aside>
         </div>
+
+        <dialog id="editor-unsaved-dialog" class="map-editor-confirm-dialog" aria-labelledby="editor-unsaved-title">
+            <div class="map-editor-confirm-copy">
+                <p class="map-editor-eyebrow">Unsaved changes</p>
+                <h2 id="editor-unsaved-title">What should happen to your edits?</h2>
+                <p id="editor-unsaved-copy">Save the current map before switching, discard the changes, or keep editing.</p>
+            </div>
+            <div class="map-editor-confirm-actions">
+                <button id="editor-cancel-switch-btn" type="button">Keep editing</button>
+                <button id="editor-discard-switch-btn" class="map-editor-danger-action" type="button">Discard and switch</button>
+                <button id="editor-save-switch-btn" class="map-editor-primary-save" type="button">Save and switch</button>
+            </div>
+        </dialog>
     </div>
 
     <script>
@@ -392,8 +452,8 @@
                 if (window.AppConfig) window.AppConfig.hydrateEditorDom(document);
                 const version = encodeURIComponent(window.APP_ASSET_VERSION || "0");
                 const scripts = window.AppConfig
-                    ? window.AppConfig.get("assets.editorScripts", ["js/editor-shared.js", "js/shared-utils.js", "js/map-editor.js"])
-                    : ["js/editor-shared.js", "js/shared-utils.js", "js/map-editor.js"];
+                    ? window.AppConfig.get("assets.editorScripts", ["js/editor-shared.js", "js/shared-utils.js", "js/map-editor-history.js", "js/map-editor.js"])
+                    : ["js/editor-shared.js", "js/shared-utils.js", "js/map-editor-history.js", "js/map-editor.js"];
                 scripts.forEach((src) => {
                     appendScript(`${src}?v=${version}`);
                 });

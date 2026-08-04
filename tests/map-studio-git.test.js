@@ -72,6 +72,26 @@ const finished = await finishMergedDraft({ repoRoot, githubClient });
 assert.equal(finished.branch, 'main');
 assert.equal(finished.activeDraft, false);
 
+const localOnlyRoot = path.join(tempRoot, 'local-only');
+runGit(tempRoot, ['init', '-b', 'main', localOnlyRoot]);
+fs.mkdirSync(path.join(localOnlyRoot, 'maps'), { recursive: true });
+fs.writeFileSync(path.join(localOnlyRoot, 'maps', 'maps.json'), '[]\n');
+runGit(localOnlyRoot, ['add', 'maps/maps.json']);
+runGit(localOnlyRoot, ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-m', 'Initial']);
+const localOnlyClient = {
+    getConfiguration: () => ({ configured: false, mode: 'none' }),
+    getToken: async () => { throw new Error('Local drafts must not request a GitHub token.'); }
+};
+const mainWorkspace = getWorkspaceState(localOnlyRoot, localOnlyClient.getConfiguration());
+assert.equal(mainWorkspace.mode, 'main');
+assert.equal(mainWorkspace.editable, false);
+assert.equal(mainWorkspace.capabilities.canStartDraft, true);
+const localDraft = await startDraft({ repoRoot: localOnlyRoot, title: 'Offline coast map', githubClient: localOnlyClient });
+assert.equal(localDraft.activeDraft, true);
+assert.equal(localDraft.editable, true);
+assert.equal(localDraft.capabilities.canEdit, true);
+assert.equal(localDraft.capabilities.canPublish, false);
+
 fs.rmSync(tempRoot, { recursive: true, force: true });
 console.log('map studio Git workflow checks passed');
 })().catch((error) => {

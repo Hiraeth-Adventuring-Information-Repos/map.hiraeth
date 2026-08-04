@@ -186,15 +186,15 @@ function createMapStudioServer(options = {}) {
 
     const authorizeStudioWrite = (request) => {
         const session = sessionManager.authenticate(request);
-        let activeDraft = false;
+        let editable = false;
         try {
-            activeDraft = getWorkspaceState(repoRoot, githubClient.getConfiguration()).activeDraft;
+            editable = getWorkspaceState(repoRoot, githubClient.getConfiguration()).editable;
         } catch (error) {
-            activeDraft = false;
+            editable = false;
         }
         return Boolean(
             session &&
-            activeDraft &&
+            editable &&
             !mapMutationRunning &&
             !hasRunningPreviewBuild(repoRoot) &&
             publishJob?.status !== 'running' &&
@@ -207,7 +207,7 @@ function createMapStudioServer(options = {}) {
         const session = sessionManager.authenticate(request);
         if (!session || !isAllowedHost(request, allowedHosts)) return false;
         try {
-            return getWorkspaceState(repoRoot, githubClient.getConfiguration()).activeDraft;
+            return getWorkspaceState(repoRoot, githubClient.getConfiguration()).editable;
         } catch (error) {
             return false;
         }
@@ -282,6 +282,7 @@ function createMapStudioServer(options = {}) {
             ['/studio', ['map-studio.html', 'text/html; charset=utf-8']],
             ['/studio/', ['map-studio.html', 'text/html; charset=utf-8']],
             ['/css/map-studio.css', ['css/map-studio.css', 'text/css; charset=utf-8']],
+            ['/js/map-studio-model.js', ['js/map-studio-model.js', 'text/javascript; charset=utf-8']],
             ['/js/map-studio.js', ['js/map-studio.js', 'text/javascript; charset=utf-8']]
         ]);
         if (request.method === 'GET' && publicStudioAssets.has(url.pathname)) {
@@ -398,8 +399,8 @@ function createMapStudioServer(options = {}) {
                 sendJson(response, 500, { ok: false, error: error.message || 'Could not inspect the workspace.' });
                 return;
             }
-            if (!workspace.activeDraft) {
-                sendJson(response, 409, { ok: false, error: 'Start a Map Studio draft before adding a map.' });
+            if (!workspace.editable) {
+                sendJson(response, 409, { ok: false, error: 'Start a draft or switch to a working branch before adding a map.' });
                 return;
             }
             if (mapMutationRunning || editorMutationRunning || publishJob?.status === 'running' || hasRunningPreviewBuild(repoRoot)) {

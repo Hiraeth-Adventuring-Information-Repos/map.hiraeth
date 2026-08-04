@@ -9,11 +9,16 @@
         statusTitle: document.getElementById('studio-status-title'),
         statusSummary: document.getElementById('studio-status-summary'),
         statusChip: document.getElementById('studio-status-chip'),
+        statusStrip: document.querySelector('.status-strip'),
+        branchChip: document.getElementById('studio-branch-chip'),
         workspaceDetails: document.getElementById('workspace-details'),
+        workflowTitle: document.getElementById('workflow-title'),
         workflowSummary: document.getElementById('workflow-summary'),
+        workspaceCapabilityNote: document.getElementById('workspace-capability-note'),
         draftTitle: document.getElementById('draft-title'),
         draftDescription: document.getElementById('draft-description'),
         startDraftButton: document.getElementById('start-draft-button'),
+        continueEditingLink: document.getElementById('continue-editing-link'),
         publishButton: document.getElementById('publish-button'),
         finishDraftButton: document.getElementById('finish-draft-button'),
         workflowStatus: document.getElementById('workflow-status'),
@@ -39,6 +44,7 @@
 
     let csrfToken = '';
     let workspace = null;
+    let readiness = null;
     let publishPollTimer = null;
     let mapIdWasEdited = false;
 
@@ -60,48 +66,86 @@
         try {
             const response = await fetch('/api/editor/status', { cache: 'no-store' });
             const payload = await readJsonResponse(response);
-            const readiness = payload.readiness || {};
-            const ready = readiness.topStatus === 'Ready';
-            dom.statusTitle.textContent = ready ? 'Local preview bundle is ready' : 'Workspace needs attention';
-            dom.statusSummary.textContent = ready
-                ? 'Saved map data and the local Pages preview agree.'
-                : 'Open the editor to save changes or rebuild the live preview.';
-            dom.statusChip.textContent = readiness.topStatus || 'Connected';
-            dom.statusChip.className = `status-chip ${ready ? 'ready' : 'pending'}`;
-            dom.workspaceDetails.textContent = JSON.stringify(readiness, null, 2);
+            readiness = payload.readiness || {};
+            renderStudioPresentation();
         } catch (error) {
+            readiness = { topStatus: 'Failed', error: error.message };
             dom.statusTitle.textContent = 'Workspace check failed';
             dom.statusSummary.textContent = error.message;
             dom.statusChip.textContent = 'Failed';
-            dom.statusChip.className = 'status-chip pending';
-            dom.workspaceDetails.textContent = error.stack || error.message;
+            dom.statusChip.className = 'status-chip danger';
+            dom.statusStrip.dataset.tone = 'danger';
+            renderWorkspaceDetails(error.stack || error.message);
         }
+    }
+
+    function renderWorkspaceDetails(fallback = '') {
+        dom.workspaceDetails.textContent = workspace || readiness
+            ? JSON.stringify({ workspace, readiness }, null, 2)
+            : fallback || 'Workspace information is not available.';
+    }
+
+    function renderPipeline(stages) {
+        stages.forEach((stage) => {
+            const item = document.getElementById(`pipeline-${stage.id}`);
+            if (!item) return;
+            item.dataset.state = stage.state;
+            const detail = item.querySelector('small');
+            if (detail) detail.textContent = stage.detail;
+        });
+    }
+
+    function renderStudioPresentation() {
+        if (!workspace || !window.MapStudioModel) {
+            renderWorkspaceDetails();
+            return;
+        }
+        const presentation = window.MapStudioModel.deriveWorkspacePresentation(workspace, readiness || {});
+        const capabilities = workspace.capabilities || {};
+        dom.statusTitle.textContent = presentation.title;
+        dom.statusSummary.textContent = presentation.summary;
+        dom.statusChip.textContent = presentation.statusLabel;
+        dom.statusChip.className = `status-chip ${presentation.statusTone}`;
+        dom.statusStrip.dataset.tone = presentation.statusTone;
+        dom.branchChip.textContent = presentation.branch;
+        dom.branchChip.title = presentation.branch;
+        dom.workflowTitle.textContent = presentation.title;
+        dom.workflowSummary.textContent = presentation.summary;
+        renderPipeline(presentation.stages);
+
+        dom.startDraftButton.hidden = presentation.editable;
+        dom.startDraftButton.disabled = capabilities.canStartDraft !== true;
+        dom.continueEditingLink.hidden = !presentation.editable;
+        dom.publishButton.disabled = capabilities.canPublish !== true;
+        dom.finishDraftButton.disabled = capabilities.canFinishDraft !== true;
+        dom.newMapButton.disabled = capabilities.canCreateMap !== true;
+
+        if (presentation.githubReady) {
+            dom.workspaceCapabilityNote.dataset.tone = 'good';
+            dom.workspaceCapabilityNote.textContent = presentation.activeDraft
+                ? 'GitHub review is connected. Valid drafts can be published as pull requests.'
+                : 'GitHub review is connected. Start a Studio draft to use automated publishing.';
+        } else if (presentation.editable) {
+            dom.workspaceCapabilityNote.dataset.tone = 'warning';
+            dom.workspaceCapabilityNote.textContent = 'Local editing is available. Connect a GitHub App or repository-scoped token when you are ready to create draft pull requests.';
+        } else {
+            dom.workspaceCapabilityNote.dataset.tone = 'neutral';
+            dom.workspaceCapabilityNote.textContent = 'You can start a local draft without GitHub credentials. Publishing remains locked until GitHub is connected.';
+        }
+
+        if (presentation.unsupportedCount > 0) {
+            dom.workflowStatus.textContent = `Studio will not publish unsupported files: ${workspace.unsupportedChanges.join(', ')}`;
+        } else if (workspace.mode === 'detached') {
+            dom.workflowStatus.textContent = 'Switch this checkout to a named branch before editing.';
+        } else {
+            dom.workflowStatus.textContent = '';
+        }
+        renderWorkspaceDetails();
     }
 
     function renderWorkspace(nextWorkspace) {
         workspace = nextWorkspace;
-        const githubReady = workspace?.github?.configured === true;
-        const activeDraft = workspace?.activeDraft === true;
-        const changeCount = Array.isArray(workspace?.changedPaths) ? workspace.changedPaths.length : 0;
-        const unsupportedCount = Array.isArray(workspace?.unsupportedChanges)
-            ? workspace.unsupportedChanges.length
-            : 0;
-        dom.workflowSummary.textContent = activeDraft
-            ? `${workspace.branch} has ${changeCount} changed file${changeCount === 1 ? '' : 's'}.`
-            : `Workspace is on ${workspace?.branch || 'an unknown branch'}. Start a draft before editing.`;
-        dom.startDraftButton.disabled = activeDraft || workspace?.branch !== 'main' || !workspace?.clean || !githubReady;
-        dom.publishButton.disabled = !activeDraft || changeCount === 0 || unsupportedCount > 0 || !githubReady;
-        dom.finishDraftButton.disabled = !activeDraft || changeCount > 0 || !githubReady;
-        dom.newMapButton.disabled = !activeDraft;
-        if (!githubReady) {
-            dom.workflowStatus.textContent = 'Configure a GitHub App or repository-scoped token to start drafts.';
-        } else if (unsupportedCount > 0) {
-            dom.workflowStatus.textContent = `Resolve unsupported files before publishing: ${workspace.unsupportedChanges.join(', ')}`;
-        } else if (!activeDraft && workspace?.branch !== 'main') {
-            dom.workflowStatus.textContent = `Switch the Studio workspace to main; it is currently on ${workspace?.branch || 'detached HEAD'}.`;
-        } else {
-            dom.workflowStatus.textContent = '';
-        }
+        renderStudioPresentation();
     }
 
     async function refreshWorkspace() {
@@ -249,7 +293,9 @@
             });
             const payload = await readJsonResponse(response);
             renderWorkspace(payload.workspace);
-            dom.workflowStatus.textContent = 'Draft started. The map editor is ready.';
+            dom.workflowStatus.textContent = payload.workspace?.github?.configured
+                ? 'Draft started from the latest main branch. The editor is ready.'
+                : 'Local draft started. The editor is ready; connect GitHub later to publish.';
         } catch (error) {
             dom.workflowStatus.textContent = error.message;
             await refreshWorkspace().catch(() => {});

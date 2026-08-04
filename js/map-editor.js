@@ -1,13 +1,15 @@
 (function () {
     const utils = window.MapEditorUtils;
     const sharedUtils = window.SharedUtils;
+    const historyApi = window.MapEditorHistory;
 
-    if (!utils || !sharedUtils || typeof L === 'undefined') {
+    if (!utils || !sharedUtils || !historyApi || typeof L === 'undefined') {
         console.error('Map editor prerequisites are missing.');
         return;
     }
 
     const { debounce } = sharedUtils;
+    const editHistory = historyApi.createHistory({ limit: 24 });
 
     const state = {
         atlasTree: [],
@@ -42,6 +44,8 @@
         saveError: false,
         inspectorCollapsed: false,
         inspectorWidth: 0,
+        inspectorTab: 'overview',
+        pendingMapId: '',
         publishReadiness: {
             items: {},
             changedFiles: [],
@@ -55,7 +59,10 @@
 
     const dom = {
         appShell: document.getElementById('map-editor-app'),
+        loadingState: document.getElementById('editor-loading-state'),
         workspace: document.querySelector('.map-editor-workspace'),
+        contextName: document.getElementById('editor-context-name'),
+        studioHomeLink: document.getElementById('editor-studio-home-link'),
         atlasTree: document.getElementById('editor-atlas-tree'),
         treeSearch: document.getElementById('editor-tree-search'),
         reloadButton: document.getElementById('reload-editor-btn'),
@@ -85,10 +92,19 @@
         cancelDrawButton: document.getElementById('editor-cancel-draw-btn'),
         deleteSelectionButton: document.getElementById('editor-delete-selection-btn'),
         resetViewButton: document.getElementById('editor-reset-view-btn'),
+        undoButton: document.getElementById('editor-undo-btn'),
+        redoButton: document.getElementById('editor-redo-btn'),
+        unsavedDialog: document.getElementById('editor-unsaved-dialog'),
+        unsavedCopy: document.getElementById('editor-unsaved-copy'),
+        cancelSwitchButton: document.getElementById('editor-cancel-switch-btn'),
+        discardSwitchButton: document.getElementById('editor-discard-switch-btn'),
+        saveSwitchButton: document.getElementById('editor-save-switch-btn'),
         toggleInspectorButton: document.getElementById('editor-toggle-inspector-btn'),
         collapseInspectorButton: document.getElementById('editor-collapse-inspector-btn'),
         inspector: document.getElementById('editor-inspector'),
         inspectorResizer: document.getElementById('editor-inspector-resizer'),
+        inspectorTabButtons: Array.from(document.querySelectorAll('[data-inspector-tab]')),
+        inspectorPanels: Array.from(document.querySelectorAll('[data-inspector-panel]')),
         saveCurrentMapButton: document.getElementById('save-current-map-btn'),
         saveAtlasStructureButton: document.getElementById('save-atlas-structure-btn'),
         exportCurrentMapButton: document.getElementById('export-current-map-btn'),
@@ -611,6 +627,73 @@
         refreshSaveControls();
     }
 
+    function captureEditorSnapshot() {
+        if (!state.currentMap) return null;
+        return {
+            atlasTree: utils.cloneJson(state.atlasTree),
+            currentMapId: state.currentMapId,
+            currentMapDataUrl: state.currentMapDataUrl,
+            lineCollectionKey: state.lineCollectionKey,
+            selectedFeature: state.selectedFeature ? { ...state.selectedFeature } : null,
+            featureListState: { ...state.featureListState }
+        };
+    }
+
+    function syncHistoryControls() {
+        const historyState = editHistory.getState();
+        if (dom.undoButton) {
+            dom.undoButton.disabled = !historyState.canUndo;
+            dom.undoButton.title = historyState.canUndo ? `Undo ${historyState.undoLabel}` : 'Nothing to undo';
+        }
+        if (dom.redoButton) {
+            dom.redoButton.disabled = !historyState.canRedo;
+            dom.redoButton.title = historyState.canRedo ? `Redo ${historyState.redoLabel}` : 'Nothing to redo';
+        }
+    }
+
+    function checkpointHistory(label) {
+        const snapshot = captureEditorSnapshot();
+        if (!snapshot) return false;
+        const recorded = editHistory.record(snapshot, label);
+        syncHistoryControls();
+        return recorded;
+    }
+
+    function restoreEditorSnapshot(snapshot, actionLabel) {
+        if (!snapshot || !Array.isArray(snapshot.atlasTree)) return;
+        clearDrawMode();
+        state.atlasTree = utils.cloneJson(snapshot.atlasTree);
+        state.currentMapId = String(snapshot.currentMapId || '');
+        state.currentMapDataUrl = String(snapshot.currentMapDataUrl || '');
+        state.lineCollectionKey = String(snapshot.lineCollectionKey || 'lines');
+        state.featureListState = {
+            ...state.featureListState,
+            ...(snapshot.featureListState || {})
+        };
+        state.currentMap = utils.findMapRecursive(state.atlasTree, state.currentMapId);
+        state.selectedFeature = snapshot.selectedFeature ? { ...snapshot.selectedFeature } : null;
+        renderAtlasTree();
+        renderMapSettingsForm();
+        renderFeatureLists();
+        renderFeatureInspector();
+        renderMapLayers(false);
+        if (state.selectedFeature) setInspectorTab('features');
+        markCurrentMapDirty(actionLabel);
+        syncHistoryControls();
+    }
+
+    function undoEditorChange() {
+        const result = editHistory.undo(captureEditorSnapshot());
+        if (!result) return;
+        restoreEditorSnapshot(result.snapshot, `Undid ${result.label}.`);
+    }
+
+    function redoEditorChange() {
+        const result = editHistory.redo(captureEditorSnapshot());
+        if (!result) return;
+        restoreEditorSnapshot(result.snapshot, `Redid ${result.label}.`);
+    }
+
     function refreshBuildPreviewButtonState() {
         if (!dom.buildLivePreviewButton) return;
         const runningBuild = state.publishReadiness.buildJob?.status === 'running';
@@ -728,6 +811,54 @@
         queueMapViewportReset();
     }
 
+    function setInspectorTab(tabName, persist = true) {
+        const availableTabs = new Set(['overview', 'features', 'advanced']);
+        const nextTab = availableTabs.has(tabName) ? tabName : 'overview';
+        state.inspectorTab = nextTab;
+        dom.inspectorTabButtons.forEach((button) => {
+            const selected = button.dataset.inspectorTab === nextTab;
+            button.setAttribute('aria-selected', String(selected));
+            button.tabIndex = selected ? 0 : -1;
+        });
+        dom.inspectorPanels.forEach((panel) => {
+            panel.hidden = panel.dataset.inspectorPanel !== nextTab;
+        });
+        if (persist) {
+            try {
+                localStorage.setItem('mapEditorInspectorTab', nextTab);
+            } catch (error) {
+                // Storage is optional; the inspector still works for this session.
+            }
+        }
+    }
+
+    function initializeInspectorTabs() {
+        let storedTab = 'overview';
+        try {
+            storedTab = localStorage.getItem('mapEditorInspectorTab') || 'overview';
+        } catch (error) {
+            storedTab = 'overview';
+        }
+        setInspectorTab(storedTab, false);
+    }
+
+    function registerInspectorTabs() {
+        dom.inspectorTabButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                setInspectorTab(button.dataset.inspectorTab);
+            });
+            button.addEventListener('keydown', (event) => {
+                if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                const direction = event.key === 'ArrowRight' ? 1 : -1;
+                const nextIndex = (index + direction + dom.inspectorTabButtons.length) % dom.inspectorTabButtons.length;
+                const nextButton = dom.inspectorTabButtons[nextIndex];
+                setInspectorTab(nextButton.dataset.inspectorTab);
+                nextButton.focus();
+                event.preventDefault();
+            });
+        });
+    }
+
     function initializeInspectorLayout() {
         let storedWidth = 0;
         let storedCollapsed = false;
@@ -821,6 +952,10 @@
                 setSelectionStatus('Geometry selected. Drag the orange vertex handles to reshape it.');
             }
         }
+        if (state.selectedFeature) {
+            setInspectorCollapsed(false);
+            setInspectorTab('features');
+        }
         renderFeatureLists();
         renderFeatureInspector();
         renderMapLayers(false);
@@ -910,7 +1045,7 @@
                 strongTag.textContent = item.name || item.id;
                 selectButton.appendChild(strongTag);
                 selectButton.addEventListener('click', () => {
-                    selectMap(item.id).catch((error) => {
+                    requestMapSelection(item.id).catch((error) => {
                         console.error(error);
                         setSelectionStatus(error.message || 'Could not select the map.');
                     });
@@ -976,7 +1111,7 @@
         const points = getCurrentPoints().length;
         const regions = getCurrentRegions().length;
         const lines = getCurrentLines().length;
-        return `${points} POIs, ${regions} regions, ${lines} lines`;
+        return String(points + regions + lines);
     }
 
     function getFeatureItems(type) {
@@ -1578,6 +1713,7 @@
             currentLocation?.parentId || ''
         );
         dom.currentMapId.textContent = currentMap?.id || 'No map';
+        if (dom.contextName) dom.contextName.textContent = currentMap?.name || currentMap?.id || 'Choose a map';
     }
 
     function updateTreeAfterSettingsChange() {
@@ -1645,6 +1781,7 @@
                 draggable: true,
                 keyboard: false
             });
+            handle.on('dragstart', () => checkpointHistory('Move geometry vertex'));
             handle.on('drag', (event) => {
                 feature.coordinates[index] = roundLatLng(event.target.getLatLng());
             });
@@ -1728,6 +1865,7 @@
                 alt: markerLabel
             });
             marker.on('click', () => selectFeature('points', index));
+            marker.on('dragstart', () => checkpointHistory(`Move ${point.name || `POI ${index + 1}`}`));
             marker.on('drag', (event) => {
                 point.coords = roundLatLng(event.target.getLatLng());
             });
@@ -1825,6 +1963,7 @@
                 setSelectionStatus('A region needs at least 3 points.');
                 return;
             }
+            checkpointHistory('Create region');
             getCurrentRegions().push({
                 id: `region-${Date.now()}`,
                 name: `Region ${getCurrentRegions().length + 1}`,
@@ -1852,6 +1991,7 @@
             setSelectionStatus('A line needs at least 2 points.');
             return;
         }
+        checkpointHistory('Create line');
         getCurrentLines().push({
             id: `line-${Date.now()}`,
             name: `Line ${getCurrentLines().length + 1}`,
@@ -1878,6 +2018,7 @@
         const coordinate = roundLatLng(event.latlng);
 
         if (state.drawMode === 'point') {
+            checkpointHistory('Create POI');
             getCurrentPoints().push({
                 name: `POI ${getCurrentPoints().length + 1}`,
                 coords: coordinate,
@@ -1910,6 +2051,7 @@
         const feature = getSelectedFeature();
         const label = feature.name || feature.id || 'this feature';
         if (!window.confirm(`Are you sure you want to delete ${label}?`)) return;
+        checkpointHistory(`Delete ${label}`);
         const collection = getCurrentFeatureCollection(state.selectedFeature.mode);
         collection.splice(state.selectedFeature.index, 1);
         deselectFeature();
@@ -2216,6 +2358,8 @@
             state.currentMapDataUrl = String(state.currentMap?.dataUrl || '').trim();
         }
         state.lineCollectionKey = utils.detectLineCollectionKey(state.currentMap);
+        editHistory.clear();
+        syncHistoryControls();
         renderAtlasTree();
         renderMapSettingsForm();
         renderFeatureLists();
@@ -2229,6 +2373,32 @@
 
         dom.appShell.setAttribute('data-mode', 'edit');
         queueMapViewportReset();
+    }
+
+    function closeUnsavedDialog() {
+        state.pendingMapId = '';
+        if (dom.unsavedDialog?.open) dom.unsavedDialog.close();
+    }
+
+    async function requestMapSelection(mapId) {
+        if (!mapId) return;
+        if (mapId === state.currentMapId) {
+            dom.appShell.setAttribute('data-mode', 'edit');
+            return;
+        }
+        if (!state.editorDirty) {
+            await selectMap(mapId);
+            return;
+        }
+        const targetMap = utils.findMapRecursive(state.atlasTree, mapId);
+        state.pendingMapId = mapId;
+        dom.unsavedCopy.textContent = `Save changes to ${state.currentMap?.name || state.currentMapId} before switching to ${targetMap?.name || mapId}, discard them, or keep editing.`;
+        dom.saveSwitchButton.disabled = !state.localSaveAvailable;
+        dom.saveSwitchButton.title = state.localSaveAvailable
+            ? 'Save the current map and continue.'
+            : (state.localSaveMessage || 'Direct saves are not available in this workspace.');
+        dom.unsavedDialog.showModal();
+        dom.cancelSwitchButton.focus();
     }
 
     function initializeMap() {
@@ -2278,8 +2448,14 @@
         dom.mapSettingsForm.addEventListener('input', () => {
             markCurrentMapDirty('Map metadata changed.');
         });
+        dom.mapSettingsForm.addEventListener('focusin', () => {
+            checkpointHistory('Edit map details');
+        });
 
         dom.featureForm.addEventListener('change', updateSelectedFeatureFromForm);
+        dom.featureForm.addEventListener('focusin', () => {
+            checkpointHistory('Edit feature details');
+        });
         dom.featureForm.addEventListener('click', (event) => {
             const target = event.target instanceof Element ? event.target : null;
             const button = target?.closest('[data-action]');
@@ -2290,6 +2466,7 @@
 
             if (button.dataset.action === 'add-detail-section') {
                 event.preventDefault();
+                checkpointHistory('Add detail section');
                 const sections = getDetailSections(feature);
                 sections.push({ heading: '', body: '' });
                 renderFeatureInspector();
@@ -2305,6 +2482,7 @@
                 if (!window.confirm(`Are you sure you want to remove detail section ${index + 1} from ${label}?`)) return;
                 const sections = getDetailSections(feature);
                 if (!Number.isInteger(index) || index < 0 || index >= sections.length) return;
+                checkpointHistory('Remove detail section');
                 sections.splice(index, 1);
                 renderFeatureInspector();
                 markCurrentMapDirty('Detail section changed.');
@@ -2362,6 +2540,29 @@
             setSelectionStatus('Canceled the current draft.');
         });
         dom.deleteSelectionButton.addEventListener('click', deleteSelectedFeature);
+        if (dom.undoButton) dom.undoButton.addEventListener('click', undoEditorChange);
+        if (dom.redoButton) dom.redoButton.addEventListener('click', redoEditorChange);
+        if (dom.cancelSwitchButton) dom.cancelSwitchButton.addEventListener('click', closeUnsavedDialog);
+        if (dom.discardSwitchButton) {
+            dom.discardSwitchButton.addEventListener('click', () => {
+                const mapId = state.pendingMapId;
+                closeUnsavedDialog();
+                state.editorDirty = false;
+                selectMap(mapId).catch((error) => {
+                    console.error(error);
+                    setSelectionStatus(error.message || 'Could not switch maps.');
+                });
+            });
+        }
+        if (dom.saveSwitchButton) {
+            dom.saveSwitchButton.addEventListener('click', async () => {
+                const mapId = state.pendingMapId;
+                await saveCurrentMapJson();
+                if (state.editorDirty) return;
+                closeUnsavedDialog();
+                await selectMap(mapId);
+            });
+        }
         dom.resetViewButton.addEventListener('click', () => {
             if (state.currentBounds) {
                 queueMapViewportReset();
@@ -2378,6 +2579,7 @@
             });
         }
         registerInspectorResize();
+        registerInspectorTabs();
         if (dom.chooseMapButton) {
             dom.chooseMapButton.addEventListener('click', () => {
                 dom.appShell.setAttribute('data-mode', 'select');
@@ -2395,11 +2597,28 @@
         dom.exportCurrentMapButton.addEventListener('click', exportCurrentMapJson);
         dom.exportAtlasStructureButton.addEventListener('click', exportAtlasStructure);
         document.addEventListener('keydown', async (event) => {
-            if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
+            if (!(event.metaKey || event.ctrlKey)) return;
+            const key = event.key.toLowerCase();
+            if (key === 's') {
+                event.preventDefault();
+                if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+                await delay(350);
+                if (!dom.saveCurrentMapButton.disabled) await saveCurrentMapJson();
+                return;
+            }
+            const wantsUndo = key === 'z' && !event.shiftKey;
+            const wantsRedo = (key === 'z' && event.shiftKey) || key === 'y';
+            if (!wantsUndo && !wantsRedo) return;
             event.preventDefault();
             if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
             await delay(350);
-            if (!dom.saveCurrentMapButton.disabled) await saveCurrentMapJson();
+            if (wantsUndo) undoEditorChange();
+            else redoEditorChange();
+        });
+        window.addEventListener('beforeunload', (event) => {
+            if (!state.editorDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
         });
     }
 
@@ -2434,9 +2653,14 @@
         try {
             initializeMap();
             initializeInspectorLayout();
+            initializeInspectorTabs();
             registerEventListeners();
             renderPublishReadiness();
             detectLocalSaveApi();
+
+            if (dom.studioHomeLink && window.location.pathname !== '/studio/editor') {
+                dom.studioHomeLink.hidden = true;
+            }
 
             const atlas = await fetchJsonAsset('maps/atlas-index.json');
             if (!atlas || !Array.isArray(atlas.tree)) {
@@ -2477,6 +2701,8 @@
             p.className = 'map-editor-placeholder';
             p.textContent = error.message || 'Initialization failed.';
             dom.atlasTree.appendChild(p);
+        } finally {
+            dom.appShell.dataset.loading = 'false';
         }
     }
 

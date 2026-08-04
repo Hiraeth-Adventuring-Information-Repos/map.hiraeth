@@ -19,7 +19,7 @@
 
     function getDefaultAssetsConfig() {
         return {
-                version: '0.1.49',
+                version: '0.1.50',
                 stylesheets: [
                     'css/leaflet.css',
                     'css/style.css',
@@ -41,6 +41,7 @@
                 editorScripts: [
                     'js/editor-shared.js',
                     'js/shared-utils.js',
+                    'js/map-editor-history.js',
                     'js/map-editor.js'
                 ],
                 cloudTexture: 'images/clouds.webp',

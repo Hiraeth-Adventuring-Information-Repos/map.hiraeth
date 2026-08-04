@@ -54,6 +54,10 @@ global.queueMapViewportReset = () => {};
 global.markCurrentMapDirty = () => {};
 global.setInspectorCollapsed = () => {};
 global.registerInspectorResize = () => {};
+global.registerInspectorTabs = () => {};
+global.undoEditorChange = () => {};
+global.redoEditorChange = () => {};
+global.closeUnsavedDialog = () => {};
 
 // Proxy dom to automatically return a mocked element with addEventListener
 global.dom = new Proxy({}, {
