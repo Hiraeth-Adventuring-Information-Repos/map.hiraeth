@@ -4,3 +4,5 @@ dist/
 .cache/
 .secrets/
 .env
+playwright-report/
+test-results/

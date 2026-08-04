@@ -153,6 +153,14 @@ docker compose logs --tail=200 map-studio
 docker compose logs --tail=100 studio-proxy
 ```
 
+Run the hermetic browser workflow before releasing Studio changes:
+
+```sh
+npm run test:studio:e2e
+```
+
+The suite uses a temporary repository, local bare Git remote, and simulated draft pull request. It exercises the real authenticated draft, upload, edit/save, preview, publish, restart recovery, and merged-draft cleanup paths without credentials or writes to the working repository.
+
 Update the Studio application only while its workspace is clean and on `main`:
 
 ```sh
@@ -191,7 +199,7 @@ The current capability model and inspector structure are foundations, not the en
 - [x] New-map creation previews artwork, supports preprocessing where safe, and explains every generated file before writing.
 - [x] GitHub setup has an in-product capability check and concrete remediation without exposing secrets.
 - [x] Interrupted save, validation, upload, preview, and publish jobs can be resumed or safely abandoned after a restart.
-- [ ] Browser tests cover draft start, map creation, edit/save, preview build, pull-request preparation, and recovery paths at desktop and narrow widths.
+- [x] Browser tests cover draft start, map creation, edit/save, preview build, pull-request preparation, and recovery paths at desktop and narrow widths.
 - [x] A maintainer can complete the common workflow without opening technical workspace JSON or knowing repository internals.
 
 Until those gates are complete, changes should improve the lifecycle and shared state model instead of introducing another standalone card, modal, or one-off endpoint.

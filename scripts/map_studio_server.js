@@ -188,6 +188,7 @@ function createMapStudioServer(options = {}) {
         dependencyRoot: options.dependencyRoot || process.env.MAP_STUDIO_NODE_MODULES_ROOT,
         githubClient
     });
+    const publishDraftOperation = options.publishDraft || publishDraft;
     const getWorkspaceRoot = () => workspaceManager.getWorkspaceRoot();
     const publishJobPath = path.join(draftsRoot, 'jobs', 'publish-job.json');
     let publishJob = restorePublishJob(publishJobPath);
@@ -270,7 +271,7 @@ function createMapStudioServer(options = {}) {
             if (publishJob.output.length > 400) publishJob.output.splice(0, publishJob.output.length - 400);
             persistPublishJob();
         };
-        publishDraft({
+        publishDraftOperation({
             repoRoot: workspaceRoot,
             title: payload.title,
             description: payload.description,

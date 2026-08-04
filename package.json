@@ -12,6 +12,7 @@
     "test:editor-local-access": "node tests/map-editor-local-access.test.js",
     "test:editor-server": "node tests/editor-server.test.js",
     "test:editor-shell": "node tests/map-editor-shell.test.js",
+    "test:studio:e2e": "playwright test tests/map-studio-workflow.spec.mjs",
     "build:pages": "node scripts/build_pages.js",
     "publish:check": "node scripts/publish_check.js",
     "validate:pages": "npm run generate:atlas && npm run validate:data && npm run test:unit && npm run build:pages",
@@ -21,6 +22,7 @@
     "jsdom": "^29.1.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "esbuild": "0.28.1"
   }
 }

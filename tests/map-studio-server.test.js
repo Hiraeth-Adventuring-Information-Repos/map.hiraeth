@@ -92,7 +92,10 @@ const { createMapStudioServer, restorePublishJob } = require('../scripts/map_stu
         secureCookies: false,
         sessionManager,
         githubClient,
-        workspaceManager
+        workspaceManager,
+        publishDraft: async () => {
+            throw new Error('Publication is not exercised by this routing fixture.');
+        }
     });
     function request(method, pathname, body) {
         return new Promise((resolve, reject) => {
