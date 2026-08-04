@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     environment:
       MAP_STUDIO_REPO_ROOT: /workspace
+      MAP_STUDIO_DRAFTS_ROOT: /var/lib/map-studio/drafts
+      MAP_STUDIO_NODE_MODULES_ROOT: /app/node_modules
       MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local},${MAP_STUDIO_LAN_IP:-127.0.0.1},127.0.0.1
       MAP_STUDIO_HEALTH_HOST: 127.0.0.1
       MAP_STUDIO_PASSWORD_FILE: /run/secrets/map_studio_password
@@ -23,7 +25,9 @@ services:
       - type: bind
         source: .
         target: /workspace
+        read_only: true
       - map_studio_cache:/var/cache/map-studio
+      - map_studio_drafts:/var/lib/map-studio/drafts
     networks:
       - studio_internal
 
@@ -56,6 +60,7 @@ secrets:
 
 volumes:
   map_studio_cache:
+  map_studio_drafts:
   caddy_data:
   caddy_config:
 

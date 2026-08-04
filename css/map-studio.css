@@ -198,6 +198,9 @@ textarea {
     font-size: 0.86rem;
     line-height: 1.45;
 }
+.form-status[data-tone="good"] { color: var(--studio-good); }
+.form-status[data-tone="neutral"] { color: var(--studio-muted); }
+.form-status[data-tone="danger"] { color: var(--studio-danger); }
 
 .studio-dashboard { min-height: 100vh; }
 
@@ -282,6 +285,8 @@ textarea {
 .quiet-button { min-height: 36px; padding: 0 12px; font-size: 0.82rem; }
 .quiet-button:hover:not(:disabled),
 .secondary-button:hover:not(:disabled) { background: var(--studio-panel-soft); }
+.danger-button { background: var(--studio-danger); }
+.danger-button:hover:not(:disabled) { background: color-mix(in srgb, var(--studio-danger) 82%, black); }
 
 .studio-content {
     width: min(1180px, calc(100% - 32px));
@@ -400,6 +405,27 @@ textarea {
 }
 .capability-note[data-tone="good"] { border-color: var(--studio-good); }
 .capability-note[data-tone="warning"] { border-color: var(--studio-warn); }
+.github-setup-details {
+    border: 1px solid var(--studio-line);
+    border-radius: 10px;
+    padding: 0 13px;
+    background: var(--studio-panel-soft);
+}
+.github-setup-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 0;
+    cursor: pointer;
+    font-weight: 720;
+}
+.github-setup-details summary strong { color: var(--studio-muted); font-size: 0.78rem; }
+.github-setup-details[open] { padding-bottom: 13px; }
+.github-setup-details > p { margin: 0 0 10px; color: var(--studio-muted); line-height: 1.45; }
+.github-setup-steps { display: grid; gap: 7px; margin: 0 0 12px; padding-left: 20px; color: var(--studio-muted); }
+.github-setup-steps:empty { display: none; }
+.github-setup-actions { display: flex; justify-content: flex-start; }
 .workflow-form { margin: 0; }
 .field-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .field-row span { color: var(--studio-muted); font-size: 0.75rem; }
@@ -449,6 +475,12 @@ textarea {
 .progress-card,
 .readiness-card { margin-top: 18px; padding: 20px; border-radius: 12px; }
 .progress-card h2 { margin-bottom: 0; }
+.progress-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1rem;
+}
 .readiness-card summary { cursor: pointer; font-weight: 750; }
 .readiness-card > p { margin: 10px 0 0; font-size: 0.84rem; }
 
@@ -476,6 +508,20 @@ pre {
 }
 .studio-dialog::backdrop { background: rgba(12, 10, 17, 0.7); backdrop-filter: blur(5px); }
 .new-map-form { gap: 16px; margin: 0; padding: 28px; }
+.confirmation-dialog { width: min(620px, calc(100% - 24px)); }
+.confirmation-form { display: grid; gap: 18px; margin: 0; padding: 28px; }
+.confirmation-form > label { display: grid; gap: 7px; }
+.branch-confirmation {
+    display: grid;
+    gap: 5px;
+    margin: 0;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: var(--studio-panel-soft);
+}
+.branch-confirmation span { color: var(--studio-muted); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; }
+.branch-confirmation strong { overflow-wrap: anywhere; font: 750 0.82rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .dialog-header,
 .dialog-actions { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .dialog-header h2 { margin-bottom: 0; font-size: 2rem; }
@@ -484,6 +530,38 @@ pre {
 .form-grid label,
 .new-map-form > label { display: grid; gap: 7px; }
 .form-grid label span { color: var(--studio-muted); font-weight: 500; }
+.new-map-artwork-preview,
+.new-map-plan {
+    display: grid;
+    gap: 14px;
+    border: 1px solid var(--studio-line);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--studio-panel-soft);
+}
+.new-map-artwork-preview { grid-template-columns: minmax(0, 1fr) minmax(180px, 0.8fr); align-items: center; }
+.new-map-artwork-preview h3,
+.new-map-plan h3 { margin: 2px 0 6px; }
+.new-map-artwork-preview p,
+.new-map-plan p { margin: 0; color: var(--studio-muted); line-height: 1.45; }
+.new-map-preview-frame {
+    display: grid;
+    place-items: center;
+    min-height: 150px;
+    overflow: hidden;
+    border: 1px dashed var(--studio-line-strong);
+    border-radius: 9px;
+    background: var(--studio-panel);
+    color: var(--studio-muted);
+}
+.new-map-preview-frame img { display: block; width: 100%; max-height: 260px; object-fit: contain; }
+.new-map-plan[hidden] { display: none; }
+.new-map-plan-table-wrap { overflow-x: auto; }
+.new-map-plan table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.new-map-plan th,
+.new-map-plan td { border-bottom: 1px solid var(--studio-line); padding: 9px 8px; text-align: left; vertical-align: top; }
+.new-map-plan th { color: var(--studio-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.new-map-plan td:nth-child(2) { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .dialog-actions { justify-content: flex-end; margin-top: 4px; }
 
 [hidden] { display: none !important; }
@@ -513,6 +591,8 @@ pre {
     .readiness-card { padding: 19px; }
     .field-row { align-items: flex-start; flex-direction: column; gap: 3px; }
     .workflow-actions > * { width: 100%; }
+    .progress-actions > * { width: 100%; }
     .form-grid { grid-template-columns: 1fr; }
+    .new-map-artwork-preview { grid-template-columns: 1fr; }
     .new-map-form { padding: 20px; }
 }

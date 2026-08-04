@@ -10,6 +10,11 @@ const PUBLISHABLE_EXACT_PATHS = new Set([
     'js/app-config.js'
 ]);
 
+function isGeneratedPath(relativePath) {
+    const normalized = normalizeRepoPath(relativePath);
+    return normalized === 'dist' || normalized.startsWith('dist/');
+}
+
 function normalizeRepoPath(value) {
     return String(value || '').trim().replace(/\\/g, '/').replace(/^\.\//, '');
 }
@@ -53,7 +58,7 @@ function getChangedPaths(repoRoot) {
         const rawPath = line.slice(3).trim();
         const pathParts = rawPath.split(' -> ');
         return normalizeRepoPath(pathParts[pathParts.length - 1]);
-    }).filter(Boolean);
+    }).filter((relativePath) => relativePath && !isGeneratedPath(relativePath));
 }
 
 function slugify(value) {
@@ -192,48 +197,63 @@ async function publishDraft({
     description,
     githubClient,
     onOutput,
+    resume = false,
     runValidation = runCommandStreaming,
     advanceAssetVersion = bumpAssetVersion
 }) {
     const initialState = getWorkspaceState(repoRoot, githubClient.getConfiguration());
     if (!initialState.activeDraft) throw new Error('Start a Map Studio draft before publishing.');
-    if (initialState.clean) throw new Error('There are no map changes to publish.');
+    if (initialState.clean && !resume) throw new Error('There are no map changes to publish.');
     if (initialState.unsupportedChanges.length > 0) {
         throw new Error(`Draft contains files Map Studio will not publish: ${initialState.unsupportedChanges.join(', ')}`);
     }
 
-    if (!initialState.changedPaths.some((changedPath) => VERSIONED_FILES.includes(changedPath))) {
-        const versionResult = advanceAssetVersion(repoRoot);
+    let paths = [];
+    if (!initialState.clean) {
+        if (!initialState.changedPaths.some((changedPath) => VERSIONED_FILES.includes(changedPath))) {
+            const versionResult = advanceAssetVersion(repoRoot);
+            if (typeof onOutput === 'function') {
+                onOutput(`Advanced asset version from ${versionResult.previousVersion} to ${versionResult.nextVersion}.\n`);
+            }
+        }
+
+        await runValidation(process.execPath, ['scripts/publish_check.js'], {
+            cwd: repoRoot,
+            onOutput
+        });
+
+        const postCheckState = getWorkspaceState(repoRoot, githubClient.getConfiguration());
+        if (postCheckState.unsupportedChanges.length > 0) {
+            throw new Error(`Validation produced unsupported changes: ${postCheckState.unsupportedChanges.join(', ')}`);
+        }
+        paths = postCheckState.changedPaths.filter(isPublishablePath);
+        if (paths.length === 0) throw new Error('Validation left no publishable map changes.');
+
+        runGit(repoRoot, ['add', '--', ...paths]);
+        runGit(repoRoot, [
+            '-c', 'user.name=Hiraeth Map Studio',
+            '-c', 'user.email=map-studio@hiraeth.wiki',
+            'commit', '-m', title
+        ]);
+    } else {
+        paths = runGit(repoRoot, ['diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD']).stdout
+            .split('\n')
+            .map(normalizeRepoPath)
+            .filter(isPublishablePath);
         if (typeof onOutput === 'function') {
-            onOutput(`Advanced asset version from ${versionResult.previousVersion} to ${versionResult.nextVersion}.\n`);
+            onOutput('Resuming from the existing validated commit.\n');
         }
     }
-
-    await runValidation(process.execPath, ['scripts/publish_check.js'], {
-        cwd: repoRoot,
-        onOutput
-    });
-
-    const postCheckState = getWorkspaceState(repoRoot, githubClient.getConfiguration());
-    if (postCheckState.unsupportedChanges.length > 0) {
-        throw new Error(`Validation produced unsupported changes: ${postCheckState.unsupportedChanges.join(', ')}`);
-    }
-    const paths = postCheckState.changedPaths.filter(isPublishablePath);
-    if (paths.length === 0) throw new Error('Validation left no publishable map changes.');
-
-    runGit(repoRoot, ['add', '--', ...paths]);
-    runGit(repoRoot, [
-        '-c', 'user.name=Hiraeth Map Studio',
-        '-c', 'user.email=map-studio@hiraeth.wiki',
-        'commit', '-m', title
-    ]);
 
     const token = await githubClient.getToken();
     runGit(repoRoot, getAuthenticatedGitArgs(['push', '--set-upstream', 'origin', initialState.branch]), {
         env: { MAP_STUDIO_GIT_TOKEN: token, GIT_TERMINAL_PROMPT: '0' }
     });
 
-    const pullRequest = await githubClient.createDraftPullRequest({
+    const existingPullRequest = typeof githubClient.findOpenPullRequest === 'function'
+        ? await githubClient.findOpenPullRequest({ branch: initialState.branch })
+        : null;
+    const pullRequest = existingPullRequest || await githubClient.createDraftPullRequest({
         branch: initialState.branch,
         title,
         body: description || 'Created and validated by Hiraeth Map Studio.'
@@ -248,10 +268,13 @@ async function publishDraft({
 }
 
 module.exports = {
+    assertRepository,
     finishMergedDraft,
+    getAuthenticatedGitArgs,
     getChangedPaths,
     getCurrentBranch,
     getWorkspaceState,
+    isGeneratedPath,
     isPublishablePath,
     makeDraftBranch,
     normalizeRepoPath,

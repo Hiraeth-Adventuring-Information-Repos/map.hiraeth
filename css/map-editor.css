@@ -1039,6 +1039,20 @@ details[open] .map-editor-section-header h2::before {
     margin-top: 14px;
 }
 
+.map-editor-schema-fields {
+    display: grid;
+    gap: 12px;
+}
+
+.map-editor-field-label { font-weight: 650; }
+
+.map-editor-form input[readonly] {
+    border-style: dashed;
+    background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
 .map-editor-tab-panel {
     display: grid;
     gap: 12px;

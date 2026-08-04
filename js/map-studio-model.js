@@ -9,7 +9,7 @@
 
     function deriveWorkspacePresentation(workspace = {}, readiness = {}) {
         const capabilities = workspace.capabilities || {};
-        const branch = String(workspace.branch || 'detached HEAD');
+        const branch = String(workspace.draft?.branch || workspace.branch || 'No active draft');
         const mode = String(workspace.mode || 'detached');
         const changeCount = Array.isArray(workspace.changedPaths) ? workspace.changedPaths.length : 0;
         const publishableCount = Array.isArray(workspace.publishableChanges)
@@ -28,7 +28,12 @@
         let title = 'Choose how to begin';
         let summary = 'Start a draft to keep map changes isolated from the published branch.';
 
-        if (mode === 'detached') {
+        if (mode === 'recovery') {
+            statusTone = 'danger';
+            statusLabel = 'Recovery needed';
+            title = 'Recover the isolated workspace';
+            summary = workspace.recovery?.message || 'The persisted draft workspace needs maintainer attention.';
+        } else if (mode === 'detached') {
             statusTone = 'danger';
             statusLabel = 'Detached HEAD';
             title = 'Workspace needs repair';
@@ -45,6 +50,11 @@
             statusLabel = 'Working branch';
             title = 'Continue on the current branch';
             summary = `${branch} can be edited locally. Studio publishing is reserved for map-studio drafts.`;
+        } else if (mode === 'base') {
+            statusTone = 'neutral';
+            statusLabel = 'No active draft';
+            title = 'Start an isolated map draft';
+            summary = 'Studio will create a persistent worktree without switching or modifying the mounted checkout.';
         } else if (mode === 'main') {
             statusTone = workspace.clean ? 'neutral' : 'warning';
             statusLabel = workspace.clean ? 'Main is clean' : 'Main has changes';
@@ -58,7 +68,7 @@
             {
                 id: 'draft',
                 label: 'Draft',
-                state: editable ? 'complete' : (mode === 'main' ? 'current' : 'blocked'),
+                state: editable ? 'complete' : ((mode === 'main' || mode === 'base') ? 'current' : 'blocked'),
                 detail: editable ? branch : 'Create an isolated branch'
             },
             {

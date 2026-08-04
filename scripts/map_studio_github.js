@@ -26,6 +26,48 @@ function readOptionalSecret(value, filePath) {
     return fs.readFileSync(normalizedPath, 'utf8').trim();
 }
 
+function buildSetupStatus({ owner, repo, appId, installationId, privateKey, directToken }) {
+    const credentialMode = directToken
+        ? 'token'
+        : ((appId || installationId || privateKey) ? 'app' : 'none');
+    const missing = [];
+    const remediation = [];
+
+    if (!owner) {
+        missing.push('Repository owner');
+        remediation.push('Set MAP_STUDIO_GITHUB_OWNER in .env.');
+    }
+    if (!repo) {
+        missing.push('Repository name');
+        remediation.push('Set MAP_STUDIO_GITHUB_REPO in .env.');
+    }
+
+    if (credentialMode === 'none') {
+        missing.push('Repository-scoped GitHub credentials');
+        remediation.push('Configure the recommended GitHub App, or mount an expiring fine-grained token restricted to this repository.');
+    } else if (credentialMode === 'app') {
+        if (!appId) {
+            missing.push('GitHub App ID');
+            remediation.push('Set MAP_STUDIO_GITHUB_APP_ID in .env.');
+        }
+        if (!installationId) {
+            missing.push('GitHub App installation ID');
+            remediation.push('Set MAP_STUDIO_GITHUB_INSTALLATION_ID in .env.');
+        }
+        if (!privateKey) {
+            missing.push('GitHub App private key secret');
+            remediation.push('Mount the App private key with MAP_STUDIO_GITHUB_PRIVATE_KEY_SECRET_FILE; do not paste the key into .env.');
+        }
+    }
+
+    return {
+        credentialMode,
+        ready: missing.length === 0,
+        missing,
+        remediation
+    };
+}
+
 function createGitHubClient(options = {}) {
     const fetchImpl = options.fetchImpl || global.fetch;
     const owner = String(options.owner || process.env.MAP_STUDIO_GITHUB_OWNER || '').trim();
@@ -42,12 +84,14 @@ function createGitHubClient(options = {}) {
     function getConfiguration() {
         const directToken = readOptionalSecret(options.token || process.env.MAP_STUDIO_GITHUB_TOKEN, directTokenFile);
         const privateKey = readOptionalSecret(options.privateKey, privateKeyFile);
-        const mode = directToken ? 'token' : (appId && installationId && privateKey ? 'app' : 'unconfigured');
+        const setup = buildSetupStatus({ owner, repo, appId, installationId, privateKey, directToken });
+        const mode = setup.ready ? setup.credentialMode : 'unconfigured';
         return {
-            configured: Boolean(owner && repo && mode !== 'unconfigured'),
+            configured: setup.ready,
             mode,
             owner,
-            repo
+            repo,
+            setup
         };
     }
 
@@ -124,15 +168,73 @@ function createGitHubClient(options = {}) {
         });
     }
 
+    async function findOpenPullRequest({ branch, base = 'main' }) {
+        const config = getConfiguration();
+        if (!config.configured) throw new Error('GitHub repository publishing is not configured.');
+        const query = new URLSearchParams({
+            state: 'open',
+            head: `${owner}:${branch}`,
+            base,
+            per_page: '1'
+        });
+        const pullRequests = await request(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls?${query}`,
+            { method: 'GET' }
+        );
+        return Array.isArray(pullRequests) ? (pullRequests[0] || null) : null;
+    }
+
+    async function verifyConfiguration() {
+        const configuration = getConfiguration();
+        if (!configuration.configured) {
+            return {
+                ok: false,
+                status: 'not-configured',
+                message: 'GitHub publishing setup is incomplete.',
+                remediation: configuration.setup.remediation
+            };
+        }
+
+        try {
+            const repository = await request(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+                { method: 'GET' }
+            );
+            return {
+                ok: true,
+                status: 'verified',
+                message: `GitHub access verified for ${owner}/${repo}.`,
+                repository: {
+                    fullName: String(repository?.full_name || `${owner}/${repo}`),
+                    private: repository?.private === true
+                },
+                remediation: []
+            };
+        } catch (error) {
+            return {
+                ok: false,
+                status: 'failed',
+                message: error.message || 'GitHub rejected the capability check.',
+                remediation: [
+                    'Confirm the credential is installed only on this repository with Contents and Pull requests write access.',
+                    'Confirm the configured owner, repository, and App installation ID refer to the same installation.'
+                ]
+            };
+        }
+    }
+
     return {
         createDraftPullRequest,
+        findOpenPullRequest,
         getConfiguration,
         getToken,
-        request
+        request,
+        verifyConfiguration
     };
 }
 
 module.exports = {
+    buildSetupStatus,
     createGitHubAppJwt,
     createGitHubClient,
     readOptionalSecret

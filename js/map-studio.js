@@ -15,17 +15,26 @@
         workflowTitle: document.getElementById('workflow-title'),
         workflowSummary: document.getElementById('workflow-summary'),
         workspaceCapabilityNote: document.getElementById('workspace-capability-note'),
+        githubSetupDetails: document.getElementById('github-setup-details'),
+        githubSetupLabel: document.getElementById('github-setup-label'),
+        githubSetupSummary: document.getElementById('github-setup-summary'),
+        githubSetupSteps: document.getElementById('github-setup-steps'),
+        checkGithubButton: document.getElementById('check-github-button'),
+        githubCheckStatus: document.getElementById('github-check-status'),
         draftTitle: document.getElementById('draft-title'),
         draftDescription: document.getElementById('draft-description'),
         startDraftButton: document.getElementById('start-draft-button'),
         continueEditingLink: document.getElementById('continue-editing-link'),
         publishButton: document.getElementById('publish-button'),
         finishDraftButton: document.getElementById('finish-draft-button'),
+        abandonDraftButton: document.getElementById('abandon-draft-button'),
         workflowStatus: document.getElementById('workflow-status'),
         newMapButton: document.getElementById('new-map-button'),
         publishProgress: document.getElementById('publish-progress'),
         publishProgressStatus: document.getElementById('publish-progress-status'),
         publishOutput: document.getElementById('publish-output'),
+        resumePublishButton: document.getElementById('resume-publish-button'),
+        dismissPublishButton: document.getElementById('dismiss-publish-button'),
         newMapDialog: document.getElementById('new-map-dialog'),
         newMapForm: document.getElementById('new-map-form'),
         closeNewMapButton: document.getElementById('close-new-map-button'),
@@ -38,8 +47,25 @@
         newMapScaleKilometers: document.getElementById('new-map-scale-kilometers'),
         newMapSelectorDescription: document.getElementById('new-map-selector-description'),
         newMapBlurb: document.getElementById('new-map-blurb'),
+        newMapArtworkTitle: document.getElementById('new-map-artwork-title'),
+        newMapArtworkMeta: document.getElementById('new-map-artwork-meta'),
+        newMapPreviewImage: document.getElementById('new-map-preview-image'),
+        newMapPreviewEmpty: document.getElementById('new-map-preview-empty'),
+        newMapPlan: document.getElementById('new-map-plan'),
+        newMapPreprocessing: document.getElementById('new-map-preprocessing'),
+        newMapPlanFiles: document.getElementById('new-map-plan-files'),
+        reviewNewMapButton: document.getElementById('review-new-map-button'),
         newMapStatus: document.getElementById('new-map-status'),
-        createNewMapButton: document.getElementById('create-new-map-button')
+        createNewMapButton: document.getElementById('create-new-map-button'),
+        abandonDraftDialog: document.getElementById('abandon-draft-dialog'),
+        abandonDraftForm: document.getElementById('abandon-draft-form'),
+        abandonDraftCopy: document.getElementById('abandon-draft-copy'),
+        abandonDraftBranch: document.getElementById('abandon-draft-branch'),
+        abandonDraftConfirmation: document.getElementById('abandon-draft-confirmation'),
+        abandonDraftStatus: document.getElementById('abandon-draft-status'),
+        closeAbandonDraftButton: document.getElementById('close-abandon-draft-button'),
+        cancelAbandonDraftButton: document.getElementById('cancel-abandon-draft-button'),
+        confirmAbandonDraftButton: document.getElementById('confirm-abandon-draft-button')
     };
 
     let csrfToken = '';
@@ -47,6 +73,8 @@
     let readiness = null;
     let publishPollTimer = null;
     let mapIdWasEdited = false;
+    let newMapPlanSignature = '';
+    let newMapPreviewUrl = '';
 
     async function readJsonResponse(response) {
         const payload = await response.json().catch(() => null);
@@ -95,6 +123,35 @@
         });
     }
 
+    function renderGitHubSetup(configuration, checkResult = null) {
+        const setup = configuration.setup || {};
+        const configured = configuration.configured === true;
+        const repositoryLabel = configuration.owner && configuration.repo
+            ? `${configuration.owner}/${configuration.repo}`
+            : 'the map repository';
+        dom.githubSetupLabel.textContent = configured ? 'Configuration ready' : 'Setup required';
+        dom.githubSetupSummary.textContent = checkResult?.message || (configured
+            ? `Repository-scoped credentials are mounted for ${repositoryLabel}. Run the live check before publishing.`
+            : 'Complete the following host configuration before Studio can create a draft pull request.');
+        dom.checkGithubButton.disabled = !configured;
+
+        const steps = checkResult?.remediation || setup.remediation || [];
+        dom.githubSetupSteps.replaceChildren();
+        steps.forEach((step) => {
+            const item = document.createElement('li');
+            item.textContent = step;
+            dom.githubSetupSteps.appendChild(item);
+        });
+
+        if (checkResult) {
+            dom.githubCheckStatus.dataset.tone = checkResult.ok ? 'good' : 'danger';
+            dom.githubCheckStatus.textContent = checkResult.message;
+        } else {
+            dom.githubCheckStatus.textContent = '';
+            delete dom.githubCheckStatus.dataset.tone;
+        }
+    }
+
     function renderStudioPresentation() {
         if (!workspace || !window.MapStudioModel) {
             renderWorkspaceDetails();
@@ -118,7 +175,10 @@
         dom.continueEditingLink.hidden = !presentation.editable;
         dom.publishButton.disabled = capabilities.canPublish !== true;
         dom.finishDraftButton.disabled = capabilities.canFinishDraft !== true;
+        dom.abandonDraftButton.hidden = !presentation.activeDraft;
+        dom.abandonDraftButton.disabled = capabilities.canAbandonDraft !== true;
         dom.newMapButton.disabled = capabilities.canCreateMap !== true;
+        renderGitHubSetup(workspace.github || {});
 
         if (presentation.githubReady) {
             dom.workspaceCapabilityNote.dataset.tone = 'good';
@@ -156,14 +216,24 @@
     }
 
     function renderPublishJob(job) {
-        if (!job) return;
+        if (!job) {
+            dom.publishProgress.hidden = true;
+            return;
+        }
         dom.publishProgress.hidden = false;
-        dom.publishProgressStatus.textContent = job.status === 'running'
-            ? 'Running the complete release check…'
-            : (job.status === 'complete'
-                ? `Draft pull request #${job.result?.pullRequestNumber} is ready for review.`
-                : `Publication failed: ${job.error || 'Unknown error'}`);
+        dom.publishProgress.querySelectorAll('a').forEach((item) => item.remove());
+        if (job.status === 'running') {
+            dom.publishProgressStatus.textContent = 'Running the complete release check…';
+        } else if (job.status === 'complete') {
+            dom.publishProgressStatus.textContent = `Draft pull request #${job.result?.pullRequestNumber} is ready for review.`;
+        } else if (job.status === 'interrupted') {
+            dom.publishProgressStatus.textContent = job.error || 'Publication was interrupted. Resume it when ready.';
+        } else {
+            dom.publishProgressStatus.textContent = `Publication failed: ${job.error || 'Unknown error'}`;
+        }
         dom.publishOutput.textContent = (job.recentOutput || []).join('\n');
+        dom.resumePublishButton.hidden = job.canResume !== true;
+        dom.dismissPublishButton.hidden = job.canDismiss !== true;
         if (job.status === 'complete' && job.result?.pullRequestUrl) {
             const link = document.createElement('a');
             link.href = job.result.pullRequestUrl;
@@ -171,7 +241,6 @@
             link.rel = 'noopener';
             link.className = 'primary-action';
             link.textContent = 'Open draft pull request';
-            dom.publishProgress.querySelectorAll('a').forEach((item) => item.remove());
             dom.publishProgress.appendChild(link);
         }
         if (job.status !== 'running' && publishPollTimer) {
@@ -188,6 +257,29 @@
             publishPollTimer = setTimeout(() => pollPublishJob().catch((error) => {
                 dom.publishProgressStatus.textContent = error.message;
             }), 1200);
+        } else {
+            await Promise.all([refreshReadiness(), refreshWorkspace()]);
+        }
+    }
+
+    async function postPublishRecovery(pathname, pendingMessage) {
+        dom.resumePublishButton.disabled = true;
+        dom.dismissPublishButton.disabled = true;
+        dom.publishProgressStatus.textContent = pendingMessage;
+        try {
+            const response = await fetch(pathname, {
+                method: 'POST',
+                headers: { 'X-CSRF-Token': csrfToken }
+            });
+            const payload = await readJsonResponse(response);
+            renderPublishJob(payload.publishJob);
+            if (payload.publishJob?.status === 'running') pollPublishJob();
+            await refreshWorkspace();
+        } catch (error) {
+            dom.publishProgressStatus.textContent = error.message;
+        } finally {
+            dom.resumePublishButton.disabled = false;
+            dom.dismissPublishButton.disabled = false;
         }
     }
 
@@ -204,6 +296,109 @@
         let binary = '';
         bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
         return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
+    function getNewMapArtwork() {
+        return dom.newMapFile.files?.[0] || null;
+    }
+
+    function getNewMapArtworkContentType(artwork) {
+        const declaredType = String(artwork?.type || '').toLowerCase();
+        if (['image/webp', 'image/png', 'image/jpeg'].includes(declaredType)) return declaredType;
+        const fileName = String(artwork?.name || '').toLowerCase();
+        if (fileName.endsWith('.webp')) return 'image/webp';
+        if (fileName.endsWith('.png')) return 'image/png';
+        if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) return 'image/jpeg';
+        return '';
+    }
+
+    function getNewMapMetadata(artwork = getNewMapArtwork()) {
+        return {
+            id: dom.newMapId.value.trim(),
+            name: dom.newMapName.value.trim(),
+            parentId: dom.newMapParent.value,
+            scalePixels: dom.newMapScalePixels.value,
+            scaleKilometers: dom.newMapScaleKilometers.value,
+            selectorDescription: dom.newMapSelectorDescription.value.trim(),
+            blurb: dom.newMapBlurb.value.trim(),
+            artworkContentType: getNewMapArtworkContentType(artwork)
+        };
+    }
+
+    function getNewMapPlanSignature() {
+        const artwork = getNewMapArtwork();
+        if (!artwork) return '';
+        return JSON.stringify({
+            metadata: getNewMapMetadata(artwork),
+            artwork: {
+                name: artwork.name,
+                size: artwork.size,
+                type: artwork.type,
+                lastModified: artwork.lastModified
+            }
+        });
+    }
+
+    function invalidateNewMapPlan() {
+        newMapPlanSignature = '';
+        dom.newMapPlan.hidden = true;
+        dom.newMapPlanFiles.replaceChildren();
+        if (dom.newMapForm.dataset.busy !== 'true') dom.createNewMapButton.disabled = true;
+    }
+
+    function clearNewMapPreview() {
+        if (newMapPreviewUrl) URL.revokeObjectURL(newMapPreviewUrl);
+        newMapPreviewUrl = '';
+        dom.newMapPreviewImage.onload = null;
+        dom.newMapPreviewImage.onerror = null;
+        dom.newMapPreviewImage.removeAttribute('src');
+        dom.newMapPreviewImage.hidden = true;
+        dom.newMapPreviewEmpty.hidden = false;
+        dom.newMapArtworkTitle.textContent = 'Choose an image to inspect it';
+        dom.newMapArtworkMeta.textContent = 'WebP files are preserved. PNG and JPEG files are converted to high-quality WebP during creation.';
+    }
+
+    function renderNewMapArtworkPreview() {
+        clearNewMapPreview();
+        const artwork = getNewMapArtwork();
+        if (!artwork) return;
+        const artworkContentType = getNewMapArtworkContentType(artwork);
+        if (!artworkContentType) {
+            dom.newMapStatus.textContent = 'Map artwork must be a WebP, PNG, or JPEG image.';
+            return;
+        }
+
+        newMapPreviewUrl = URL.createObjectURL(artwork);
+        dom.newMapPreviewImage.onload = () => {
+            const sizeMiB = (artwork.size / (1024 * 1024)).toFixed(1);
+            const conversion = artworkContentType === 'image/webp'
+                ? 'Original WebP will be preserved.'
+                : 'Studio will convert this to a high-quality WebP.';
+            dom.newMapArtworkTitle.textContent = artwork.name;
+            dom.newMapArtworkMeta.textContent = `${dom.newMapPreviewImage.naturalWidth} × ${dom.newMapPreviewImage.naturalHeight} pixels · ${sizeMiB} MiB. ${conversion}`;
+        };
+        dom.newMapPreviewImage.onerror = () => {
+            dom.newMapStatus.textContent = 'The selected artwork could not be previewed as an image.';
+            clearNewMapPreview();
+        };
+        dom.newMapPreviewImage.src = newMapPreviewUrl;
+        dom.newMapPreviewImage.hidden = false;
+        dom.newMapPreviewEmpty.hidden = true;
+    }
+
+    function renderNewMapPlan(plan) {
+        dom.newMapPreprocessing.textContent = plan.preprocessing;
+        dom.newMapPlanFiles.replaceChildren();
+        plan.files.forEach((file) => {
+            const row = document.createElement('tr');
+            [file.action, file.path, file.purpose].forEach((value) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+            dom.newMapPlanFiles.appendChild(row);
+        });
+        dom.newMapPlan.hidden = false;
     }
 
     async function openNewMapDialog() {
@@ -227,7 +422,8 @@
     }
 
     function closeNewMapDialog() {
-        if (dom.createNewMapButton.disabled) return;
+        if (dom.newMapForm.dataset.busy === 'true') return;
+        clearNewMapPreview();
         dom.newMapDialog.close();
     }
 
@@ -273,6 +469,22 @@
         }
     });
 
+    dom.checkGithubButton.addEventListener('click', async () => {
+        dom.checkGithubButton.disabled = true;
+        dom.githubCheckStatus.dataset.tone = 'neutral';
+        dom.githubCheckStatus.textContent = 'Checking repository and pull-request access…';
+        try {
+            const response = await fetch('/api/studio/github/check', { cache: 'no-store' });
+            const payload = await readJsonResponse(response);
+            renderGitHubSetup(workspace?.github || {}, payload.result);
+        } catch (error) {
+            dom.githubCheckStatus.dataset.tone = 'danger';
+            dom.githubCheckStatus.textContent = error.message;
+        } finally {
+            dom.checkGithubButton.disabled = workspace?.github?.configured !== true;
+        }
+    });
+
     dom.startDraftButton.addEventListener('click', async () => {
         const title = dom.draftTitle.value.trim();
         if (!title) {
@@ -297,8 +509,8 @@
                 ? 'Draft started from the latest main branch. The editor is ready.'
                 : 'Local draft started. The editor is ready; connect GitHub later to publish.';
         } catch (error) {
-            dom.workflowStatus.textContent = error.message;
             await refreshWorkspace().catch(() => {});
+            dom.workflowStatus.textContent = error.message;
         }
     });
 
@@ -329,9 +541,16 @@
                 dom.publishProgressStatus.textContent = error.message;
             });
         } catch (error) {
-            dom.workflowStatus.textContent = error.message;
             await refreshWorkspace().catch(() => {});
+            dom.workflowStatus.textContent = error.message;
         }
+    });
+
+    dom.resumePublishButton.addEventListener('click', () => {
+        postPublishRecovery('/api/studio/publish/resume', 'Resuming publication…');
+    });
+    dom.dismissPublishButton.addEventListener('click', () => {
+        postPublishRecovery('/api/studio/publish/dismiss', 'Dismissing the saved job status…');
     });
 
     dom.finishDraftButton.addEventListener('click', async () => {
@@ -346,14 +565,76 @@
             renderWorkspace(payload.workspace);
             dom.workflowStatus.textContent = 'Merged draft finished. The workspace is ready for another change.';
         } catch (error) {
-            dom.workflowStatus.textContent = error.message;
             await refreshWorkspace().catch(() => {});
+            dom.workflowStatus.textContent = error.message;
+        }
+    });
+
+    function closeAbandonDraftDialog() {
+        if (dom.confirmAbandonDraftButton.dataset.busy === 'true') return;
+        dom.abandonDraftDialog.close();
+    }
+
+    dom.abandonDraftButton.addEventListener('click', () => {
+        const branch = workspace?.draft?.branch || workspace?.branch || '';
+        const changeCount = Array.isArray(workspace?.changedPaths) ? workspace.changedPaths.length : 0;
+        dom.abandonDraftBranch.textContent = branch;
+        dom.abandonDraftConfirmation.value = '';
+        dom.abandonDraftConfirmation.dataset.expected = branch;
+        dom.confirmAbandonDraftButton.disabled = true;
+        dom.abandonDraftStatus.textContent = '';
+        dom.abandonDraftCopy.textContent = changeCount > 0
+            ? `This permanently removes the isolated worktree, its local branch, and ${changeCount} uncommitted changed ${changeCount === 1 ? 'file' : 'files'}. A remote branch is not deleted.`
+            : 'This removes the isolated worktree and its local branch. A remote branch is not deleted.';
+        dom.abandonDraftDialog.showModal();
+        dom.abandonDraftConfirmation.focus();
+    });
+
+    dom.abandonDraftConfirmation.addEventListener('input', () => {
+        dom.confirmAbandonDraftButton.disabled = dom.abandonDraftConfirmation.value !== dom.abandonDraftConfirmation.dataset.expected;
+    });
+    dom.closeAbandonDraftButton.addEventListener('click', closeAbandonDraftDialog);
+    dom.cancelAbandonDraftButton.addEventListener('click', closeAbandonDraftDialog);
+    dom.abandonDraftForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const confirmBranch = dom.abandonDraftConfirmation.value;
+        dom.confirmAbandonDraftButton.dataset.busy = 'true';
+        dom.confirmAbandonDraftButton.disabled = true;
+        dom.cancelAbandonDraftButton.disabled = true;
+        dom.closeAbandonDraftButton.disabled = true;
+        dom.abandonDraftStatus.textContent = 'Removing the isolated workspace…';
+        try {
+            const response = await fetch('/api/studio/drafts/abandon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ confirmBranch })
+            });
+            const payload = await readJsonResponse(response);
+            renderWorkspace(payload.workspace);
+            dom.abandonDraftDialog.close();
+            dom.workflowStatus.textContent = 'Local draft abandoned. The base checkout was not changed.';
+        } catch (error) {
+            dom.abandonDraftStatus.textContent = error.message;
+        } finally {
+            dom.confirmAbandonDraftButton.dataset.busy = 'false';
+            dom.cancelAbandonDraftButton.disabled = false;
+            dom.closeAbandonDraftButton.disabled = false;
+            dom.confirmAbandonDraftButton.disabled = dom.abandonDraftConfirmation.value !== dom.abandonDraftConfirmation.dataset.expected;
         }
     });
 
     dom.newMapButton.addEventListener('click', () => {
         mapIdWasEdited = false;
+        newMapPlanSignature = '';
         dom.newMapForm.reset();
+        dom.newMapForm.dataset.busy = 'false';
+        dom.createNewMapButton.disabled = true;
+        dom.newMapPlan.hidden = true;
+        dom.newMapPlanFiles.replaceChildren();
+        clearNewMapPreview();
         openNewMapDialog();
     });
     dom.closeNewMapButton.addEventListener('click', closeNewMapDialog);
@@ -362,36 +643,76 @@
     dom.newMapName.addEventListener('input', () => {
         if (!mapIdWasEdited) dom.newMapId.value = slugifyMapId(dom.newMapName.value);
     });
+    dom.newMapForm.addEventListener('input', invalidateNewMapPlan);
+    dom.newMapForm.addEventListener('change', (event) => {
+        invalidateNewMapPlan();
+        if (event.target === dom.newMapFile) renderNewMapArtworkPreview();
+    });
+
+    dom.reviewNewMapButton.addEventListener('click', async () => {
+        if (!dom.newMapForm.reportValidity()) return;
+        const artwork = getNewMapArtwork();
+        if (!artwork) {
+            dom.newMapStatus.textContent = 'Choose map artwork before reviewing the plan.';
+            return;
+        }
+        const artworkContentType = getNewMapArtworkContentType(artwork);
+        if (!artworkContentType) {
+            dom.newMapStatus.textContent = 'Map artwork must be a WebP, PNG, or JPEG image.';
+            return;
+        }
+
+        dom.reviewNewMapButton.disabled = true;
+        dom.newMapStatus.textContent = 'Checking the map ID, atlas placement, and generated files…';
+        try {
+            const response = await fetch('/api/studio/maps/plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify(getNewMapMetadata(artwork))
+            });
+            const payload = await readJsonResponse(response);
+            renderNewMapPlan(payload.plan);
+            newMapPlanSignature = getNewMapPlanSignature();
+            dom.createNewMapButton.disabled = false;
+            dom.newMapStatus.textContent = 'Plan is ready. Review the artwork and file list, then create the map.';
+        } catch (error) {
+            invalidateNewMapPlan();
+            dom.newMapStatus.textContent = error.message;
+        } finally {
+            dom.reviewNewMapButton.disabled = false;
+        }
+    });
 
     dom.newMapForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const artwork = dom.newMapFile.files[0];
+        const artwork = getNewMapArtwork();
         if (!artwork) {
-            dom.newMapStatus.textContent = 'Choose a WebP map image.';
+            dom.newMapStatus.textContent = 'Choose map artwork.';
             return;
         }
-        if (artwork.type && artwork.type !== 'image/webp') {
-            dom.newMapStatus.textContent = 'Map artwork must be a WebP image.';
+        if (!newMapPlanSignature || newMapPlanSignature !== getNewMapPlanSignature()) {
+            invalidateNewMapPlan();
+            dom.newMapStatus.textContent = 'Review the map plan again before creating files.';
             return;
         }
-        const metadata = {
-            id: dom.newMapId.value.trim(),
-            name: dom.newMapName.value.trim(),
-            parentId: dom.newMapParent.value,
-            scalePixels: dom.newMapScalePixels.value,
-            scaleKilometers: dom.newMapScaleKilometers.value,
-            selectorDescription: dom.newMapSelectorDescription.value.trim(),
-            blurb: dom.newMapBlurb.value.trim()
-        };
+        const metadata = getNewMapMetadata(artwork);
+        dom.newMapForm.dataset.busy = 'true';
         dom.createNewMapButton.disabled = true;
+        dom.reviewNewMapButton.disabled = true;
         dom.cancelNewMapButton.disabled = true;
         dom.closeNewMapButton.disabled = true;
-        dom.newMapStatus.textContent = 'Uploading artwork, creating map files, and validating the atlas…';
+        const artworkContentType = getNewMapArtworkContentType(artwork);
+        dom.newMapStatus.textContent = artworkContentType === 'image/webp'
+            ? 'Uploading artwork, creating map files, and validating the atlas…'
+            : 'Uploading and converting artwork, creating map files, and validating the atlas…';
         try {
             const response = await fetch('/api/studio/maps', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'image/webp',
+                    'Content-Type': artworkContentType,
                     'X-CSRF-Token': csrfToken,
                     'X-Map-Metadata': encodeBase64UrlJson(metadata)
                 },
@@ -405,9 +726,11 @@
             }, 500);
         } catch (error) {
             dom.newMapStatus.textContent = error.message;
-            dom.createNewMapButton.disabled = false;
+            dom.createNewMapButton.disabled = newMapPlanSignature !== getNewMapPlanSignature();
+            dom.reviewNewMapButton.disabled = false;
             dom.cancelNewMapButton.disabled = false;
             dom.closeNewMapButton.disabled = false;
+            dom.newMapForm.dataset.busy = 'false';
         }
     });
 

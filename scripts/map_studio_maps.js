@@ -6,6 +6,11 @@ const { writeWithValidation } = require('./editor_server.js');
 
 const MAX_MAP_UPLOAD_BYTES = 512 * 1024 * 1024;
 const MAP_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
+const MAP_UPLOAD_TYPES = new Map([
+    ['image/webp', { extension: 'webp', preprocessing: 'Preserve the original WebP artwork without recompression.' }],
+    ['image/png', { extension: 'png', preprocessing: 'Convert PNG artwork to a high-quality WebP and remove non-rendering metadata.' }],
+    ['image/jpeg', { extension: 'jpg', preprocessing: 'Auto-orient JPEG artwork, convert it to a high-quality WebP, and remove non-rendering metadata.' }]
+]);
 
 function prettyJson(value) {
     return `${JSON.stringify(value, null, 2)}\n`;
@@ -75,6 +80,88 @@ function getNextOrder(entries, parentId) {
     return siblingOrders.length > 0 ? Math.max(...siblingOrders) + 1 : 0;
 }
 
+function getArtworkType(contentType) {
+    const normalized = String(contentType || '').split(';')[0].trim().toLowerCase();
+    const artworkType = MAP_UPLOAD_TYPES.get(normalized);
+    if (!artworkType) {
+        throw new Error('New map artwork must be a WebP, PNG, or JPEG image.');
+    }
+    return { contentType: normalized, ...artworkType };
+}
+
+function planNewMapCreation({ repoRoot, metadata }) {
+    const manifestPath = path.join(repoRoot, 'maps', 'maps.json');
+    const manifestDocument = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const manifestEntries = getManifestEntries(manifestDocument);
+    const normalized = assertNewMapMetadata(metadata, manifestEntries);
+    const artworkType = getArtworkType(metadata.artworkContentType);
+    const imageRelativePath = `maps/${normalized.id}.webp`;
+    const documentRelativePath = `maps/${normalized.id}.json`;
+    if (fs.existsSync(path.join(repoRoot, imageRelativePath)) || fs.existsSync(path.join(repoRoot, documentRelativePath))) {
+        throw new Error(`Map files for "${normalized.id}" already exist.`);
+    }
+
+    return {
+        map: normalized,
+        parentId: normalized.parentId,
+        nextOrder: getNextOrder(manifestEntries, normalized.parentId),
+        preprocessing: artworkType.preprocessing,
+        files: [
+            { path: imageRelativePath, action: 'Create', purpose: 'Browser-ready map artwork' },
+            { path: documentRelativePath, action: 'Create', purpose: 'Map metadata and empty feature collections' },
+            { path: 'maps/maps.json', action: 'Update', purpose: 'Atlas hierarchy and display order' },
+            { path: 'maps/atlas-index.json', action: 'Regenerate', purpose: 'Search and atlas discovery index' }
+        ]
+    };
+}
+
+function prepareMapArtwork({ uploadPath, contentType, runCommand = spawnSync }) {
+    const artworkType = getArtworkType(contentType);
+    if (artworkType.contentType === 'image/webp') {
+        return {
+            artworkPath: uploadPath,
+            converted: false,
+            preprocessing: artworkType.preprocessing
+        };
+    }
+
+    const artworkPath = path.join(path.dirname(uploadPath), 'map.webp');
+    const conversionArgs = [
+        uploadPath,
+        '-auto-orient',
+        '-strip',
+        '-quality', '95',
+        '-define', 'webp:method=6',
+        artworkPath
+    ];
+    const candidates = [
+        ['magick', conversionArgs],
+        ['convert', conversionArgs]
+    ];
+    let lastOutput = '';
+    for (const [command, args] of candidates) {
+        const result = runCommand(command, args, {
+            encoding: 'utf8',
+            stdio: 'pipe',
+            timeout: 120_000
+        });
+        if (result.error?.code === 'ENOENT') continue;
+        if (result.status !== 0) {
+            lastOutput = `${result.stdout || ''}${result.stderr || ''}`.trim();
+            break;
+        }
+        if (!fs.existsSync(artworkPath)) {
+            throw new Error('Image conversion completed without producing a WebP file.');
+        }
+        return {
+            artworkPath,
+            converted: true,
+            preprocessing: artworkType.preprocessing
+        };
+    }
+    throw new Error(`Could not convert map artwork to WebP${lastOutput ? `: ${lastOutput}` : '. ImageMagick is required.'}`);
+}
+
 function createNewMapFromUpload({
     repoRoot,
     uploadPath,
@@ -136,14 +223,17 @@ function createNewMapFromUpload({
 function receiveUploadToTemporaryFile(request, options = {}) {
     const maxBytes = Number(options.maxBytes) > 0 ? Number(options.maxBytes) : MAX_MAP_UPLOAD_BYTES;
     const contentType = String(request.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
-    if (contentType !== 'image/webp') {
-        return Promise.reject(new Error('New map artwork must be a WebP image.'));
+    let artworkType;
+    try {
+        artworkType = getArtworkType(contentType);
+    } catch (error) {
+        return Promise.reject(error);
     }
     const declaredLength = Number(request.headers['content-length'] || 0);
     if (declaredLength > maxBytes) return Promise.reject(new Error('Map artwork exceeds the upload limit.'));
 
     const tempDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'hiraeth-map-upload-'));
-    const uploadPath = path.join(tempDirectory, 'map.webp');
+    const uploadPath = path.join(tempDirectory, `upload.${artworkType.extension}`);
     const output = fs.createWriteStream(uploadPath, { flags: 'wx' });
     let receivedBytes = 0;
 
@@ -160,6 +250,7 @@ function receiveUploadToTemporaryFile(request, options = {}) {
             }
             resolve({
                 uploadPath,
+                contentType,
                 receivedBytes,
                 cleanup: () => fs.rmSync(tempDirectory, { recursive: true, force: true })
             });
@@ -201,12 +292,16 @@ function metadataFromHeaders(headers) {
 
 module.exports = {
     MAP_ID_PATTERN,
+    MAP_UPLOAD_TYPES,
     MAX_MAP_UPLOAD_BYTES,
     assertNewMapMetadata,
     createNewMapFromUpload,
     getManifestEntries,
     getNextOrder,
+    getArtworkType,
     metadataFromHeaders,
+    planNewMapCreation,
+    prepareMapArtwork,
     readImageDimensions,
     receiveUploadToTemporaryFile
 };

@@ -13,6 +13,7 @@ const {
     isAllowedEditorWriteRequest,
     isLoopbackHost,
     isSameOriginWriteRequest,
+    resolveEditorStaticRoot,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
     saveWorkspaceDocuments,
@@ -108,6 +109,8 @@ assert.equal(
     'dist/index.html'
 );
 assert.equal(resolvePreviewRequestPath(repoRoot, '/preview/../package.json'), null);
+assert.equal(resolveEditorStaticRoot('/draft', '/application', '/maps/maps.json'), '/draft');
+assert.equal(resolveEditorStaticRoot('/draft', '/application', '/js/map-editor.js'), '/application');
 
 const readiness = getPublishReadiness(repoRoot);
 assert.equal(readiness.pagesBundle.built, true);

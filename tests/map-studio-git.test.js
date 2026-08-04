@@ -6,6 +6,7 @@ const {
     finishMergedDraft,
     getChangedPaths,
     getWorkspaceState,
+    isGeneratedPath,
     isPublishablePath,
     makeDraftBranch,
     publishDraft,
@@ -19,6 +20,8 @@ const {
 assert.equal(isPublishablePath('maps/new-map.json'), true);
 assert.equal(isPublishablePath('site.config.json'), true);
 assert.equal(isPublishablePath('scripts/editor_server.js'), false);
+assert.equal(isGeneratedPath('dist/index.html'), true);
+assert.equal(isGeneratedPath('maps/Fair.json'), false);
 assert.equal(slugify('The Port City!'), 'the-port-city');
 assert.match(makeDraftBranch('The Port City', new Date('2026-08-02T12:00:00Z')), /^map-studio\/20260802-the-port-city-[a-f0-9]{4}$/);
 
@@ -38,14 +41,24 @@ assert.deepEqual(getChangedPaths(repoRoot), []);
 fs.writeFileSync(path.join(repoRoot, '.hidden-file'), 'preserve leading dot');
 assert.deepEqual(getChangedPaths(repoRoot), ['.hidden-file']);
 fs.rmSync(path.join(repoRoot, '.hidden-file'));
+fs.mkdirSync(path.join(repoRoot, 'dist'), { recursive: true });
+fs.writeFileSync(path.join(repoRoot, 'dist', 'generated-preview.html'), 'generated');
+assert.deepEqual(getChangedPaths(repoRoot), []);
 
+let existingPullRequest = null;
+let pullRequestCreateCount = 0;
 const githubClient = {
     getConfiguration: () => ({ configured: true, mode: 'token', owner: 'test', repo: 'map' }),
     getToken: async () => 'test-token',
-    createDraftPullRequest: async ({ branch, title }) => ({
-        number: 7,
-        html_url: `https://github.test/${branch}/${encodeURIComponent(title)}`
-    })
+    findOpenPullRequest: async () => existingPullRequest,
+    createDraftPullRequest: async ({ branch, title }) => {
+        pullRequestCreateCount += 1;
+        existingPullRequest = {
+            number: 7,
+            html_url: `https://github.test/${branch}/${encodeURIComponent(title)}`
+        };
+        return existingPullRequest;
+    }
 };
 const draft = await startDraft({ repoRoot, title: 'New Coast Map', githubClient });
 assert.equal(draft.activeDraft, true);
@@ -62,6 +75,17 @@ const publication = await publishDraft({
 assert.equal(publication.pullRequestNumber, 7);
 assert.deepEqual(publication.paths, ['maps/new-map.json']);
 assert.equal(getWorkspaceState(repoRoot, githubClient.getConfiguration()).clean, true);
+const resumedPublication = await publishDraft({
+    repoRoot,
+    title: 'Add draft map',
+    description: 'Integration test',
+    githubClient,
+    resume: true,
+    runValidation: async () => { throw new Error('A clean resume must not repeat validation.'); },
+    advanceAssetVersion: () => { throw new Error('A clean resume must not bump the asset version.'); }
+});
+assert.equal(resumedPublication.commit, publication.commit);
+assert.equal(pullRequestCreateCount, 1);
 await assert.rejects(
     finishMergedDraft({ repoRoot, githubClient }),
     /not been merged/

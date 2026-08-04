@@ -12,7 +12,7 @@ Public deployment remains review-gated: Studio never merges a pull request or pu
 - A strong Studio password
 - A GitHub App installed only on this repository, or a fine-grained repository token, when automated pull requests are desired
 
-Do not run the Compose service from a developer checkout containing unrelated work. Studio deliberately refuses to publish non-map files, and it switches its dedicated clone between `main` and `map-studio/*` draft branches.
+Studio mounts the host checkout read-only and creates a private service clone inside its persistent volume. Each `map-studio/*` draft lives in a worktree owned by that service clone, so Studio neither changes the mounted checkout nor adds branches and worktree metadata to its `.git` directory. A dedicated clone is still recommended for a long-running service, but it is no longer a data-isolation requirement.
 
 ## 1. Prepare the host
 
@@ -53,6 +53,8 @@ Put the App ID, installation ID, repository owner, and repository name in `.env`
 .secrets/github-app-private-key.pem
 ```
 
+Set `MAP_STUDIO_GITHUB_PRIVATE_KEY_SECRET_FILE=./.secrets/github-app-private-key.pem` in `.env` so Compose mounts the key instead of the disabled-integration placeholder.
+
 Then restrict it:
 
 ```sh
@@ -60,6 +62,8 @@ chmod 600 .secrets/github-app-private-key.pem
 ```
 
 Studio exchanges that key for short-lived installation tokens. The private key is mounted read-only as a Docker secret and is never written into the Git configuration or image.
+
+After sign-in, expand **Publishing setup** in the draft workflow. Studio lists each missing host setting without displaying credential values. Once the configuration is complete, **Check GitHub connection** verifies live repository access before a maintainer starts publication.
 
 ### Initial alternative: fine-grained token
 
@@ -105,35 +109,37 @@ Use the password stored in `.secrets/map-studio-password.txt`.
 ## Maintainer workflow
 
 1. Open Map Studio and enter a concise change title.
-2. Click **Start local draft**. Studio creates a unique `map-studio/*` branch. When GitHub is connected it first fetches and fast-forwards `origin/main`; offline drafts deliberately skip that network synchronization.
-3. Open the visual editor and save map data normally, or use **New map** to upload WebP artwork and create the JSON and atlas entry automatically.
+2. Click **Start local draft**. Studio creates a unique persistent worktree and `map-studio/*` branch in its private service repository. When GitHub is connected it fetches `origin/main`; offline drafts import the mounted checkout's committed `main` ref without writing to that checkout.
+3. Open the visual editor and save map data normally, or use **New map** to upload supported artwork and create the map data and atlas entry automatically.
 4. Build and inspect the live preview.
 5. Return to Studio and click **Create draft pull request**.
 6. Studio advances the asset version when needed, runs `npm run publish:check`, stages only approved map/version files, commits, pushes, and creates a draft PR.
 7. Review GitHub checks and the preview, then approve and merge the PR through GitHub.
-8. Click **Sync merged draft**. Studio verifies that the branch is present in `origin/main`, switches back to `main`, fast-forwards, and removes the merged local branch.
+8. Click **Sync merged draft**. Studio verifies that the branch is present in `origin/main`, removes the isolated worktree and local branch, and leaves the mounted checkout untouched. **Abandon local draft** provides a typed-confirmation recovery path for drafts that should be discarded; it never deletes a remote branch.
 
 ## New-map behavior
 
-The guided workflow accepts WebP artwork and asks for:
+The guided workflow accepts WebP, PNG, or JPEG artwork and asks for:
 
 - Map name and stable ID
 - Parent map or folder
 - Optional scale values
 - Atlas description and map introduction
 
-Studio reads the image dimensions with ImageMagick, creates `maps/<id>.webp` and `maps/<id>.json`, adds the flat `maps/maps.json` entry, regenerates the atlas, and validates everything transactionally. A failed validation restores the prior files.
+Studio previews the selected artwork and requires a review of every file it will create, update, or regenerate before writes are enabled. Existing WebP artwork is preserved; PNG and JPEG inputs are auto-oriented where applicable, stripped of non-rendering metadata, and converted to high-quality WebP. Studio then reads the final dimensions with ImageMagick, creates `maps/<id>.webp` and `maps/<id>.json`, adds the flat `maps/maps.json` entry, regenerates the atlas, and validates everything transactionally. A failed validation restores the prior files.
+
+Every save and new-map upload creates a recovery journal in the private worktree's Git metadata before repository files change. If the container stops during regeneration or validation, the next startup restores the complete pre-operation snapshot and removes incomplete generated files. Preview jobs also persist their state; an interrupted build discards its partial `dist/` bundle and can be started again safely. Publication jobs persist their title, output, branch, and status in the drafts volume. **Resume publication** reuses an existing validated commit or open pull request instead of duplicating either, while **Dismiss status** abandons only the saved job record.
 
 ## Security model
 
 - The original `npm run editor` command remains loopback-only.
 - LAN mode requires an allowlisted Host header, authenticated HttpOnly/SameSite session, exact same-origin requests, and a per-session CSRF token.
 - Login attempts are rate-limited.
-- Map writes are disabled on `main` and detached HEAD. A named non-main branch can be edited locally; automated Studio publishing remains restricted to active `map-studio/*` drafts.
+- Map writes are enabled only inside the active managed `map-studio/*` worktree. The mounted checkout remains read-only to Studio regardless of its branch or dirty state.
 - Publishing rejects every changed path except `maps/**` and the four synchronized asset-version files.
 - Git credentials are supplied to one command through the process environment and are not persisted in the remote URL or credential store.
 - The application runs as a non-root container user and does not mount the Docker socket.
-- Map artwork uploads are streamed into a temporary directory, limited to 512 MiB, restricted to WebP, inspected by ImageMagick, and removed after processing.
+- Map artwork uploads are streamed into a temporary directory, limited to 512 MiB, restricted to WebP, PNG, or JPEG, inspected by ImageMagick, and removed after processing.
 
 Keep the service on a trusted LAN or private VPN. Do not forward ports 80 or 443 from the public internet to this Compose project.
 
@@ -154,7 +160,7 @@ git pull --ff-only origin main
 docker compose up -d --build
 ```
 
-The tile cache, Caddy certificate authority, and Caddy configuration are persistent named volumes. The Git repository remains the dedicated host clone mounted at `/workspace`; back it up like any other maintainer working copy, especially if a draft has not been pushed yet.
+The tile cache, private Studio clone/worktrees, Caddy certificate authority, and Caddy configuration are persistent named volumes. Back up the `map_studio_drafts` volume when an unpushed draft is important; rebuilding the application image does not remove it. The host clone mounted at `/workspace` is a read-only source and recovery remote, not the active editing workspace.
 
 ## Product architecture
 
@@ -179,13 +185,13 @@ New fields should join one of those surfaces through a reusable field definition
 
 The current capability model and inspector structure are foundations, not the end of the product. Map Studio should not be described as mature until all of these gates are met:
 
-- [ ] Each Studio draft uses its own persistent Git worktree instead of switching the mounted checkout.
-- [ ] Map and feature edits have command-based undo and redo, including geometry operations.
-- [ ] Map and feature forms are schema-driven, with field help, validation, and extension points in one registry.
-- [ ] New-map creation previews artwork, supports preprocessing where safe, and explains every generated file before writing.
-- [ ] GitHub setup has an in-product capability check and concrete remediation without exposing secrets.
-- [ ] Interrupted save, validation, upload, and publish jobs can be resumed or safely abandoned after a restart.
+- [x] Each Studio draft uses its own persistent Git worktree and private service clone instead of writing Git state into the mounted checkout.
+- [x] Map and feature edits have command-based undo and redo, including geometry operations.
+- [x] Map and feature forms are schema-driven, with field help, validation, and extension points in one registry.
+- [x] New-map creation previews artwork, supports preprocessing where safe, and explains every generated file before writing.
+- [x] GitHub setup has an in-product capability check and concrete remediation without exposing secrets.
+- [x] Interrupted save, validation, upload, preview, and publish jobs can be resumed or safely abandoned after a restart.
 - [ ] Browser tests cover draft start, map creation, edit/save, preview build, pull-request preparation, and recovery paths at desktop and narrow widths.
-- [ ] A maintainer can complete the common workflow without opening technical workspace JSON or knowing repository internals.
+- [x] A maintainer can complete the common workflow without opening technical workspace JSON or knowing repository internals.
 
 Until those gates are complete, changes should improve the lifecycle and shared state model instead of introducing another standalone card, modal, or one-off endpoint.

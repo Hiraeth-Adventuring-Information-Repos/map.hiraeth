@@ -92,6 +92,15 @@
                             <span>Used for the draft branch and pull request</span>
                         </div>
                         <input id="draft-title" name="title" type="text" maxlength="100" placeholder="Add the New Map of…" required>
+                        <details id="github-setup-details" class="github-setup-details">
+                            <summary><span>Publishing setup</span><strong id="github-setup-label">Checking…</strong></summary>
+                            <p id="github-setup-summary">Checking repository-scoped GitHub access.</p>
+                            <ul id="github-setup-steps" class="github-setup-steps"></ul>
+                            <div class="github-setup-actions">
+                                <button id="check-github-button" class="secondary-button" type="button" disabled>Check GitHub connection</button>
+                            </div>
+                            <p id="github-check-status" class="form-status" role="status" aria-live="polite"></p>
+                        </details>
                         <details class="review-notes-details">
                             <summary>Add review notes</summary>
                             <label class="sr-only" for="draft-description">Review notes</label>
@@ -102,6 +111,7 @@
                             <a id="continue-editing-link" class="primary-action" href="/studio/editor" hidden>Continue editing</a>
                             <button id="publish-button" type="button" disabled>Create draft pull request</button>
                             <button id="finish-draft-button" class="secondary-button" type="button" disabled>Sync merged draft</button>
+                            <button id="abandon-draft-button" class="secondary-button" type="button" hidden disabled>Abandon local draft</button>
                         </div>
                         <p id="workflow-status" class="form-status" role="status" aria-live="polite"></p>
                     </form>
@@ -140,6 +150,10 @@
                     <div class="section-heading"><div><p class="eyebrow">Background job</p><h2>Publication progress</h2></div></div>
                     <p id="publish-progress-status">Preparing validation…</p>
                     <pre id="publish-output"></pre>
+                    <div class="progress-actions">
+                        <button id="resume-publish-button" type="button" hidden>Resume publication</button>
+                        <button id="dismiss-publish-button" class="secondary-button" type="button" hidden>Dismiss status</button>
+                    </div>
                 </section>
 
                 <details class="studio-card readiness-card">
@@ -172,8 +186,8 @@
                             <option value="">Top level</option>
                         </select>
                     </label>
-                    <label>WebP artwork
-                        <input id="new-map-file" name="artwork" type="file" accept="image/webp,.webp" required>
+                    <label>Map artwork
+                        <input id="new-map-file" name="artwork" type="file" accept="image/webp,image/png,image/jpeg,.webp,.png,.jpg,.jpeg" required>
                     </label>
                     <label>Scale pixels <span>(optional)</span>
                         <input id="new-map-scale-pixels" name="scalePixels" type="number" min="0" step="1">
@@ -190,11 +204,58 @@
                     <textarea id="new-map-blurb" name="blurb" rows="4" maxlength="5000"></textarea>
                 </label>
 
+                <section class="new-map-artwork-preview" aria-labelledby="new-map-artwork-title">
+                    <div>
+                        <p class="eyebrow">Artwork preview</p>
+                        <h3 id="new-map-artwork-title">Choose an image to inspect it</h3>
+                        <p id="new-map-artwork-meta">WebP files are preserved. PNG and JPEG files are converted to high-quality WebP during creation.</p>
+                    </div>
+                    <div class="new-map-preview-frame">
+                        <img id="new-map-preview-image" alt="Selected map artwork preview" hidden>
+                        <span id="new-map-preview-empty">No artwork selected</span>
+                    </div>
+                </section>
+
+                <section id="new-map-plan" class="new-map-plan" aria-labelledby="new-map-plan-title" hidden>
+                    <p class="eyebrow">Review before writing</p>
+                    <h3 id="new-map-plan-title">Files Studio will change</h3>
+                    <p id="new-map-preprocessing"></p>
+                    <div class="new-map-plan-table-wrap">
+                        <table>
+                            <thead><tr><th>Action</th><th>File</th><th>Purpose</th></tr></thead>
+                            <tbody id="new-map-plan-files"></tbody>
+                        </table>
+                    </div>
+                </section>
+
                 <div class="dialog-actions">
                     <button id="cancel-new-map-button" class="secondary-button" type="button">Cancel</button>
-                    <button id="create-new-map-button" type="submit">Create and validate map</button>
+                    <button id="review-new-map-button" class="secondary-button" type="button">Review map plan</button>
+                    <button id="create-new-map-button" type="submit" disabled>Create and validate map</button>
                 </div>
                 <p id="new-map-status" class="form-status" role="status" aria-live="polite"></p>
+            </form>
+        </dialog>
+
+        <dialog id="abandon-draft-dialog" class="studio-dialog confirmation-dialog" aria-labelledby="abandon-draft-title">
+            <form id="abandon-draft-form" class="confirmation-form">
+                <div class="dialog-header">
+                    <div>
+                        <p class="eyebrow">Destructive action</p>
+                        <h2 id="abandon-draft-title">Abandon this local draft?</h2>
+                    </div>
+                    <button id="close-abandon-draft-button" class="icon-button" type="button" aria-label="Close abandon draft dialog">×</button>
+                </div>
+                <p id="abandon-draft-copy"></p>
+                <p class="branch-confirmation"><span>Draft branch</span><strong id="abandon-draft-branch"></strong></p>
+                <label>Type the exact branch name to confirm
+                    <input id="abandon-draft-confirmation" type="text" autocomplete="off" spellcheck="false" required>
+                </label>
+                <div class="dialog-actions">
+                    <button id="cancel-abandon-draft-button" class="secondary-button" type="button">Keep draft</button>
+                    <button id="confirm-abandon-draft-button" class="danger-button" type="submit" disabled>Abandon local draft</button>
+                </div>
+                <p id="abandon-draft-status" class="form-status" role="status" aria-live="polite"></p>
             </form>
         </dialog>
     </main>

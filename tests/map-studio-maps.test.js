@@ -5,8 +5,11 @@ const path = require('node:path');
 const {
     assertNewMapMetadata,
     createNewMapFromUpload,
+    getArtworkType,
     getNextOrder,
-    metadataFromHeaders
+    metadataFromHeaders,
+    planNewMapCreation,
+    prepareMapArtwork
 } = require('../scripts/map_studio_maps.js');
 
 const existing = [
@@ -19,6 +22,8 @@ assert.throws(() => assertNewMapMetadata({ id: '../bad', name: 'Bad' }, existing
 assert.throws(() => assertNewMapMetadata({ id: 'child', name: 'Duplicate' }, existing), /already exists/);
 assert.throws(() => assertNewMapMetadata({ id: 'new', name: 'New', parentId: 'missing' }, existing), /does not exist/);
 assert.throws(() => assertNewMapMetadata({ id: 'new', name: 'New', scalePixels: 10 }, existing), /both be set/);
+assert.equal(getArtworkType('image/png').extension, 'png');
+assert.throws(() => getArtworkType('image/svg+xml'), /WebP, PNG, or JPEG/);
 
 const encodedMetadata = Buffer.from(JSON.stringify({ id: 'new-map', name: 'New Map' })).toString('base64url');
 assert.deepEqual(metadataFromHeaders({ 'x-map-metadata': encodedMetadata }), { id: 'new-map', name: 'New Map' });
@@ -28,6 +33,41 @@ fs.mkdirSync(path.join(repoRoot, 'maps'));
 fs.writeFileSync(path.join(repoRoot, 'maps', 'maps.json'), `${JSON.stringify(existing, null, 2)}\n`);
 const uploadPath = path.join(repoRoot, 'upload.webp');
 fs.writeFileSync(uploadPath, 'fake-webp');
+const plan = planNewMapCreation({
+    repoRoot,
+    metadata: {
+        id: 'planned-map',
+        name: 'Planned Map',
+        parentId: 'root',
+        artworkContentType: 'image/png'
+    }
+});
+assert.equal(plan.files.length, 4);
+assert.equal(plan.files[0].path, 'maps/planned-map.webp');
+assert.equal(plan.files[2].action, 'Update');
+assert.match(plan.preprocessing, /Convert PNG/);
+
+const preservedArtwork = prepareMapArtwork({ uploadPath, contentType: 'image/webp' });
+assert.equal(preservedArtwork.artworkPath, uploadPath);
+assert.equal(preservedArtwork.converted, false);
+
+const pngUploadPath = path.join(repoRoot, 'upload.png');
+fs.writeFileSync(pngUploadPath, 'fake-png');
+let conversionCommand = null;
+const convertedArtwork = prepareMapArtwork({
+    uploadPath: pngUploadPath,
+    contentType: 'image/png',
+    runCommand: (command, args) => {
+        conversionCommand = { command, args };
+        fs.writeFileSync(args.at(-1), 'converted-webp');
+        return { status: 0, stdout: '', stderr: '' };
+    }
+});
+assert.equal(convertedArtwork.converted, true);
+assert.equal(path.extname(convertedArtwork.artworkPath), '.webp');
+assert.equal(conversionCommand.command, 'magick');
+assert.ok(conversionCommand.args.includes('-strip'));
+
 let capturedWrites = null;
 const result = createNewMapFromUpload({
     repoRoot,

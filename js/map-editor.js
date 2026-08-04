@@ -1,12 +1,15 @@
 (function () {
     const utils = window.MapEditorUtils;
     const sharedUtils = window.SharedUtils;
+    const fieldApi = window.MapEditorFields;
     const historyApi = window.MapEditorHistory;
 
-    if (!utils || !sharedUtils || !historyApi || typeof L === 'undefined') {
+    if (!utils || !sharedUtils || !fieldApi || !historyApi || typeof L === 'undefined') {
         console.error('Map editor prerequisites are missing.');
         return;
     }
+
+    fieldApi.renderMapFields(document);
 
     const { debounce } = sharedUtils;
     const editHistory = historyApi.createHistory({ limit: 24 });
@@ -121,32 +124,7 @@
         publishChangedFiles: document.getElementById('publish-changed-files'),
         publishWarningList: document.getElementById('publish-warning-list'),
         chooseMapButton: document.getElementById('editor-choose-map-btn'),
-        mapSettingsInputs: {
-            name: document.getElementById('map-name-input'),
-            type: document.getElementById('map-type-input'),
-            status: document.getElementById('map-status-input'),
-            visibility: document.getElementById('map-visibility-input'),
-            group: document.getElementById('map-group-input'),
-            dataUrl: document.getElementById('map-data-url-input'),
-            imageUrl: document.getElementById('map-image-url-input'),
-            mobileImageUrl: document.getElementById('map-mobile-image-url-input'),
-            smallImageUrl: document.getElementById('map-small-image-url-input'),
-            width: document.getElementById('map-width-input'),
-            height: document.getElementById('map-height-input'),
-            scalePixels: document.getElementById('map-scale-pixels-input'),
-            scaleKilometers: document.getElementById('map-scale-kilometers-input'),
-            scaleUnitName: document.getElementById('map-scale-unit-input'),
-            backgroundColor: document.getElementById('map-background-color-input'),
-            atmosphere: document.getElementById('map-atmosphere-input'),
-            selectorDescription: document.getElementById('map-selector-description-input'),
-            latNorth: document.getElementById('map-lat-north-input'),
-            latSouth: document.getElementById('map-lat-south-input'),
-            latEast: document.getElementById('map-lat-east-input'),
-            latWest: document.getElementById('map-lat-west-input'),
-            blurb: document.getElementById('map-blurb-input'),
-            parentIdSelect: document.getElementById('map-parent-id-select'),
-            order: document.getElementById('map-order-input')
-        }
+        mapSettingsInputs: fieldApi.collectMapInputs(document)
     };
 
     function roundCoordinate(value) {
@@ -287,32 +265,7 @@
     }
 
     function readMapSettingsForm() {
-        const inputs = dom.mapSettingsInputs;
-        return {
-            name: inputs.name.value,
-            type: inputs.type.value,
-            status: inputs.status.value,
-            visibility: inputs.visibility.value,
-            group: inputs.group.value,
-            dataUrl: inputs.dataUrl.value,
-            imageUrl: inputs.imageUrl.value,
-            mobileImageUrl: inputs.mobileImageUrl.value,
-            smallImageUrl: inputs.smallImageUrl.value,
-            width: inputs.width.value,
-            height: inputs.height.value,
-            scalePixels: inputs.scalePixels.value,
-            scaleKilometers: inputs.scaleKilometers.value,
-            scaleUnitName: inputs.scaleUnitName.value,
-            backgroundColor: inputs.backgroundColor.value,
-            atmosphere: inputs.atmosphere.value,
-            selectorDescription: inputs.selectorDescription.value,
-            latLonBounds: {
-                north: inputs.latNorth.value,
-                south: inputs.latSouth.value,
-                east: inputs.latEast.value,
-                west: inputs.latWest.value
-            }
-        };
+        return fieldApi.readMapForm(dom.mapSettingsInputs);
     }
 
     function setSelectionStatus(message) {
@@ -1430,124 +1383,26 @@
         return `${name || `POI ${index + 1}`} marker`;
     }
 
-    function setFeatureFormValues(values) {
-        Object.entries(values).forEach(([field, value]) => {
-            dom.featureForm.querySelector(`[data-field="${field}"]`).value = value;
+    function renderFeatureSchema(mode, label, feature) {
+        dom.selectedFeatureChip.textContent = label;
+        fieldApi.renderFeatureFields(document, dom.featureForm, mode, feature, {
+            stringifyCoordinates,
+            stringifyKeyFacts,
+            stringifyTags
         });
+        if (mode === 'points') renderDetailSectionControls(feature);
     }
 
     function renderPointFeatureInspector(feature) {
-        dom.selectedFeatureChip.textContent = 'POI';
-        dom.featureForm.innerHTML = `
-                <label>Name<input data-field="name" type="text"></label>
-                <label>Pronunciation<input data-field="pronunciation" type="text"></label>
-                <label>Type<input data-field="type" type="text"></label>
-                <label>Summary<textarea data-field="summary" rows="3"></textarea></label>
-                <label>Description<textarea data-field="description" rows="4"></textarea></label>
-                <label>Key Facts<textarea data-field="propertiesText" rows="5" placeholder="Nation: Commonwealth of Half Height&#10;Known for: Trade and white-stone terraces"></textarea></label>
-                <label>Tags<textarea data-field="tags" rows="3" placeholder="One tag per line, or comma-separated"></textarea></label>
-                <fieldset class="map-editor-detail-sections" data-field="detailSections">
-                    <legend>Detail Sections</legend>
-                    <p class="map-editor-detail-section-empty" data-detail-section-empty>No detail sections yet.</p>
-                    <div class="map-editor-detail-section-list" data-detail-section-list></div>
-                    <button type="button" class="map-editor-detail-section-add" data-action="add-detail-section">Add Detail Section</button>
-                </fieldset>
-                <label>Wiki Link<input data-field="wikiLink" type="text"></label>
-                <label>Linked Map ID<input data-field="linkedMapId" type="text"></label>
-                <div class="map-editor-form-grid">
-                    <label>Y<input data-field="coordY" type="number"></label>
-                    <label>X<input data-field="coordX" type="number"></label>
-                </div>
-                <details>
-                    <summary>Advanced properties JSON</summary>
-                    <label>Properties JSON<textarea data-field="properties" rows="5"></textarea></label>
-                </details>
-            `;
-        setFeatureFormValues({
-            name: feature.name || '',
-            pronunciation: feature.pronunciation || '',
-            type: feature.type || '',
-            summary: feature.summary || '',
-            description: feature.description || '',
-            propertiesText: stringifyKeyFacts(feature.properties || {}),
-            tags: stringifyTags(feature.tags || []),
-            wikiLink: feature.wikiLink || '',
-            linkedMapId: feature.linkedMapId || '',
-            coordY: feature.coords?.[0] ?? '',
-            coordX: feature.coords?.[1] ?? '',
-            properties: JSON.stringify(feature.properties || {}, null, 2)
-        });
-        renderDetailSectionControls(feature);
+        renderFeatureSchema('points', 'POI', feature);
     }
 
     function renderRegionFeatureInspector(feature) {
-        dom.selectedFeatureChip.textContent = 'Region';
-        dom.featureForm.innerHTML = `
-                <label>ID<input data-field="id" type="text"></label>
-                <label>Name<input data-field="name" type="text"></label>
-                <label>Type<input data-field="type" type="text"></label>
-                <label>Value<input data-field="value" type="text"></label>
-                <label>Summary<textarea data-field="summary" rows="3"></textarea></label>
-                <label>Description<textarea data-field="description" rows="4"></textarea></label>
-                <label>Wiki Link<input data-field="wikiLink" type="text"></label>
-                <label>Linked Map ID<input data-field="linkedMapId" type="text"></label>
-                <div class="map-editor-form-grid">
-                    <label>Stroke Color<input data-field="color" type="text"></label>
-                    <label>Fill Color<input data-field="fillColor" type="text"></label>
-                    <label>Fill Opacity<input data-field="fillOpacity" type="number" step="0.05"></label>
-                </div>
-                <label>Coordinates<textarea class="map-editor-coordinates" data-field="coordinates" rows="7"></textarea></label>
-                <label>Properties JSON<textarea data-field="properties" rows="5"></textarea></label>
-            `;
-        setFeatureFormValues({
-            id: feature.id || '',
-            name: feature.name || '',
-            type: feature.type || '',
-            value: feature.value || '',
-            summary: feature.summary || '',
-            description: feature.description || '',
-            wikiLink: feature.wikiLink || '',
-            linkedMapId: feature.linkedMapId || '',
-            color: feature.color || '',
-            fillColor: feature.fillColor || '',
-            fillOpacity: feature.fillOpacity ?? '',
-            coordinates: stringifyCoordinates(feature.coordinates || []),
-            properties: JSON.stringify(feature.properties || {}, null, 2)
-        });
+        renderFeatureSchema('regions', 'Region', feature);
     }
 
     function renderLineFeatureInspector(feature) {
-        dom.selectedFeatureChip.textContent = 'Line';
-        dom.featureForm.innerHTML = `
-                <label>ID<input data-field="id" type="text"></label>
-                <label>Name<input data-field="name" type="text"></label>
-                <label>Type<input data-field="type" type="text"></label>
-                <label>Summary<textarea data-field="summary" rows="3"></textarea></label>
-                <label>Description<textarea data-field="description" rows="4"></textarea></label>
-                <label>Wiki Link<input data-field="wikiLink" type="text"></label>
-                <label>Linked Map ID<input data-field="linkedMapId" type="text"></label>
-                <div class="map-editor-form-grid">
-                    <label>Color<input data-field="color" type="text"></label>
-                    <label>Weight<input data-field="weight" type="number" step="1" min="1"></label>
-                    <label>Dash Array<input data-field="dashArray" type="text"></label>
-                </div>
-                <label>Coordinates<textarea class="map-editor-coordinates" data-field="coordinates" rows="7"></textarea></label>
-                <label>Properties JSON<textarea data-field="properties" rows="5"></textarea></label>
-            `;
-        setFeatureFormValues({
-            id: feature.id || '',
-            name: feature.name || '',
-            type: feature.type || '',
-            summary: feature.summary || '',
-            description: feature.description || '',
-            wikiLink: feature.wikiLink || '',
-            linkedMapId: feature.linkedMapId || '',
-            color: feature.color || '',
-            weight: feature.weight ?? '',
-            dashArray: feature.dashArray || '',
-            coordinates: stringifyCoordinates(feature.coordinates || []),
-            properties: JSON.stringify(feature.properties || {}, null, 2)
-        });
+        renderFeatureSchema('lines', 'Line', feature);
     }
 
     function renderFeatureInspector() {
@@ -1578,34 +1433,38 @@
 
         const field = event.target.dataset.field;
         if (!field) return;
+        const definition = fieldApi.getFeatureFields(state.selectedFeature.mode)
+            .find((candidate) => candidate.key === field);
+        if (!definition) {
+            setSelectionStatus(`Unknown ${state.selectedFeature.mode.slice(0, -1)} field: ${field}.`);
+            return;
+        }
 
         try {
-            if (state.selectedFeature.mode === 'points') {
-                if (field === 'coordY' || field === 'coordX') {
-                    const nextY = field === 'coordY' ? event.target.value : dom.featureForm.querySelector('[data-field="coordY"]').value;
-                    const nextX = field === 'coordX' ? event.target.value : dom.featureForm.querySelector('[data-field="coordX"]').value;
-                    feature.coords = [roundCoordinate(nextY), roundCoordinate(nextX)];
-                } else if (field === 'propertiesText') {
-                    feature.properties = parseKeyFacts(event.target.value);
-                    const propertiesJsonField = dom.featureForm.querySelector('[data-field="properties"]');
-                    if (propertiesJsonField) propertiesJsonField.value = JSON.stringify(feature.properties || {}, null, 2);
-                } else if (field === 'tags') {
-                    feature.tags = parseTags(event.target.value);
-                } else if (field === 'detailSections') {
-                    feature.detailSections = getDetailSectionsFromForm();
-                } else if (field === 'properties') {
-                    feature.properties = parseJsonObject(event.target.value);
-                    const keyFactsField = dom.featureForm.querySelector('[data-field="propertiesText"]');
-                    if (keyFactsField) keyFactsField.value = stringifyKeyFacts(feature.properties || {});
-                } else {
-                    feature[field] = event.target.value;
-                }
-            } else if (field === 'coordinates') {
+            const validationError = fieldApi.validateValue(definition, event.target.value);
+            if (validationError) throw new Error(validationError);
+            const updateKind = definition.update || 'text';
+
+            if (updateKind === 'pointCoordinate') {
+                const nextY = field === 'coordY' ? event.target.value : dom.featureForm.querySelector('[data-field="coordY"]').value;
+                const nextX = field === 'coordX' ? event.target.value : dom.featureForm.querySelector('[data-field="coordX"]').value;
+                feature.coords = [roundCoordinate(nextY), roundCoordinate(nextX)];
+            } else if (updateKind === 'keyFacts') {
+                feature.properties = parseKeyFacts(event.target.value);
+                const propertiesJsonField = dom.featureForm.querySelector('[data-field="properties"]');
+                if (propertiesJsonField) propertiesJsonField.value = JSON.stringify(feature.properties || {}, null, 2);
+            } else if (updateKind === 'tags') {
+                feature.tags = parseTags(event.target.value);
+            } else if (updateKind === 'detailSections') {
+                feature.detailSections = getDetailSectionsFromForm();
+            } else if (updateKind === 'json') {
+                feature.properties = parseJsonObject(event.target.value);
+                const keyFactsField = dom.featureForm.querySelector('[data-field="propertiesText"]');
+                if (keyFactsField) keyFactsField.value = stringifyKeyFacts(feature.properties || {});
+            } else if (updateKind === 'coordinates') {
                 const minimumPoints = state.selectedFeature.mode === 'regions' ? 3 : 2;
                 feature.coordinates = parseCoordinatePairs(event.target.value, minimumPoints);
-            } else if (field === 'properties') {
-                feature.properties = parseJsonObject(event.target.value);
-            } else if (field === 'fillOpacity' || field === 'weight') {
+            } else if (updateKind === 'number') {
                 feature[field] = Number(event.target.value);
             } else {
                 feature[field] = event.target.value;
@@ -1645,40 +1504,11 @@
         return options;
     }
 
-    function getMapSettingsTextValue(value) {
-        return value || '';
-    }
-
-    function getMapSettingsOptionalValue(value) {
-        return value ?? '';
-    }
-
     function getMapSettingsFieldValues(currentMap, currentLocation) {
-        return {
-            name: getMapSettingsTextValue(currentMap?.name),
-            type: getMapSettingsTextValue(currentMap?.type),
-            status: getMapSettingsTextValue(currentMap?.status),
-            visibility: getMapSettingsTextValue(currentMap?.visibility),
-            group: getMapSettingsTextValue(currentMap?.group || currentMap?.category),
-            dataUrl: getMapSettingsTextValue(currentMap?.dataUrl || state.currentMapDataUrl),
-            order: currentLocation ? currentLocation.index : 0,
-            imageUrl: getMapSettingsTextValue(currentMap?.imageUrl),
-            mobileImageUrl: getMapSettingsTextValue(currentMap?.mobileImageUrl),
-            smallImageUrl: getMapSettingsTextValue(currentMap?.smallImageUrl),
-            width: getMapSettingsOptionalValue(currentMap?.width),
-            height: getMapSettingsOptionalValue(currentMap?.height),
-            scalePixels: getMapSettingsOptionalValue(currentMap?.scalePixels),
-            scaleKilometers: getMapSettingsOptionalValue(currentMap?.scaleKilometers),
-            scaleUnitName: getMapSettingsTextValue(currentMap?.scaleUnitName),
-            backgroundColor: getMapSettingsTextValue(currentMap?.backgroundColor),
-            atmosphere: getMapSettingsTextValue(currentMap?.atmosphere),
-            latNorth: getMapSettingsOptionalValue(currentMap?.latLonBounds?.north),
-            latSouth: getMapSettingsOptionalValue(currentMap?.latLonBounds?.south),
-            latEast: getMapSettingsOptionalValue(currentMap?.latLonBounds?.east),
-            latWest: getMapSettingsOptionalValue(currentMap?.latLonBounds?.west),
-            blurb: getMapSettingsTextValue(currentMap?.blurb),
-            selectorDescription: getMapSettingsTextValue(currentMap?.selectorDescription)
-        };
+        return fieldApi.getMapFieldValues(currentMap, {
+            currentLocation,
+            currentMapDataUrl: state.currentMapDataUrl
+        });
     }
 
     function setMapSettingsFieldValues(inputs, fieldValues) {
@@ -1708,7 +1538,7 @@
 
         setMapSettingsFieldValues(dom.mapSettingsInputs, fieldValues);
         renderMapParentOptions(
-            dom.mapSettingsInputs.parentIdSelect,
+            dom.mapSettingsInputs.parentId,
             buildParentOptions(),
             currentLocation?.parentId || ''
         );
@@ -1722,7 +1552,7 @@
         const nextSettings = readMapSettingsForm();
         utils.applyMapSettings(state.currentMap, nextSettings);
 
-        const parentId = dom.mapSettingsInputs.parentIdSelect.value;
+        const parentId = dom.mapSettingsInputs.parentId.value;
         const orderValue = dom.mapSettingsInputs.order.value;
         const currentLocation = findNodeLocation(state.atlasTree, state.currentMap.id);
         const nextOrder = Number.isFinite(Number(orderValue)) ? Number(orderValue) : currentLocation?.index || 0;
@@ -2286,6 +2116,9 @@
             state.publishReadiness.buildJob = result;
             renderPublishReadiness();
             if (result.status === 'complete') return result;
+            if (result.status === 'interrupted') {
+                throw new Error(result.error || 'Preview build was interrupted. Start the build again.');
+            }
             if (result.status === 'failed' || result.ok === false) {
                 throw new Error(result.error || 'Preview build failed.');
             }
