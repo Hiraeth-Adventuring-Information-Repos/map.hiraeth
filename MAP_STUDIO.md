@@ -33,7 +33,7 @@ chmod 700 .secrets
 chmod 600 .secrets/map-studio-password.txt
 ```
 
-Set `MAP_STUDIO_HOSTNAME` in `.env` to the exact hostname maintainers will use. Add that hostname to local DNS, or to the hosts file on each authorized LAN device.
+Set `MAP_STUDIO_HOSTNAME` in `.env` to the exact hostname maintainers will use. Add that hostname to local DNS, or to the hosts file on each authorized LAN device. Set `MAP_STUDIO_LAN_IP` to the Docker host's current private-network address when maintainers should also be able to open Studio by IP. If DHCP changes that address, update `.env` and rerun `docker compose up -d`.
 
 ## 2. Configure GitHub
 
@@ -92,11 +92,13 @@ Caddy stores its local root certificate in the `caddy_data` volume. Export it on
 docker compose cp studio-proxy:/data/caddy/pki/authorities/local/root.crt ./map-studio-root.crt
 ```
 
-Install `map-studio-root.crt` as a trusted root certificate only on authorized maintainer devices. The exact installation process depends on the operating system. After trust and LAN name resolution are configured, open:
+Install `map-studio-root.crt` as a trusted root certificate only on authorized maintainer devices. The exact installation process depends on the operating system. After trust and LAN name resolution are configured, open the hostname URL:
 
 ```text
 https://map-studio.local/studio
 ```
+
+When `MAP_STUDIO_LAN_IP` is configured, the equivalent `https://<LAN-IP>/studio` address is also served. Both addresses use Caddy's private certificate authority, so each maintainer device must trust the exported root certificate.
 
 Use the password stored in `.secrets/map-studio-password.txt`.
 

@@ -1,4 +1,8 @@
-{$MAP_STUDIO_HOSTNAME:map-studio.local} {
+{
+    default_sni {$MAP_STUDIO_LAN_IP:127.0.0.1}
+}
+
+{$MAP_STUDIO_HOSTNAME:map-studio.local}, {$MAP_STUDIO_LAN_IP:127.0.0.1} {
     tls internal
     encode zstd gzip
     reverse_proxy map-studio:8010

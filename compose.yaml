@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       MAP_STUDIO_REPO_ROOT: /workspace
-      MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local},127.0.0.1
+      MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local},${MAP_STUDIO_LAN_IP:-127.0.0.1},127.0.0.1
       MAP_STUDIO_HEALTH_HOST: 127.0.0.1
       MAP_STUDIO_PASSWORD_FILE: /run/secrets/map_studio_password
       MAP_STUDIO_SECURE_COOKIES: "true"
@@ -35,6 +35,7 @@ services:
         condition: service_healthy
     environment:
       MAP_STUDIO_HOSTNAME: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
+      MAP_STUDIO_LAN_IP: ${MAP_STUDIO_LAN_IP:-127.0.0.1}
     ports:
       - "80:80"
       - "443:443"
