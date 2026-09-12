@@ -29,13 +29,13 @@ assert.match(
 
 assert.match(
     appCss,
-    /#map > \.leaflet-map-pane > \.leaflet-tile-pane > svg\s*\{[\s\S]*?z-index:\s*0;[\s\S]*?\}/,
-    'The map underlay SVG should render behind the tile/image artwork'
+    /#map > \.leaflet-map-pane > \.leaflet-tile-pane > svg,\s*#map > \.leaflet-map-pane > \.leaflet-tile-pane > canvas\s*\{[\s\S]*?z-index:\s*0;[\s\S]*?\}/,
+    'The map underlay SVG and Firefox canvas should render behind the tile/image artwork'
 );
 assert.match(
     appCss,
     /#map > \.leaflet-map-pane > \.leaflet-tile-pane > \.leaflet-layer,\s*#map > \.leaflet-map-pane > \.leaflet-tile-pane > \.leaflet-image-layer\s*\{[\s\S]*?z-index:\s*1;[\s\S]*?\}/,
-    'The primary tile and image layers should render above the underlay SVG'
+    'The primary tile and image layers should render above the underlay renderer'
 );
 
 console.log('Leaflet CSS compatibility checks passed');

@@ -19,13 +19,15 @@
     "test": "npm run validate:pages",
     "studio:legacy": "node scripts/map_studio_server.js",
     "editor:legacy": "node scripts/editor_server.js",
-    "test:files:e2e": "playwright test tests/map-file-workflow.spec.mjs"
+    "test:files:e2e": "playwright test tests/map-file-workflow.spec.mjs",
+    "test:firefox": "node scripts/firefox_render_smoke.cjs"
   },
   "dependencies": {
     "jsdom": "^29.1.1"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
-    "esbuild": "0.28.1"
+    "esbuild": "0.28.1",
+    "playwright": "1.62.1"
   }
 }

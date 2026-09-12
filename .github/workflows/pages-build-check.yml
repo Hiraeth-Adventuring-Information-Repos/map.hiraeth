@@ -61,6 +61,12 @@ jobs:
           MAP_HIRAETH_TILE_CACHE_DIR: .cache/pages-tiles
         run: npm run build:pages
 
+      - name: Install Firefox test browser
+        run: npx playwright install --with-deps firefox
+
+      - name: Verify Firefox map rendering
+        run: npm run test:firefox
+
       - name: Upload Pages bundle artifact
         uses: actions/upload-artifact@v6
         with:

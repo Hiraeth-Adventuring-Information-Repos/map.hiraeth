@@ -1304,7 +1304,8 @@ textarea:focus-visible,
 }
 
 /* Keep the map-bound background rectangle below real tile/image artwork. */
-#map > .leaflet-map-pane > .leaflet-tile-pane > svg {
+#map > .leaflet-map-pane > .leaflet-tile-pane > svg,
+#map > .leaflet-map-pane > .leaflet-tile-pane > canvas {
     z-index: 0;
 }
 

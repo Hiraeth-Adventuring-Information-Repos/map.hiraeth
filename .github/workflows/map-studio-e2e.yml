@@ -3,18 +3,28 @@ name: Map Studio Browser Workflow
 on:
   pull_request:
     paths:
+      - file-studio.html
       - map-studio.html
       - map-editor.html
+      - css/file-studio.css
+      - css/map-file-editor.css
+      - css/style.css
       - css/map-studio.css
       - css/map-editor.css
+      - js/file-studio.js
+      - js/map-file-*.js
+      - js/app.js
       - js/map-studio.js
       - js/map-studio-model.js
       - js/map-editor.js
       - js/map-editor-fields.js
       - js/map-editor-history.js
       - js/editor-shared.js
+      - scripts/map_file_server.js
       - scripts/editor_server.js
       - scripts/map_studio_*.js
+      - tests/map-file-workflow.spec.mjs
+      - tests/map-drawing-workflow.spec.mjs
       - tests/map-studio-workflow.spec.mjs
       - tests/fixtures/map-studio-e2e-fixture.cjs
       - playwright.config.mjs
@@ -48,7 +58,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Exercise the maintainer workflow
-        run: npm run test:studio:e2e
+        run: npx playwright test
 
       - name: Upload browser report on failure
         if: failure()
