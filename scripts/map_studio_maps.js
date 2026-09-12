@@ -5,6 +5,7 @@ const { spawnSync } = require('node:child_process');
 const { writeWithValidation } = require('./editor_server.js');
 
 const MAX_MAP_UPLOAD_BYTES = 512 * 1024 * 1024;
+const MAP_THUMBNAIL_MAX_DIMENSION = 512;
 const MAP_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/;
 const MAP_UPLOAD_TYPES = new Map([
     ['image/webp', { extension: 'webp', preprocessing: 'Preserve the original WebP artwork without recompression.' }],
@@ -96,8 +97,13 @@ function planNewMapCreation({ repoRoot, metadata }) {
     const normalized = assertNewMapMetadata(metadata, manifestEntries);
     const artworkType = getArtworkType(metadata.artworkContentType);
     const imageRelativePath = `maps/${normalized.id}.webp`;
+    const thumbnailRelativePath = `maps/${normalized.id}.mini.webp`;
     const documentRelativePath = `maps/${normalized.id}.json`;
-    if (fs.existsSync(path.join(repoRoot, imageRelativePath)) || fs.existsSync(path.join(repoRoot, documentRelativePath))) {
+    if (
+        fs.existsSync(path.join(repoRoot, imageRelativePath)) ||
+        fs.existsSync(path.join(repoRoot, thumbnailRelativePath)) ||
+        fs.existsSync(path.join(repoRoot, documentRelativePath))
+    ) {
         throw new Error(`Map files for "${normalized.id}" already exist.`);
     }
 
@@ -108,11 +114,61 @@ function planNewMapCreation({ repoRoot, metadata }) {
         preprocessing: artworkType.preprocessing,
         files: [
             { path: imageRelativePath, action: 'Create', purpose: 'Browser-ready map artwork' },
+            { path: thumbnailRelativePath, action: 'Create', purpose: 'Bounded map chooser and minimap preview' },
             { path: documentRelativePath, action: 'Create', purpose: 'Map metadata and empty feature collections' },
             { path: 'maps/maps.json', action: 'Update', purpose: 'Atlas hierarchy and display order' },
             { path: 'maps/atlas-index.json', action: 'Regenerate', purpose: 'Search and atlas discovery index' }
         ]
     };
+}
+
+function prepareMapThumbnail({
+    artworkPath,
+    runCommand = spawnSync,
+    maximumDimension = MAP_THUMBNAIL_MAX_DIMENSION
+}) {
+    const boundedMaximum = Number(maximumDimension);
+    if (!Number.isInteger(boundedMaximum) || boundedMaximum <= 0 || boundedMaximum > MAP_THUMBNAIL_MAX_DIMENSION) {
+        throw new Error(`Map thumbnail size must be between 1 and ${MAP_THUMBNAIL_MAX_DIMENSION} pixels.`);
+    }
+
+    const extension = path.extname(artworkPath);
+    const basename = path.basename(artworkPath, extension);
+    const thumbnailPath = path.join(path.dirname(artworkPath), `${basename}.mini.webp`);
+    const thumbnailArgs = [
+        artworkPath,
+        '-auto-orient',
+        '-strip',
+        '-resize', `${boundedMaximum}x${boundedMaximum}>`,
+        '-quality', '82',
+        '-define', 'webp:method=6',
+        thumbnailPath
+    ];
+    const candidates = [
+        ['magick', thumbnailArgs],
+        ['convert', thumbnailArgs]
+    ];
+    let lastOutput = '';
+    for (const [command, args] of candidates) {
+        const result = runCommand(command, args, {
+            encoding: 'utf8',
+            stdio: 'pipe',
+            timeout: 120_000
+        });
+        if (result.error?.code === 'ENOENT') continue;
+        if (result.status !== 0) {
+            lastOutput = `${result.stdout || ''}${result.stderr || ''}`.trim();
+            break;
+        }
+        if (!fs.existsSync(thumbnailPath)) {
+            throw new Error('Thumbnail creation completed without producing a WebP file.');
+        }
+        return {
+            thumbnailPath,
+            maximumDimension: boundedMaximum
+        };
+    }
+    throw new Error(`Could not create the map thumbnail${lastOutput ? `: ${lastOutput}` : '. ImageMagick is required.'}`);
 }
 
 function prepareMapArtwork({ uploadPath, contentType, runCommand = spawnSync }) {
@@ -167,6 +223,7 @@ function createNewMapFromUpload({
     uploadPath,
     metadata,
     readDimensions = readImageDimensions,
+    createThumbnail = prepareMapThumbnail,
     writeDocuments = writeWithValidation
 }) {
     const manifestPath = path.join(repoRoot, 'maps', 'maps.json');
@@ -175,11 +232,18 @@ function createNewMapFromUpload({
     const normalized = assertNewMapMetadata(metadata, manifestEntries);
     const { width, height } = readDimensions(uploadPath);
     const imageRelativePath = `maps/${normalized.id}.webp`;
+    const thumbnailRelativePath = `maps/${normalized.id}.mini.webp`;
     const documentRelativePath = `maps/${normalized.id}.json`;
     const imagePath = path.join(repoRoot, imageRelativePath);
+    const thumbnailPath = path.join(repoRoot, thumbnailRelativePath);
     const documentPath = path.join(repoRoot, documentRelativePath);
-    if (fs.existsSync(imagePath) || fs.existsSync(documentPath)) {
+    if (fs.existsSync(imagePath) || fs.existsSync(thumbnailPath) || fs.existsSync(documentPath)) {
         throw new Error(`Map files for "${normalized.id}" already exist.`);
+    }
+
+    const preparedThumbnail = createThumbnail({ artworkPath: uploadPath });
+    if (!preparedThumbnail?.thumbnailPath || !fs.existsSync(preparedThumbnail.thumbnailPath)) {
+        throw new Error('Map thumbnail creation did not produce a readable preview file.');
     }
 
     const mapDocument = {
@@ -209,6 +273,7 @@ function createNewMapFromUpload({
 
     writeDocuments(repoRoot, [
         { fullPath: imagePath, sourcePath: uploadPath },
+        { fullPath: thumbnailPath, sourcePath: preparedThumbnail.thumbnailPath },
         { fullPath: documentPath, content: prettyJson(mapDocument) },
         { fullPath: manifestPath, content: prettyJson(manifestDocument) }
     ]);
@@ -216,7 +281,7 @@ function createNewMapFromUpload({
     return {
         map: mapDocument,
         manifestEntry,
-        files: [imageRelativePath, documentRelativePath, 'maps/maps.json', 'maps/atlas-index.json']
+        files: [imageRelativePath, thumbnailRelativePath, documentRelativePath, 'maps/maps.json', 'maps/atlas-index.json']
     };
 }
 
@@ -292,6 +357,7 @@ function metadataFromHeaders(headers) {
 
 module.exports = {
     MAP_ID_PATTERN,
+    MAP_THUMBNAIL_MAX_DIMENSION,
     MAP_UPLOAD_TYPES,
     MAX_MAP_UPLOAD_BYTES,
     assertNewMapMetadata,
@@ -302,6 +368,7 @@ module.exports = {
     metadataFromHeaders,
     planNewMapCreation,
     prepareMapArtwork,
+    prepareMapThumbnail,
     readImageDimensions,
     receiveUploadToTemporaryFile
 };

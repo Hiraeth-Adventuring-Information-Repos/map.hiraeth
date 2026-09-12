@@ -8,7 +8,7 @@ const {
     hasRunningPreviewBuild,
     isSameOriginWriteRequest
 } = require('./editor_server.js');
-const { createSessionManager } = require('./map_studio_auth.js');
+const { createLocalSessionManager, createSessionManager } = require('./map_studio_auth.js');
 const { createGitHubClient } = require('./map_studio_github.js');
 const { publishDraft } = require('./map_studio_git.js');
 const { createStudioWorkspaceManager } = require('./map_studio_workspace.js');
@@ -175,12 +175,15 @@ function createMapStudioServer(options = {}) {
         throw new Error('MAP_STUDIO_ALLOWED_HOSTS must list every hostname used to access Map Studio.');
     }
 
-    const sessionManager = options.sessionManager || createSessionManager({
-        password: options.password || process.env.MAP_STUDIO_PASSWORD,
-        passwordFile: options.passwordFile || process.env.MAP_STUDIO_PASSWORD_FILE,
-        secureCookies: options.secureCookies ?? process.env.MAP_STUDIO_SECURE_COOKIES !== 'false',
-        sessionTtlMs: options.sessionTtlMs || process.env.MAP_STUDIO_SESSION_TTL_MS
-    });
+    const authenticationDisabled = options.authenticationDisabled ?? process.env.MAP_STUDIO_AUTH_DISABLED === 'true';
+    const sessionManager = options.sessionManager || (authenticationDisabled
+        ? createLocalSessionManager()
+        : createSessionManager({
+            password: options.password || process.env.MAP_STUDIO_PASSWORD,
+            passwordFile: options.passwordFile || process.env.MAP_STUDIO_PASSWORD_FILE,
+            secureCookies: options.secureCookies ?? process.env.MAP_STUDIO_SECURE_COOKIES !== 'false',
+            sessionTtlMs: options.sessionTtlMs || process.env.MAP_STUDIO_SESSION_TTL_MS
+        }));
     const githubClient = options.githubClient || createGitHubClient(options.github || {});
     const workspaceManager = options.workspaceManager || createStudioWorkspaceManager({
         baseRepoRoot: repoRoot,
@@ -346,8 +349,13 @@ function createMapStudioServer(options = {}) {
 
         if (url.pathname === '/api/studio/session' && request.method === 'GET') {
             sendJson(response, 200, session
-                ? { ok: true, authenticated: true, csrfToken: session.csrfToken }
-                : { ok: true, authenticated: false });
+                ? {
+                    ok: true,
+                    authenticated: true,
+                    authenticationRequired: sessionManager.authenticationDisabled !== true,
+                    csrfToken: session.csrfToken
+                }
+                : { ok: true, authenticated: false, authenticationRequired: true });
             return;
         }
 

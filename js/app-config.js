@@ -19,7 +19,7 @@
 
     function getDefaultAssetsConfig() {
         return {
-                version: '0.1.54',
+                version: '0.1.67',
                 stylesheets: [
                     'css/leaflet.css',
                     'css/style.css',
@@ -332,10 +332,10 @@
                 },
                 editor: {
                     title: 'Map Editor',
-                    eyebrow: 'Internal Tool',
-                    reload: 'Reload Data',
-                    searchLabel: 'Atlas Search',
-                    searchPlaceholder: 'Find a map or folder',
+                    eyebrow: 'Map Library',
+                    reload: 'Refresh maps',
+                    searchLabel: 'Search maps',
+                    searchPlaceholder: 'Find a map by name or group',
                     loading: 'Loading atlas data...',
                     toolbarHint: 'Click a feature to select it. Drag POI markers to move them, and drag orange vertex handles to reshape regions and lines.',
                     emptyTitle: 'No Renderable Map Selected',

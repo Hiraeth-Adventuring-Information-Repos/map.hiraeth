@@ -69,6 +69,25 @@ assert.deepEqual(incomplete.setup.missing.sort(), [
 assert.match(incomplete.setup.remediation.join(' '), /MAP_STUDIO_GITHUB_INSTALLATION_ID/);
 assert.doesNotMatch(JSON.stringify(incomplete), /BEGIN PRIVATE KEY/);
 
+let detailResponse = { number: 8, merged: true, head: { sha: 'exact-head', ref: 'map-studio/example' },
+    base: { ref: 'main', repo: { full_name: 'hiraeth/maps' } }, merge_commit_sha: 'merged-commit' };
+const mergeRequests = [];
+const mergeClient = createGitHubClient({ owner: 'hiraeth', repo: 'maps', token: 'test-token', fetchImpl: async (url, options) => {
+    mergeRequests.push({ url, options });
+    return new Response(JSON.stringify(String(url).includes('/pulls?')
+        ? [{ number: 8, head: { sha: 'exact-head' }, merged_at: '2026-09-10T00:00:00Z' }]
+        : detailResponse), { status: 200, headers: { 'Content-Type': 'application/json' } });
+} });
+assert.equal((await mergeClient.findMergedPullRequest({ branch: 'map-studio/example', headSha: 'exact-head' })).number, 8);
+assert.match(mergeRequests[0].url, /state=closed/);
+assert.match(mergeRequests[1].url, /pulls\/8$/);
+assert.ok(mergeRequests.every(request => request.options.headers.Authorization));
+assert.equal(await mergeClient.findMergedPullRequest({ branch: 'map-studio/example', headSha: 'newer-head' }), null);
+detailResponse = { ...detailResponse, merged: false };
+assert.equal(await mergeClient.findMergedPullRequest({ branch: 'map-studio/example', headSha: 'exact-head' }), null);
+detailResponse = { ...detailResponse, merged: true, base: { ref: 'main', repo: { full_name: 'someone/else' } } };
+assert.equal(await mergeClient.findMergedPullRequest({ branch: 'map-studio/example', headSha: 'exact-head' }), null);
+
 console.log('map studio GitHub checks passed');
 })().catch((error) => {
     console.error(error);

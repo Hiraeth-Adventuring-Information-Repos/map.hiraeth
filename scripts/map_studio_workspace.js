@@ -97,6 +97,7 @@ function createStudioWorkspaceManager(options = {}) {
     const repositoryRoot = resolveManagedPath(draftsRoot, path.join(draftsRoot, WORKSPACE_REPOSITORY_DIR));
     const worktreesRoot = resolveManagedPath(draftsRoot, path.join(draftsRoot, WORKSPACE_WORKTREES_DIR));
     const statePath = path.join(draftsRoot, WORKSPACE_STATE_FILE);
+    const reviewStatePath = path.join(draftsRoot, 'review-state.json');
     const githubClient = options.githubClient;
     const now = options.now || (() => new Date());
     const dependencyRoot = path.resolve(options.dependencyRoot || path.join(baseRepoRoot, 'node_modules'));
@@ -113,6 +114,15 @@ function createStudioWorkspaceManager(options = {}) {
     const restored = readWorkspaceRecord(statePath, draftsRoot);
     let activeDraft = restored.record;
     let recoveryIssue = restored.recoveryIssue;
+    let reviewRoot = '';
+    if (fs.existsSync(reviewStatePath)) {
+        const review = JSON.parse(fs.readFileSync(reviewStatePath, 'utf8'));
+        const candidate = resolveManagedPath(worktreesRoot, review.root);
+        if (!fs.existsSync(candidate) || runGit(candidate, ['rev-parse', 'HEAD']).stdout !== review.commit) {
+            throw new Error('The synced review workspace is missing or changed. Restore it before starting Studio.');
+        }
+        reviewRoot = candidate;
+    }
 
     function persistActiveDraft(record) {
         writeJsonAtomic(statePath, {
@@ -137,7 +147,7 @@ function createStudioWorkspaceManager(options = {}) {
     }
 
     function getWorkspaceRoot() {
-        return activeDraft?.root || baseRepoRoot;
+        return activeDraft?.root || reviewRoot || baseRepoRoot;
     }
 
     function getState() {
@@ -250,16 +260,46 @@ function createStudioWorkspaceManager(options = {}) {
         runGit(repositoryRoot, getAuthenticatedGitArgs(['fetch', '--prune', 'origin', 'main']), {
             env: { MAP_STUDIO_GIT_TOKEN: token, GIT_TERMINAL_PROMPT: '0' }
         });
-        const merged = runGit(repositoryRoot, ['merge-base', '--is-ancestor', activeDraft.branch, 'origin/main'], {
+        const draftHead = runGit(activeDraft.root, ['rev-parse', 'HEAD']).stdout;
+        const merged = runGit(repositoryRoot, ['merge-base', '--is-ancestor', draftHead, 'origin/main'], {
             allowFailure: true
         });
-        if (!merged.ok) throw new Error('This draft has not been merged into origin/main yet.');
+        if (!merged.ok) {
+            const pull = typeof githubClient.findMergedPullRequest === 'function'
+                ? await githubClient.findMergedPullRequest({ branch: activeDraft.branch, headSha: draftHead, base: 'main' })
+                : null;
+            const exactHeadMerged = pull?.merged === true && pull.head?.sha === draftHead
+                && pull.head?.ref === activeDraft.branch && pull.base?.ref === 'main';
+            const mergePresent = exactHeadMerged && /^[0-9a-f]{40,64}$/i.test(pull.merge_commit_sha || '')
+                && runGit(repositoryRoot, ['merge-base', '--is-ancestor', pull.merge_commit_sha, 'origin/main'], { allowFailure: true }).ok;
+            if (!mergePresent) throw new Error('This draft has not been merged into origin/main yet. Its current commit must be included in the merged pull request.');
+        }
+        // GitHub checks are asynchronous: never remove edits or commits made meanwhile.
+        if (!getWorkspaceState(activeDraft.root, githubClient.getConfiguration()).clean
+            || runGit(activeDraft.root, ['rev-parse', 'HEAD']).stdout !== draftHead) {
+            throw new Error('The draft changed while checking its merge. Save and publish the latest changes before finishing.');
+        }
+
+        // Review the fetched merged atlas from a private immutable checkout.
+        // Never reset or switch the user's original checkout.
+        const reviewCommit = runGit(repositoryRoot, ['rev-parse', 'origin/main']).stdout;
+        const nextReviewRoot = resolveManagedPath(worktreesRoot, path.join(worktreesRoot, `review-${reviewCommit}`));
+        if (!fs.existsSync(nextReviewRoot)) {
+            runGit(repositoryRoot, ['worktree', 'add', '--detach', nextReviewRoot, reviewCommit]);
+            linkDependencies(nextReviewRoot);
+        }
+        if (runGit(nextReviewRoot, ['rev-parse', 'HEAD']).stdout !== reviewCommit
+            || !getWorkspaceState(nextReviewRoot, githubClient.getConfiguration()).clean) {
+            throw new Error('The synced review workspace contains unexpected changes. Preserve them before finishing this draft.');
+        }
+        writeJsonAtomic(reviewStatePath, { root: nextReviewRoot, commit: reviewCommit });
+        reviewRoot = nextReviewRoot;
 
         const finishedBranch = activeDraft.branch;
         const finishedRoot = activeDraft.root;
         runGit(finishedRoot, ['restore', '--worktree', '--', 'dist'], { allowFailure: true });
         runGit(repositoryRoot, ['worktree', 'remove', finishedRoot]);
-        runGit(repositoryRoot, ['branch', '-d', finishedBranch]);
+        runGit(repositoryRoot, ['branch', merged.ok ? '-d' : '-D', finishedBranch]);
         clearActiveDraft();
         return getState();
     }

@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {
     MAX_LOGIN_ATTEMPTS,
     SESSION_COOKIE,
+    createLocalSessionManager,
     createSessionManager,
     parseCookies,
     secureEqual
@@ -42,5 +43,14 @@ for (let index = 0; index < MAX_LOGIN_ATTEMPTS; index += 1) {
 }
 assert.equal(limitedManager.isRateLimited(request), true);
 assert.equal(limitedManager.login(request, 'secret').rateLimited, true);
+
+const localManager = createLocalSessionManager({ csrfToken: 'local-csrf' });
+const localSession = localManager.authenticate(request);
+assert.equal(localManager.authenticationDisabled, true);
+assert.equal(localSession.id, 'local-testing');
+assert.equal(localManager.login(request, '').ok, true);
+assert.equal(localManager.getSessionCookie(localSession), '');
+assert.equal(localManager.hasValidCsrf({ headers: { 'x-csrf-token': 'local-csrf' } }, localSession), true);
+assert.equal(localManager.hasValidCsrf({ headers: {} }, localSession), false);
 
 console.log('map studio authentication checks passed');

@@ -160,9 +160,34 @@ function createSessionManager(options = {}) {
     };
 }
 
+function createLocalSessionManager(options = {}) {
+    const session = Object.freeze({
+        id: 'local-testing',
+        csrfToken: String(options.csrfToken || crypto.randomBytes(32).toString('base64url')),
+        createdAt: Date.now(),
+        expiresAt: Number.POSITIVE_INFINITY
+    });
+
+    return {
+        authenticationDisabled: true,
+        authenticate: () => session,
+        getExpiredCookie: () => '',
+        getSessionCookie: () => '',
+        hasValidCsrf(request, candidate = session) {
+            const supplied = String(request.headers['x-csrf-token'] || '');
+            return candidate === session && Boolean(supplied && secureEqual(session.csrfToken, supplied));
+        },
+        isRateLimited: () => false,
+        login: () => ({ ok: true, session }),
+        logout: () => {},
+        prune: () => {}
+    };
+}
+
 module.exports = {
     MAX_LOGIN_ATTEMPTS,
     SESSION_COOKIE,
+    createLocalSessionManager,
     createSessionManager,
     parseCookies,
     readSecret,

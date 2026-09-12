@@ -37,7 +37,8 @@ const inspectorFactory = new Function('dependencies', `
         stringifyKeyFacts,
         stringifyTags,
         stringifyCoordinates,
-        renderDetailSectionControls
+        renderDetailSectionControls,
+        syncFormAccess
     } = dependencies;
     ${functionNames.map(extractFunction).join('\n')}
     return { renderFeatureInspector };
@@ -67,7 +68,8 @@ const { renderFeatureInspector } = inspectorFactory({
     stringifyCoordinates: (coordinates) => JSON.stringify(coordinates),
     renderDetailSectionControls: (feature) => {
         detailSectionsFeature = feature;
-    }
+    },
+    syncFormAccess: () => {}
 });
 
 renderFeatureInspector();

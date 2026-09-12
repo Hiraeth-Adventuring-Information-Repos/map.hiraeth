@@ -83,6 +83,54 @@ const { createStudioWorkspaceManager } = require('../scripts/map_studio_workspac
     assert.equal(fs.existsSync(path.join(baseRepoRoot, 'host-only-note.txt')), true);
     assert.equal(runGit(baseRepoRoot, ['branch', '--list', connectedDraft.branch]).stdout, '');
 
+    assert.equal(fs.existsSync(path.join(connectedManager.getWorkspaceRoot(), 'maps', 'finished.json')), true);
+    assert.notEqual(connectedManager.getWorkspaceRoot(), baseRepoRoot);
+    const restartedReview = createStudioWorkspaceManager({ baseRepoRoot, draftsRoot, githubClient: connectedClient });
+    assert.equal(restartedReview.getWorkspaceRoot(), connectedManager.getWorkspaceRoot());
+
+    for (const method of ['squash', 'rebase']) {
+        let mergedPull = null;
+        const mergeClient = { ...connectedClient, findMergedPullRequest: async () => mergedPull };
+        const mergeManager = createStudioWorkspaceManager({ baseRepoRoot, draftsRoot, githubClient: mergeClient });
+        const draft = await mergeManager.startDraft(`${method} completion`);
+        const root = mergeManager.getWorkspaceRoot();
+        fs.writeFileSync(path.join(root, 'maps', `${method}.json`), '{}\n');
+        runGit(root, ['add', `maps/${method}.json`]);
+        runGit(root, ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-m', `Draft ${method}`]);
+        const head = runGit(root, ['rev-parse', 'HEAD']).stdout;
+        const tree = runGit(root, ['rev-parse', 'HEAD^{tree}']).stdout;
+        const parent = runGit(root, ['rev-parse', 'HEAD^']).stdout;
+        // Rewritten integration commit has the same resulting map content but
+        // does not contain the original draft commit in its ancestry.
+        const rewritten = runGit(root, ['-c', 'user.name=Test', '-c', 'user.email=test@example.com',
+            'commit-tree', tree, '-p', parent, '-m', `${method} merged`]).stdout;
+        runGit(root, ['push', 'origin', `${rewritten}:refs/heads/main`]);
+        assert.equal(runGit(root, ['merge-base', '--is-ancestor', head, rewritten], { allowFailure: true }).ok, false);
+        await assert.rejects(mergeManager.finishDraft(), /not been merged/);
+        assert.equal(fs.existsSync(root), true);
+        mergedPull = { merged: true, head: { sha: head, ref: draft.branch }, base: { ref: 'main' }, merge_commit_sha: rewritten };
+        // A previously merged PR does not authorize discarding newer commits.
+        runGit(root, ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '--allow-empty', '-m', 'Unmerged follow-up']);
+        await assert.rejects(mergeManager.finishDraft(), /not been merged/);
+        assert.equal(fs.existsSync(root), true);
+        runGit(root, ['reset', '--hard', head]);
+        mergedPull.merge_commit_sha = head;
+        await assert.rejects(mergeManager.finishDraft(), /not been merged/);
+        mergedPull.merge_commit_sha = rewritten;
+        mergeClient.findMergedPullRequest = async () => {
+            runGit(root, ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '--allow-empty', '-m', 'Changed during GitHub check']);
+            return mergedPull;
+        };
+        await assert.rejects(mergeManager.finishDraft(), /draft changed while checking/);
+        assert.equal(fs.existsSync(root), true);
+        runGit(root, ['reset', '--hard', head]);
+        mergeClient.findMergedPullRequest = async () => mergedPull;
+        await mergeManager.finishDraft();
+        assert.equal(fs.existsSync(root), false);
+        assert.equal(fs.existsSync(path.join(mergeManager.getWorkspaceRoot(), 'maps', `${method}.json`)), true);
+        assert.equal(fs.existsSync(path.join(baseRepoRoot, 'maps', `${method}.json`)), false);
+    }
+
     fs.rmSync(tempRoot, { recursive: true, force: true });
     console.log('map studio isolated workspace checks passed');
 })().catch((error) => {

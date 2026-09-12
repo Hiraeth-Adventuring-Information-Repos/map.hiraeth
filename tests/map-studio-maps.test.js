@@ -9,7 +9,8 @@ const {
     getNextOrder,
     metadataFromHeaders,
     planNewMapCreation,
-    prepareMapArtwork
+    prepareMapArtwork,
+    prepareMapThumbnail
 } = require('../scripts/map_studio_maps.js');
 
 const existing = [
@@ -42,9 +43,11 @@ const plan = planNewMapCreation({
         artworkContentType: 'image/png'
     }
 });
-assert.equal(plan.files.length, 4);
+assert.equal(plan.files.length, 5);
 assert.equal(plan.files[0].path, 'maps/planned-map.webp');
-assert.equal(plan.files[2].action, 'Update');
+assert.equal(plan.files[1].path, 'maps/planned-map.mini.webp');
+assert.match(plan.files[1].purpose, /preview/);
+assert.equal(plan.files[3].action, 'Update');
 assert.match(plan.preprocessing, /Convert PNG/);
 
 const preservedArtwork = prepareMapArtwork({ uploadPath, contentType: 'image/webp' });
@@ -68,6 +71,28 @@ assert.equal(path.extname(convertedArtwork.artworkPath), '.webp');
 assert.equal(conversionCommand.command, 'magick');
 assert.ok(conversionCommand.args.includes('-strip'));
 
+let thumbnailCommand = null;
+const preparedThumbnail = prepareMapThumbnail({
+    artworkPath: uploadPath,
+    runCommand: (command, args) => {
+        thumbnailCommand = { command, args };
+        fs.writeFileSync(args.at(-1), 'thumbnail-webp');
+        return { status: 0, stdout: '', stderr: '' };
+    }
+});
+assert.equal(path.basename(preparedThumbnail.thumbnailPath), 'upload.mini.webp');
+assert.equal(preparedThumbnail.maximumDimension, 512);
+assert.equal(thumbnailCommand.command, 'magick');
+assert.ok(thumbnailCommand.args.includes('512x512>'));
+assert.ok(thumbnailCommand.args.includes('-resize'));
+assert.equal(thumbnailCommand.args[0], uploadPath);
+assert.notEqual(thumbnailCommand.args.at(-1), uploadPath);
+assert.throws(() => prepareMapThumbnail({
+    artworkPath: uploadPath,
+    maximumDimension: 1024,
+    runCommand: () => ({ status: 0, stdout: '', stderr: '' })
+}), /between 1 and 512/);
+
 let capturedWrites = null;
 const result = createNewMapFromUpload({
     repoRoot,
@@ -81,6 +106,10 @@ const result = createNewMapFromUpload({
         selectorDescription: 'A new map.'
     },
     readDimensions: () => ({ width: 2048, height: 1024 }),
+    createThumbnail: ({ artworkPath }) => ({
+        thumbnailPath: preparedThumbnail.thumbnailPath,
+        sourceArtworkPath: artworkPath
+    }),
     writeDocuments: (_repoRoot, writes) => { capturedWrites = writes; }
 });
 assert.equal(result.map.width, 2048);
@@ -88,7 +117,11 @@ assert.equal(result.map.height, 1024);
 assert.equal(result.map.imageUrl, 'maps/new-map.webp');
 assert.equal(result.manifestEntry.parentId, 'root');
 assert.equal(result.manifestEntry.order, 5);
-assert.equal(capturedWrites.length, 3);
+assert.equal(result.files[1], 'maps/new-map.mini.webp');
+assert.equal(capturedWrites.length, 4);
+assert.equal(capturedWrites[0].sourcePath, uploadPath);
+assert.equal(capturedWrites[1].fullPath, path.join(repoRoot, 'maps', 'new-map.mini.webp'));
+assert.equal(capturedWrites[1].sourcePath, preparedThumbnail.thumbnailPath);
 
 fs.rmSync(repoRoot, { recursive: true, force: true });
 console.log('map studio new-map checks passed');

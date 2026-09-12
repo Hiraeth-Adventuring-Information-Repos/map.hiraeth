@@ -101,6 +101,9 @@ function createFixture({ sourceRoot, fixtureRoot }) {
 
     fs.mkdirSync(path.join(repoRoot, 'maps'), { recursive: true });
     fs.copyFileSync(path.join(sourceRoot, 'maps/OLD-CONT.mini.webp'), path.join(repoRoot, 'maps/base-map.webp'));
+    fs.copyFileSync(path.join(sourceRoot, 'maps/OLD-CONT.mini.webp'), path.join(repoRoot, 'maps/base-map.mini.webp'));
+    fs.copyFileSync(path.join(sourceRoot, 'maps/Fair-Content.mini.webp'), path.join(repoRoot, 'maps/Fair-Content.mini.webp'));
+    fs.copyFileSync(path.join(sourceRoot, 'maps/Fair-Content.json'), path.join(repoRoot, 'maps/Fair-Content.json'));
     writeJson(path.join(repoRoot, 'maps/base-map.json'), {
         id: 'base-map',
         name: 'Base Map',

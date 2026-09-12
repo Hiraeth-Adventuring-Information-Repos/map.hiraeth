@@ -1,6 +1,18 @@
 # Hiraeth Map Studio
 
-Hiraeth Map Studio packages the existing visual map editor into an authenticated LAN service. It provides immediate local previews, guided new-map creation, isolated draft branches, complete release validation, and GitHub draft pull-request creation.
+## Default: password-free, download-only editing
+
+`npm run editor` and `npm run studio` now open the same download-only editor. See [MAP_EDITOR.md](MAP_EDITOR.md) for setup and workflow. Edits stay in the browser, and **Download changes** saves copies to your device. No password is required, and server writes and uploads are disabled.
+
+Install downloaded files in the maps folder manually before using the existing publishing process. The default editor does not update or deploy the player website.
+
+The previous authenticated Studio remains available via `npm run studio:legacy` for old workspaces; the older local save server is `npm run editor:legacy`. Existing drafts and password files are preserved but unused by the default editor.
+
+## Legacy Studio deployment
+
+The instructions below describe the optional legacy service, not the default file editor.
+
+Hiraeth Map Studio packages the existing visual map editor into a LAN-only local testing service. It provides immediate local previews, guided new-map creation, isolated draft branches, complete release validation, and GitHub draft pull-request creation.
 
 Public deployment remains review-gated: Studio never merges a pull request or pushes directly to `main`. The existing GitHub Actions workflow deploys the public site after a maintainer approves and merges the pull request.
 
@@ -9,7 +21,6 @@ Public deployment remains review-gated: Studio never merges a pull request or pu
 - A dedicated clean clone of this repository on the Docker host
 - Docker Engine with Docker Compose
 - A LAN hostname that resolves to the Docker host, such as `map-studio.local`
-- A strong Studio password
 - A GitHub App installed only on this repository, or a fine-grained repository token, when automated pull requests are desired
 
 Studio mounts the host checkout read-only and creates a private service clone inside its persistent volume. Each `map-studio/*` draft lives in a worktree owned by that service clone, so Studio neither changes the mounted checkout nor adds branches and worktree metadata to its `.git` directory. A dedicated clone is still recommended for a long-running service, but it is no longer a data-isolation requirement.
@@ -28,9 +39,7 @@ Create the local configuration and secret directory:
 ```sh
 cp .env.example .env
 mkdir -p .secrets
-openssl rand -base64 36 > .secrets/map-studio-password.txt
 chmod 700 .secrets
-chmod 600 .secrets/map-studio-password.txt
 ```
 
 Set `MAP_STUDIO_HOSTNAME` in `.env` to the exact hostname maintainers will use. Add that hostname to local DNS, or to the hosts file on each authorized LAN device. Set `MAP_STUDIO_LAN_IP` to the Docker host's current private-network address when maintainers should also be able to open Studio by IP. If DHCP changes that address, update `.env` and rerun `docker compose up -d`.
@@ -86,36 +95,30 @@ docker compose up -d
 docker compose ps
 ```
 
-The `map-studio` application is reachable only through the internal Compose network. Caddy is the LAN-facing service and provides HTTPS using its local certificate authority.
+The `map-studio` application is reachable only through the internal Compose network. Caddy is the LAN-facing service and exposes it over plain HTTP on port 80.
 
-## 4. Trust the LAN certificate
+## 4. Open Map Studio
 
-Caddy stores its local root certificate in the `caddy_data` volume. Export it on the Docker host:
-
-```sh
-docker compose cp studio-proxy:/data/caddy/pki/authorities/local/root.crt ./map-studio-root.crt
-```
-
-Install `map-studio-root.crt` as a trusted root certificate only on authorized maintainer devices. The exact installation process depends on the operating system. After trust and LAN name resolution are configured, open the hostname URL:
+After LAN name resolution is configured, open the hostname URL:
 
 ```text
-https://map-studio.local/studio
+http://map-studio.local/studio
 ```
 
-When `MAP_STUDIO_LAN_IP` is configured, the equivalent `https://<LAN-IP>/studio` address is also served. Both addresses use Caddy's private certificate authority, so each maintainer device must trust the exported root certificate.
+When `MAP_STUDIO_LAN_IP` is configured, the equivalent `http://<LAN-IP>/studio` address is also served. No certificate installation is required.
 
-Use the password stored in `.secrets/map-studio-password.txt`.
+Studio opens directly into the local dashboard; this Compose deployment does not use a password or login session.
 
 ## Maintainer workflow
 
-1. Open Map Studio and enter a concise change title.
-2. Click **Start local draft**. Studio creates a unique persistent worktree and `map-studio/*` branch in its private service repository. When GitHub is connected it fetches `origin/main`; offline drafts import the mounted checkout's committed `main` ref without writing to that checkout.
+1. Open Map Studio and click **Edit maps**. No change title or branch setup is required before editing.
+2. Studio prepares an isolated editing draft automatically, or continues the existing draft. **New map** also prepares a draft automatically. A review-only editor has a **Start editing** action that keeps the selected map. The original checkout remains untouched.
 3. Open the visual editor and save map data normally, or use **New map** to upload supported artwork and create the map data and atlas entry automatically.
 4. Build and inspect the live preview.
-5. Return to Studio and click **Create draft pull request**.
+5. Return to Studio, expand **Publish changes**, enter a descriptive change title, and click **Create draft pull request**. This step requires a configured GitHub connection; local editing and preview do not.
 6. Studio advances the asset version when needed, runs `npm run publish:check`, stages only approved map/version files, commits, pushes, and creates a draft PR.
 7. Review GitHub checks and the preview, then approve and merge the PR through GitHub.
-8. Click **Sync merged draft**. Studio verifies that the branch is present in `origin/main`, removes the isolated worktree and local branch, and leaves the mounted checkout untouched. **Abandon local draft** provides a typed-confirmation recovery path for drafts that should be discarded; it never deletes a remote branch.
+8. Click **Check merge and sync**. Studio verifies the exact draft commit was merged (including squash or rebase merges), removes the completed draft, and opens the merged maps from a private review checkout. The original mounted checkout remains untouched. **Abandon local draft** provides a typed-confirmation recovery path for drafts that should be discarded; it never deletes a remote branch.
 
 ## New-map behavior
 
@@ -133,7 +136,7 @@ Every save and new-map upload creates a recovery journal in the private worktree
 ## Security model
 
 - The original `npm run editor` command remains loopback-only.
-- LAN mode requires an allowlisted Host header, authenticated HttpOnly/SameSite session, exact same-origin requests, and a per-session CSRF token.
+- Local Compose mode disables password authentication. It still requires an allowlisted Host header, exact same-origin writes, and a per-process CSRF token.
 - Login attempts are rate-limited.
 - Map writes are enabled only inside the active managed `map-studio/*` worktree. The mounted checkout remains read-only to Studio regardless of its branch or dirty state.
 - Publishing rejects every changed path except `maps/**` and the four synchronized asset-version files.
@@ -141,7 +144,7 @@ Every save and new-map upload creates a recovery journal in the private worktree
 - The application runs as a non-root container user and does not mount the Docker socket.
 - Map artwork uploads are streamed into a temporary directory, limited to 512 MiB, restricted to WebP, PNG, or JPEG, inspected by ImageMagick, and removed after processing.
 
-Keep the service on a trusted LAN or private VPN. Do not forward ports 80 or 443 from the public internet to this Compose project.
+HTTP does not encrypt edited map data in transit, and this local testing deployment has no login gate. Keep the service on a trusted LAN or private VPN, and never forward port 80 from the public internet to this Compose project.
 
 ## Operations
 
@@ -168,7 +171,7 @@ git pull --ff-only origin main
 docker compose up -d --build
 ```
 
-The tile cache, private Studio clone/worktrees, Caddy certificate authority, and Caddy configuration are persistent named volumes. Back up the `map_studio_drafts` volume when an unpushed draft is important; rebuilding the application image does not remove it. The host clone mounted at `/workspace` is a read-only source and recovery remote, not the active editing workspace.
+The tile cache and private Studio clone/worktrees are persistent named volumes. Back up the `map_studio_drafts` volume when an unpushed draft is important; rebuilding the application image does not remove it. The host clone mounted at `/workspace` is a read-only source and recovery remote, not the active editing workspace.
 
 ## Product architecture
 

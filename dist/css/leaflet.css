@@ -343,6 +343,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
 	font-size: 22px;
 	}
 
+/* Map Studio is operated directly on phones and tablets. Keep the standard
+   Leaflet glyphs centered while providing a reliable touch target. */
+.leaflet-touch .leaflet-control-zoom a {
+	width: 44px;
+	height: 44px;
+	line-height: 44px;
+	}
+
 
 /* layers control */
 

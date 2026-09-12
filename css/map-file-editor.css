@@ -1,0 +1,117 @@
+/* File editor: one canvas, one contextual form. Studio keeps its own layout. */
+#map-editor-app[data-download-only="true"] :is(#editor-export-build-preview-btn, #editor-export-open-preview-link) { display: none !important; }
+#map-editor-app[data-file-mode="true"] {
+    height: 100dvh !important; min-height: 0 !important; overflow: hidden !important;
+    display: flex !important; flex-direction: column !important;
+}
+#map-editor-app[data-file-mode="true"] :is(.dm-task-tabs, .map-editor-publish-panel, .map-editor-brand, .map-editor-menu-bar, #editor-studio-home-link, #editor-map-home-btn, #editor-context-label, .map-editor-toolbar-hint, .map-editor-toolbar-label, .map-editor-toolbar-divider, #editor-zoom-status, #editor-reset-view-btn, #editor-toggle-inspector-btn, #editor-inspector-launcher, .map-editor-shortcut-hint, .map-editor-more-actions) { display: none !important; }
+#map-editor-app[data-file-mode="true"] .map-editor-appbar {
+    position: relative; z-index: 2000;
+    display: flex !important; flex-wrap: nowrap !important; flex: 0 0 auto; min-height: 58px;
+    padding: 7px 12px; gap: 10px;
+}
+#map-editor-app[data-file-mode="true"] .map-editor-context { display: block !important; flex: 1; min-width: 0; margin: 0; }
+#map-editor-app[data-file-mode="true"] #editor-context-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 20px Georgia, serif; }
+#map-editor-app[data-file-mode="true"] .map-editor-app-actions { display: contents; }
+#map-editor-app[data-file-mode="true"] #editor-choose-map-btn { display: inline-flex !important; order: -1; }
+#map-editor-app[data-file-mode="true"] :is(button, .file-editor-action) { min-height: 42px; }
+#map-editor-app[data-file-mode="true"] :is(#editor-undo-btn, #editor-redo-btn) { display: inline-flex !important; min-width: 42px; }
+#map-editor-app[data-file-mode="true"] #editor-export-btn { display: inline-flex !important; }
+#map-editor-app[data-file-mode="true"] .map-editor-workspace {
+    position: relative; flex: 1 1 0 !important; display: flex !important; flex-direction: row !important;
+    min-height: 0 !important; overflow: hidden !important; padding: 0 !important; gap: 0 !important;
+}
+#map-editor-app[data-file-mode="true"]:not([data-mode="library"]) .map-editor-canvas-panel {
+    display: flex !important; flex: 1 1 0; flex-direction: column !important;
+    min-height: 0 !important; min-width: 0 !important; height: auto !important; order: 2;
+}
+#map-editor-app[data-file-mode="true"] .map-editor-map-frame { flex: 1 1 0; min-height: 0 !important; height: auto !important; }
+#map-editor-app[data-file-mode="true"] #editor-map { height: 100% !important; min-height: 0 !important; }
+#map-editor-app[data-file-mode="true"] .map-editor-toolbar { flex: 0 0 auto; padding: 6px 10px; min-height: 52px; }
+#map-editor-app[data-file-mode="true"] .map-editor-toolbar-group { display: flex; gap: 6px; flex-wrap: wrap; }
+#map-editor-app[data-file-mode="true"] .map-editor-toolbar button { padding: 6px 12px; font-size: 14px; }
+#map-editor-app[data-file-mode="true"]:not([data-mode="draw"]) :is(#editor-add-poi-btn, #editor-add-region-btn, #editor-add-line-btn) { display: inline-flex !important; }
+#map-editor-app[data-file-mode="true"][data-mode="draw"] :is(#editor-add-poi-btn, #editor-add-region-btn, #editor-add-line-btn, .file-editor-action) { display: none !important; }
+#map-editor-app[data-file-mode="true"] #editor-delete-selection-btn { display: none !important; }
+#map-editor-app[data-file-mode="true"] .map-editor-inspector {
+    position: relative !important; display: flex !important; flex-direction: column; order: 1;
+    width: var(--editor-inspector-width, 340px) !important; flex: 0 0 var(--editor-inspector-width, 340px);
+    max-height: none !important; height: 100% !important; overflow-y: auto !important;
+    border: 0; border-right: 1px solid var(--border-color); border-radius: 0; margin: 0;
+}
+#map-editor-app[data-file-mode="true"] .map-editor-workspace[data-inspector-collapsed="true"] .map-editor-inspector,
+#map-editor-app[data-file-mode="true"][data-mode="draw"] .map-editor-inspector { display: none !important; }
+#map-editor-app[data-file-mode="true"] .map-editor-inspector-chrome { position: sticky; top: 0; background: var(--bg-primary); z-index: 5; padding: 12px; }
+#map-editor-app[data-file-mode="true"] :is(.map-editor-focus-eyebrow, .map-editor-focus-summary, .map-editor-canvas-status) { display: none !important; }
+#map-editor-app[data-file-mode="true"] .file-editor-panel-actions { display: flex; gap: 8px; margin-top: 10px; }
+#map-editor-app[data-file-mode="true"] .map-editor-save-bar { display: flex !important; flex: 0 0 auto; position: static !important; min-height: 60px; gap: 8px; padding: 8px 12px; border-radius: 0; }
+#map-editor-app[data-file-mode="true"] .map-editor-save-summary { min-width: 0; flex: 1; }
+#map-editor-app[data-file-mode="true"] #editor-save-state-title { font-size: 14px; }
+#map-editor-app[data-file-mode="true"] #editor-export-status { font-size: 12px; max-width: 100%; }
+#map-editor-app[data-file-mode="true"] .map-editor-save-actions { flex: 0 0 auto; }
+#map-editor-app[data-file-mode="true"] #save-current-map-btn { min-width: 90px; }
+#map-editor-app[data-file-mode="true"][data-mode="library"] .map-editor-workspace { overflow-y: auto !important; padding: 16px !important; }
+#map-editor-app[data-file-mode="true"][data-mode="library"] :is(.map-editor-canvas-panel, .map-editor-inspector, .file-editor-action, #editor-save-bar) { display: none !important; }
+@media (max-width: 680px) {
+    #map-editor-app[data-file-mode="true"] :is(input, textarea, select) { font-size: 16px !important; }
+    #map-editor-app[data-file-mode="true"] .map-editor-appbar { min-height: 54px; padding: 5px 8px; gap: 5px; }
+    #map-editor-app[data-file-mode="true"] #editor-context-name { font-size: 17px; }
+    #map-editor-app[data-file-mode="true"] #editor-export-btn { display: none !important; }
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar { min-height: 100px; padding: 5px 8px; }
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar-group { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 5px; }
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar button { padding: 5px 8px; font-size: 14px; }
+    #map-editor-app[data-file-mode="true"][data-mode="draw"] .map-editor-toolbar { min-height: 54px; }
+    #map-editor-app[data-file-mode="true"] .map-editor-inspector {
+        position: absolute !important; inset: 0 !important; z-index: 900;
+        width: 100% !important; height: 100% !important; max-height: none !important;
+        background: var(--bg-primary); border: 0 !important; padding: 0 12px 16px !important;
+    }
+    #map-editor-app[data-file-mode="true"] #editor-inspector-resizer { display: none !important; }
+    #map-editor-app[data-file-mode="true"] .map-editor-save-bar { min-height: 60px; padding: 7px 10px calc(7px + env(safe-area-inset-bottom)); }
+    #map-editor-app[data-file-mode="true"] #editor-save-state-chip { display: none; }
+    #map-editor-app[data-file-mode="true"] #editor-export-status { display: block; max-height: 32px; overflow-y: auto; line-height: 16px; }
+    #map-editor-app[data-file-mode="true"] .map-editor-save-summary > div { min-width: 0; }
+}
+#map-editor-app[data-file-mode="true"] .file-editor-panel-actions[hidden] { display: none; }
+#map-editor-app[data-file-mode="true"] #editor-save-bar[hidden] { display: none !important; }
+#map-editor-app[data-file-mode="true"] #editor-collapse-inspector-btn { display: inline-flex !important; flex: 0 0 42px; width: 42px; }
+#map-editor-app[data-file-mode="true"] #editor-collapse-inspector-btn .map-editor-inspector-close-icon { display: block !important; width: 18px; height: 18px; }
+#map-editor-app[data-file-mode="true"] #editor-collapse-inspector-btn .map-editor-inspector-collapse-icon { display: none !important; }
+/* Own the DM palette instead of inheriting player button and header colors. */
+#map-editor-app[data-file-mode="true"] {
+    --bg-primary: #fbf8f0; --bg-secondary: #f1eadc; --bg-tertiary: #e9e0cd;
+    --text-primary: #332d29; --text-secondary: #6c6258; --border-color: #bcb09a;
+    --primary-color: #62446f; --accent-color: #62446f;
+    color: var(--text-primary); background: var(--bg-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+html[data-theme="dark"] #map-editor-app[data-file-mode="true"] {
+    --bg-primary: #242129; --bg-secondary: #302b35; --bg-tertiary: #3c3441;
+    --text-primary: #eee8df; --text-secondary: #bdb3c2; --border-color: #675b6a;
+    --primary-color: #d0afe0; --accent-color: #d0afe0;
+}
+#map-editor-app[data-file-mode="true"] :is(.map-editor-appbar, .map-editor-toolbar, .map-editor-save-bar) { background: var(--bg-primary); color: var(--text-primary); }
+#map-editor-app[data-file-mode="true"] :is(button, input, textarea, select, summary) { font-family: inherit; font-size: 14px; }
+#map-editor-app[data-file-mode="true"] button { color: var(--text-primary); background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 5px; align-items: center; justify-content: center; }
+#map-editor-app[data-file-mode="true"] button:disabled { opacity: .45; }
+#map-editor-app[data-file-mode="true"] button:hover:not(:disabled) { background: var(--bg-secondary); }
+#map-editor-app[data-file-mode="true"] #editor-context-name { color: var(--primary-color); }
+#map-editor-app[data-file-mode="true"] #save-current-map-btn { display: inline-flex !important; background: #62446f; color: #fff; border-color: #62446f; }
+#map-editor-app[data-file-mode="true"] .map-editor-save-actions { display: flex !important; width: auto !important; }
+#map-editor-app[data-file-mode="true"] .map-editor-toolbar { position: static !important; width: auto !important; transform: none !important; border-radius: 0; box-shadow: none; border: 0; border-bottom: 1px solid var(--border-color); }
+#map-editor-app[data-file-mode="true"] .file-editor-more { position: relative; flex: 0 0 auto; }
+#map-editor-app[data-file-mode="true"] .file-editor-more > summary { display: flex; align-items: center; justify-content: center; min-width: 42px; min-height: 42px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 5px; list-style: none; }
+#map-editor-app[data-file-mode="true"] .file-editor-more > summary::-webkit-details-marker { display: none; }
+#map-editor-app[data-file-mode="true"] .file-editor-options { position: absolute; right: 0; top: calc(100% + 8px); z-index: 1500; width: 235px; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 5px 20px #0002; }
+#map-editor-app[data-file-mode="true"] .file-editor-options button { display: flex !important; width: 100%; margin-bottom: 5px; justify-content: flex-start; padding: 8px 12px; }
+#map-editor-app[data-file-mode="true"] .file-editor-options p { margin: 8px; font-size: 12px; line-height: 1.5; color: var(--text-secondary); }
+#map-editor-app[data-file-mode="true"] .file-editor-reopen[hidden],
+#map-editor-app[data-file-mode="true"] .file-editor-action[hidden] { display: none !important; }
+@media (max-width: 680px) {
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar { min-height: 54px; }
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar-group { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar button { font-size: 13px; padding: 5px 3px; }
+    #map-editor-app[data-file-mode="true"] .map-editor-appbar button { padding: 5px 7px; }
+    #map-editor-app[data-file-mode="true"] :is(#editor-undo-btn, #editor-redo-btn) { min-width: 34px; }
+    #map-editor-app[data-file-mode="true"] .file-editor-options #editor-export-btn { display: flex !important; }
+}

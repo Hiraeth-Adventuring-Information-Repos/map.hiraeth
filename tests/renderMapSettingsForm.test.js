@@ -33,7 +33,8 @@ const formFactory = new Function('dependencies', `
         state,
         fieldApi,
         findNodeLocation,
-        buildParentOptions
+        buildParentOptions,
+        syncFormAccess
     } = dependencies;
     ${functionNames.map(extractFunction).join('\n')}
     return { getMapSettingsFieldValues, renderMapSettingsForm };
@@ -99,7 +100,8 @@ const { getMapSettingsFieldValues, renderMapSettingsForm } = formFactory({
         { id: '', label: 'Root' },
         { id: 'world', label: 'World' },
         { id: 'archive', label: 'Archive' }
-    ]
+    ],
+    syncFormAccess: () => {}
 });
 
 renderMapSettingsForm();
@@ -140,6 +142,15 @@ assert.deepEqual(
 assert.equal(mapSettingsInputs.parentId.value, 'world');
 assert.equal(findNodeLocationCallCount, 1);
 
+state.currentMap.status = 'legacy-state';
+renderMapSettingsForm();
+assert.equal(mapSettingsInputs.status.value, 'legacy-state', 'unknown current select values should be preserved');
+assert.equal(mapSettingsInputs.status.selectedOptions[0].textContent, 'legacy-state (current value)');
+state.currentMap.status = 'active';
+renderMapSettingsForm();
+assert.equal(mapSettingsInputs.status.value, 'active');
+assert.equal(Array.from(mapSettingsInputs.status.options).some((option) => option.value === 'legacy-state'), false);
+
 assert.equal(
     getMapSettingsFieldValues({ group: 'Current Group', category: 'Legacy Group' }, null).group,
     'Current Group'
@@ -147,6 +158,7 @@ assert.equal(
 
 state.currentMap = null;
 state.currentMapDataUrl = '';
+const findNodeLocationCallsBeforeEmptyRender = findNodeLocationCallCount;
 renderMapSettingsForm();
 
 fieldNames.forEach((name) => {
@@ -155,6 +167,6 @@ fieldNames.forEach((name) => {
 });
 assert.equal(document.getElementById('currentMapId').textContent, 'No map');
 assert.equal(mapSettingsInputs.parentId.value, '');
-assert.equal(findNodeLocationCallCount, 1, 'empty state should not search the atlas tree');
+assert.equal(findNodeLocationCallCount, findNodeLocationCallsBeforeEmptyRender, 'empty state should not search the atlas tree');
 
 console.log('map settings form rendering checks passed');

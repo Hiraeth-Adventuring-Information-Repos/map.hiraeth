@@ -37,8 +37,13 @@ global.console.error = (err) => {
     consoleErrorArgs = err;
 };
 
+global.fileDocuments = require('../js/map-file-document');
+const wrapperStart = editorSource.indexOf('function serializePreservedMap(');
+const wrapperEnd = editorSource.indexOf('function captureFileBaseline(', wrapperStart);
+assert.ok(wrapperStart >= 0 && wrapperEnd > wrapperStart);
+// Exercise the actual preservation wrapper, including its legacy fallback.
 // eslint-disable-next-line no-eval
-eval(fnSource);
+eval(editorSource.slice(wrapperStart, wrapperEnd) + '\n' + fnSource);
 
 function resetMocks() {
     downloadJsonFileArgs = null;
@@ -114,6 +119,18 @@ assert.deepStrictEqual(setExportStatusArgs, {
     msg: 'Could not export the current map.',
     isErr: true
 });
+
+// A saved/exported edit must retain fields the UI never displayed.
+resetMocks();
+const rawMap = { id: 'test-map', name: 'Before', custom: { retained: true }, pointsOfInterest: [{ name: 'Place', coords: [1.25, 3.75], properties: { secret: 'kept' } }] };
+const normalizedMap = { id: 'test-map', name: 'Before', pointsOfInterest: [{ name: 'Place', coords: [1, 4], properties: { secret: 'kept' } }] };
+const session = fileDocuments.createSession(rawMap, normalizedMap);
+global.state.fileSnapshot = session.snapshot;
+session.editableDocument.name = 'After';
+global.utils.serializeMapDocumentState = () => session.editableDocument;
+exportCurrentMapJson();
+assert.deepEqual(downloadJsonFileArgs.doc, { ...rawMap, name: 'After' });
+assert.equal(consoleErrorArgs, null);
 
 global.console.error = originalConsoleError;
 console.log('All tests passed for exportCurrentMapJson!');

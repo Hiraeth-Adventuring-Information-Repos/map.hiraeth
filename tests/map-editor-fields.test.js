@@ -15,8 +15,24 @@ const inputs = fields.collectMapInputs(document);
 assert.equal(inputs.name.required, true);
 assert.equal(inputs.dataUrl.readOnly, true);
 assert.match(inputs.dataUrl.getAttribute('aria-describedby'), /dataUrl-help/);
+assert.deepEqual(
+    Array.from(inputs.status.options, (option) => [option.value, option.textContent]),
+    [['', 'Published (default)'], ['active', 'Active'], ['draft', 'Draft'], ['coming-soon', 'Coming soon'], ['archived', 'Archived']]
+);
+assert.deepEqual(
+    Array.from(inputs.visibility.options, (option) => [option.value, option.textContent]),
+    [['', 'Public (default)'], ['public', 'Public'], ['gm', 'GM only']]
+);
 assert.equal(document.querySelectorAll('[data-map-field-surface="overview"] [data-field]').length, 6);
 assert.equal(document.querySelectorAll('.map-editor-coordinate-fieldset [data-field]').length, 4);
+assert.deepEqual(
+    Array.from(document.querySelectorAll('[data-map-field-surface="overview"] .map-editor-property-section-title'), (heading) => heading.textContent),
+    ['Map identity', 'Map chooser']
+);
+assert.deepEqual(
+    Array.from(document.querySelectorAll('[data-map-field-surface="advanced"] .map-editor-property-section-title'), (heading) => heading.textContent),
+    ['Atlas record', 'Artwork', 'Canvas size', 'Scale', 'Appearance']
+);
 
 const mapValues = fields.getMapFieldValues({
     name: 'Fair',
@@ -73,6 +89,13 @@ assert.equal(featureForm.querySelector('[data-field="coordY"]').value, '12');
 assert.equal(featureForm.querySelector('[data-field-group="coordinates"]').children.length, 2);
 assert.ok(featureForm.querySelector('[data-detail-section-list]'));
 assert.ok(featureForm.querySelector('details [data-field="properties"]'));
+assert.deepEqual(
+    Array.from(featureForm.querySelectorAll(':scope > .map-editor-feature-section > summary'), (summary) => summary.textContent),
+    ['Content', 'Facts and Sections', 'Links', 'Position', 'Advanced Data']
+);
+assert.equal(featureForm.querySelector('[data-feature-section="content"]').open, true);
+assert.equal(featureForm.querySelector('[data-feature-section="position"]').open, false);
+assert.equal(featureForm.querySelector('[data-field="summary"]').previousElementSibling?.textContent, 'A short description for search results, cards, and quick previews.');
 
 fields.registerMapField({ key: 'maintainerNote', label: 'Maintainer Note', surface: 'advanced', help: 'Extension field.' });
 fields.registerFeatureField('lines', { key: 'travelMode', label: 'Travel Mode' });
@@ -81,3 +104,14 @@ assert.equal(fields.getFeatureFields('lines').at(-1).key, 'travelMode');
 assert.throws(() => fields.registerFeatureField('lines', { key: 'travelMode', label: 'Duplicate' }), /already exists/);
 
 console.log('map editor field registry checks passed');
+
+assert.equal(inputs.imageUrl.closest('details').querySelector('summary').textContent, 'Artwork');
+assert.equal(inputs.scalePixels.closest('details').querySelector('summary').textContent, 'Scale');
+assert.equal(inputs.latNorth.closest('details').querySelector('summary').textContent, 'Geographic calibration');
+assert.equal(inputs.imageUrl.closest('details').getAttribute('aria-disabled'), 'false');
+assert.equal(document.querySelectorAll('#map-imageUrl').length, 1);
+// Existing Fair bounds have more than four decimal places and must remain saveable.
+inputs.latWest.value = '-48.34375';
+inputs.latEast.value = '71.65625';
+assert.equal(inputs.latWest.validity.stepMismatch, false);
+assert.equal(inputs.latEast.validity.stepMismatch, false);

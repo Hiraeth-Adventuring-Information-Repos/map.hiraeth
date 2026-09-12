@@ -1,4 +1,26 @@
 (function () {
+    // DM appearance is independent of the public map preference.
+    function applyDmTheme(theme) {
+        const dark = theme === 'dark';
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        document.querySelectorAll('[data-dm-theme]').forEach(button => {
+            button.setAttribute('aria-pressed', String(dark));
+            button.title = dark ? 'Use parchment theme' : 'Use dark theme';
+        });
+    }
+    let dmTheme = 'light';
+    try { dmTheme = localStorage.getItem('hiraethDmTheme') || 'light'; } catch (_) {}
+    applyDmTheme(dmTheme);
+    document.querySelectorAll('[data-dm-theme]').forEach(button => button.addEventListener('click', () => {
+        const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('hiraethDmTheme', theme); } catch (_) {}
+        applyDmTheme(theme);
+    }));
+    window.addEventListener('storage', event => {
+        if (event.key === 'hiraethDmTheme') applyDmTheme(event.newValue);
+    });
+
     const dom = {
         login: document.getElementById('studio-login'),
         dashboard: document.getElementById('studio-dashboard'),
@@ -6,10 +28,14 @@
         password: document.getElementById('studio-password'),
         loginStatus: document.getElementById('login-status'),
         logoutButton: document.getElementById('logout-button'),
+        studioEditorLink: document.getElementById('studio-editor-link'),
+        studioPreviewLink: document.getElementById('studio-preview-link'),
         statusTitle: document.getElementById('studio-status-title'),
         statusSummary: document.getElementById('studio-status-summary'),
         statusChip: document.getElementById('studio-status-chip'),
         statusStrip: document.querySelector('.status-strip'),
+        pipelineDetails: document.getElementById('pipeline-details'),
+        pipelineSummaryStatus: document.getElementById('pipeline-summary-status'),
         branchChip: document.getElementById('studio-branch-chip'),
         workspaceDetails: document.getElementById('workspace-details'),
         workflowTitle: document.getElementById('workflow-title'),
@@ -26,10 +52,17 @@
         startDraftButton: document.getElementById('start-draft-button'),
         continueEditingLink: document.getElementById('continue-editing-link'),
         publishButton: document.getElementById('publish-button'),
+        workflowPullRequestLink: document.getElementById('workflow-pull-request-link'),
         finishDraftButton: document.getElementById('finish-draft-button'),
         abandonDraftButton: document.getElementById('abandon-draft-button'),
         workflowStatus: document.getElementById('workflow-status'),
+        openEditorLink: document.getElementById('open-editor-link'),
+        editorCardTitle: document.getElementById('editor-card-title'),
+        editorCardDescription: document.getElementById('editor-card-description'),
         newMapButton: document.getElementById('new-map-button'),
+        previewCardTitle: document.getElementById('preview-card-title'),
+        previewCardDescription: document.getElementById('preview-card-description'),
+        previewActionLink: document.getElementById('preview-action-link'),
         publishProgress: document.getElementById('publish-progress'),
         publishProgressStatus: document.getElementById('publish-progress-status'),
         publishOutput: document.getElementById('publish-output'),
@@ -54,6 +87,10 @@
         newMapPlan: document.getElementById('new-map-plan'),
         newMapPreprocessing: document.getElementById('new-map-preprocessing'),
         newMapPlanFiles: document.getElementById('new-map-plan-files'),
+        newMapSteps: Array.from(document.querySelectorAll('[data-new-map-step]')),
+        newMapStepIndicators: Array.from(document.querySelectorAll('[data-new-map-step-indicator]')),
+        newMapBackButton: document.getElementById('new-map-back-button'),
+        newMapNextButton: document.getElementById('new-map-next-button'),
         reviewNewMapButton: document.getElementById('review-new-map-button'),
         newMapStatus: document.getElementById('new-map-status'),
         createNewMapButton: document.getElementById('create-new-map-button'),
@@ -71,10 +108,14 @@
     let csrfToken = '';
     let workspace = null;
     let readiness = null;
+    let publishJob = null;
     let publishPollTimer = null;
+    let draftStartPending = false;
+    let draftStartPromise = null;
     let mapIdWasEdited = false;
     let newMapPlanSignature = '';
     let newMapPreviewUrl = '';
+    let currentNewMapStep = 1;
 
     async function readJsonResponse(response) {
         const payload = await response.json().catch(() => null);
@@ -87,7 +128,11 @@
     function showAuthenticated(authenticated) {
         dom.login.hidden = authenticated;
         dom.dashboard.hidden = !authenticated;
-        if (!authenticated) dom.password.focus();
+        if (!authenticated) {
+            clearTimeout(publishPollTimer);
+            publishPollTimer = null;
+            dom.password.focus();
+        }
     }
 
     async function refreshReadiness() {
@@ -121,6 +166,47 @@
             const detail = item.querySelector('small');
             if (detail) detail.textContent = stage.detail;
         });
+        const currentStage = stages.find((stage) => stage.state === 'current');
+        const completedStage = [...stages].reverse().find((stage) => stage.state === 'complete');
+        const summaryStage = currentStage || completedStage;
+        dom.pipelineSummaryStatus.textContent = summaryStage
+            ? `${summaryStage.id.charAt(0).toUpperCase()}${summaryStage.id.slice(1)}: ${summaryStage.detail}`
+            : 'Draft not started';
+    }
+
+    function updateStartDraftAvailability() {
+        const capabilityReady = workspace?.capabilities?.canStartDraft === true;
+        dom.startDraftButton.disabled = draftStartPending || !capabilityReady;
+        dom.startDraftButton.title = capabilityReady ? '' : 'Draft creation is unavailable in the current workspace.';
+        const editButton = document.getElementById('edit-maps-button');
+        if (editButton) editButton.disabled = draftStartPending || !(workspace?.capabilities?.canEdit || capabilityReady);
+        dom.newMapButton.disabled = draftStartPending || !(workspace?.capabilities?.canCreateMap || capabilityReady);
+    }
+
+    async function ensureEditingWorkspace() {
+        if (draftStartPromise) return draftStartPromise;
+        if (workspace?.capabilities?.canEdit === true) return workspace;
+        if (workspace?.capabilities?.canStartDraft !== true) throw new Error('Editing is unavailable. Check the workspace details below.');
+        const title = dom.draftTitle.value.trim() || 'Map updates';
+        dom.draftTitle.value = title;
+        draftStartPending = true;
+        updateStartDraftAvailability();
+        draftStartPromise = (async () => {
+            const response = await fetch('/api/studio/drafts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+                body: JSON.stringify({ title })
+            });
+            const payload = await readJsonResponse(response);
+            renderWorkspace(payload.workspace);
+            return payload.workspace;
+        })();
+        try { return await draftStartPromise; }
+        finally {
+            draftStartPending = false;
+            draftStartPromise = null;
+            updateStartDraftAvailability();
+        }
     }
 
     function renderGitHubSetup(configuration, checkResult = null) {
@@ -152,6 +238,83 @@
         }
     }
 
+    function setLink(link, { href = '', label, external = false, disabled = false }) {
+        link.textContent = label;
+        if (disabled || !href) {
+            link.removeAttribute('href');
+            link.removeAttribute('target');
+            link.removeAttribute('rel');
+            link.setAttribute('aria-disabled', 'true');
+            link.tabIndex = -1;
+            return;
+        }
+        link.href = href;
+        link.toggleAttribute('target', external);
+        if (external) {
+            link.target = '_blank';
+            link.rel = 'noopener';
+        } else {
+            link.removeAttribute('target');
+            link.removeAttribute('rel');
+        }
+        link.removeAttribute('aria-disabled');
+        link.removeAttribute('tabindex');
+    }
+
+    function renderEditorEntry(presentation) {
+        const entry = { href: '/studio/editor', label: 'Edit maps' };
+        setLink(dom.studioEditorLink, entry);
+        setLink(dom.openEditorLink, entry);
+        dom.editorCardTitle.textContent = 'Your maps';
+        dom.editorCardDescription.textContent = 'Open the map library to edit places, regions, and routes.';
+    }
+
+    function renderPreviewEntry(presentation) {
+        if (presentation.previewReady) {
+            const openPreview = { href: '/preview/', label: 'Open preview', external: true };
+            setLink(dom.studioPreviewLink, openPreview);
+            setLink(dom.previewActionLink, openPreview);
+            dom.previewCardTitle.textContent = 'Inspect current preview';
+            dom.previewCardDescription.textContent = 'Review the current optimized bundle before creating a pull request.';
+        } else if (presentation.editable) {
+            setLink(dom.studioPreviewLink, { href: '/studio/editor?action=preview', label: 'Build preview' });
+            setLink(dom.previewActionLink, { href: '/studio/editor?action=preview', label: 'Build preview in editor' });
+            dom.previewCardTitle.textContent = 'Preview needs rebuilding';
+            dom.previewCardDescription.textContent = 'The current files differ from the last bundle. Build a fresh preview in the editor.';
+        } else {
+            setLink(dom.studioPreviewLink, { label: 'Preview unavailable', disabled: true });
+            setLink(dom.previewActionLink, { label: 'Preview unavailable', disabled: true });
+            dom.previewCardTitle.textContent = 'Preview is not ready';
+            dom.previewCardDescription.textContent = 'Start a local draft before building a map preview.';
+        }
+    }
+
+    function hasKnownCurrentPullRequest(presentation) {
+        return publishJob?.status === 'complete'
+            && publishJob.result?.branch === presentation.branch
+            && Boolean(publishJob.result?.pullRequestNumber || publishJob.result?.pullRequestUrl);
+    }
+
+    function renderMergeAction(presentation, capabilities) {
+        const knownPullRequest = hasKnownCurrentPullRequest(presentation);
+        dom.continueEditingLink.className = knownPullRequest ? 'secondary-action' : 'primary-action';
+        dom.workflowPullRequestLink.hidden = !knownPullRequest || !publishJob.result?.pullRequestUrl;
+        if (knownPullRequest && publishJob.result?.pullRequestUrl) {
+            dom.workflowPullRequestLink.href = publishJob.result.pullRequestUrl;
+            dom.workflowPullRequestLink.textContent = publishJob.result.pullRequestNumber
+                ? `Open pull request #${publishJob.result.pullRequestNumber}`
+                : 'Open draft pull request';
+        } else {
+            dom.workflowPullRequestLink.removeAttribute('href');
+        }
+        dom.finishDraftButton.hidden = !presentation.activeDraft;
+        dom.finishDraftButton.disabled = capabilities.canFinishDraft !== true;
+        dom.finishDraftButton.textContent = 'Check merge and sync';
+        dom.finishDraftButton.title = knownPullRequest
+            ? 'Confirm the pull request was merged, then sync and close this local draft.'
+            : 'Check whether this draft was merged before closing it.';
+    }
+
     function renderStudioPresentation() {
         if (!workspace || !window.MapStudioModel) {
             renderWorkspaceDetails();
@@ -159,8 +322,12 @@
         }
         const presentation = window.MapStudioModel.deriveWorkspacePresentation(workspace, readiness || {});
         const capabilities = workspace.capabilities || {};
-        dom.statusTitle.textContent = presentation.title;
-        dom.statusSummary.textContent = presentation.summary;
+        dom.statusTitle.textContent = presentation.activeDraft
+            ? 'Local draft workspace'
+            : (presentation.editable ? 'Writable branch' : 'Review-only workspace');
+        dom.statusSummary.textContent = presentation.activeDraft || presentation.editable
+            ? `Working on ${presentation.branch}.`
+            : 'No writable draft is active. Review maps safely or start a draft to edit.';
         dom.statusChip.textContent = presentation.statusLabel;
         dom.statusChip.className = `status-chip ${presentation.statusTone}`;
         dom.statusStrip.dataset.tone = presentation.statusTone;
@@ -169,15 +336,52 @@
         dom.workflowTitle.textContent = presentation.title;
         dom.workflowSummary.textContent = presentation.summary;
         renderPipeline(presentation.stages);
+        const pipelineMode = presentation.editable ? 'working' : 'onboarding';
+        if (dom.pipelineDetails.dataset.mode !== pipelineMode) {
+            dom.pipelineDetails.open = false;
+            dom.pipelineDetails.dataset.mode = pipelineMode;
+        }
+        const knownPullRequest = hasKnownCurrentPullRequest(presentation);
+        if (presentation.activeDraft && knownPullRequest && !workspace.clean) {
+            dom.workflowTitle.textContent = 'Update this draft before merging';
+            dom.workflowSummary.textContent = 'This draft has new local changes. Save, rebuild and inspect the preview, then update the pull request before merging it.';
+        } else if (presentation.activeDraft && knownPullRequest) {
+            dom.workflowTitle.textContent = 'Review and finish this draft';
+            dom.workflowSummary.textContent = publishJob.result?.pullRequestNumber
+                ? `Pull request #${publishJob.result.pullRequestNumber} is ready. Merge it after review, then check its status and sync.`
+                : 'The draft pull request is ready. Merge it after review, then check its status and sync.';
+            const reviewStage = document.getElementById('pipeline-review');
+            if (reviewStage) {
+                reviewStage.dataset.state = 'complete';
+                const detail = reviewStage.querySelector('small');
+                if (detail) detail.textContent = 'Pull request ready';
+            }
+        }
+        renderEditorEntry(presentation);
+        renderPreviewEntry(presentation);
 
         dom.startDraftButton.hidden = presentation.editable;
-        dom.startDraftButton.disabled = capabilities.canStartDraft !== true;
+        updateStartDraftAvailability();
         dom.continueEditingLink.hidden = !presentation.editable;
+        dom.publishButton.hidden = !presentation.activeDraft;
         dom.publishButton.disabled = capabilities.canPublish !== true;
-        dom.finishDraftButton.disabled = capabilities.canFinishDraft !== true;
+        dom.publishButton.textContent = knownPullRequest ? 'Update pull request' : 'Create draft pull request';
+        renderMergeAction(presentation, capabilities);
         dom.abandonDraftButton.hidden = !presentation.activeDraft;
         dom.abandonDraftButton.disabled = capabilities.canAbandonDraft !== true;
-        dom.newMapButton.disabled = capabilities.canCreateMap !== true;
+        updateStartDraftAvailability();
+        const editStatus = document.getElementById('edit-maps-status');
+        if (editStatus) editStatus.textContent = presentation.editable ? 'Continue where you left off.' : 'A private editing copy is prepared automatically.';
+        const publicationPanel = document.getElementById('studio-publication-panel');
+        const hasChanges = (workspace.changedPaths || []).length > 0 || knownPullRequest || ['running', 'interrupted', 'failed'].includes(publishJob?.status);
+        if (publicationPanel && publicationPanel.dataset.hasChanges !== String(hasChanges)) {
+            publicationPanel.dataset.hasChanges = String(hasChanges);
+            if (hasChanges) publicationPanel.open = true;
+        }
+        if (!dom.newMapButton.disabled && new URLSearchParams(location.search).get('new-map') === '1') {
+            history.replaceState(null, '', location.pathname);
+            queueMicrotask(() => dom.newMapButton.click());
+        }
         renderGitHubSetup(workspace.github || {});
 
         if (presentation.githubReady) {
@@ -212,12 +416,14 @@
         const response = await fetch('/api/studio/workspace', { cache: 'no-store' });
         const payload = await readJsonResponse(response);
         renderWorkspace(payload.workspace);
-        if (payload.publishJob) renderPublishJob(payload.publishJob);
+        renderPublishJob(payload.publishJob || null);
     }
 
     function renderPublishJob(job) {
+        publishJob = job;
         if (!job) {
             dom.publishProgress.hidden = true;
+            if (workspace) renderStudioPresentation();
             return;
         }
         dom.publishProgress.hidden = false;
@@ -247,18 +453,34 @@
             clearTimeout(publishPollTimer);
             publishPollTimer = null;
         }
+        if (job.status === 'running' && !dom.dashboard.hidden) schedulePublishPoll(1200);
+        if (workspace) renderStudioPresentation();
+    }
+
+    function schedulePublishPoll(delay) {
+        clearTimeout(publishPollTimer);
+        publishPollTimer = setTimeout(pollPublishJob, delay);
     }
 
     async function pollPublishJob() {
-        const response = await fetch('/api/studio/publish-status', { cache: 'no-store' });
-        const payload = await readJsonResponse(response);
-        renderPublishJob(payload.publishJob);
-        if (payload.publishJob.status === 'running') {
-            publishPollTimer = setTimeout(() => pollPublishJob().catch((error) => {
-                dom.publishProgressStatus.textContent = error.message;
-            }), 1200);
-        } else {
-            await Promise.all([refreshReadiness(), refreshWorkspace()]);
+        clearTimeout(publishPollTimer);
+        publishPollTimer = null;
+        if (dom.dashboard.hidden) return;
+        try {
+            const response = await fetch('/api/studio/publish-status', { cache: 'no-store' });
+            if (response.status === 401) {
+                showAuthenticated(false);
+                dom.loginStatus.textContent = 'Sign in again to check publication progress.';
+                return;
+            }
+            const payload = await readJsonResponse(response);
+            renderPublishJob(payload.publishJob);
+            if (payload.publishJob?.status !== 'running') {
+                await Promise.all([refreshReadiness(), refreshWorkspace()]);
+            }
+        } catch (error) {
+            dom.publishProgressStatus.textContent = 'Connection interrupted. Retrying publication status…';
+            if (!dom.dashboard.hidden) schedulePublishPoll(3000);
         }
     }
 
@@ -286,9 +508,17 @@
     function slugifyMapId(value) {
         return String(value || '')
             .normalize('NFKD')
-            .replace(/[^A-Za-z0-9_-]+/g, '-')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '')
             .slice(0, 80);
+    }
+
+    function formatFileSize(bytes) {
+        const size = Math.max(0, Number(bytes) || 0);
+        if (size < 1024) return `${Math.round(size)} B`;
+        if (size < 1024 * 1024) return `${(size / 1024).toFixed(size < 10 * 1024 ? 1 : 0)} KB`;
+        return `${(size / (1024 * 1024)).toFixed(size < 10 * 1024 * 1024 ? 1 : 0)} MB`;
     }
 
     function encodeBase64UrlJson(value) {
@@ -346,6 +576,68 @@
         if (dom.newMapForm.dataset.busy !== 'true') dom.createNewMapButton.disabled = true;
     }
 
+    function setNewMapStep(step, { focus = true } = {}) {
+        currentNewMapStep = Number(step) === 4 ? 4 : 1;
+        dom.newMapSteps.forEach((panel) => {
+            panel.hidden = currentNewMapStep === 4 ? Number(panel.dataset.newMapStep) !== 4 : Number(panel.dataset.newMapStep) === 4;
+        });
+        dom.newMapStepIndicators.forEach((indicator) => {
+            const indicatorStep = Number(indicator.dataset.newMapStepIndicator);
+            indicator.dataset.state = indicatorStep < currentNewMapStep
+                ? 'complete'
+                : (indicatorStep === currentNewMapStep ? 'current' : 'upcoming');
+            if (indicatorStep === currentNewMapStep) indicator.setAttribute('aria-current', 'step');
+            else indicator.removeAttribute('aria-current');
+        });
+        dom.newMapForm.querySelectorAll('[data-new-map-options]').forEach(section => { section.hidden = currentNewMapStep === 4; });
+        dom.newMapBackButton.hidden = currentNewMapStep === 1;
+        dom.newMapNextButton.hidden = true;
+        dom.reviewNewMapButton.hidden = currentNewMapStep !== 1;
+        dom.createNewMapButton.hidden = currentNewMapStep !== 4;
+        dom.createNewMapButton.disabled = !newMapPlanSignature
+            || newMapPlanSignature !== getNewMapPlanSignature()
+            || dom.newMapForm.dataset.busy === 'true';
+        if (focus) {
+            const heading = dom.newMapSteps
+                .find((panel) => Number(panel.dataset.newMapStep) === currentNewMapStep)
+                ?.querySelector('legend');
+            heading?.setAttribute('tabindex', '-1');
+            heading?.focus({ preventScroll: true });
+            document.querySelector('.new-map-scroll-region')?.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function validateNewMapStep(step = currentNewMapStep) {
+        const panel = dom.newMapSteps.find((candidate) => Number(candidate.dataset.newMapStep) === step);
+        const fields = Array.from(panel?.querySelectorAll('input, select, textarea') || []);
+        const invalid = fields.find((field) => !field.checkValidity());
+        if (invalid) {
+            let ancestor = invalid.parentElement;
+            while (ancestor && ancestor !== dom.newMapForm) {
+                if (ancestor.tagName === 'DETAILS') ancestor.open = true;
+                ancestor = ancestor.parentElement;
+            }
+            invalid.reportValidity();
+            invalid.focus();
+            return false;
+        }
+        if (step === 1) {
+            const artwork = getNewMapArtwork();
+            if (!artwork) {
+                dom.newMapStatus.textContent = 'Choose map artwork before continuing.';
+                dom.newMapFile.focus();
+                return false;
+            }
+            if (!getNewMapArtworkContentType(artwork)) {
+                dom.newMapStatus.textContent = 'Map artwork must be a WebP, PNG, or JPEG image.';
+                dom.newMapFile.focus();
+                return false;
+            }
+        }
+        dom.newMapStatus.textContent = '';
+        return true;
+    }
+
     function clearNewMapPreview() {
         if (newMapPreviewUrl) URL.revokeObjectURL(newMapPreviewUrl);
         newMapPreviewUrl = '';
@@ -355,7 +647,7 @@
         dom.newMapPreviewImage.hidden = true;
         dom.newMapPreviewEmpty.hidden = false;
         dom.newMapArtworkTitle.textContent = 'Choose an image to inspect it';
-        dom.newMapArtworkMeta.textContent = 'WebP files are preserved. PNG and JPEG files are converted to high-quality WebP during creation.';
+        dom.newMapArtworkMeta.textContent = 'Supported formats: WebP, PNG, and JPEG.';
     }
 
     function renderNewMapArtworkPreview() {
@@ -370,12 +662,11 @@
 
         newMapPreviewUrl = URL.createObjectURL(artwork);
         dom.newMapPreviewImage.onload = () => {
-            const sizeMiB = (artwork.size / (1024 * 1024)).toFixed(1);
             const conversion = artworkContentType === 'image/webp'
                 ? 'Original WebP will be preserved.'
                 : 'Studio will convert this to a high-quality WebP.';
             dom.newMapArtworkTitle.textContent = artwork.name;
-            dom.newMapArtworkMeta.textContent = `${dom.newMapPreviewImage.naturalWidth} × ${dom.newMapPreviewImage.naturalHeight} pixels · ${sizeMiB} MiB. ${conversion}`;
+            dom.newMapArtworkMeta.textContent = `${dom.newMapPreviewImage.naturalWidth} × ${dom.newMapPreviewImage.naturalHeight} pixels · ${formatFileSize(artwork.size)}. ${conversion}`;
         };
         dom.newMapPreviewImage.onerror = () => {
             dom.newMapStatus.textContent = 'The selected artwork could not be previewed as an image.';
@@ -431,6 +722,7 @@
         const response = await fetch('/api/studio/session', { cache: 'no-store' });
         const payload = await readJsonResponse(response);
         csrfToken = payload.csrfToken || '';
+        dom.logoutButton.hidden = payload.authenticationRequired === false;
         showAuthenticated(payload.authenticated === true);
         if (payload.authenticated) await Promise.all([refreshReadiness(), refreshWorkspace()]);
     }
@@ -485,34 +777,29 @@
         }
     });
 
-    dom.startDraftButton.addEventListener('click', async () => {
-        const title = dom.draftTitle.value.trim();
-        if (!title) {
-            dom.workflowStatus.textContent = 'Enter a change title first.';
-            dom.draftTitle.focus();
-            return;
-        }
-        dom.startDraftButton.disabled = true;
-        dom.workflowStatus.textContent = 'Fetching main and creating the draft branch…';
-        try {
-            const response = await fetch('/api/studio/drafts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
-                body: JSON.stringify({ title })
-            });
-            const payload = await readJsonResponse(response);
-            renderWorkspace(payload.workspace);
-            dom.workflowStatus.textContent = payload.workspace?.github?.configured
-                ? 'Draft started from the latest main branch. The editor is ready.'
-                : 'Local draft started. The editor is ready; connect GitHub later to publish.';
-        } catch (error) {
-            await refreshWorkspace().catch(() => {});
-            dom.workflowStatus.textContent = error.message;
+    dom.draftTitle.addEventListener('input', () => {
+        updateStartDraftAvailability();
+        if (dom.workflowStatus.textContent === 'Enter a change title first.') {
+            dom.workflowStatus.textContent = '';
         }
     });
+
+    dom.startDraftButton.addEventListener('click', async () => {
+        dom.workflowStatus.textContent = 'Preparing your editing copy…';
+        try {
+            await ensureEditingWorkspace();
+            dom.workflowStatus.textContent = 'Ready to edit.';
+        } catch (error) { dom.workflowStatus.textContent = error.message; }
+    });
+    [document.getElementById('edit-maps-button'), dom.studioEditorLink, dom.openEditorLink].filter(Boolean).forEach(button => button.addEventListener('click', async event => {
+        event.preventDefault();
+        const status = document.getElementById('edit-maps-status');
+        status.textContent = 'Opening your maps…';
+        try {
+            await ensureEditingWorkspace();
+            window.location.href = '/studio/editor';
+        } catch (error) { status.textContent = error.message; }
+    }));
 
     dom.publishButton.addEventListener('click', async () => {
         const title = dom.draftTitle.value.trim();
@@ -626,15 +913,19 @@
         }
     });
 
-    dom.newMapButton.addEventListener('click', () => {
+    dom.newMapButton.addEventListener('click', async () => {
+        try { await ensureEditingWorkspace(); }
+        catch (error) { document.getElementById('edit-maps-status').textContent = error.message; return; }
         mapIdWasEdited = false;
         newMapPlanSignature = '';
         dom.newMapForm.reset();
+        dom.newMapForm.querySelectorAll('details').forEach(section => { section.open = false; });
         dom.newMapForm.dataset.busy = 'false';
         dom.createNewMapButton.disabled = true;
         dom.newMapPlan.hidden = true;
         dom.newMapPlanFiles.replaceChildren();
         clearNewMapPreview();
+        setNewMapStep(1, { focus: false });
         openNewMapDialog();
     });
     dom.closeNewMapButton.addEventListener('click', closeNewMapDialog);
@@ -643,6 +934,12 @@
     dom.newMapName.addEventListener('input', () => {
         if (!mapIdWasEdited) dom.newMapId.value = slugifyMapId(dom.newMapName.value);
     });
+    dom.newMapNextButton.addEventListener('click', () => {
+        if (validateNewMapStep()) setNewMapStep(currentNewMapStep + 1);
+    });
+    dom.newMapBackButton.addEventListener('click', () => {
+        setNewMapStep(1);
+    });
     dom.newMapForm.addEventListener('input', invalidateNewMapPlan);
     dom.newMapForm.addEventListener('change', (event) => {
         invalidateNewMapPlan();
@@ -650,7 +947,8 @@
     });
 
     dom.reviewNewMapButton.addEventListener('click', async () => {
-        if (!dom.newMapForm.reportValidity()) return;
+        if (currentNewMapStep !== 1) return;
+        if (![1, 2, 3].every(step => validateNewMapStep(step))) return;
         const artwork = getNewMapArtwork();
         if (!artwork) {
             dom.newMapStatus.textContent = 'Choose map artwork before reviewing the plan.';
@@ -676,8 +974,9 @@
             const payload = await readJsonResponse(response);
             renderNewMapPlan(payload.plan);
             newMapPlanSignature = getNewMapPlanSignature();
+            setNewMapStep(4);
             dom.createNewMapButton.disabled = false;
-            dom.newMapStatus.textContent = 'Plan is ready. Review the artwork and file list, then create the map.';
+            dom.newMapStatus.textContent = 'Ready when you are.';
         } catch (error) {
             invalidateNewMapPlan();
             dom.newMapStatus.textContent = error.message;
@@ -702,6 +1001,8 @@
         dom.newMapForm.dataset.busy = 'true';
         dom.createNewMapButton.disabled = true;
         dom.reviewNewMapButton.disabled = true;
+        dom.newMapBackButton.disabled = true;
+        dom.newMapNextButton.disabled = true;
         dom.cancelNewMapButton.disabled = true;
         dom.closeNewMapButton.disabled = true;
         const artworkContentType = getNewMapArtworkContentType(artwork);
@@ -728,6 +1029,8 @@
             dom.newMapStatus.textContent = error.message;
             dom.createNewMapButton.disabled = newMapPlanSignature !== getNewMapPlanSignature();
             dom.reviewNewMapButton.disabled = false;
+            dom.newMapBackButton.disabled = false;
+            dom.newMapNextButton.disabled = false;
             dom.cancelNewMapButton.disabled = false;
             dom.closeNewMapButton.disabled = false;
             dom.newMapForm.dataset.busy = 'false';

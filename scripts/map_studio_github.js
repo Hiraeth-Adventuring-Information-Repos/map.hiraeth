@@ -184,6 +184,19 @@ function createGitHubClient(options = {}) {
         return Array.isArray(pullRequests) ? (pullRequests[0] || null) : null;
     }
 
+    async function findMergedPullRequest({ branch, headSha, base = 'main' }) {
+        const query = new URLSearchParams({ state: 'closed', head: `${owner}:${branch}`, base, per_page: '100' });
+        const pulls = await request(`/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls?${query}`, { method: 'GET' });
+        for (const candidate of Array.isArray(pulls) ? pulls : []) {
+            if (candidate.head?.sha !== headSha || !candidate.merged_at) continue;
+            const pull = await request(`/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls/${candidate.number}`, { method: 'GET' });
+            if (pull.merged === true && pull.head?.sha === headSha && pull.head?.ref === branch
+                && pull.base?.ref === base && pull.base?.repo?.full_name?.toLowerCase() === `${owner}/${repo}`.toLowerCase()
+                && pull.merge_commit_sha) return pull;
+        }
+        return null;
+    }
+
     async function verifyConfiguration() {
         const configuration = getConfiguration();
         if (!configuration.configured) {
@@ -226,6 +239,7 @@ function createGitHubClient(options = {}) {
     return {
         createDraftPullRequest,
         findOpenPullRequest,
+        findMergedPullRequest,
         getConfiguration,
         getToken,
         request,

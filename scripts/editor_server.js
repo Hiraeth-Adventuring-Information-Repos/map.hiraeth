@@ -1167,6 +1167,16 @@ function createEditorServer(options = {}) {
             return;
         }
 
+        const editorRouteRedirect = resolveEditorRouteRedirect(url.pathname);
+        if (editorRouteRedirect) {
+            response.writeHead(302, {
+                Location: editorRouteRedirect,
+                'Cache-Control': 'no-store'
+            });
+            response.end();
+            return;
+        }
+
         const previewPath = resolvePreviewRequestPath(repoRoot, url.pathname);
         if (previewPath && fs.existsSync(previewPath)) {
             if (request.method === 'HEAD') {
@@ -1194,6 +1204,14 @@ function createEditorServer(options = {}) {
 
         sendStaticFile(response, fullPath);
     });
+}
+
+function resolveEditorRouteRedirect(pathname) {
+    const normalizedPath = String(pathname || '').replace(/\/+$/, '') || '/';
+    if (normalizedPath === '/studio' || normalizedPath === '/studio/editor') {
+        return '/map-editor.html';
+    }
+    return '';
 }
 
 function startEditorServer(options = {}) {
@@ -1241,6 +1259,7 @@ module.exports = {
     recoverWriteTransactions,
     restorePreviewBuildJob,
     resolveEditorStaticRoot,
+    resolveEditorRouteRedirect,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
     saveAtlasStructure,

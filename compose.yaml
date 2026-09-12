@@ -9,8 +9,7 @@ services:
       MAP_STUDIO_NODE_MODULES_ROOT: /app/node_modules
       MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local},${MAP_STUDIO_LAN_IP:-127.0.0.1},127.0.0.1
       MAP_STUDIO_HEALTH_HOST: 127.0.0.1
-      MAP_STUDIO_PASSWORD_FILE: /run/secrets/map_studio_password
-      MAP_STUDIO_SECURE_COOKIES: "true"
+      MAP_STUDIO_AUTH_DISABLED: "true"
       MAP_STUDIO_GITHUB_OWNER: ${MAP_STUDIO_GITHUB_OWNER:-}
       MAP_STUDIO_GITHUB_REPO: ${MAP_STUDIO_GITHUB_REPO:-map.hiraeth}
       MAP_STUDIO_GITHUB_APP_ID: ${MAP_STUDIO_GITHUB_APP_ID:-}
@@ -18,7 +17,6 @@ services:
       MAP_STUDIO_GITHUB_PRIVATE_KEY_FILE: /run/secrets/github_app_private_key
       MAP_STUDIO_GITHUB_TOKEN_FILE: /run/secrets/github_token
     secrets:
-      - map_studio_password
       - github_app_private_key
       - github_token
     volumes:
@@ -42,17 +40,12 @@ services:
       MAP_STUDIO_LAN_IP: ${MAP_STUDIO_LAN_IP:-127.0.0.1}
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
     networks:
       - studio_internal
 
 secrets:
-  map_studio_password:
-    file: ${MAP_STUDIO_PASSWORD_SECRET_FILE:-./.secrets/map-studio-password.txt}
   github_app_private_key:
     file: ${MAP_STUDIO_GITHUB_PRIVATE_KEY_SECRET_FILE:-./deploy/empty-secret}
   github_token:
@@ -61,8 +54,6 @@ secrets:
 volumes:
   map_studio_cache:
   map_studio_drafts:
-  caddy_data:
-  caddy_config:
 
 networks:
   studio_internal:

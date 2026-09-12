@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        try { document.documentElement.dataset.theme = localStorage.getItem('hiraethDmTheme') === 'dark' ? 'dark' : 'light'; }
+        catch (_) { document.documentElement.dataset.theme = 'light'; }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
@@ -33,11 +37,12 @@
                     <span><strong>Map Studio</strong><small>Hiraeth maintainer workspace</small></span>
                 </a>
                 <nav class="studio-topnav" aria-label="Studio tools">
-                    <a href="/studio/editor">Editor</a>
-                    <a href="/preview/" target="_blank" rel="noopener">Preview</a>
+                    <a id="studio-editor-link" href="/studio/editor?mode=review">Review maps</a>
+                    <a id="studio-preview-link" href="/preview/" target="_blank" rel="noopener" aria-disabled="true">Preview unavailable</a>
                 </nav>
                 <div class="studio-appbar-actions">
                     <span id="studio-branch-chip" class="branch-chip">Checking branch…</span>
+                    <button type="button" data-dm-theme aria-label="Toggle DM dark theme">◐</button>
                     <button id="logout-button" class="quiet-button" type="button">Sign out</button>
                 </div>
             </header>
@@ -45,41 +50,26 @@
             <main class="studio-content">
                 <section class="studio-intro" aria-labelledby="studio-overview-title">
                     <div>
-                        <p class="eyebrow">Workspace overview</p>
-                        <h1 id="studio-overview-title">Make map changes with a clear way back.</h1>
-                        <p class="lede">Draft, edit, validate, and hand off for review without leaving the Studio.</p>
+                        <h1 id="studio-overview-title">Map Studio</h1>
+                        <p class="lede">Choose a map and start editing. Your changes stay private until you publish.</p>
                     </div>
-                </section>
-
-                <section class="status-strip" aria-labelledby="studio-status-title">
-                    <span class="status-icon" aria-hidden="true">●</span>
-                    <div>
-                        <p class="status-label">Current state</p>
-                        <h2 id="studio-status-title">Checking workspace…</h2>
-                        <p id="studio-status-summary">Connecting to the map workspace.</p>
+                    <div class="studio-edit-entry">
+                        <button id="edit-maps-button" type="button" disabled>Edit maps</button>
+                        <p id="edit-maps-status" role="status" aria-live="polite">Loading your maps…</p>
                     </div>
-                    <span id="studio-status-chip" class="status-chip neutral">Checking</span>
-                </section>
-
-                <section class="studio-pipeline" aria-labelledby="pipeline-title">
-                    <div class="section-heading">
+                    <aside class="review-shortcut" aria-label="Safe map review">
                         <div>
-                            <p class="eyebrow">Workflow</p>
-                            <h2 id="pipeline-title">From draft to review</h2>
+                            <strong>Browse the atlas</strong>
+                            <span>Open maps in read-only mode.</span>
                         </div>
-                        <p>Each stage exposes the next safe action.</p>
-                    </div>
-                    <ol class="pipeline-steps">
-                        <li id="pipeline-draft" data-state="blocked"><span>1</span><div><strong>Draft</strong><small>Create an isolated branch</small></div></li>
-                        <li id="pipeline-edit" data-state="blocked"><span>2</span><div><strong>Edit</strong><small>Maps and atlas data</small></div></li>
-                        <li id="pipeline-validate" data-state="blocked"><span>3</span><div><strong>Validate</strong><small>Build and inspect preview</small></div></li>
-                        <li id="pipeline-review" data-state="blocked"><span>4</span><div><strong>Review</strong><small>Create a draft pull request</small></div></li>
-                    </ol>
+                        <a class="secondary-action" href="/studio/editor?mode=review">Review maps</a>
+                    </aside>
                 </section>
 
-                <section class="studio-card workflow-card" aria-labelledby="workflow-title">
+                <details id="studio-publication-panel" class="studio-card workflow-card" aria-labelledby="workflow-title">
+                    <summary>Publish changes <span>Preview, review, and sync</span></summary>
                     <div class="workflow-copy">
-                        <p class="eyebrow">Next action</p>
+                        <p class="eyebrow">Publication</p>
                         <h2 id="workflow-title">Draft workspace</h2>
                         <p id="workflow-summary">Start an isolated map draft before editing.</p>
                         <div id="workspace-capability-note" class="capability-note" role="note">
@@ -89,9 +79,9 @@
                     <form id="workflow-form" class="workflow-form">
                         <div class="field-row">
                             <label for="draft-title">Change title</label>
-                            <span>Used for the draft branch and pull request</span>
+                            <span id="draft-title-help">Name this update before publishing</span>
                         </div>
-                        <input id="draft-title" name="title" type="text" maxlength="100" placeholder="Add the New Map of…" required>
+                        <input id="draft-title" name="title" type="text" maxlength="100" placeholder="Describe your map update" aria-describedby="draft-title-help" required>
                         <details id="github-setup-details" class="github-setup-details">
                             <summary><span>Publishing setup</span><strong id="github-setup-label">Checking…</strong></summary>
                             <p id="github-setup-summary">Checking repository-scoped GitHub access.</p>
@@ -107,14 +97,42 @@
                             <textarea id="draft-description" name="description" rows="3" placeholder="What changed, and what should the reviewer check?"></textarea>
                         </details>
                         <div class="workflow-actions">
-                            <button id="start-draft-button" type="button">Start local draft</button>
+                            <button id="start-draft-button" type="button" aria-describedby="draft-title-help" disabled>Start local draft</button>
                             <a id="continue-editing-link" class="primary-action" href="/studio/editor" hidden>Continue editing</a>
                             <button id="publish-button" type="button" disabled>Create draft pull request</button>
-                            <button id="finish-draft-button" class="secondary-button" type="button" disabled>Sync merged draft</button>
+                            <a id="workflow-pull-request-link" class="primary-action" target="_blank" rel="noopener" hidden>Open draft pull request</a>
+                            <button id="finish-draft-button" class="secondary-button" type="button" hidden disabled>Check merge and sync</button>
                             <button id="abandon-draft-button" class="secondary-button" type="button" hidden disabled>Abandon local draft</button>
                         </div>
                         <p id="workflow-status" class="form-status" role="status" aria-live="polite"></p>
                     </form>
+                </details>
+
+                <section class="workspace-state-panel" aria-label="Workspace state and progress">
+                    <div class="status-strip" aria-labelledby="studio-status-title">
+                        <span class="status-icon" aria-hidden="true">●</span>
+                        <div>
+                            <p class="status-label">Current state</p>
+                            <h2 id="studio-status-title">Checking workspace…</h2>
+                            <p id="studio-status-summary">Connecting to the map workspace.</p>
+                        </div>
+                        <span id="studio-status-chip" class="status-chip neutral">Checking</span>
+                    </div>
+                    <details id="pipeline-details" class="studio-pipeline">
+                        <summary>
+                            <span>Workflow progress</span>
+                            <strong id="pipeline-summary-status">Draft not started</strong>
+                        </summary>
+                        <div class="pipeline-body">
+                            <h2 id="pipeline-title" class="sr-only">Draft workflow progress</h2>
+                            <ol class="pipeline-steps" aria-labelledby="pipeline-title">
+                                <li id="pipeline-draft" data-state="blocked"><span>1</span><div><strong>Draft</strong><small>Create an isolated branch</small></div></li>
+                                <li id="pipeline-edit" data-state="blocked"><span>2</span><div><strong>Edit</strong><small>Maps and atlas data</small></div></li>
+                                <li id="pipeline-validate" data-state="blocked"><span>3</span><div><strong>Preview</strong><small>Build and inspect preview</small></div></li>
+                                <li id="pipeline-review" data-state="blocked"><span>4</span><div><strong>Review</strong><small>Create a draft pull request</small></div></li>
+                            </ol>
+                        </div>
+                    </details>
                 </section>
 
                 <section class="tool-section" aria-labelledby="tools-title">
@@ -127,21 +145,21 @@
                     <div class="studio-grid">
                         <article class="studio-card action-card">
                             <span class="action-icon" aria-hidden="true">✦</span>
-                            <div><h3>Edit existing maps</h3><p>Update metadata, points, regions, lines, and atlas organization.</p></div>
-                            <a id="open-editor-link" class="secondary-action" href="/studio/editor">Open editor</a>
+                            <div><h3 id="editor-card-title">Review existing maps</h3><p id="editor-card-description">Browse the atlas without changing files. Start a local draft before editing.</p></div>
+                            <a id="open-editor-link" class="secondary-action" href="/studio/editor?mode=review">Review maps</a>
                         </article>
 
                         <article class="studio-card action-card" id="new-map-card">
                             <span class="action-icon" aria-hidden="true">＋</span>
-                            <div><h3>Create a map</h3><p>Turn WebP artwork into a validated map document and atlas entry.</p></div>
+                            <div><h3>Create a map</h3><p>Add artwork and start mapping your world.</p></div>
                             <button id="new-map-button" type="button" disabled>New map</button>
-                            <p class="availability-note">Start a draft or use a working branch.</p>
+                            <p class="availability-note">Choose artwork and a name to begin.</p>
                         </article>
 
                         <article class="studio-card action-card">
                             <span class="action-icon" aria-hidden="true">✓</span>
-                            <div><h3>Inspect the preview</h3><p>Review the optimized bundle that will be published to GitHub Pages.</p></div>
-                            <a class="secondary-action" href="/preview/" target="_blank" rel="noopener">Open preview</a>
+                            <div><h3 id="preview-card-title">Preview needs building</h3><p id="preview-card-description">Build the current map bundle from the editor before opening it.</p></div>
+                            <a id="preview-action-link" class="secondary-action" href="/studio/editor?action=preview">Build preview in editor</a>
                         </article>
                     </div>
                 </section>
@@ -149,7 +167,7 @@
                 <section id="publish-progress" class="studio-card progress-card" hidden aria-live="polite">
                     <div class="section-heading"><div><p class="eyebrow">Background job</p><h2>Publication progress</h2></div></div>
                     <p id="publish-progress-status">Preparing validation…</p>
-                    <pre id="publish-output"></pre>
+                    <details class="publication-log"><summary>Show details</summary><pre id="publish-output"></pre></details>
                     <div class="progress-actions">
                         <button id="resume-publish-button" type="button" hidden>Resume publication</button>
                         <button id="dismiss-publish-button" class="secondary-button" type="button" hidden>Dismiss status</button>
@@ -164,76 +182,116 @@
             </main>
         </section>
 
-        <dialog id="new-map-dialog" class="studio-dialog" aria-labelledby="new-map-title">
+        <dialog id="new-map-dialog" class="studio-dialog new-map-dialog" aria-labelledby="new-map-title">
             <form id="new-map-form" class="new-map-form">
                 <div class="dialog-header">
                     <div>
-                        <p class="eyebrow">Guided creation</p>
-                        <h2 id="new-map-title">Create a new map</h2>
+                        <p class="eyebrow">Your atlas</p>
+                        <h2 id="new-map-title">New map</h2>
                     </div>
                     <button id="close-new-map-button" class="icon-button" type="button" aria-label="Close new map dialog">×</button>
                 </div>
 
-                <div class="form-grid">
-                    <label>Map name
-                        <input id="new-map-name" name="name" type="text" maxlength="120" required>
-                    </label>
-                    <label>Stable map ID
-                        <input id="new-map-id" name="id" type="text" maxlength="80" pattern="[A-Za-z0-9][A-Za-z0-9_-]*" required>
-                    </label>
-                    <label>Parent map or folder
-                        <select id="new-map-parent" name="parentId">
-                            <option value="">Top level</option>
-                        </select>
-                    </label>
-                    <label>Map artwork
-                        <input id="new-map-file" name="artwork" type="file" accept="image/webp,image/png,image/jpeg,.webp,.png,.jpg,.jpeg" required>
-                    </label>
-                    <label>Scale pixels <span>(optional)</span>
-                        <input id="new-map-scale-pixels" name="scalePixels" type="number" min="0" step="1">
-                    </label>
-                    <label>Scale kilometers <span>(optional)</span>
-                        <input id="new-map-scale-kilometers" name="scaleKilometers" type="number" min="0" step="0.01">
-                    </label>
+                <ol class="new-map-steps" aria-label="New map progress">
+                    <li data-new-map-step-indicator="1" aria-current="step">Map details</li>
+                    <li data-new-map-step-indicator="4">Review &amp; create</li>
+                </ol>
+
+                <div class="new-map-scroll-region">
+                    <fieldset class="new-map-step" data-new-map-step="1" aria-labelledby="new-map-step-1-title">
+                        <legend id="new-map-step-1-title">Name and artwork</legend>
+                        <p class="step-introduction">Give your map a name and choose its artwork.</p>
+                        <div class="form-grid">
+                            <label>Map name
+                                <input id="new-map-name" name="name" type="text" maxlength="120" autocomplete="off" required>
+                            </label>
+                            <label class="full-width-field">Map artwork
+                                <input id="new-map-file" name="artwork" type="file" accept="image/webp,image/png,image/jpeg,.webp,.png,.jpg,.jpeg" required>
+                                <span class="field-help">WebP is preserved. PNG and JPEG are converted to high-quality WebP.</span>
+                            </label>
+                        </div>
+                        <section class="new-map-artwork-preview" aria-labelledby="new-map-artwork-title">
+                            <div>
+                                <h3 id="new-map-artwork-title">Choose an image to inspect it</h3>
+                                <p id="new-map-artwork-meta">Supported formats: WebP, PNG, and JPEG.</p>
+                            </div>
+                            <div class="new-map-preview-frame">
+                                <img id="new-map-preview-image" alt="Selected map artwork preview" hidden>
+                                <span id="new-map-preview-empty">No artwork selected</span>
+                            </div>
+                        </section>
+                        <details class="new-map-optional new-map-identity"><summary>Map address</summary>
+                            <label>Map address
+                                <input id="new-map-id" name="id" type="text" maxlength="80" pattern="[a-z0-9](?:[a-z0-9]|-)*" autocapitalize="none" spellcheck="false" required>
+                                <span class="field-help">Set automatically from the name. Change it here if needed.</span>
+                            </label>
+                        </details>
+                    </fieldset>
+
+                    <details class="new-map-optional" data-new-map-options><summary>Placement &amp; scale <span>Optional</span></summary>
+                    <fieldset class="new-map-step" data-new-map-step="2" aria-labelledby="new-map-step-2-title">
+                        <legend id="new-map-step-2-title">Atlas placement</legend>
+                        <p class="step-introduction">Choose where the map appears in the atlas. Top level makes it a primary destination.</p>
+                        <label>Parent map or folder
+                            <select id="new-map-parent" name="parentId">
+                                <option value="">Top level</option>
+                            </select>
+                        </label>
+                        <details class="new-map-advanced">
+                            <summary>Advanced scale calibration</summary>
+                            <p>Leave both values blank until the artwork has a known distance reference.</p>
+                            <div class="form-grid">
+                                <label>Reference length in pixels
+                                    <input id="new-map-scale-pixels" name="scalePixels" type="number" min="0" step="1">
+                                </label>
+                                <label>Reference length in kilometers
+                                    <input id="new-map-scale-kilometers" name="scaleKilometers" type="number" min="0" step="0.01">
+                                </label>
+                            </div>
+                        </details>
+                    </fieldset>
+
+                    </details>
+                    <details class="new-map-optional" data-new-map-options><summary>Descriptions <span>Optional</span></summary>
+                    <fieldset class="new-map-step" data-new-map-step="3" aria-labelledby="new-map-step-3-title">
+                        <legend id="new-map-step-3-title">Visitor-facing copy</legend>
+                        <p class="step-introduction">These fields appear in different places. Add only what helps visitors choose and understand the map.</p>
+                        <label>Atlas description
+                            <span class="field-help">A short selector summary that helps someone decide whether to open this map.</span>
+                            <textarea id="new-map-selector-description" name="selectorDescription" rows="3" maxlength="500"></textarea>
+                        </label>
+                        <label>Map introduction
+                            <span class="field-help">Longer context shown after the visitor opens the map.</span>
+                            <textarea id="new-map-blurb" name="blurb" rows="5" maxlength="5000"></textarea>
+                        </label>
+                    </fieldset>
+
+                    </details>
+                    <fieldset class="new-map-step" data-new-map-step="4" aria-labelledby="new-map-plan-title" hidden>
+                        <legend id="new-map-plan-title" tabindex="-1">Ready to create?</legend>
+                        <p class="step-introduction">Review the artwork and files below. Your map will be created in the current draft.</p>
+                        <section id="new-map-plan" class="new-map-plan" aria-live="polite" hidden>
+                            <p id="new-map-preprocessing"></p>
+                            <div class="new-map-plan-table-wrap">
+                                <table>
+                                    <thead><tr><th>Action</th><th>File</th><th>Purpose</th></tr></thead>
+                                    <tbody id="new-map-plan-files"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </fieldset>
                 </div>
 
-                <label>Atlas description
-                    <textarea id="new-map-selector-description" name="selectorDescription" rows="2" maxlength="500"></textarea>
-                </label>
-                <label>Map introduction
-                    <textarea id="new-map-blurb" name="blurb" rows="4" maxlength="5000"></textarea>
-                </label>
-
-                <section class="new-map-artwork-preview" aria-labelledby="new-map-artwork-title">
-                    <div>
-                        <p class="eyebrow">Artwork preview</p>
-                        <h3 id="new-map-artwork-title">Choose an image to inspect it</h3>
-                        <p id="new-map-artwork-meta">WebP files are preserved. PNG and JPEG files are converted to high-quality WebP during creation.</p>
+                <div class="dialog-footer">
+                    <p id="new-map-status" class="form-status" role="status" aria-live="polite"></p>
+                    <div class="dialog-actions">
+                        <button id="cancel-new-map-button" class="secondary-button" type="button">Cancel</button>
+                        <button id="new-map-back-button" class="secondary-button" type="button" hidden>Edit details</button>
+                        <button id="new-map-next-button" type="button" hidden>Continue</button>
+                        <button id="review-new-map-button" type="button">Review map</button>
+                        <button id="create-new-map-button" type="submit" disabled hidden>Create map</button>
                     </div>
-                    <div class="new-map-preview-frame">
-                        <img id="new-map-preview-image" alt="Selected map artwork preview" hidden>
-                        <span id="new-map-preview-empty">No artwork selected</span>
-                    </div>
-                </section>
-
-                <section id="new-map-plan" class="new-map-plan" aria-labelledby="new-map-plan-title" hidden>
-                    <p class="eyebrow">Review before writing</p>
-                    <h3 id="new-map-plan-title">Files Studio will change</h3>
-                    <p id="new-map-preprocessing"></p>
-                    <div class="new-map-plan-table-wrap">
-                        <table>
-                            <thead><tr><th>Action</th><th>File</th><th>Purpose</th></tr></thead>
-                            <tbody id="new-map-plan-files"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <div class="dialog-actions">
-                    <button id="cancel-new-map-button" class="secondary-button" type="button">Cancel</button>
-                    <button id="review-new-map-button" class="secondary-button" type="button">Review map plan</button>
-                    <button id="create-new-map-button" type="submit" disabled>Create and validate map</button>
                 </div>
-                <p id="new-map-status" class="form-status" role="status" aria-live="polite"></p>
             </form>
         </dialog>
 

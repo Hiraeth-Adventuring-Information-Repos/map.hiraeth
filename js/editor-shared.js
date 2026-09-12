@@ -993,7 +993,122 @@
         });
     }
 
+    // Round each corner with a quadratic curve contained by its adjacent edges.
+    // Emit standard coordinates so every viewer/exporter can use the shape.
+    function roundGeometryCorners(coordinates, closed = false) {
+        const points = coordinates.map((point) => point.slice());
+        if (points.length < 3) return points;
+        const samePoint = (a, b) => a[0] === b[0] && a[1] === b[1];
+        const anchors = points.filter((point, index) => !index || !samePoint(point, points[index - 1]));
+        if (closed && anchors.length > 1 && samePoint(anchors[0], anchors[anchors.length - 1])) anchors.pop();
+        if (anchors.length < 3) return points;
+        const result = [];
+        const append = (point) => {
+            const rounded = point.map(Math.round);
+            if (!result.length || !samePoint(result[result.length - 1], rounded)) result.push(rounded);
+        };
+        anchors.forEach((point, index) => {
+            if (!closed && (index === 0 || index === anchors.length - 1)) {
+                append(point);
+                return;
+            }
+            const previous = anchors[(index + anchors.length - 1) % anchors.length];
+            const next = anchors[(index + 1) % anchors.length];
+            const start = point.map((value, axis) => value + (previous[axis] - value) * 0.25);
+            const end = point.map((value, axis) => value + (next[axis] - value) * 0.25);
+            for (let step = 0; step <= 16; step += 1) {
+                const t = step / 16;
+                append(point.map((value, axis) => (1 - t) ** 2 * start[axis] + 2 * (1 - t) * t * value + t ** 2 * end[axis]));
+            }
+        });
+        // Rounding to map pixels must not collapse a tiny but valid input shape.
+        return result.length >= (closed ? 3 : 2) ? result : points;
+    }
+
+    function normalizeBezierHandles(anchors, handles = []) {
+        const pair = value => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite)
+            ? value.slice() : null;
+        return anchors.map((_, index) => {
+            const incoming = pair(handles?.[index]?.in);
+            const outgoing = pair(handles?.[index]?.out);
+            return incoming || outgoing ? { in: incoming, out: outgoing } : null;
+        });
+    }
+
+    function createBezierHandles(anchors, index, closed) {
+        const point = anchors[index];
+        const previous = index > 0 ? anchors[index - 1] : (closed ? anchors.at(-1) : null);
+        const next = index < anchors.length - 1 ? anchors[index + 1] : (closed ? anchors[0] : null);
+        const from = previous || point;
+        const to = next || point;
+        const tangent = [to[0] - from[0], to[1] - from[1]];
+        const length = Math.hypot(...tangent);
+        if (!length) return null;
+        const handle = (neighbor, direction) => neighbor
+            ? point.map((value, axis) => Math.round(value + direction * tangent[axis] / length * Math.hypot(neighbor[0] - point[0], neighbor[1] - point[1]) / 3))
+            : null;
+        return { in: handle(previous, -1), out: handle(next, 1) };
+    }
+
+    // Cubic Bezier segments pass through the anchors. Null handles give exact
+    // straight segments. Adaptive subdivision bounds curve error to half a map
+    // pixel before rounding to the editor's integer-coordinate file format.
+    function sampleBezierPath(anchors, handles = [], closed = false) {
+        if (anchors.length < 2) return anchors.map(point => point.slice());
+        const result = [anchors[0].slice()];
+        const midpoint = (a, b) => a.map((value, axis) => (value + b[axis]) / 2);
+        function append(point) {
+            const rounded = point.map(Math.round);
+            const last = result.at(-1);
+            if (last[0] !== rounded[0] || last[1] !== rounded[1]) result.push(rounded);
+        }
+        function subdivide(a, b, c, d, depth = 0) {
+            // Distance to the chord segment also catches collinear loops and
+            // controls beyond the endpoints, unlike distance to an infinite line.
+            const chord = d.map((value, axis) => value - a[axis]);
+            const lengthSquared = chord[0] ** 2 + chord[1] ** 2;
+            const distance = point => {
+                const t = lengthSquared ? Math.max(0, Math.min(1, ((point[0] - a[0]) * chord[0] + (point[1] - a[1]) * chord[1]) / lengthSquared)) : 0;
+                return Math.hypot(...point.map((value, axis) => value - a[axis] - t * chord[axis]));
+            };
+            if (depth >= 12 || Math.max(distance(b), distance(c)) <= 0.5) {
+                append(d);
+                return;
+            }
+            const ab = midpoint(a, b), bc = midpoint(b, c), cd = midpoint(c, d);
+            const abc = midpoint(ab, bc), bcd = midpoint(bc, cd);
+            const middle = midpoint(abc, bcd);
+            subdivide(a, ab, abc, middle, depth + 1);
+            subdivide(middle, bcd, cd, d, depth + 1);
+        }
+        const count = closed ? anchors.length : anchors.length - 1;
+        for (let index = 0; index < count; index += 1) {
+            const next = (index + 1) % anchors.length;
+            const start = anchors[index], end = anchors[next];
+            const outgoing = handles[index]?.out, incoming = handles[next]?.in;
+            if (outgoing || incoming) subdivide(start, outgoing || start, incoming || end, end);
+            else append(end);
+        }
+        if (closed && result.length > 1 && result.at(-1).every((value, axis) => value === result[0][axis])) result.pop();
+        return result;
+    }
+
+    function getFeatureBezierGeometry(feature, closed) {
+        const geometry = feature?.bezier;
+        if (geometry?.version !== 1 || !Array.isArray(geometry.anchors) || geometry.anchors.length < (closed ? 3 : 2)) return null;
+        if (!geometry.anchors.every(point => Array.isArray(point) && point.length === 2 && point.every(Number.isFinite))) return null;
+        const handles = normalizeBezierHandles(geometry.anchors, geometry.handles);
+        // Coordinates remain authoritative for old clients and manual JSON edits.
+        if (JSON.stringify(sampleBezierPath(geometry.anchors, handles, closed)) !== JSON.stringify(feature.coordinates)) return null;
+        return { anchors: geometry.anchors, handles };
+    }
+
     return {
+        normalizeBezierHandles,
+        createBezierHandles,
+        sampleBezierPath,
+        getFeatureBezierGeometry,
+        roundGeometryCorners,
         buildFeatureSelectionKey,
         buildFlatManifestEntries,
         buildRegionFilterGroups,
