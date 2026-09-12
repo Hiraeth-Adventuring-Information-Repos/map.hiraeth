@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-21T22:19:03.908Z",
+  "generatedAt": "2026-09-12T20:02:36.801Z",
   "tree": [
     {
       "type": "folder",
@@ -199,6 +199,29 @@
           "dataUrl": "maps/The-Port-City-of-Stomion.json"
         }
       ]
+    },
+    {
+      "type": "folder",
+      "id": "Astrousia",
+      "name": "Astrousia",
+      "width": 7308,
+      "height": 8192,
+      "imageUrl": "maps/Astrousia.webp",
+      "tileSource": {
+        "type": "xyz",
+        "urlTemplate": "tile/Astrousia/{z}/{x}/{y}.webp",
+        "tileSize": 256,
+        "minZoom": 1,
+        "maxZoom": 5,
+        "leafletNativeZoom": 0,
+        "zoomOffset": 5
+      },
+      "scalePixels": 1,
+      "scaleKilometers": 1,
+      "blurb": "This map is still a work in progress.",
+      "selectorDescription": "The main map of Astrousia.",
+      "regionCount": 0,
+      "dataUrl": "maps/Astrousia.json"
     },
     {
       "type": "folder",
@@ -527,28 +550,6 @@
             "zoomOffset": 4
           },
           "dataUrl": "maps/OLD-Icebeach-LARGE.json"
-        },
-        {
-          "id": "Astrousia",
-          "name": "Astrousia",
-          "width": 7308,
-          "height": 8192,
-          "imageUrl": "maps/Astrousia.webp",
-          "tileSource": {
-            "type": "xyz",
-            "urlTemplate": "tile/Astrousia/{z}/{x}/{y}.webp",
-            "tileSize": 256,
-            "minZoom": 1,
-            "maxZoom": 5,
-            "leafletNativeZoom": 0,
-            "zoomOffset": 5
-          },
-          "scalePixels": 1,
-          "scaleKilometers": 1,
-          "blurb": "This map is still a work in progress.",
-          "selectorDescription": "A development and archive map of Astrousia.",
-          "regionCount": 0,
-          "dataUrl": "maps/Astrousia.json"
         }
       ]
     }
@@ -4044,6 +4045,89 @@
     },
     {
       "kind": "map",
+      "id": "map:Astrousia",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Astrousia",
+      "summary": "The main map of Astrousia.",
+      "description": "",
+      "typeLabel": "Map",
+      "visibility": "public"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:0",
+      "itemId": "City Eh",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "City Eh",
+      "summary": "",
+      "description": "",
+      "typeLabel": "Unknown",
+      "visibility": "public"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:1",
+      "itemId": "City One",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "City One",
+      "summary": "",
+      "description": "",
+      "typeLabel": "Unknown",
+      "visibility": "public"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:2",
+      "itemId": "City Uno",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "City Uno",
+      "summary": "",
+      "description": "",
+      "typeLabel": "Unknown",
+      "visibility": "public"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:3",
+      "itemId": "CMC",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "CMC",
+      "summary": "",
+      "description": "",
+      "typeLabel": "Unknown",
+      "visibility": "public"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:4",
+      "itemId": "Mountain",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Mountain",
+      "summary": "",
+      "description": "",
+      "typeLabel": "Unknown",
+      "visibility": "public"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:5",
+      "itemId": "Ruins",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Ruins",
+      "summary": "",
+      "description": "",
+      "typeLabel": "Unknown",
+      "visibility": "public"
+    },
+    {
+      "kind": "map",
       "id": "map:DEV-2025-08-Fair-Content",
       "mapId": "DEV-2025-08-Fair-Content",
       "mapName": "DEV-2025-08-Fair-Content",
@@ -4205,89 +4289,6 @@
       "summary": "A larger 2020s Icebeach map from the early campaigns.",
       "description": "",
       "typeLabel": "Map",
-      "visibility": "public"
-    },
-    {
-      "kind": "map",
-      "id": "map:Astrousia",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "Astrousia",
-      "summary": "A development and archive map of Astrousia.",
-      "description": "",
-      "typeLabel": "Map",
-      "visibility": "public"
-    },
-    {
-      "kind": "poi",
-      "id": "poi:Astrousia:0",
-      "itemId": "City Eh",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "City Eh",
-      "summary": "",
-      "description": "",
-      "typeLabel": "Unknown",
-      "visibility": "public"
-    },
-    {
-      "kind": "poi",
-      "id": "poi:Astrousia:1",
-      "itemId": "City One",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "City One",
-      "summary": "",
-      "description": "",
-      "typeLabel": "Unknown",
-      "visibility": "public"
-    },
-    {
-      "kind": "poi",
-      "id": "poi:Astrousia:2",
-      "itemId": "City Uno",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "City Uno",
-      "summary": "",
-      "description": "",
-      "typeLabel": "Unknown",
-      "visibility": "public"
-    },
-    {
-      "kind": "poi",
-      "id": "poi:Astrousia:3",
-      "itemId": "CMC",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "CMC",
-      "summary": "",
-      "description": "",
-      "typeLabel": "Unknown",
-      "visibility": "public"
-    },
-    {
-      "kind": "poi",
-      "id": "poi:Astrousia:4",
-      "itemId": "Mountain",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "Mountain",
-      "summary": "",
-      "description": "",
-      "typeLabel": "Unknown",
-      "visibility": "public"
-    },
-    {
-      "kind": "poi",
-      "id": "poi:Astrousia:5",
-      "itemId": "Ruins",
-      "mapId": "Astrousia",
-      "mapName": "Astrousia",
-      "name": "Ruins",
-      "summary": "",
-      "description": "",
-      "typeLabel": "Unknown",
       "visibility": "public"
     },
     {

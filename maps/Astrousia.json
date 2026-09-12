@@ -16,7 +16,7 @@
   "scalePixels": 1,
   "scaleKilometers": 1,
   "blurb": "This map is still a work in progress.",
-  "selectorDescription": "A development and archive map of Astrousia.",
+  "selectorDescription": "The main map of Astrousia.",
   "pointsOfInterest": [
     {
       "name": "City Eh",
@@ -107,5 +107,6 @@
   "lines": [],
   "filterGroups": {
     "Regions": {}
-  }
+  },
+  "type": "folder"
 }

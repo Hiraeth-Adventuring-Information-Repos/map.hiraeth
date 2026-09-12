@@ -58,8 +58,15 @@
     "dataUrl": "maps/The-Port-City-of-Stomion.json"
   },
   {
-    "id": "IRL Old Maps",
+    "id": "Astrousia",
     "order": 1,
+    "name": "Astrousia",
+    "dataUrl": "maps/Astrousia.json",
+    "type": "folder"
+  },
+  {
+    "id": "IRL Old Maps",
+    "order": 2,
     "name": "Development & Archive Maps",
     "selectorDescription": "Archive of older development maps and early Hiraeth drafts.",
     "type": "folder"
@@ -168,12 +175,5 @@
     "parentId": "IRL Old Maps",
     "name": "Large Icebeach",
     "dataUrl": "maps/OLD-Icebeach-LARGE.json"
-  },
-  {
-    "id": "Astrousia",
-    "order": 15,
-    "parentId": "IRL Old Maps",
-    "name": "Astrousia",
-    "dataUrl": "maps/Astrousia.json"
   }
 ]
