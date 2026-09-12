@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { JSDOM } = require('jsdom');
+const fieldApi = require('../js/map-editor-fields.js');
 
 const editorSource = fs.readFileSync('js/map-editor.js', 'utf8');
 
@@ -20,8 +21,6 @@ function extractFunction(name) {
 }
 
 const functionNames = [
-    'getMapSettingsTextValue',
-    'getMapSettingsOptionalValue',
     'getMapSettingsFieldValues',
     'setMapSettingsFieldValues',
     'renderMapParentOptions',
@@ -32,49 +31,25 @@ const formFactory = new Function('dependencies', `
         document,
         dom,
         state,
+        fieldApi,
         findNodeLocation,
-        buildParentOptions
+        buildParentOptions,
+        syncFormAccess
     } = dependencies;
     ${functionNames.map(extractFunction).join('\n')}
     return { getMapSettingsFieldValues, renderMapSettingsForm };
 `);
 
-const fieldNames = [
-    'name',
-    'type',
-    'status',
-    'visibility',
-    'group',
-    'dataUrl',
-    'order',
-    'imageUrl',
-    'mobileImageUrl',
-    'smallImageUrl',
-    'width',
-    'height',
-    'scalePixels',
-    'scaleKilometers',
-    'scaleUnitName',
-    'backgroundColor',
-    'atmosphere',
-    'latNorth',
-    'latSouth',
-    'latEast',
-    'latWest',
-    'blurb',
-    'selectorDescription'
-];
 const document = new JSDOM(`
     <form>
-        ${fieldNames.map((name) => `<input id="${name}">`).join('')}
-        <select id="parentIdSelect"></select>
+        <section data-map-field-surface="overview"></section>
+        <section data-map-field-surface="advanced"></section>
     </form>
     <span id="currentMapId"></span>
 `).window.document;
-const mapSettingsInputs = Object.fromEntries(
-    fieldNames.map((name) => [name, document.getElementById(name)])
-);
-mapSettingsInputs.parentIdSelect = document.getElementById('parentIdSelect');
+fieldApi.renderMapFields(document);
+const mapSettingsInputs = fieldApi.collectMapInputs(document);
+const fieldNames = fieldApi.getMapFields().map((field) => field.key);
 
 const currentMap = {
     id: 'fair',
@@ -105,7 +80,8 @@ const currentMap = {
 };
 const state = {
     atlasTree: [currentMap],
-    currentMap
+    currentMap,
+    currentMapDataUrl: 'maps/fallback.json'
 };
 let findNodeLocationCallCount = 0;
 const { getMapSettingsFieldValues, renderMapSettingsForm } = formFactory({
@@ -115,6 +91,7 @@ const { getMapSettingsFieldValues, renderMapSettingsForm } = formFactory({
         currentMapId: document.getElementById('currentMapId')
     },
     state,
+    fieldApi,
     findNodeLocation: () => {
         findNodeLocationCallCount += 1;
         return { index: 0, parentId: 'world' };
@@ -123,7 +100,8 @@ const { getMapSettingsFieldValues, renderMapSettingsForm } = formFactory({
         { id: '', label: 'Root' },
         { id: 'world', label: 'World' },
         { id: 'archive', label: 'Archive' }
-    ]
+    ],
+    syncFormAccess: () => {}
 });
 
 renderMapSettingsForm();
@@ -158,11 +136,20 @@ Object.entries(expectedValues).forEach(([name, value]) => {
 });
 assert.equal(document.getElementById('currentMapId').textContent, 'fair');
 assert.deepEqual(
-    Array.from(mapSettingsInputs.parentIdSelect.options, (option) => [option.value, option.textContent]),
+    Array.from(mapSettingsInputs.parentId.options, (option) => [option.value, option.textContent]),
     [['', 'Root'], ['world', 'World'], ['archive', 'Archive']]
 );
-assert.equal(mapSettingsInputs.parentIdSelect.value, 'world');
+assert.equal(mapSettingsInputs.parentId.value, 'world');
 assert.equal(findNodeLocationCallCount, 1);
+
+state.currentMap.status = 'legacy-state';
+renderMapSettingsForm();
+assert.equal(mapSettingsInputs.status.value, 'legacy-state', 'unknown current select values should be preserved');
+assert.equal(mapSettingsInputs.status.selectedOptions[0].textContent, 'legacy-state (current value)');
+state.currentMap.status = 'active';
+renderMapSettingsForm();
+assert.equal(mapSettingsInputs.status.value, 'active');
+assert.equal(Array.from(mapSettingsInputs.status.options).some((option) => option.value === 'legacy-state'), false);
 
 assert.equal(
     getMapSettingsFieldValues({ group: 'Current Group', category: 'Legacy Group' }, null).group,
@@ -170,6 +157,8 @@ assert.equal(
 );
 
 state.currentMap = null;
+state.currentMapDataUrl = '';
+const findNodeLocationCallsBeforeEmptyRender = findNodeLocationCallCount;
 renderMapSettingsForm();
 
 fieldNames.forEach((name) => {
@@ -177,7 +166,7 @@ fieldNames.forEach((name) => {
     assert.equal(mapSettingsInputs[name].value, expectedValue, `${name} should reset without a map`);
 });
 assert.equal(document.getElementById('currentMapId').textContent, 'No map');
-assert.equal(mapSettingsInputs.parentIdSelect.value, '');
-assert.equal(findNodeLocationCallCount, 1, 'empty state should not search the atlas tree');
+assert.equal(mapSettingsInputs.parentId.value, '');
+assert.equal(findNodeLocationCallCount, findNodeLocationCallsBeforeEmptyRender, 'empty state should not search the atlas tree');
 
 console.log('map settings form rendering checks passed');

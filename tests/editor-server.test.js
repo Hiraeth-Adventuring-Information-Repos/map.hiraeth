@@ -12,8 +12,12 @@ const {
     getPublishReadiness,
     isAllowedEditorWriteRequest,
     isLoopbackHost,
+    isSameOriginWriteRequest,
+    resolveEditorRouteRedirect,
+    resolveEditorStaticRoot,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
+    saveWorkspaceDocuments,
     validateAtlasManifestDocument,
     validateMapDocument
 } = require('../scripts/editor_server.js');
@@ -73,6 +77,21 @@ assert.equal(isAllowedEditorWriteRequest({
 }), false);
 assert.equal(isAllowedEditorWriteRequest({ headers: { host: '127.0.0.1:8010' } }), false);
 
+assert.equal(isSameOriginWriteRequest({
+    headers: {
+        host: 'map-studio.local',
+        origin: 'https://map-studio.local',
+        'x-forwarded-proto': 'https'
+    }
+}), true);
+assert.equal(isSameOriginWriteRequest({
+    headers: {
+        host: 'map-studio.local',
+        origin: 'http://map-studio.local',
+        'x-forwarded-proto': 'https'
+    }
+}), false);
+
 assert.equal(
     resolveMapTargetPath(repoRoot, { dataUrl: 'maps/IceBeach.json' }).relativePath,
     'maps/IceBeach.json'
@@ -91,6 +110,12 @@ assert.equal(
     'dist/index.html'
 );
 assert.equal(resolvePreviewRequestPath(repoRoot, '/preview/../package.json'), null);
+assert.equal(resolveEditorStaticRoot('/draft', '/application', '/maps/maps.json'), '/draft');
+assert.equal(resolveEditorStaticRoot('/draft', '/application', '/js/map-editor.js'), '/application');
+assert.equal(resolveEditorRouteRedirect('/studio'), '/map-editor.html');
+assert.equal(resolveEditorRouteRedirect('/studio/'), '/map-editor.html');
+assert.equal(resolveEditorRouteRedirect('/studio/editor'), '/map-editor.html');
+assert.equal(resolveEditorRouteRedirect('/map-editor.html'), '');
 
 const readiness = getPublishReadiness(repoRoot);
 assert.equal(readiness.pagesBundle.built, true);
@@ -162,6 +187,28 @@ assert.match(validateAtlasManifestDocument([
 assert.match(validateAtlasManifestDocument([
     { id: 'child', name: 'Child', parentId: 'missing' }
 ]).join(' '), /unknown parentId/);
+
+let workspaceWrites = null;
+const workspaceSaveResult = saveWorkspaceDocuments(repoRoot, {
+    map: {
+        mapId: 'map',
+        dataUrl: 'maps/map.json',
+        document: { id: 'map', name: 'Map', pointsOfInterest: [], regions: [], lines: [] }
+    },
+    atlas: {
+        document: [{ id: 'map', name: 'Map', dataUrl: 'maps/map.json' }]
+    }
+}, {
+    writeDocuments: (_root, writes) => { workspaceWrites = writes; }
+});
+assert.deepEqual(workspaceSaveResult.saved, ['maps/map.json', 'maps/maps.json']);
+assert.equal(workspaceWrites.length, 2);
+assert.equal(path.basename(workspaceWrites[0].fullPath), 'map.json');
+assert.equal(path.basename(workspaceWrites[1].fullPath), 'maps.json');
+assert.throws(() => saveWorkspaceDocuments(repoRoot, {
+    map: { mapId: 'map', document: { id: '', name: '' } },
+    atlas: { document: [] }
+}, { writeDocuments: () => {} }), /id is required/);
 
 assert.equal(typeof createEditorServer({ repoRoot }).listen, 'function');
 

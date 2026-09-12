@@ -42,3 +42,7 @@
 ## 2026-06-20 - Dynamic Status Announcements
 **Learning:** Screen readers may fail to announce text that is dynamically injected via JavaScript into utility output containers (like status messages or export outcomes) unless explicitly instructed.
 **Action:** When implementing containers for dynamic status updates, always add `aria-live="polite"` and `aria-atomic="true"` to ensure the content changes are announced to assistive technologies without interrupting the user's current flow.
+
+## 2026-06-30 - Summary Element Accessibility & Destructive Action Confirmation
+**Learning:** Custom-styled `<summary>` elements often lose native focus rings and hover states, harming keyboard accessibility and discoverability. Furthermore, removing detail sections without confirmation risks accidental data loss.
+**Action:** Always ensure custom `<summary>` elements have explicit `:focus-visible` and `:hover` states in CSS. Always wrap destructive actions (like removing detail sections) in a `window.confirm()` dialog with clear, contextual labeling to prevent user error.

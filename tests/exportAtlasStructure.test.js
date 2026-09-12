@@ -20,8 +20,12 @@ global.downloadJsonFile = () => {};
 global.setExportStatus = () => {};
 
 // Eval the function so it becomes globally available in the test context
+global.fileDocuments = require('../js/map-file-document');
+const wrapperStart = appSource.indexOf('function serializePreservedManifest(');
+const wrapperEnd = appSource.indexOf('function serializePreservedMap(', wrapperStart);
+assert.ok(wrapperStart >= 0 && wrapperEnd > wrapperStart);
 // eslint-disable-next-line no-eval
-eval(fnSource);
+eval(appSource.slice(wrapperStart, wrapperEnd) + '\n' + fnSource);
 
 // --- Mocks ---
 
@@ -142,6 +146,19 @@ assert.equal(downloadJsonFileArgs, null);
 assert.deepEqual(consoleErrorArgs, ['String error']);
 assert.equal(exportStatusMessage, 'Could not export maps.json.');
 assert.equal(exportStatusIsError, true);
+
+// Preserve source-only index metadata and its envelope on export.
+resetMocks();
+const rawEntry = { id: 'map-123', dataUrl: 'maps/source.json', name: 'Before', custom: { retained: true } };
+const baselineEntry = { id: 'map-123', dataUrl: 'maps/source.json', name: 'Before' };
+const session = fileDocuments.createSession(rawEntry, baselineEntry);
+global.state.manifestSource = { maps: [rawEntry], campaign: 'Preserved' };
+global.state.manifestSnapshots = { 'map-123': session.snapshot };
+global.utils.cloneJson = value => JSON.parse(JSON.stringify(value));
+global.utils.serializeFlatManifestState = () => [{ ...baselineEntry, name: 'After' }];
+exportAtlasStructure();
+assert.deepEqual(downloadJsonFileArgs.value, { campaign: 'Preserved', maps: [{ ...rawEntry, name: 'After' }] });
+assert.equal(consoleErrorArgs, null);
 
 // Restore original console.error
 console.error = originalConsoleError;

@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const { JSDOM } = require('jsdom');
+const fieldApi = require('../js/map-editor-fields.js');
 
 const editorSource = fs.readFileSync('js/map-editor.js', 'utf8');
 
@@ -20,7 +21,7 @@ function extractFunction(name) {
 }
 
 const functionNames = [
-    'setFeatureFormValues',
+    'renderFeatureSchema',
     'renderPointFeatureInspector',
     'renderRegionFeatureInspector',
     'renderLineFeatureInspector',
@@ -29,12 +30,15 @@ const functionNames = [
 const inspectorFactory = new Function('dependencies', `
     const {
         dom,
+        document,
+        fieldApi,
         state,
         getSelectedFeature,
         stringifyKeyFacts,
         stringifyTags,
         stringifyCoordinates,
-        renderDetailSectionControls
+        renderDetailSectionControls,
+        syncFormAccess
     } = dependencies;
     ${functionNames.map(extractFunction).join('\n')}
     return { renderFeatureInspector };
@@ -55,6 +59,8 @@ let selectedFeature = null;
 let detailSectionsFeature = null;
 const { renderFeatureInspector } = inspectorFactory({
     dom,
+    document,
+    fieldApi,
     state,
     getSelectedFeature: () => selectedFeature,
     stringifyKeyFacts: (properties) => Object.entries(properties).map(([key, value]) => `${key}: ${value}`).join('\n'),
@@ -62,7 +68,8 @@ const { renderFeatureInspector } = inspectorFactory({
     stringifyCoordinates: (coordinates) => JSON.stringify(coordinates),
     renderDetailSectionControls: (feature) => {
         detailSectionsFeature = feature;
-    }
+    },
+    syncFormAccess: () => {}
 });
 
 renderFeatureInspector();

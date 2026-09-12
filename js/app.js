@@ -319,6 +319,7 @@ let multiPointTotalTooltip = null; // L.Tooltip for the total path length
 let cachedMultiPointPixelDistance = 0; // Cached total distance of fixed segments
 let temporaryMouseMoveLine = null; // L.Polyline for the line from last point to cursor
 let temporaryMouseMoveTooltip = null; // L.Tooltip for the temporary line's length
+let measurementDoubleClickZoomWasEnabled = false;
 
 // --- Map Feature State ---
 let gmContentVisible = false;
@@ -1747,6 +1748,8 @@ function syncMiniMapControl() {
         minimized: false,
         width: miniMapWidth,
         height: miniMapHeight,
+        collapsedWidth: isMobileLayoutActive ? 40 : 32,
+        collapsedHeight: isMobileLayoutActive ? 40 : 32,
         zoomLevelFixed: miniMapZoom,
         centerFixed: L.latLngBounds(currentBounds).getCenter(),
         aimingRectOptions: { color: '#ff7800', weight: 3, clickable: false },
@@ -8392,6 +8395,7 @@ map.on('click', function (e) {
     }
 });
 map.on('dblclick', function (e) {
+    if (isMeasuringMultiPoint) return;
     coordsLocked = !coordsLocked;
     if (coordsLocked) {
         updateCoordinates(e); // one last update to lock in the current coords
@@ -8809,7 +8813,10 @@ function toggleMeasurementTool() {
     mapElement.classList.toggle('measuring-cursor', isMeasuringMultiPoint);
 
     if (isMeasuringMultiPoint) {
-        measureToolBtn.title = "Measuring Path... Click to add points. Double-click or Esc to finish.";
+        measureToolBtn.title = "Click to add points. Double-click or Enter to finish. Backspace undoes a point. Esc cancels.";
+        map.closePopup();
+        measurementDoubleClickZoomWasEnabled = map.doubleClickZoom.enabled();
+        map.doubleClickZoom.disable();
         map.on('click', handleMultiPointMeasureClick);
         map.on('mousemove', handleMultiPointMouseMove);
         map.on('dblclick', finalizeMultiPointMeasure); // Add dblclick listener
@@ -8842,6 +8849,8 @@ function toggleMeasurementTool() {
 function handleMultiPointMeasureClick(e) {
     if (!isMeasuringMultiPoint || !currentlyLoadedMapId) return;
     if (shouldIgnoreMapPointerEvent(e)) return;
+    // The first click of a double-click already placed the finishing point.
+    if (e.originalEvent?.detail > 1) return;
 
     const clickPoint = e.latlng;
     multiPointPath.push(clickPoint);
@@ -9006,21 +9015,6 @@ function updateMeasurementTooltips() {
 }
 
 function finalizeMultiPointMeasure(makePermanent = true) {
-    if (!isMeasuringMultiPoint && !makePermanent) { // If called to just clean up
-        measurementLayerGroup.clearLayers();
-        if (multiPointPolyline) map.removeLayer(multiPointPolyline);
-        if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
-        if (temporaryMouseMoveLine) measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
-        if (temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
-        multiPointPath = [];
-        cachedMultiPointPixelDistance = 0;
-        multiPointVertexMarkers = [];
-        multiPointPolyline = null;
-        multiPointTotalTooltip = null;
-        temporaryMouseMoveLine = null;
-        temporaryMouseMoveTooltip = null;
-    }
-
     isMeasuringMultiPoint = false;
     map.off('click', handleMultiPointMeasureClick);
     map.off('mousemove', handleMultiPointMouseMove);
@@ -9028,6 +9022,13 @@ function finalizeMultiPointMeasure(makePermanent = true) {
     document.removeEventListener('keydown', handleMeasureKeyDown);
     mapElement.classList.remove('measuring-cursor');
     measureToolBtn.classList.remove('active');
+    measureToolBtn.setAttribute('aria-pressed', 'false');
+    if (mobileMeasureBtn) {
+        mobileMeasureBtn.classList.remove('active');
+        mobileMeasureBtn.setAttribute('aria-pressed', 'false');
+    }
+    if (measurementDoubleClickZoomWasEnabled) map.doubleClickZoom.enable();
+    measurementDoubleClickZoomWasEnabled = false;
     measureToolBtn.title = "Measure Distance";
 
 
@@ -9074,9 +9075,29 @@ function finalizeMultiPointMeasure(makePermanent = true) {
 }
 
 function handleMeasureKeyDown(e) {
-    if (e.key === 'Escape' && isMeasuringMultiPoint) {
+    if (!isMeasuringMultiPoint || e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+    if (e.key === 'Escape') {
         e.preventDefault();
         finalizeMultiPointMeasure(false); // Cancel measurement
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        finalizeMultiPointMeasure(true);
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        const removed = multiPointPath.pop();
+        if (!removed) return;
+        if (multiPointPath.length) {
+            cachedMultiPointPixelDistance = Math.max(0, cachedMultiPointPixelDistance - map.distance(multiPointPath[multiPointPath.length - 1], removed));
+        } else {
+            cachedMultiPointPixelDistance = 0;
+        }
+        measurementLayerGroup.removeLayer(multiPointVertexMarkers.pop());
+        if (multiPointPolyline) multiPointPolyline.setLatLngs(multiPointPath);
+        if (temporaryMouseMoveLine) measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
+        if (temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
+        temporaryMouseMoveLine = null;
+        temporaryMouseMoveTooltip = null;
+        updateMeasurementTooltips();
     }
 }
 

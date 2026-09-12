@@ -46,16 +46,29 @@ global.saveAtlasStructure = () => {};
 global.buildLivePreview = () => {};
 global.exportCurrentMapJson = () => {};
 global.exportAtlasStructure = () => {};
+global.openExportDialog = () => {};
+global.closeExportDialog = () => {};
 global.finishDraftGeometry = () => {};
+global.undoDraftPoint = () => {};
+global.toggleSelectedPointCurve = () => {};
 global.clearDrawMode = () => {};
 global.beginDrawMode = () => {};
+global.startFocusedFeatureCreation = () => {};
 global.deleteSelectedFeature = () => {};
 global.queueMapViewportReset = () => {};
 global.markCurrentMapDirty = () => {};
+global.setInspectorCollapsed = () => {};
+global.registerInspectorResize = () => {};
+global.registerInspectorTabs = () => {};
+global.undoEditorChange = () => {};
+global.redoEditorChange = () => {};
+global.closeUnsavedDialog = () => {};
+global.canMutateWorkspace = () => true;
 
 // Proxy dom to automatically return a mocked element with addEventListener
 global.dom = new Proxy({}, {
     get: function(target, prop) {
+        if (prop === 'toolButtons' || prop === 'appMenuButtons' || prop === 'appMenus' || prop === 'appMenuItems') return [];
         if (prop === 'mapSettingsForm') {
             return {
                 addEventListener: (event, handler) => {

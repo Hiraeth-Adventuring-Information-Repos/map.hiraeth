@@ -1,0 +1,4 @@
+http://{$MAP_STUDIO_HOSTNAME:map-studio.local}, http://{$MAP_STUDIO_LAN_IP:127.0.0.1} {
+    encode zstd gzip
+    reverse_proxy map-studio:8010
+}

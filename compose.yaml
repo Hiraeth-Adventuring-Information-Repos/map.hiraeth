@@ -1,0 +1,60 @@
+services:
+  map-studio:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      MAP_STUDIO_REPO_ROOT: /workspace
+      MAP_STUDIO_DRAFTS_ROOT: /var/lib/map-studio/drafts
+      MAP_STUDIO_NODE_MODULES_ROOT: /app/node_modules
+      MAP_STUDIO_ALLOWED_HOSTS: ${MAP_STUDIO_HOSTNAME:-map-studio.local},${MAP_STUDIO_LAN_IP:-127.0.0.1},127.0.0.1
+      MAP_STUDIO_HEALTH_HOST: 127.0.0.1
+      MAP_STUDIO_AUTH_DISABLED: "true"
+      MAP_STUDIO_GITHUB_OWNER: ${MAP_STUDIO_GITHUB_OWNER:-}
+      MAP_STUDIO_GITHUB_REPO: ${MAP_STUDIO_GITHUB_REPO:-map.hiraeth}
+      MAP_STUDIO_GITHUB_APP_ID: ${MAP_STUDIO_GITHUB_APP_ID:-}
+      MAP_STUDIO_GITHUB_INSTALLATION_ID: ${MAP_STUDIO_GITHUB_INSTALLATION_ID:-}
+      MAP_STUDIO_GITHUB_PRIVATE_KEY_FILE: /run/secrets/github_app_private_key
+      MAP_STUDIO_GITHUB_TOKEN_FILE: /run/secrets/github_token
+    secrets:
+      - github_app_private_key
+      - github_token
+    volumes:
+      - type: bind
+        source: .
+        target: /workspace
+        read_only: true
+      - map_studio_cache:/var/cache/map-studio
+      - map_studio_drafts:/var/lib/map-studio/drafts
+    networks:
+      - studio_internal
+
+  studio-proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      map-studio:
+        condition: service_healthy
+    environment:
+      MAP_STUDIO_HOSTNAME: ${MAP_STUDIO_HOSTNAME:-map-studio.local}
+      MAP_STUDIO_LAN_IP: ${MAP_STUDIO_LAN_IP:-127.0.0.1}
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - studio_internal
+
+secrets:
+  github_app_private_key:
+    file: ${MAP_STUDIO_GITHUB_PRIVATE_KEY_SECRET_FILE:-./deploy/empty-secret}
+  github_token:
+    file: ${MAP_STUDIO_GITHUB_TOKEN_SECRET_FILE:-./deploy/empty-secret}
+
+volumes:
+  map_studio_cache:
+  map_studio_drafts:
+
+networks:
+  studio_internal:
+    driver: bridge

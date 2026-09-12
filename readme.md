@@ -42,6 +42,8 @@ You need a modern web browser, Node.js 22 or newer, and a local web server. Imag
 
 ## Validation And Deployment
 
+Maintainers who want an authenticated LAN editor with guided map creation, persistent previews, and draft pull-request automation can run **Hiraeth Map Studio**. See [MAP_STUDIO.md](MAP_STUDIO.md) for Docker Compose setup and security guidance.
+
 Install dependencies and run the complete local release check:
 
 ```sh

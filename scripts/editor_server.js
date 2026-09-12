@@ -97,7 +97,8 @@ function parseHostHeader(hostHeader) {
         const parsed = new URL(`http://${rawHost}`);
         return {
             hostname: normalizeHost(parsed.hostname),
-            port: parsed.port || '80'
+            port: parsed.port || '80',
+            explicitPort: parsed.port || ''
         };
     } catch (error) {
         return null;
@@ -121,6 +122,41 @@ function isSameLocalEditorOrigin(originValue, hostHeader) {
     } catch (error) {
         return false;
     }
+}
+
+function isSameRequestOrigin(originValue, hostHeader, forwardedProtocol = '') {
+    const requestHost = parseHostHeader(hostHeader);
+    if (!requestHost) return false;
+
+    try {
+        const originUrl = new URL(originValue);
+        if (originUrl.protocol !== 'http:' && originUrl.protocol !== 'https:') return false;
+        const normalizedForwardedProtocol = String(forwardedProtocol || '')
+            .split(',')[0]
+            .trim()
+            .toLowerCase();
+        const requestProtocol = normalizedForwardedProtocol === 'http' || normalizedForwardedProtocol === 'https'
+            ? `${normalizedForwardedProtocol}:`
+            : '';
+        const originPort = originUrl.port || getDefaultPortForProtocol(originUrl.protocol);
+        const requestPort = requestHost.explicitPort || getDefaultPortForProtocol(requestProtocol || 'http:');
+        return normalizeHost(originUrl.hostname) === requestHost.hostname &&
+            (!requestProtocol || originUrl.protocol === requestProtocol) &&
+            originPort === requestPort;
+    } catch (error) {
+        return false;
+    }
+}
+
+function isSameOriginWriteRequest(request) {
+    const forwardedProtocol = String(request.headers['x-forwarded-proto'] || '').trim();
+    const origin = String(request.headers.origin || '').trim();
+    if (origin) return isSameRequestOrigin(origin, request.headers.host, forwardedProtocol);
+
+    const referer = String(request.headers.referer || '').trim();
+    if (referer) return isSameRequestOrigin(referer, request.headers.host, forwardedProtocol);
+
+    return false;
 }
 
 function isAllowedEditorWriteRequest(request) {
@@ -233,8 +269,103 @@ function snapshotFile(fullPath) {
     return {
         fullPath,
         existed: fs.existsSync(fullPath),
-        content: fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : null
+        content: fs.existsSync(fullPath) ? fs.readFileSync(fullPath) : null
     };
+}
+
+function getWriteTransactionRoot(repoRoot) {
+    const result = spawnSync('git', ['rev-parse', '--git-path', 'map-studio-transactions'], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        stdio: 'pipe'
+    });
+    if (result.error || result.status !== 0) {
+        const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
+        throw new Error(`Could not locate the Studio transaction journal${output ? `: ${output}` : '.'}`);
+    }
+    return path.resolve(repoRoot, String(result.stdout || '').trim());
+}
+
+function isGitWorkTree(repoRoot) {
+    const result = spawnSync('git', ['rev-parse', '--is-inside-work-tree'], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        stdio: 'pipe'
+    });
+    return !result.error && result.status === 0 && String(result.stdout || '').trim() === 'true';
+}
+
+function assertTransactionRelativePath(repoRoot, fullPath) {
+    const relativePath = path.relative(repoRoot, fullPath).replace(/\\/g, '/');
+    if (!relativePath || relativePath.startsWith('../') || path.isAbsolute(relativePath)) {
+        throw new Error('Studio transaction path escapes the repository.');
+    }
+    return relativePath;
+}
+
+function createWriteTransaction(repoRoot, snapshots, generatedDir) {
+    const transactionRoot = getWriteTransactionRoot(repoRoot);
+    fs.mkdirSync(transactionRoot, { recursive: true });
+    const transactionDir = fs.mkdtempSync(path.join(transactionRoot, 'transaction-'));
+    const records = snapshots.map((snapshot, index) => {
+        const relativePath = assertTransactionRelativePath(repoRoot, snapshot.fullPath);
+        const backup = snapshot.existed ? `${String(index).padStart(5, '0')}.bin` : '';
+        if (snapshot.existed) fs.writeFileSync(path.join(transactionDir, backup), snapshot.content);
+        return { relativePath, existed: snapshot.existed, backup };
+    });
+    const manifest = {
+        version: 1,
+        createdAt: new Date().toISOString(),
+        generatedDir: assertTransactionRelativePath(repoRoot, generatedDir),
+        records
+    };
+    const manifestPath = path.join(transactionDir, 'transaction.json');
+    const temporaryManifestPath = `${manifestPath}.tmp`;
+    fs.writeFileSync(temporaryManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });
+    fs.renameSync(temporaryManifestPath, manifestPath);
+    return { transactionDir, manifest };
+}
+
+function restoreWriteTransaction(repoRoot, transactionDir, manifest) {
+    const snapshots = manifest.records.map((record) => {
+        const fullPath = resolveRepoPath(repoRoot, record.relativePath);
+        return {
+            fullPath,
+            existed: record.existed === true,
+            content: record.existed ? fs.readFileSync(path.join(transactionDir, record.backup)) : null
+        };
+    });
+    restoreSnapshots(snapshots);
+    const generatedDir = resolveRepoPath(repoRoot, manifest.generatedDir);
+    removeFilesOutsideSnapshot(generatedDir, new Set(snapshots.map((snapshot) => snapshot.fullPath)));
+}
+
+function recoverWriteTransactions(repoRoot) {
+    const transactionRoot = getWriteTransactionRoot(repoRoot);
+    if (!fs.existsSync(transactionRoot)) return [];
+    const recovered = [];
+    fs.readdirSync(transactionRoot, { withFileTypes: true }).forEach((entry) => {
+        if (!entry.isDirectory()) return;
+        const transactionDir = path.join(transactionRoot, entry.name);
+        const manifestPath = path.join(transactionDir, 'transaction.json');
+        if (!fs.existsSync(manifestPath)) {
+            fs.rmSync(transactionDir, { recursive: true, force: true });
+            return;
+        }
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        if (manifest?.version !== 1 || !Array.isArray(manifest.records)) {
+            throw new Error(`Studio transaction ${entry.name} uses an unsupported journal format.`);
+        }
+        restoreWriteTransaction(repoRoot, transactionDir, manifest);
+        fs.rmSync(transactionDir, { recursive: true, force: true });
+        recovered.push(entry.name);
+    });
+    return recovered;
+}
+
+function completeWriteTransaction(transaction) {
+    if (!transaction?.transactionDir) return;
+    fs.rmSync(transaction.transactionDir, { recursive: true, force: true });
 }
 
 function listFilesRecursive(directoryPath) {
@@ -510,6 +641,91 @@ function appendPreviewBuildOutput(job, chunk) {
         if (job.output.length > 200) job.output.shift();
     });
     job.recentOutput = job.output.slice(-8);
+    persistPreviewBuildJob(job.repoRoot, job);
+}
+
+function getPreviewBuildJobPath(repoRoot) {
+    const result = spawnSync('git', ['rev-parse', '--git-path', 'map-studio-jobs/preview-job.json'], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        stdio: 'pipe'
+    });
+    if (result.error || result.status !== 0) {
+        const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
+        throw new Error(`Could not locate the preview job record${output ? `: ${output}` : '.'}`);
+    }
+    return path.resolve(repoRoot, String(result.stdout || '').trim());
+}
+
+function persistPreviewBuildJob(repoRoot, job) {
+    if (!isGitWorkTree(repoRoot)) return;
+    const jobPath = getPreviewBuildJobPath(repoRoot);
+    fs.mkdirSync(path.dirname(jobPath), { recursive: true });
+    const temporaryPath = `${jobPath}.${process.pid}.tmp`;
+    const payload = {
+        version: 1,
+        job: {
+            id: job.id,
+            status: job.status,
+            step: job.step,
+            steps: job.steps,
+            output: job.output,
+            recentOutput: job.recentOutput,
+            error: job.error,
+            previewUrl: job.previewUrl
+        }
+    };
+    fs.writeFileSync(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`, { mode: 0o600 });
+    fs.renameSync(temporaryPath, jobPath);
+}
+
+function restorePreviewBuildJob(repoRoot) {
+    if (!isGitWorkTree(repoRoot)) return null;
+    const jobPath = getPreviewBuildJobPath(repoRoot);
+    if (!fs.existsSync(jobPath)) return null;
+    try {
+        const payload = JSON.parse(fs.readFileSync(jobPath, 'utf8'));
+        if (payload?.version !== 1 || !payload.job?.id) {
+            throw new Error('Preview job record uses an unsupported format.');
+        }
+        const job = {
+            id: String(payload.job.id),
+            repoRoot,
+            status: String(payload.job.status || 'failed'),
+            step: String(payload.job.step || ''),
+            steps: Array.isArray(payload.job.steps) ? payload.job.steps : [],
+            output: Array.isArray(payload.job.output) ? payload.job.output.map(String).slice(-200) : [],
+            recentOutput: Array.isArray(payload.job.recentOutput) ? payload.job.recentOutput.map(String).slice(-8) : [],
+            error: String(payload.job.error || ''),
+            previewUrl: String(payload.job.previewUrl || ''),
+            readiness: null
+        };
+        if (job.status === 'running') {
+            job.status = 'interrupted';
+            job.step = 'Interrupted';
+            job.error = 'Preview build was interrupted by a Studio restart. Start the build again to replace the partial preview safely.';
+            const activeStep = job.steps.find((step) => step.status === 'running');
+            if (activeStep) activeStep.status = 'interrupted';
+            fs.rmSync(path.join(repoRoot, 'dist'), { recursive: true, force: true });
+            appendPreviewBuildOutput(job, job.error);
+        }
+        previewBuildJobs.set(job.id, job);
+        return job;
+    } catch (error) {
+        fs.rmSync(path.join(repoRoot, 'dist'), { recursive: true, force: true });
+        fs.rmSync(jobPath, { force: true });
+        return null;
+    }
+}
+
+function findPreviewBuildJob(repoRoot, jobId = '') {
+    const inMemory = Array.from(previewBuildJobs.values()).find((job) => {
+        return job.repoRoot === repoRoot && (!jobId || job.id === jobId);
+    });
+    if (inMemory) return inMemory;
+    const restored = restorePreviewBuildJob(repoRoot);
+    if (!restored || (jobId && restored.id !== jobId)) return null;
+    return restored;
 }
 
 function runNodeScriptAsync(repoRoot, relativeScriptPath, onOutput) {
@@ -542,7 +758,7 @@ function runNodeScriptAsync(repoRoot, relativeScriptPath, onOutput) {
 function serializePreviewBuildJob(job) {
     return {
         id: job.id,
-        ok: job.status !== 'failed',
+        ok: job.status !== 'failed' && job.status !== 'interrupted',
         status: job.status,
         step: job.step,
         steps: job.steps,
@@ -559,9 +775,11 @@ async function runPreviewBuildJob(repoRoot, job) {
             const step = PREVIEW_BUILD_STEPS[index];
             job.step = step.label;
             job.steps[index].status = 'running';
+            persistPreviewBuildJob(repoRoot, job);
             appendPreviewBuildOutput(job, `${step.label}...`);
             await runNodeScriptAsync(repoRoot, step.script, (chunk) => appendPreviewBuildOutput(job, chunk));
             job.steps[index].status = 'pass';
+            persistPreviewBuildJob(repoRoot, job);
         }
 
         job.status = 'complete';
@@ -580,13 +798,12 @@ async function runPreviewBuildJob(repoRoot, job) {
 }
 
 function startPreviewBuildJob(repoRoot) {
-    const runningJob = Array.from(previewBuildJobs.values()).find((job) => {
-        return job.repoRoot === repoRoot && job.status === 'running';
-    });
+    const currentJob = findPreviewBuildJob(repoRoot);
+    const runningJob = currentJob?.status === 'running' ? currentJob : null;
     if (runningJob) return runningJob;
 
     const job = {
-        id: String(previewBuildJobCounter += 1),
+        id: `${Date.now()}-${process.pid}-${String(previewBuildJobCounter += 1)}`,
         repoRoot,
         status: 'running',
         step: 'Queued',
@@ -600,12 +817,21 @@ function startPreviewBuildJob(repoRoot) {
         previewUrl: '',
         readiness: null
     };
+    Array.from(previewBuildJobs.entries()).forEach(([id, existingJob]) => {
+        if (existingJob.repoRoot === repoRoot) previewBuildJobs.delete(id);
+    });
     previewBuildJobs.set(job.id, job);
+    persistPreviewBuildJob(repoRoot, job);
     runPreviewBuildJob(repoRoot, job);
     return job;
 }
 
+function hasRunningPreviewBuild(repoRoot) {
+    return findPreviewBuildJob(repoRoot)?.status === 'running';
+}
+
 function writeWithValidation(repoRoot, writes) {
+    recoverWriteTransactions(repoRoot);
     const atlasPath = resolveRepoPath(repoRoot, 'maps/atlas-index.json');
     const generatedDir = resolveRepoPath(repoRoot, 'maps/generated');
     const snapshots = [
@@ -614,16 +840,23 @@ function writeWithValidation(repoRoot, writes) {
         ...listFilesRecursive(generatedDir).map(snapshotFile)
     ];
     const snapshotPaths = new Set(snapshots.map((snapshot) => snapshot.fullPath));
+    const transaction = createWriteTransaction(repoRoot, snapshots, generatedDir);
 
     try {
         writes.forEach((write) => {
             fs.mkdirSync(path.dirname(write.fullPath), { recursive: true });
-            fs.writeFileSync(write.fullPath, write.content);
+            if (write.sourcePath) {
+                fs.copyFileSync(write.sourcePath, write.fullPath);
+            } else {
+                fs.writeFileSync(write.fullPath, write.content);
+            }
         });
         regenerateAndValidate(repoRoot);
+        completeWriteTransaction(transaction);
     } catch (error) {
         restoreSnapshots(snapshots);
         removeFilesOutsideSnapshot(generatedDir, snapshotPaths);
+        completeWriteTransaction(transaction);
         throw error;
     }
 }
@@ -671,6 +904,41 @@ function saveAtlasStructure(repoRoot, payload) {
     };
 }
 
+function saveWorkspaceDocuments(repoRoot, payload, options = {}) {
+    const mapPayload = payload?.map;
+    const atlasPayload = payload?.atlas;
+    const mapErrors = validateMapDocument(mapPayload?.document);
+    const atlasErrors = validateAtlasManifestDocument(atlasPayload?.document);
+    const errors = [...mapErrors, ...atlasErrors];
+    if (errors.length > 0) {
+        throw new Error(errors.join(' '));
+    }
+
+    const mapTarget = resolveMapTargetPath(repoRoot, mapPayload);
+    const atlasTarget = {
+        relativePath: 'maps/maps.json',
+        fullPath: resolveRepoPath(repoRoot, 'maps/maps.json')
+    };
+    const writeDocuments = options.writeDocuments || writeWithValidation;
+    writeDocuments(repoRoot, [
+        {
+            fullPath: mapTarget.fullPath,
+            content: prettyJson(mapPayload.document)
+        },
+        {
+            fullPath: atlasTarget.fullPath,
+            content: prettyJson(atlasPayload.document)
+        }
+    ]);
+
+    return {
+        ok: true,
+        saved: [mapTarget.relativePath, atlasTarget.relativePath],
+        atlas: 'maps/atlas-index.json',
+        readiness: getPublishReadiness(repoRoot)
+    };
+}
+
 function readRequestBody(request) {
     return new Promise((resolve, reject) => {
         let body = '';
@@ -701,12 +969,17 @@ function sendJson(response, statusCode, payload) {
     response.end(JSON.stringify(payload));
 }
 
-async function handleApiRequest(repoRoot, request, response, url) {
+async function handleApiRequest(repoRoot, request, response, url, options = {}) {
+    const authorizeWriteRequest = options.authorizeWriteRequest || isAllowedEditorWriteRequest;
+    const isSaveAvailable = options.isSaveAvailable || (() => true);
     if (url.pathname === '/api/editor/status' && request.method === 'GET') {
+        const saveEnabled = Boolean(isSaveAvailable(request));
         sendJson(response, 200, {
             ok: true,
-            saveEnabled: true,
-            message: 'Local map editor save server is running.',
+            saveEnabled,
+            message: saveEnabled
+                ? 'Map editor save server is ready.'
+                : 'Start an authorized Map Studio draft to enable saves.',
             readiness: getPublishReadiness(repoRoot)
         });
         return true;
@@ -722,7 +995,7 @@ async function handleApiRequest(repoRoot, request, response, url) {
 
     if (url.pathname === '/api/editor/build-preview-status' && request.method === 'GET') {
         const jobId = String(url.searchParams.get('id') || '').trim();
-        const job = previewBuildJobs.get(jobId);
+        const job = findPreviewBuildJob(repoRoot, jobId);
         if (!job) {
             sendJson(response, 404, { ok: false, error: 'Preview build job was not found.' });
             return true;
@@ -732,8 +1005,8 @@ async function handleApiRequest(repoRoot, request, response, url) {
     }
 
     if (url.pathname === '/api/editor/build-preview' && request.method === 'POST') {
-        if (!isAllowedEditorWriteRequest(request)) {
-            sendJson(response, 403, { ok: false, error: 'Preview builds must come from the local editor origin.' });
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Preview build request was not authorized.' });
             return true;
         }
         try {
@@ -753,8 +1026,8 @@ async function handleApiRequest(repoRoot, request, response, url) {
     }
 
     if (url.pathname === '/api/editor/save-map' && request.method === 'POST') {
-        if (!isAllowedEditorWriteRequest(request)) {
-            sendJson(response, 403, { ok: false, error: 'Editor save requests must come from the local editor origin.' });
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Editor save request was not authorized.' });
             return true;
         }
         try {
@@ -766,9 +1039,23 @@ async function handleApiRequest(repoRoot, request, response, url) {
         return true;
     }
 
+    if (url.pathname === '/api/editor/save-workspace' && request.method === 'POST') {
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Editor save request was not authorized.' });
+            return true;
+        }
+        try {
+            const payload = await readRequestBody(request);
+            sendJson(response, 200, saveWorkspaceDocuments(repoRoot, payload));
+        } catch (error) {
+            sendJson(response, 400, { ok: false, error: error.message || 'Could not save editor changes.' });
+        }
+        return true;
+    }
+
     if (url.pathname === '/api/editor/save-atlas' && request.method === 'POST') {
-        if (!isAllowedEditorWriteRequest(request)) {
-            sendJson(response, 403, { ok: false, error: 'Editor save requests must come from the local editor origin.' });
+        if (!authorizeWriteRequest(request)) {
+            sendJson(response, 403, { ok: false, error: 'Atlas save request was not authorized.' });
             return true;
         }
         try {
@@ -824,6 +1111,10 @@ function resolveStaticRequestPath(repoRoot, urlPathname) {
     return resolveStaticRequestPathFromRoot(repoRoot, urlPathname);
 }
 
+function resolveEditorStaticRoot(repoRoot, staticRoot, urlPathname) {
+    return String(urlPathname || '').startsWith('/maps/') ? repoRoot : staticRoot;
+}
+
 function resolvePreviewRequestPath(repoRoot, urlPathname) {
     if (!urlPathname.startsWith('/preview/')) return null;
     const distRoot = resolveRepoPath(repoRoot, 'dist');
@@ -842,11 +1133,25 @@ function sendStaticFile(response, fullPath) {
 }
 
 function createEditorServer(options = {}) {
-    const repoRoot = path.resolve(options.repoRoot || path.resolve(__dirname, '..'));
+    const initialRepoRoot = path.resolve(options.repoRoot || path.resolve(__dirname, '..'));
+    const staticRoot = path.resolve(options.staticRoot || initialRepoRoot);
+    const getRepoRoot = typeof options.getRepoRoot === 'function'
+        ? () => path.resolve(options.getRepoRoot())
+        : () => initialRepoRoot;
+    if (isGitWorkTree(getRepoRoot())) {
+        recoverWriteTransactions(getRepoRoot());
+        restorePreviewBuildJob(getRepoRoot());
+    }
+    const authorizeWriteRequest = options.authorizeWriteRequest || isAllowedEditorWriteRequest;
+    const isSaveAvailable = options.isSaveAvailable || (() => true);
     return http.createServer(async (request, response) => {
         const url = new URL(request.url || '/', `http://${request.headers.host || `${DEFAULT_HOST}:${DEFAULT_PORT}`}`);
+        const repoRoot = getRepoRoot();
 
-        if (await handleApiRequest(repoRoot, request, response, url)) return;
+        if (await handleApiRequest(repoRoot, request, response, url, {
+            authorizeWriteRequest,
+            isSaveAvailable
+        })) return;
 
         if (request.method !== 'GET' && request.method !== 'HEAD') {
             sendJson(response, 405, { ok: false, error: 'Method not allowed.' });
@@ -856,6 +1161,16 @@ function createEditorServer(options = {}) {
         if (url.pathname === '/preview') {
             response.writeHead(302, {
                 Location: '/preview/',
+                'Cache-Control': 'no-store'
+            });
+            response.end();
+            return;
+        }
+
+        const editorRouteRedirect = resolveEditorRouteRedirect(url.pathname);
+        if (editorRouteRedirect) {
+            response.writeHead(302, {
+                Location: editorRouteRedirect,
                 'Cache-Control': 'no-store'
             });
             response.end();
@@ -873,7 +1188,8 @@ function createEditorServer(options = {}) {
             return;
         }
 
-        const fullPath = resolveStaticRequestPath(repoRoot, url.pathname);
+        const requestRoot = resolveEditorStaticRoot(repoRoot, staticRoot, url.pathname);
+        const fullPath = resolveStaticRequestPath(requestRoot, url.pathname);
         if (!fullPath || !fs.existsSync(fullPath)) {
             response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
             response.end('Not found');
@@ -888,6 +1204,14 @@ function createEditorServer(options = {}) {
 
         sendStaticFile(response, fullPath);
     });
+}
+
+function resolveEditorRouteRedirect(pathname) {
+    const normalizedPath = String(pathname || '').replace(/\/+$/, '') || '/';
+    if (normalizedPath === '/studio' || normalizedPath === '/studio/editor') {
+        return '/map-editor.html';
+    }
+    return '';
 }
 
 function startEditorServer(options = {}) {
@@ -921,16 +1245,29 @@ module.exports = {
     buildLivePreview,
     classifyChangedFilePath,
     compareLiveSourcesToDist,
+    completeWriteTransaction,
+    createWriteTransaction,
     createEditorServer,
     getChangedFileGroups,
     getPublishReadiness,
+    getPreviewBuildJobPath,
+    hasRunningPreviewBuild,
     isAllowedEditorWriteRequest,
     isLoopbackHost,
+    isSameOriginWriteRequest,
+    getWriteTransactionRoot,
+    recoverWriteTransactions,
+    restorePreviewBuildJob,
+    resolveEditorStaticRoot,
+    resolveEditorRouteRedirect,
     resolvePreviewRequestPath,
     resolveMapTargetPath,
     saveAtlasStructure,
     saveMapDocument,
+    saveWorkspaceDocuments,
+    snapshotFile,
     startEditorServer,
     validateAtlasManifestDocument,
-    validateMapDocument
+    validateMapDocument,
+    writeWithValidation
 };

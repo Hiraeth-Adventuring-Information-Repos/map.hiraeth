@@ -65,6 +65,12 @@ global.mobileMeasureBtn = new MockElement();
 
 global.mapEvents = {};
 global.map = {
+    closePopup() {},
+    doubleClickZoom: {
+        enabled: () => true,
+        disable() {},
+        enable() {}
+    },
     on(event, handler) {
         global.mapEvents[event] = handler;
     },
@@ -146,7 +152,7 @@ assert.equal(global.isMeasuringMultiPoint, true);
 assert.equal(global.measureToolBtn.classList.has('active'), true);
 assert.equal(global.measureToolBtn.getAttribute('aria-pressed'), true);
 assert.equal(global.mapElement.classList.has('measuring-cursor'), true);
-assert.equal(global.measureToolBtn.title, "Measuring Path... Click to add points. Double-click or Esc to finish.");
+assert.equal(global.measureToolBtn.title, "Click to add points. Double-click or Enter to finish. Backspace undoes a point. Esc cancels.");
 
 assert.equal(global.mapEvents['click'], global.handleMultiPointMeasureClick);
 assert.equal(global.mapEvents['mousemove'], global.handleMultiPointMouseMove);

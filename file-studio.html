@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hiraeth · Map editor</title>
+  <link rel="stylesheet" href="/css/file-studio.css">
+  <script defer src="/js/map-file-download.js"></script>
+  <script defer src="/js/file-studio.js"></script>
+</head>
+<body class="file-studio">
+  <header><a href="/studio/editor">✦ Hiraeth <span>Map editor</span></a><button id="file-theme" type="button" aria-label="Toggle DM dark theme">◐</button></header>
+  <main>
+    <p id="file-status" role="status">Opening your maps…</p>
+    <section id="file-create" hidden aria-labelledby="create-title">
+      <a class="back" href="/studio/editor">← Back to maps</a>
+      <h1 id="create-title">New map</h1>
+      <p>Download starter files for a new map. Add them to the maps folder yourself, then refresh the editor to draw features.</p>
+      <form id="create-form">
+        <label>Map name<input id="map-name" maxlength="120" required autocomplete="off" placeholder="e.g. Northern coast"></label>
+        <label class="artwork">Map artwork<input id="map-artwork" type="file" accept="image/webp,image/png,image/jpeg" required><span>WebP, PNG, or JPEG · saved as WebP</span></label>
+        <img id="artwork-preview" alt="Selected map artwork" hidden>
+        <label>Inside another map<select id="map-parent"><option value="">None — top level</option></select></label>
+        <details><summary>File name</summary><label>File name<input id="map-id" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,79}" maxlength="80" required autocomplete="off"></label><p>Your artwork and content use this name in the maps folder.</p></details>
+        <div class="form-actions"><a href="/studio/editor">Cancel</a><button type="submit" class="primary">Download map files</button></div>
+      </form>
+    </section>
+    <section id="file-help" hidden aria-labelledby="help-title">
+      <a class="back" href="/studio/editor">← Back to maps</a>
+      <h1 id="help-title">Your map files</h1>
+      <p><strong>Open a map → edit → Download changes.</strong></p>
+      <p>Edits stay in your browser. Download changes saves a JSON copy to your device. If map-index settings also changed, it downloads a ZIP containing both JSON files.</p>
+      <p>The editor cannot overwrite server files. To install your changes, compare the downloaded files with the current originals and copy them into the maps folder yourself.</p>
+      <h2>Making changes live</h2>
+      <p>Saving here does not publish to the player website. Review your changed files, then use the existing repository review and deployment process to publish them. Generated previews and publishing are separate from this editor.</p>
+    </section>
+  </main>
+</body>
+</html>
