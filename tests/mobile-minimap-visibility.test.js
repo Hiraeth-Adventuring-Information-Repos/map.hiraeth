@@ -39,6 +39,7 @@ const snippets = [
     extractFunctionSource('syncMiniMapControl')
 ].join('\n');
 
+global.enableMiniMapNavigation = () => {};
 global.isEmbeddedView = false;
 global.isMobileLayoutActive = true;
 global.mobileLayoutV2Enabled = true;

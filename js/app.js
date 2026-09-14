@@ -1673,6 +1673,7 @@ function shouldShowMiniMap() {
 
 function removeMiniMapControl() {
     if (!miniMapControl) return;
+    miniMapControl._disposeNavigation?.();
     miniMapControl.remove();
     miniMapControl = null;
     miniMapControlMode = null;
@@ -1704,6 +1705,66 @@ function applyMiniMapA11yAttributes(control) {
             toggleDisplayButton.setAttribute('aria-label', 'Toggle map overview');
         }
     }
+}
+
+function enableMiniMapNavigation(control) {
+    const overview = control._miniMap;
+    const container = control.getContainer();
+    const mainMap = control._mainMap;
+    // Keep the overview image fixed; only the main viewport moves.
+    ['dragging', 'touchZoom', 'scrollWheelZoom', 'doubleClickZoom', 'boxZoom', 'keyboard']
+        .forEach(name => overview[name]?.disable());
+    container.classList.add('minimap-navigable');
+    container.tabIndex = 0;
+    container.setAttribute('aria-label', 'Map overview. Drag the viewing box or click to navigate. Use arrow keys to pan.');
+    let drag = null;
+    const navigate = event => {
+        const point = overview.mouseEventToLatLng(event);
+        mainMap.panTo([point.lat + drag.lat, point.lng + drag.lng], { animate: false });
+    };
+    const finish = event => {
+        if (!drag || event.pointerId !== drag.id) return;
+        const id = drag.id;
+        drag = null;
+        container.classList.remove('minimap-dragging');
+        if (container.hasPointerCapture(id)) container.releasePointerCapture(id);
+    };
+    const down = event => {
+        if (drag || !event.isPrimary || event.button !== 0 ||
+            event.target.closest('.leaflet-control-minimap-toggle-display') || control._minimized) return;
+        event.preventDefault();
+        event.stopPropagation();
+        mainMap.stop();
+        const point = overview.mouseEventToLatLng(event);
+        const center = mainMap.getCenter();
+        const inside = mainMap.getBounds().contains(point);
+        drag = { id: event.pointerId, lat: inside ? center.lat - point.lat : 0,
+            lng: inside ? center.lng - point.lng : 0 };
+        container.setPointerCapture(event.pointerId);
+        container.classList.add('minimap-dragging');
+        if (!inside) navigate(event);
+    };
+    const move = event => {
+        if (!drag || drag.id !== event.pointerId) return;
+        event.preventDefault();
+        navigate(event);
+    };
+    const key = event => {
+        if (event.target !== container || control._minimized) return;
+        const offsets = { ArrowLeft: [-80, 0], ArrowRight: [80, 0],
+            ArrowUp: [0, -80], ArrowDown: [0, 80] };
+        if (!offsets[event.key]) return;
+        event.preventDefault();
+        event.stopPropagation();
+        mainMap.panBy(offsets[event.key], { animate: false });
+    };
+    const listeners = { pointerdown: down, pointermove: move, pointerup: finish,
+        pointercancel: finish, lostpointercapture: finish, keydown: key };
+    Object.entries(listeners).forEach(([name, handler]) => container.addEventListener(name, handler));
+    control._disposeNavigation = () => {
+        if (drag) finish({ pointerId: drag.id });
+        Object.entries(listeners).forEach(([name, handler]) => container.removeEventListener(name, handler));
+    };
 }
 
 function syncMiniMapControl() {
@@ -1758,6 +1819,7 @@ function syncMiniMapControl() {
     }).addTo(map);
 
     applyMiniMapA11yAttributes(miniMapControl);
+    enableMiniMapNavigation(miniMapControl);
 
     miniMapControlMode = nextMode;
     miniMapControlMapId = nextMapId;

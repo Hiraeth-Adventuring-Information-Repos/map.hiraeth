@@ -4140,3 +4140,17 @@ html.mobile-layout-v2.map-interacting #map-blurb {
 .map-chooser-archive-details[open] .map-chooser-archive-summary {
     color: #f6f3ff;
 }
+
+/* Pointer navigation moves the viewport over a stationary overview. */
+.leaflet-control-minimap.minimap-navigable {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+.leaflet-control-minimap.minimap-dragging {
+    cursor: grabbing;
+}
+.leaflet-control-minimap.minimap-navigable:focus-visible {
+    outline: 3px solid #ff7800;
+    outline-offset: 3px;
+}
