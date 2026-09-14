@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-12T20:02:36.801Z",
+  "generatedAt": "2026-09-14T22:09:42.151Z",
   "tree": [
     {
       "type": "folder",
@@ -216,8 +216,8 @@
         "leafletNativeZoom": 0,
         "zoomOffset": 5
       },
-      "scalePixels": 1,
-      "scaleKilometers": 1,
+      "scalePixels": 100,
+      "scaleKilometers": 67,
       "blurb": "This map is still a work in progress.",
       "selectorDescription": "The main map of Astrousia.",
       "regionCount": 0,

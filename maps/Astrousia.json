@@ -13,8 +13,8 @@
     "leafletNativeZoom": 0,
     "zoomOffset": 5
   },
-  "scalePixels": 1,
-  "scaleKilometers": 1,
+  "scalePixels": 100,
+  "scaleKilometers": 67,
   "blurb": "This map is still a work in progress.",
   "selectorDescription": "The main map of Astrousia.",
   "pointsOfInterest": [
