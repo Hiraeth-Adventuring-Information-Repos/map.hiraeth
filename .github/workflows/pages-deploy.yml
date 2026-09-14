@@ -59,8 +59,7 @@ jobs:
           restore-keys: |
             pages-tiles-${{ runner.os }}-
 
-      - name: Install tile generation tools
-        if: steps.tile-cache.outputs.cache-hit != 'true'
+      - name: Install tile and share preview generation tools
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends imagemagick webp
 
       - name: Validate data and tests

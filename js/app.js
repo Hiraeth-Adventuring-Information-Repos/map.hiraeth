@@ -6460,7 +6460,7 @@ function buildFeatureShareUrl(type, name) {
     if (!['poi', 'region', 'line'].includes(normalizedType)) return null;
     if (!normalizedName) return null;
 
-    const url = new URL(window.location.href);
+    const url = buildMapPreviewShareUrl();
     clearShareTargetSearchParams(url.searchParams);
     url.searchParams.set(normalizedType, normalizedName);
     url.searchParams.set('src', 'share');
@@ -6477,7 +6477,7 @@ function buildCurrentViewShareUrl() {
     const lng = parseFloat(center.lng.toFixed(4));
     const view = `${lat},${lng},${zoom}`;
 
-    const url = new URL(window.location.href);
+    const url = buildMapPreviewShareUrl();
     clearShareTargetSearchParams(url.searchParams);
     url.searchParams.set('view', view);
     url.searchParams.set('src', 'share');
@@ -6495,6 +6495,24 @@ function clearShareTargetSearchParams(searchParams) {
         'src',
         'stype'
     ].forEach((key) => searchParams.delete(key));
+}
+
+function buildMapPreviewShareUrl() {
+    const current = new URL(window.location.href);
+    const mapId = String(currentlyLoadedMapId || '').trim();
+    if (!mapId) return current;
+    // Local viewers also share the public atlas, whose build contains these pages.
+    const publicUrl = typeof getRuntimeConfigValue === 'function'
+        ? getRuntimeConfigValue('brand.publicUrl', current.href)
+        : current.href;
+    const base = new URL(publicUrl);
+    base.search = '';
+    base.hash = '';
+    base.pathname = base.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
+    const url = new URL(`share/${encodeURIComponent(mapId)}/`, base);
+    url.search = current.search;
+    url.hash = `${mapId}${current.hash.endsWith('-s=c') ? '-s=c' : ''}`;
+    return url;
 }
 
 function canUseNativeShare(shareUrl) {

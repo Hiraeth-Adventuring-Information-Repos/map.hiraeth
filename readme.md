@@ -108,3 +108,11 @@ The map data is stored in JSON files within the `maps/` directory.
 *   **Measurement Tool**: Measure distances on the map.
 *   **Ambient Sounds**: Background sounds that change with the theme.
 *   **Embeddable View**: UI can be hidden for embedding in other websites.
+
+### Map link previews
+
+The Pages build generates `/share/<map-id>/index.html` and a 1200 × 630 JPEG for every image-backed atlas map, including parent maps. The Share controls use these URLs automatically. Each page includes static Open Graph and Twitter metadata using the map name, description, and artwork; thumbnails fit the whole image without cropping. Descriptions prefer `selectorDescription`, then `summary`, `blurb`, and `description`, with a generated fallback.
+
+Browsers immediately open the atlas at the matching `#map-id`, retaining shared points, regions, lines, viewport coordinates, and closed-sidebar state. Existing hash links still work, but cannot have distinct previews because URL fragments are not sent to servers. Copy the Share link to get a map-specific preview. `brand.publicUrl` supplies the public origin and base path, including when sharing from a local viewer.
+
+Preview pages and images are generated during `npm run build:pages` and checked through `npm run publish:check`. They become available after deploying the Pages bundle. Messaging apps control presentation and may cache older previews.

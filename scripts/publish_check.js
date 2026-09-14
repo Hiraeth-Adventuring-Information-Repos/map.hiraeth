@@ -16,7 +16,8 @@ const requiredPagesFiles = [
     'tile/manifest.json'
 ];
 const optimizedAssetBudgets = {
-    appBytes: 220 * 1024,
+    // The current viewer plus map sharing is about 222 KiB minified.
+    appBytes: 225 * 1024,
     styleBytes: 100 * 1024,
     atlasShellBytes: 32 * 1024
 };

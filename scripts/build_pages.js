@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { transformSync } = require('esbuild');
 const { generateTiles } = require('./generate_tiles.js');
+const { generateSharePages } = require('./generate_share_pages.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'dist');
@@ -593,6 +594,11 @@ function buildPagesBundle() {
     const lucideSubset = writePagesLucideSubset();
     runtimeDirectories.forEach(copyDirectory);
     copyPublicMapAssets();
+    const sharePageCount = generateSharePages({
+        repoRoot, outputDir, brand: pagesConfig.brand,
+        tree: JSON.parse(fs.readFileSync(resolveRepoPath('maps/atlas-index.json'), 'utf8')).tree
+    });
+    console.log(`Generated previews for ${sharePageCount} maps.`);
     const tileManifest = populatePagesTiles();
     const tileCacheVersions = applyPagesTileCacheVersions(tileManifest);
     const atlasSearchSplit = splitPagesAtlasSearchIndex();

@@ -21,7 +21,7 @@ assert.match(deployWorkflow, /uses: actions\/deploy-pages@v5/);
     assert.match(workflow, /uses: actions\/checkout@v6/);
     assert.match(workflow, /uses: actions\/setup-node@v6/);
     assert.match(workflow, /id: tile-cache\s*\n\s*uses: actions\/cache@v6/);
-    assert.match(workflow, /if: steps\.tile-cache\.outputs\.cache-hit != 'true'/);
+    assert.match(workflow, /name: Install tile and share preview generation tools\n\s+run: .*imagemagick webp/);
     assert.match(workflow, /node scripts\/generate_tiles\.js --print-cache-key/);
     assert.match(workflow, /restore-keys: \|\s*\n\s*pages-tiles-\$\{\{ runner\.os \}\}-/);
     assert.match(workflow, /MAP_HIRAETH_TILE_CACHE_DIR: \.cache\/pages-tiles/);

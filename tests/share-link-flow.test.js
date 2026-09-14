@@ -52,7 +52,8 @@ assert.equal(parsedShareUrl.searchParams.get('line'), null);
 assert.equal(parsedShareUrl.searchParams.get('view'), null);
 assert.equal(parsedShareUrl.searchParams.get('src'), 'share');
 assert.equal(parsedShareUrl.searchParams.get('stype'), 'region');
-assert.equal(parsedShareUrl.hash, '#line-map-s=o');
+assert.equal(parsedShareUrl.hash, '#icebeach');
+assert.equal(parsedShareUrl.pathname, '/share/icebeach/');
 
 assert.equal(buildFeatureShareUrl('invalid-type', 'Name'), null);
 assert.equal(buildFeatureShareUrl('poi', ''), null);
@@ -65,7 +66,22 @@ assert.equal(parsedViewShareUrl.searchParams.get('region'), null);
 assert.equal(parsedViewShareUrl.searchParams.get('line'), null);
 assert.equal(parsedViewShareUrl.searchParams.get('src'), 'share');
 assert.equal(parsedViewShareUrl.searchParams.get('stype'), 'view');
-assert.equal(parsedViewShareUrl.hash, '#line-map-s=o');
+assert.equal(parsedViewShareUrl.hash, '#icebeach');
+assert.equal(parsedViewShareUrl.pathname, '/share/icebeach/');
+
+// A local viewer must share the public deployment, including its base path.
+global.getRuntimeConfigValue = () => 'https://maps.hiraeth.wiki/atlas/';
+const originalHref = window.location.href;
+window.location.href = 'http://127.0.0.1:8080/?poi=Old%20Dock#icebeach-s=c';
+const localShare = new URL(buildCurrentViewShareUrl());
+assert.equal(localShare.origin, 'https://maps.hiraeth.wiki');
+assert.equal(localShare.pathname, '/atlas/share/icebeach/');
+assert.equal(localShare.hash, '#icebeach-s=c');
+window.location.href = 'http://127.0.0.1:8080/';
+assert.equal(new URL(buildFeatureShareUrl('poi', 'Harbor')).hash, '#icebeach');
+window.location.href = originalHref;
+delete global.getRuntimeConfigValue;
+
 
 const trackedEvents = [];
 function trackAnalytics(eventName, details) {
