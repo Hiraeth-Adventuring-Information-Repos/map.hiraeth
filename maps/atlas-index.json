@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T22:09:42.151Z",
+  "generatedAt": "2026-09-14T22:42:00.895Z",
   "tree": [
     {
       "type": "folder",
@@ -2304,7 +2304,7 @@
       "name": "Baths of the Devine Mother",
       "summary": "A pristine, marble-clad sanctuary and bathhouse dedicated to Pythia, featuring lush gardens and a natural warm spring that serves as a quiet, neutral retreat for the city's elite.",
       "description": "An oasis of pristine white marble and verdant greenery amidst the smog of Stomion, the Baths of the Divine Mother are a sanctuary dedicated to Pythia, the Primordial Lifegiver.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Temple",
       "visibility": "public",
       "searchText": "Context Fed by the city's only remaining natural spring, the water is naturally warm and famed for its revitalizing properties. The interior is a humidity-filled paradise where exotic flora—blessed by the influence of Veridia—thrives under skylights and soft candlelight, defying the harsh industrial climate outside. A breathtaking statue of Pythia stands at the center of the main pool, her arms outstretched as if offering the waters to the bathers below. Operated by the Lifewardens and a quiet staff of attendants, the facility maintains a strict policy of equality; within these walls, nobles and merchants bathe side-by-side without segregation, weapons, or rank, though the clientele remains largely exclusive due to its location. Silence is heavily encouraged, allowing the sound of trickling water to dominate the air. High Warden Thyleesha currently manages the baths, though she grows increasingly anxious as recent industrial run-off from the neighboring districts threatens to taint the ancient, mysterious source of their holy spring. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2317,7 +2317,7 @@
       "name": "Beccin Chancery Embasy",
       "summary": "The imposing stone headquarters of the Vardenheim Directorate, ruled by the clinical and ruthless Overseer Verrick, serving as the true center of Imperial control and secret police operations.",
       "description": "Constructed within what was once a public park, the Beccin Embassy is a monolithic palace of cold, solid stone that feels utterly alien amidst the weathered architecture of Oldfort.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "Context It serves as the headquarters for the Vardenheim Directorate and the seat of Overseer Intendant Verrick, the 'Hand of the Emperor.' Verrick is a 'Sanitized Tyrant' who views the occupation not as a war, but as a failing factory requiring correction; he wears pristine white gloves to metaphorically and literally keep the filth of the city at bay. The interior is chillingly cold and decorated with imposing propaganda of the Emperor. While the upper floors are a maze of dismissively polite bureaucracy where meetings are nearly impossible to secure, the lower levels house the Directorate's interrogation cells. It is guarded by a specialized detachment of the City Watch, ensuring that Verrick's industrial dismantling of the rebellion proceeds without interruption. The Port City of Stomion Diplomacy Map The Port City of Stomion"
     },
@@ -2330,7 +2330,7 @@
       "name": "Breads and Dregs",
       "summary": "A popular bakery-tavern in Northgate offering lodging, strong coffee, and famous 'Road Kits' for travelers, known for its warm atmosphere and century-old sourdough starter.",
       "description": "A chaotic, warm, and wonderfully loud establishment that serves as the beating heart of Northgate's social scene.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Tavern",
       "visibility": "public",
       "searchText": "Context Breads and Dregs acts as both a premier bakery and a tavern, catering to weary travelers and locals alike. The air is permanently thick with the comforting scent of yeast and roasting grains, obscuring the smell of the city outside. They are famous for their 'Road Kits'—pre-wrapped ration packs of hardtack, dried meats, and cheese—and a legendary sourdough starter rumored to be over a century old and perhaps slightly sentient. The tavern offers lodging upstairs, and the common room is a dog-friendly haven where local bands play at night and sleepy wagon-drivers fuel up on strong coffee at dawn. It is a place of transit, where the 'dregs' refers affectionately to the bottom of a good cup of coffee or ale, shared among friends. The Port City of Stomion Gate Hospitality Map The Port City of Stomion"
     },
@@ -2343,7 +2343,7 @@
       "name": "Cat and Hound",
       "summary": "A cozy, evening-only tavern run by two sisters, offering cheap, hearty food and a welcoming atmosphere on a lowered building near the train tracks.",
       "description": "The Cat and Hound is a warm, cozy sanctuary situated on a raised mezzanine level overlooking the street, its timbers vibrating gently with the rhythmic passing of nearby trains.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Tavern",
       "visibility": "public",
       "searchText": "Context Owned by the sisters Kallista and Eleni, the tavern is a beloved staple for the city's mid-level workers looking for a quiet evening. Kallista, a stoic veteran of the national army, is known as 'The Hound,' while the tavern's name serves as a quiet, melancholic memorial to her lost lover, a Felis—'The Cat'—who vanished during the war. While Kallista handles security and the heavy lifting, Eleni, who worked the floor under the previous owner, manages the patrons with practiced grace. They are famous for serving high-quality meals at unbeatable prices, a feat accomplished by the sisters personally scouring the markets at dawn to source fresh ingredients themselves. Open only from 4 PM to midnight, the tavern enforces strict rules against politics and magic, allowing patrons to enjoy the piano music and hearty stew while the owners secretly harbor sympathies for the rebellion. The Port City of Stomion Hospitality Magic Map The Port City of Stomion"
     },
@@ -2356,7 +2356,7 @@
       "name": "Chimgate",
       "summary": "Chimgate is recorded as a point of interest on The Port City of Stomion.",
       "description": "Chimgate is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Gate",
       "visibility": "public",
       "searchText": "At a glance Chimgate is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Gate Map The Port City of Stomion"
     },
@@ -2369,7 +2369,7 @@
       "name": "Govenors Gate",
       "summary": "An ancient, fortified Elven gatehouse guarding the bridge to Aelindor's Isle, manned by corrupt City Watch and nicknamed 'The Traitor's Arch'.",
       "description": "Locally reviled as 'The Traitor's Arch,' the Governor's Gate is a structure of ancient, gorgeous Elven stonework that serves as the choke point between the city and the puppet administration on Aelindor's Isle.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Gate",
       "visibility": "public",
       "searchText": "Context The gatehouse consists of two square, crenellated towers flanking a heavy, reinforced arched entry at the end of a long stone causeway. It is not manned by the elite Beccin Black Guard, but by a hand-picked detachment of the City Watch. These guards enforce a strict 'official business only' policy, processing visitors with invasive searches and mandatory escorts—unless, of course, one can pay the steep bribes they are known to accept. In the past, the gate was a gathering point for desperate refugees begging for aid, but the terrifying silhouette of the Beccin airship hovering just above the castle has largely scared them away, leaving the bridge eerily quiet. The Port City of Stomion Gate Seat of power Island Crossing Map The Port City of Stomion"
     },
@@ -2382,7 +2382,7 @@
       "name": "Governor's Castle",
       "summary": "The ancient Elven Castle Aelindor, now the seat of the puppet Magistrate Vael, a collaborator trapped between a hateful populace and the ruthless Beccin Empire.",
       "description": "Commonly known as the Governor's Castle, this structure is historically Castle Aelindor, an ancient Elven fortress of elegant and sea-facing balconies.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Castle",
       "visibility": "public",
       "searchText": "Context It is currently the seat of Magistrate Vael, the nervous and sweating face of the 'Traitor Elf' administration. Clad in an ill-fitting Beccin tunic that symbolizes her uncomfortable submission, Vael stands paralyzed between a populace that loathes her collaboration and an Empire that views her softness as an inefficiency. She rules in name only, reading decrees of quarantine and tax hikes to angry crowds from the safety of the castle walls, while the black shadow of a Beccin airship hovers perpetually overhead. Unknown to her, she is merely a puppet being groomed by Overseer Verrick. The Port City of Stomion Seat of power Map The Port City of Stomion"
     },
@@ -2395,7 +2395,7 @@
       "name": "Hags Hovel",
       "summary": "A seedy tavern in The Shacks built from an expanded tugboat, run by a cantankerous old woman and guarded by a massive Dragonborn, serving as a safe haven for illicit deals.",
       "description": "Within the chaotic sprawl of The Shacks lies Hags Hovel, a notorious dive bar built from the rusted hull of a scavenged tugboat that has been aggressively expanded with bolted-on scrap and driftwood.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Tavern",
       "visibility": "public",
       "searchText": "Context The establishment earns its name from its proprietor, an unpleasant and razor-tongued old woman whose eclectic collection of personal trinkets lines the grime-slicked walls. The roof is a sieve of leaks caught by a maze of buckets, and the air is thick with the smell of wet rot and desperation. Imperial patrols avoid the venue entirely, making it a sanctuary for the city's criminal element; while the house doesn't sell contraband, the patrons openly do. A back room hosts high-stakes gambling and hushed contracts, all enforced by 'Kiddo,' a massive Dragonborn bouncer who ensures that the lawlessness remains organized. The Port City of Stomion Hospitality Map The Port City of Stomion"
     },
@@ -2408,7 +2408,7 @@
       "name": "HARBOUR AUTHORITY",
       "summary": "HARBOUR AUTHORITY is recorded as a point of interest on The Port City of Stomion.",
       "description": "HARBOUR AUTHORITY is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Dock & Trading",
       "visibility": "public",
       "searchText": "At a glance HARBOUR AUTHORITY is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2421,7 +2421,7 @@
       "name": "Hera Vlachouli's Institute of the Arcane",
       "summary": "A magic school formerly known as Xylokoilo, where students are strictly trained for military service and failure results in severe cognitive decline.",
       "description": "Formerly known as the Xylokoilo Lyceum (Ancient for 'Woodhollow'), this institution was rebranded to align with the modern sensibilities of the Beccin occupation.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "Context It is named after Hera Vlachouli, a figure sympathetic to the Empire, helping to ease the local populace's disdain for the wizarding class that largely fled the country. Led by Headmistress Elpida Tata, who walks a razor-thin line between Imperial loyalty and academic preservation, the Institute focuses on producing magically capable assets for the Beccin military. The curriculum is rigorous, strictly categorized, and heavily monitored; Wild Magic is treated as a dangerous pathology to be suppressed. Students wear robes blending classical Greek drapes with color-coded house linings. Failure is not an option—those who wash out are sent to 'remedial programs' from which they return noticeably simpler and mentally eroded. Beneath the school lies a sealed subterranean complex now known as 'The Deeproot,' rumored to hold secrets from the school's older, wilder days. The Port City of Stomion Learning Magic Map The Port City of Stomion"
     },
@@ -2434,7 +2434,7 @@
       "name": "House of Coin God",
       "summary": "House of Coin God is recorded as a point of interest on The Port City of Stomion.",
       "description": "House of Coin God is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Temple",
       "visibility": "public",
       "searchText": "At a glance House of Coin God is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Commerce Map The Port City of Stomion"
     },
@@ -2473,7 +2473,7 @@
       "name": "Imperial Offices",
       "summary": "Imperial Offices is recorded as a point of interest on The Port City of Stomion.",
       "description": "Imperial Offices is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Imperial Offices is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Seat of power Map The Port City of Stomion"
     },
@@ -2486,7 +2486,7 @@
       "name": "Imperial State Library",
       "summary": "Imperial State Library is recorded as a point of interest on The Port City of Stomion.",
       "description": "Imperial State Library is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Imperial State Library is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Learning Map The Port City of Stomion"
     },
@@ -2499,7 +2499,7 @@
       "name": "Iron Coffers' Hall",
       "summary": "Iron Coffers' Hall is recorded as a point of interest on The Port City of Stomion.",
       "description": "Iron Coffers' Hall is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Iron Coffers' Hall is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Commerce Map The Port City of Stomion"
     },
@@ -2512,7 +2512,7 @@
       "name": "Mayor's Manor",
       "summary": "Mayor's Manor is recorded as a point of interest on The Port City of Stomion.",
       "description": "Mayor's Manor is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Mayor's Manor is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Seat of power Map The Port City of Stomion"
     },
@@ -2538,7 +2538,7 @@
       "name": "MERCHANT GATE",
       "summary": "Merchant's Hill is an elite residential district for the city's 'Old Money,' characterized by owner-maintained ornate street lamps, polite social exclusion, and the Public Observatory.",
       "description": "Rising above the smog of the lower city, Merchant's Hill is the residential enclave of Stomion's 'Old Money.'",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Gate",
       "visibility": "public",
       "searchText": "Context It is a neighborhood of fading but dignified elegance, home to wealthy regional merchants and ancient families who cling to the pre-occupation past. While the residents possess little actual political authority—having been stripped of real power by the Beccin administration—they maintain a stubborn veneer of influence through social exclusion and a culture that is 'snobby, but not overly rude.' The district is visually defined by its unique lighting: rather than uniform municipal posts, the streets are illuminated by ornate, distinct oil lamps. Each lamp is commissioned and zealously maintained by the owner of the nearest manor as a fierce display of status and wealth. The area is not gated but is heavily patrolled by the City Watch, who politely ensure that the uninvited do not linger. Notable residents include Veylan Wollif, the envoy for the Iron Coffer. The district’s crown jewel is the Public Observatory, a place of quiet contemplation where the elite watch the stars, ignoring the industrial smoke rising from the districts below. The Port City of Stomion Gate Commerce Seat of power Map The Port City of Stomion"
     },
@@ -2551,7 +2551,7 @@
       "name": "Merchant Senate",
       "summary": "Merchant Senate is recorded as a point of interest on The Port City of Stomion.",
       "description": "Merchant Senate is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Merchant Senate is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Commerce Map The Port City of Stomion"
     },
@@ -2564,7 +2564,7 @@
       "name": "Oikos Atrium",
       "summary": "A suspended glass conservatory preserving extinct magical flora, serving as the neutral social hub for the Great Houses' political maneuvering and high-society events.",
       "description": "Suspended between the central spires like a glittering jewel in a stone web, the Oikos Atrium is a colossal, crystalline geodesic dome that houses the last breath of the Old World.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "Context It serves as the private botanical conservatory and primary social salon for those in the Synedrion of Blood. Inside, the air is perfumed and perfectly humidified, maintained by complex weather wards that nurture flora extinct everywhere else in Eschatia. Silver-ferns from the Lost Age and glowing moon-blooming lotuses. It is here that 'The Season' takes place: a perpetual cycle of tea ceremonies, marriage negotiations, and high-stakes political maneuvering disguised as leisure. By ancient treaty, no violence is permitted within the glass, making it the only place where rival Great Houses can meet face-to-face to trade secrets. The Port City of Stomion Magic Map The Port City of Stomion"
     },
@@ -2577,7 +2577,7 @@
       "name": "Ol' Fort",
       "summary": "City Goverment",
       "description": "City Goverment",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Fort",
       "visibility": "public",
       "searchText": "At a glance City Goverment The Port City of Stomion Seat of power Map The Port City of Stomion"
     },
@@ -2590,7 +2590,7 @@
       "name": "Old Gate",
       "summary": "Old Gate is recorded as a point of interest on The Port City of Stomion.",
       "description": "Old Gate is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Gate",
       "visibility": "public",
       "searchText": "At a glance Old Gate is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Gate Map The Port City of Stomion"
     },
@@ -2603,7 +2603,7 @@
       "name": "Ossurian Forges Embassy",
       "summary": "Ossurian Forges Embassy is recorded as a point of interest on The Port City of Stomion.",
       "description": "Ossurian Forges Embassy is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Ossurian Forges Embassy is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Diplomacy Map The Port City of Stomion"
     },
@@ -2616,7 +2616,7 @@
       "name": "Outdoor Theater",
       "summary": "Outdoor Theater is recorded as a point of interest on The Port City of Stomion.",
       "description": "Outdoor Theater is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Landmark",
       "visibility": "public",
       "searchText": "At a glance Outdoor Theater is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2629,7 +2629,7 @@
       "name": "State Goverment Building",
       "summary": "State Goverment Building is recorded as a point of interest on The Port City of Stomion.",
       "description": "State Goverment Building is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance State Goverment Building is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2642,7 +2642,7 @@
       "name": "Station",
       "summary": "Station is recorded as a point of interest on The Port City of Stomion.",
       "description": "Station is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Station is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2655,7 +2655,7 @@
       "name": "THE ARTISAN'S GUILD",
       "summary": "THE ARTISAN'S GUILD is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE ARTISAN'S GUILD is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance THE ARTISAN'S GUILD is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2668,7 +2668,7 @@
       "name": "THE ARTISAN'S MARKET",
       "summary": "THE ARTISAN'S MARKET is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE ARTISAN'S MARKET is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Market",
       "visibility": "public",
       "searchText": "At a glance THE ARTISAN'S MARKET is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Commerce Map The Port City of Stomion"
     },
@@ -2681,7 +2681,7 @@
       "name": "The Bath of Some god",
       "summary": "The Bath of Some god is recorded as a point of interest on The Port City of Stomion.",
       "description": "The Bath of Some god is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Temple",
       "visibility": "public",
       "searchText": "At a glance The Bath of Some god is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2694,7 +2694,7 @@
       "name": "THE GREAT WAREHOUSE",
       "summary": "THE GREAT WAREHOUSE is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE GREAT WAREHOUSE is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance THE GREAT WAREHOUSE is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2707,7 +2707,7 @@
       "name": "THE HIGH BEACON",
       "summary": "THE HIGH BEACON is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE HIGH BEACON is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Lighthouse",
       "visibility": "public",
       "searchText": "At a glance THE HIGH BEACON is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2733,7 +2733,7 @@
       "name": "The House of some other god?",
       "summary": "The House of some other god? is recorded as a point of interest on The Port City of Stomion.",
       "description": "The House of some other god? is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Temple",
       "visibility": "public",
       "searchText": "At a glance The House of some other god? is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2746,7 +2746,7 @@
       "name": "THE JEWELER'S GUILD",
       "summary": "THE JEWELER'S GUILD is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE JEWELER'S GUILD is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance THE JEWELER'S GUILD is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2759,7 +2759,7 @@
       "name": "The North Gate",
       "summary": "The North Gate is recorded as a point of interest on The Port City of Stomion.",
       "description": "The North Gate is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Gate",
       "visibility": "public",
       "searchText": "At a glance The North Gate is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Gate Map The Port City of Stomion"
     },
@@ -2772,7 +2772,7 @@
       "name": "The Observatory",
       "summary": "The Observatory is recorded as a point of interest on The Port City of Stomion.",
       "description": "The Observatory is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Landmark",
       "visibility": "public",
       "searchText": "At a glance The Observatory is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2785,7 +2785,7 @@
       "name": "THE RAILDOCK",
       "summary": "THE RAILDOCK is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE RAILDOCK is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Dock & Trading",
       "visibility": "public",
       "searchText": "At a glance THE RAILDOCK is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2811,7 +2811,7 @@
       "name": "The Shop",
       "summary": "A place of creators and workers.",
       "description": "Welcome to The Shop!",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "Context Back in the glory days, this facility was a premier, open-floor smithy. Now? It’s a survival rig adapted for the grind. We stripped the layout and partitioned it into flats to house a crew of makers and their families. The main floor got squeezed, but it remains the beating heart of the operation: a high-traffic, communal fabrication zone where every discipline from leather-working to cold forging collides. We keep a resident fabricator on site, bunked in a solo unit. They machine the components, true the grinding wheels, and repair the communal gear. In exchange for keeping the shop running, the rest of the crew knows when to look the other way. If a shipment of non-standard, unregistered materials hits the loading dock? We didn't see a thing. The heat is high, and the quarters are tight. We don't act loud; we just hammer hard. The Port City of Stomion Harbor Map The Port City of Stomion"
     },
@@ -2824,7 +2824,7 @@
       "name": "THE WATERLILY",
       "summary": "Brothal",
       "description": "Brothal",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "At a glance Brothal The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2837,7 +2837,7 @@
       "name": "THE WATERLOCK",
       "summary": "THE WATERLOCK is recorded as a point of interest on The Port City of Stomion.",
       "description": "THE WATERLOCK is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Dock & Trading",
       "visibility": "public",
       "searchText": "At a glance THE WATERLOCK is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2850,7 +2850,7 @@
       "name": "The Watertowers",
       "summary": "The Watertowers is recorded as a point of interest on The Port City of Stomion.",
       "description": "The Watertowers is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Tower",
       "visibility": "public",
       "searchText": "At a glance The Watertowers is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2863,7 +2863,7 @@
       "name": "Tourney Grounds",
       "summary": "Tourney Grounds is recorded as a point of interest on The Port City of Stomion.",
       "description": "Tourney Grounds is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Landmark",
       "visibility": "public",
       "searchText": "At a glance Tourney Grounds is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2876,7 +2876,7 @@
       "name": "Wizard's Tower",
       "summary": "Wizard's Tower is recorded as a point of interest on The Port City of Stomion.",
       "description": "Wizard's Tower is recorded as a point of interest on The Port City of Stomion.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Tower",
       "visibility": "public",
       "searchText": "At a glance Wizard's Tower is recorded as a point of interest on The Port City of Stomion. The Port City of Stomion Map The Port City of Stomion"
     },
@@ -2902,7 +2902,7 @@
       "name": "Woodhollow Farm",
       "summary": "The Woodhollow Farm, named the old name for the Rain family.",
       "description": "The Woodhollow Farm, named the old name for the Rain family.",
-      "typeLabel": "Point of Interest",
+      "typeLabel": "Building",
       "visibility": "public",
       "searchText": "Context Ownership of the property is questionable but not many look into it. It as a quiet retreat just outside the city by its current deed owner. The Port City of Stomion Map The Port City of Stomion"
     },
