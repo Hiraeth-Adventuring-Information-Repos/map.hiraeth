@@ -19,18 +19,28 @@
   "selectorDescription": "The main map of Astrousia.",
   "pointsOfInterest": [
     {
-      "name": "City Ank",
+      "name": "Ankhet",
       "coords": [
         5479,
         3979
       ],
-      "type": "Unknown",
-      "description": "",
-      "summary": "",
+      "type": "City",
+      "description": "Ankhet combines a practical coastal economy with a reputation for memorial crafts and public records. Painters, stoneworkers, linen sellers, cooks, and boat crews share streets where funeral processions pass ordinary shops. Families renew painted names during remembrance gatherings, bringing food for neighbors and relatives.\nA Council of Houses represents residential wards and major civic institutions. The Painted Ward contains workshops producing everything from modest household markers to elaborate monuments. The House of Names preserves burial and household records, while the Open Table provides meals and temporary lodging for visiting families.\nAnkhet imports linen, pigments, timber, and stone, exporting finished crafts and serving coastal passenger traffic. Wealthy patrons compete for lasting remembrance, sometimes seeking land already used for communal burials. Residents disagree over whose names deserve protection and whether an official record should outweigh living testimony.",
+      "summary": "Ankhet’s painted memorial courts rise behind a working harbor of workshops and passenger landings. Families come to bury, remember, and recover their dead. Its public record houses preserve names that more powerful cities have sometimes found convenient to forget.",
       "wikiLink": "",
       "linkedMapId": "",
-      "properties": {},
-      "pronunciation": ""
+      "properties": {
+        "Status": "Approved name; proposed lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "City Ank",
+        "Familiar name": "Ank"
+      },
+      "pronunciation": "AHN-khet",
+      "tags": [
+        "Astrousia",
+        "Proposed lore"
+      ]
     },
     {
       "name": "CMC",
@@ -39,159 +49,187 @@
         4245
       ],
       "type": "Unknown",
-      "description": "",
-      "summary": "",
+      "description": "Proposed identity only; the meaning of CMC remains unresolved.\n\nThe House combines practical observation, teaching, and hospitality. Roof catchments supply cisterns, and sheltered courts contain instruments and dated markers. Observers, maintenance workers, students, and their households sustain an institution dependent on regular supplies from lower settlements.\nA College of Keepers administers the site. The Rain Court records measurements, while the Long Register preserves observations and accounts of exceptional storms. The Travelers’ Hall shelters people caught on the mountain approaches.\nThe House provides teaching, weather records, and route warnings in exchange for support. Its usefulness does not establish supernatural foresight, though residents may interpret their work through different religious traditions. Authorities seeking exclusive access to its observations face resistance from those who consider the records a shared resource.",
+      "summary": "Proposed identity: The House of Returning Rain. The House of Returning Rain maintains weather observations, mountain shelters, and warnings for travelers. Residents copy old records beside new measurements, preserving knowledge useful far beyond their walls. Access to those records has become a matter of political interest.",
       "wikiLink": "",
       "linkedMapId": "",
-      "properties": {},
-      "pronunciation": ""
+      "properties": {
+        "Status": "Proposed replacement; original abbreviation unresolved",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "CMC",
+        "Proposed name": "The House of Returning Rain",
+        "Proposed type": "Observatory and refuge",
+        "Proposed pronunciation": "the HOWSS of reh-TUR-ning RAYN"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Proposed lore"
+      ]
     },
     {
-      "name": "Mountain",
+      "name": "Mount Oresh",
       "coords": [
         4471,
         4226
       ],
-      "type": "Unknown",
-      "description": "",
-      "summary": "",
+      "type": "Mountain",
+      "description": "Mount Oresh is both a landmark and a lived landscape. Communities on suitable lower slopes keep animals, maintain paths, and work small sources of stone. Their livelihoods connect them to lower settlements supplying grain, tools, and other necessities.\nThe Lower Shelters serve guides and travelers. The Broken Stair preserves an older engineered ascent whose original purpose remains uncertain. At the Weather Cairns, travelers leave reports for those following them. Those able to help customarily carry fuel, rope, or repair materials to the next shelter.\nAuthority varies between paths and communities, with local maintenance agreements often carrying more practical weight than distant claims. Quarrying concessions and attempts to control travel can threaten households dependent on established access.",
+      "summary": "Mount Oresh rises above the House of Returning Rain, crossed by difficult paths and marked with travelers’ cairns. Its slopes support scattered livelihoods and routes older than current border claims. Local communities dispute who may quarry it, guide across it, or close its paths.",
       "wikiLink": "",
       "linkedMapId": "",
-      "properties": {},
-      "pronunciation": ""
+      "properties": {
+        "Status": "Proposed name and lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Mountain"
+      },
+      "pronunciation": "MOWNT OH-resh",
+      "tags": [
+        "Astrousia",
+        "Proposed lore"
+      ]
     },
     {
-      "name": "Ruins",
+      "name": "The Courts of Veyru",
       "coords": [
         4854,
         3948
       ],
-      "type": "Unknown",
-      "description": "",
-      "summary": "",
+      "type": "Ruins",
+      "description": "Veyru once served as an inland administrative and stopping place, but its surviving structures belong to multiple periods. Later occupants repaired some buildings, dismantled others, and recut inscriptions to reflect new claims. Its earliest builders and precise chronology remain unresolved.\nThe Court of Recut Names preserves visible alterations to older inscriptions. The Lower Cisterns reveal successive repairs and changes in use. Around the Pilgrims’ Kitchen, seasonal visitors maintain shelter and a hearth despite the collapse of neighboring structures.\nLocal custodians, surrounding communities, and visiting researchers disagree over access and ownership. Guiding, transport, supplies, and conservation work support a small seasonal economy. Permits issued elsewhere do not necessarily command local respect, particularly where excavations threaten places still used for remembrance or gathering.",
+      "summary": "Broken courtyards and reused foundations mark the Courts of Veyru. Successive occupants altered its halls, inscriptions, and waterworks, leaving several histories in stone. Nearby communities still visit parts of the site, despite outsiders describing it as abandoned.",
       "wikiLink": "",
       "linkedMapId": "",
-      "properties": {},
-      "pronunciation": ""
+      "properties": {
+        "Status": "Proposed name and identity",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Ruins"
+      },
+      "pronunciation": "the KORTS of VAY-roo",
+      "tags": [
+        "Astrousia",
+        "Proposed lore"
+      ]
     },
     {
-      "name": "Tamar",
+      "name": "Tameret",
       "coords": [
         6124,
         2157
       ],
       "type": "City",
-      "description": "Grain and linen; fertile hinterland, food exports, and textiles. Northwestern inner shore of the Northern Gulf. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Grain and linen; fertile hinterland, food exports, and textiles.",
+      "description": "Tameret rises in broad terraces above a busy agricultural waterfront. Grain stores occupy the lower streets, while weaving courts and shaded homes climb behind them. Bakers feed early-shift porters flatbread filled with beans and onions, and freshly washed linen hangs above neighborhood courtyards.\nA Council of Measures brings together farming districts, warehouse owners, and urban wards. Its most consequential decision is the annual grain reserve: how much food must remain locally available before unrestricted exports begin. Disputes over that reserve expose the divide between prosperous exporters and households dependent on affordable bread.\nOfficial weights are tested publicly at the Measure Steps. The White Courts house linen workers and cloth merchants, while grain vessels load along First Loaf Quay. Tameret exports grain, pulses, linen, and sailcloth, relying on other communities for timber, salt, pottery, and metal tools. Djeskar’s shipyards are an important customer.",
+      "summary": "Tameret’s pale granaries and linen awnings overlook the gulf. Its agricultural hinterland supplies grain, cloth, and produce to neighboring ports. The city’s prosperity rests on an uneasy promise: exports must never leave its own people hungry.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Working proposal",
-        "Placement": "Approximate",
-        "Location notes": "Northwestern inner shore of the Northern Gulf.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Approved name; proposed lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Tamar"
       },
-      "pronunciation": "",
+      "pronunciation": "TAH-meh-ret",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
-      "name": "Kesh",
+      "name": "Djeskar",
       "coords": [
         5848,
         3071
       ],
       "type": "City",
-      "description": "Shipyards and timber; hulls and naval supplies. Southern tip of the northern peninsula, facing the gulf. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Shipyards and timber; hulls and naval supplies.",
+      "description": "Djeskar’s waterfront is crowded with unfinished hulls, cranes, stacked planks, and drying rope. Neighborhoods gather around individual shipyards, sharing ovens and eating houses that serve workers between shifts. Launching days become neighborhood celebrations, with household emblems painted onto the vessels residents helped build.\nThe Assembly of Yards represents shipbuilding enterprises and recognized trades. Major owners dominate contracts, but coordinated work crews can bring the harbor to a standstill. Foreign naval commissions promise employment while raising uncomfortable questions about who might eventually command those ships.\nThe Long Ways contain the principal slipways. At the House of Soundings, navigators report damaged charts and faults discovered at sea. The Unpaid Bell summons public witnesses to disputed wages. Djeskar imports timber, Tameret’s sailcloth, food, and copper traded through Kharaset; its exports include ships, repairs, rope, and fittings.",
+      "summary": "Hammering carries across Djeskar’s harbor from dawn until dark. Its yards build fishing boats, merchant vessels, and warships for competing employers. Shipwrights, sailmakers, and waterfront households celebrate every launch—and remember every unpaid debt.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Working proposal",
-        "Placement": "Approximate",
-        "Location notes": "Southern tip of the northern peninsula, facing the gulf.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Approved name; proposed lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Kesh"
       },
-      "pronunciation": "",
+      "pronunciation": "JES-kar",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
-      "name": "Orun",
+      "name": "Oseret",
       "coords": [
         5562,
         2013
       ],
       "type": "City",
-      "description": "Regional warehouses, agricultural collection, local lending, and western overland distribution. Western inner shore, at the back of the gulf. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Regional warehouses, agricultural collection, local lending, and western overland distribution.",
+      "description": "Oseret serves the communities behind the western gulf shore. Roads converge on its livestock yards and market courts, where small deliveries are assembled into cargoes large enough to ship profitably. Homes surround storage rooms and shaded courtyards, and market streets fill with carts, pack animals, and baskets of produce.\nA Market Council shares authority with representatives from contributing rural districts. Local lenders advance seed, tools, and transport costs against future harvests. Some maintain trusted relationships across generations; others acquire land whenever borrowers endure a bad year.\nThe Hundred Doors is a district of independently owned warehouses. At the Witness Court, oral testimony can challenge written contracts. The Evening Market serves smaller buyers after the major merchants finish trading. Oseret distributes agricultural goods, wool, hides, and inland crafts, importing salt, metalwork, and coastal products. Its financial influence is primarily regional.",
+      "summary": "At the gulf’s western end, Oseret gathers the produce of its hinterland. Market courts, storehouses, and lending houses connect inland communities to coastal buyers. Harvests are often sold before they are gathered, making credit both a lifeline and a source of lasting resentment.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Working proposal",
-        "Placement": "Approximate",
-        "Location notes": "Western inner shore, at the back of the gulf.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Approved name; proposed lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Orun"
       },
-      "pronunciation": "",
+      "pronunciation": "OH-seh-ret",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
-      "name": "Serekh",
+      "name": "Kharaset",
       "coords": [
         5297,
         2786
       ],
       "type": "City",
-      "description": "Copper and caravan trade; metals, inland exchange, and desert goods. Southwestern shore of the gulf; proposed inland caravan connection. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Copper and caravan trade; metals, inland exchange, and desert goods.",
+      "description": "Kharaset’s streets widen around caravan courts where wagons and pack animals gather beneath deep shade. Workshops repair equipment for both road and sea, while lodging houses accommodate travelers carrying news and goods from the interior. Chickpea cakes and onion broth are common meals around the working markets.\nThe Council of Gates includes market wards, caravan associations, and established merchant households. It regulates storage, public measures, and caravan facilities. Beyond the city, however, route communities maintain their own wells and agreements, limiting how far Kharaset can impose its authority.\nThe Copper Court assays metal and stamps approved weights. At the Court of First Water, travelers receive a drink before lodging fees are discussed. Brokers at the Western Gate arrange journeys toward Damietta along a proposed overland connection. Kharaset trades inland copper, salt, stone, and crafted goods for grain, cloth, timber, and maritime supplies. Claims over road tolls remain a recurring source of conflict.",
+      "summary": "Kharaset is where caravan bells meet harbor chains. Copper, salt, and inland goods pass through its weighing courts before reaching the gulf. Its independence depends on keeping roads open, measures trustworthy, and travelers supplied.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Working proposal",
-        "Placement": "Approximate",
-        "Location notes": "Southwestern shore of the gulf; proposed inland caravan connection.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Approved name; proposed lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Serekh"
       },
-      "pronunciation": "",
+      "pronunciation": "KHAH-rah-set",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
-      "name": "Ilyra",
+      "name": "Isethra",
       "coords": [
         5946,
         4003
       ],
       "type": "City",
-      "description": "Pilots and ocean trade; navigation, convoy coordination, and far-sea commerce. West-facing harbour on the island at the gulf entrance. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Pilots and ocean trade; navigation, convoy coordination, and far-sea commerce.",
+      "description": "Isethra’s waterfront changes with every arrival. Visiting merchants, interpreters, sailors’ families, and warehouse workers share streets filled with unfamiliar cargo and competing announcements. Lodging houses advertise through painted symbols as well as words, while messages await returning crews at harbor-side stalls.\nA Harbor Compact joins Isethra to Ilyra’s smaller port communities. The city provides commercial courts, shipping finance, and convoy organization. Other harbors supply crews, food, anchorages, and local knowledge, and resist being treated as dependencies.\nOcean arrivals gather at Lantern Quay. The Exchange Courts handle shipping loans, cargo guarantees, and disputes. At the Returning Wall, families leave messages for absent sailors, sometimes for years. Isethra depends on mainland provisions and Djeskar’s yards. Its influence comes from reliable services and information rather than an uncontested right to control every approach to the gulf.",
+      "summary": "Isethra is the principal harbor of Ilyra, receiving ocean travelers and preparing gulf vessels for distant voyages. Pilots, translators, shipping houses, and waterfront families sustain its prosperity. Smaller island ports dispute how much authority that prosperity should buy.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Working proposal",
-        "Placement": "Approximate",
-        "Location notes": "West-facing harbour on the island at the gulf entrance.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Approved city name; Ilyra retained as the proposed island name",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Ilyra",
+        "Island": "Ilyra",
+        "Island pronunciation": "ih-LEER-ah",
+        "Island status": "Proposed name"
       },
-      "pronunciation": "",
+      "pronunciation": "ih-SETH-rah",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
@@ -201,69 +239,65 @@
         4269
       ],
       "type": "City",
-      "description": "Nwt administrative harbour and regional coordination. South shore of the gulf, on the projecting coastal headland east of Serekh. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Nwt administrative harbour and regional coordination.",
+      "description": "The city was shaped to express the Azure Sovereign’s authority. Public buildings, ceremonial approaches, and civic institutions carried the identity her rule required. That inheritance remains visible even where damaged monuments and altered streets reveal the upheaval of her fall.\nToday, clerks register births beside damaged government buildings, markets occupy former ceremonial spaces, and displaced households preserve addresses whose buildings no longer stand. Authority is divided among surviving offices, neighborhood representatives, religious institutions, and a limited Beccin presence. The Harbor Secretariat coordinates essential services without resolving who legitimately rules Nwt.\nThe Blue Steps connect the waterfront to the administrative quarter. The Court of Petitions receives requests for compensation and restitution. Around the Palace Precinct, ownership and access remain contested. The city imports food, construction materials, and manufactured goods, while providing administrative, legal, and specialist services. Older financial houses hold obligations whose validity is disputed alongside the former regime’s authority.",
+      "summary": "The Azure Sovereign’s city carries her imposed identity in its monuments, offices, and ceremonial harbor. Since her fall, residents have rebuilt beneath competing claims of authority. Beccin retains a nominal hold over part of the city, while the sovereign’s fate remains disputed.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Existing proposal",
-        "Placement": "Approximate",
-        "Location notes": "South shore of the gulf, on the projecting coastal headland east of Serekh.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Retain label temporarily; replacement unresolved",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff"
       },
-      "pronunciation": "",
+      "pronunciation": "seh-ROO-lee-an",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
-      "name": "Below-Tide polity?",
+      "name": "The Namar Compact",
       "coords": [
         5495,
         2722
       ],
-      "type": "Unknown",
-      "description": "Proposed merfolk treaty waters; an undersea negotiating power. Central gulf waters; this marker indicates a broad area, not a boundary or a fixed settlement. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Proposed merfolk treaty waters; an undersea negotiating power.",
+      "type": "Polity / treaty waters",
+      "description": "The Namar Compact brings together communities with different interests and livelihoods. Some cultivate marine plants or tend shellfish grounds; others work in fishing, salvage, craft production, or diplomacy. Their agreements distinguish between passage above a place and activities that alter or remove what lies beneath it.\nDelegates gather at the Listening Stones to hear disputes. The Nursery Grounds receive seasonal protection, while the Guest Moorings provide an agreed meeting place for surface vessels and merfolk envoys.\nSurface residents often know the Compact through accounts of rescued sailors, returned anchors, or prohibited salvage. Its communities exchange marine products, services, and local knowledge for selected surface manufactures. Destructive anchoring, fishing disputes, and contested wrecks strain relations. Those suffering damage increasingly question whether negotiation alone protects their homes.",
+      "summary": "Beneath the gulf, the Namar Compact joins merfolk communities through agreements governing fisheries, cultivated seabeds, and wrecks. Its envoys negotiate with surface ports whose ships cross waters they rarely understand. This marker indicates an area of activity, not a capital or fixed border.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Optional concept",
-        "Placement": "Approximate",
-        "Location notes": "Central gulf waters; this marker indicates a broad area, not a boundary or a fixed settlement.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Optional concept; proposed name and lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Below-Tide polity?"
       },
-      "pronunciation": "",
+      "pronunciation": "NAH-mar KOM-pakt",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
-      "name": "Dragon turtle?",
+      "name": "Old Sounder’s Passage",
       "coords": [
         7082,
         4156
       ],
-      "type": "Unknown",
-      "description": "Possible seasonal visitor to the outer approach. Open water northeast of the northern peninsula, outside the gulf entrance; not a permanent lair. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "Possible seasonal visitor to the outer approach.",
+      "type": "Seasonal encounter area",
+      "description": "Old Sounder is a sailors’ name, and accounts disagree about the creature’s habits and intentions. Its recurring visits may follow a feeding cycle or another need that surface observers have not understood. Pilots collect reports of surfacing, unusual wakes, and damaged vessels.\nSightings are recorded at the Witness Buoy. Captains gather at the Waiting Anchorage before deciding whether to proceed, paying close attention to witnesses whose livelihoods depend on accurate information.\nStories suggest an old understanding between Old Sounder, the Namar Compact, and former Nwt authorities. Whether such an agreement survives the Azure Sovereign’s fall remains uncertain. The creature’s appearances disrupt departures and convoy schedules, while accusations of exaggerated sightings divide pilots and shipping houses.",
+      "summary": "Sailors name these outer waters after Old Sounder, a dragon turtle reported here in certain seasons. Some crews delay departure when signs appear; others seek the creature deliberately. The marker records encounters rather than a permanent lair.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Optional concept",
-        "Placement": "Approximate",
-        "Location notes": "Open water northeast of the northern peninsula, outside the gulf entrance; not a permanent lair.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Optional concept; proposed name and lore",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff",
+        "Previous label": "Dragon turtle?"
       },
-      "pronunciation": "",
+      "pronunciation": "ohld SOWN-derz PASS-ij",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     },
     {
@@ -273,21 +307,19 @@
         1235
       ],
       "type": "City",
-      "description": "West-coast settlement with a proposed overland connection to Serekh. Broad west-coast placeholder beyond the reference crop; exact location is unspecified. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
-      "summary": "West-coast settlement with a proposed overland connection to Serekh.",
+      "description": "Damietta’s Alhafar dynasty traces its prestige to the first delvers of the bay’s underwater dungeon. The family secured autonomy during Nut’s expansion, maintaining a city whose wealth and identity developed around maritime commerce and discoveries brought up from below. Their glass temple serves as residence and audience chamber within greenish sandstone walls.\nThe Grand Bazaar exchanges everyday necessities and unusual finds. Beergate’s breweries supply a city where beer is central to social life, while coffee and grapes grow in the farming district. The Married Oysters, a tavern shaped like a great treasure chest, offers gambling and fighting pits.\nIn Jungle’s Edge, overcrowded households live beside encroaching vegetation, and the Panther’s Paw exercises informal authority. A proposed overland connection to Kharaset could expand trade into the gulf, while provoking disputes over land, investment, and who receives the benefits.",
+      "summary": "Damietta surrounds a deep bay famed for the dungeon beneath its waters. The Alhafar rulers receive homage in a glass temple above the harbor, while merchants, brewers, and treasure seekers fill the streets below. Jungle presses against the city’s poorer wards.",
       "wikiLink": "",
       "linkedMapId": "",
       "properties": {
-        "Status": "Approximate reference",
-        "Placement": "Approximate",
-        "Location notes": "Broad west-coast placeholder beyond the reference crop; exact location is unspecified.",
-        "Source": "Northern Gulf concept reference"
+        "Status": "Existing name and older lore; connecting material proposed",
+        "Placement": "Current pin retained",
+        "Source": "Lore team handoff"
       },
-      "pronunciation": "",
+      "pronunciation": "dam-ee-ET-ah",
       "tags": [
         "Astrousia",
-        "Northern Gulf",
-        "Provisional"
+        "Proposed lore"
       ]
     }
   ],
