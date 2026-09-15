@@ -19,38 +19,10 @@
   "selectorDescription": "The main map of Astrousia.",
   "pointsOfInterest": [
     {
-      "name": "City Eh",
+      "name": "City Ank",
       "coords": [
-        5119,
-        4268
-      ],
-      "type": "Unknown",
-      "description": "",
-      "summary": "",
-      "wikiLink": "",
-      "linkedMapId": "",
-      "properties": {},
-      "pronunciation": ""
-    },
-    {
-      "name": "City One",
-      "coords": [
-        5504,
-        3982
-      ],
-      "type": "Unknown",
-      "description": "",
-      "summary": "",
-      "wikiLink": "",
-      "linkedMapId": "",
-      "properties": {},
-      "pronunciation": ""
-    },
-    {
-      "name": "City Uno",
-      "coords": [
-        5368,
-        3601
+        5479,
+        3979
       ],
       "type": "Unknown",
       "description": "",
@@ -101,6 +73,222 @@
       "linkedMapId": "",
       "properties": {},
       "pronunciation": ""
+    },
+    {
+      "name": "Tamar",
+      "coords": [
+        6124,
+        2157
+      ],
+      "type": "City",
+      "description": "Grain and linen; fertile hinterland, food exports, and textiles. Northwestern inner shore of the Northern Gulf. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Grain and linen; fertile hinterland, food exports, and textiles.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Working proposal",
+        "Placement": "Approximate",
+        "Location notes": "Northwestern inner shore of the Northern Gulf.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Kesh",
+      "coords": [
+        5848,
+        3071
+      ],
+      "type": "City",
+      "description": "Shipyards and timber; hulls and naval supplies. Southern tip of the northern peninsula, facing the gulf. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Shipyards and timber; hulls and naval supplies.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Working proposal",
+        "Placement": "Approximate",
+        "Location notes": "Southern tip of the northern peninsula, facing the gulf.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Orun",
+      "coords": [
+        5562,
+        2013
+      ],
+      "type": "City",
+      "description": "Regional warehouses, agricultural collection, local lending, and western overland distribution. Western inner shore, at the back of the gulf. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Regional warehouses, agricultural collection, local lending, and western overland distribution.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Working proposal",
+        "Placement": "Approximate",
+        "Location notes": "Western inner shore, at the back of the gulf.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Serekh",
+      "coords": [
+        5297,
+        2786
+      ],
+      "type": "City",
+      "description": "Copper and caravan trade; metals, inland exchange, and desert goods. Southwestern shore of the gulf; proposed inland caravan connection. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Copper and caravan trade; metals, inland exchange, and desert goods.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Working proposal",
+        "Placement": "Approximate",
+        "Location notes": "Southwestern shore of the gulf; proposed inland caravan connection.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Ilyra",
+      "coords": [
+        5946,
+        4003
+      ],
+      "type": "City",
+      "description": "Pilots and ocean trade; navigation, convoy coordination, and far-sea commerce. West-facing harbour on the island at the gulf entrance. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Pilots and ocean trade; navigation, convoy coordination, and far-sea commerce.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Working proposal",
+        "Placement": "Approximate",
+        "Location notes": "West-facing harbour on the island at the gulf entrance.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Caerulean",
+      "coords": [
+        5108,
+        4269
+      ],
+      "type": "City",
+      "description": "Nwt administrative harbour and regional coordination. South shore of the gulf, on the projecting coastal headland east of Serekh. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Nwt administrative harbour and regional coordination.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Existing proposal",
+        "Placement": "Approximate",
+        "Location notes": "South shore of the gulf, on the projecting coastal headland east of Serekh.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Below-Tide polity?",
+      "coords": [
+        5495,
+        2722
+      ],
+      "type": "Unknown",
+      "description": "Proposed merfolk treaty waters; an undersea negotiating power. Central gulf waters; this marker indicates a broad area, not a boundary or a fixed settlement. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Proposed merfolk treaty waters; an undersea negotiating power.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Optional concept",
+        "Placement": "Approximate",
+        "Location notes": "Central gulf waters; this marker indicates a broad area, not a boundary or a fixed settlement.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Dragon turtle?",
+      "coords": [
+        7082,
+        4156
+      ],
+      "type": "Unknown",
+      "description": "Possible seasonal visitor to the outer approach. Open water northeast of the northern peninsula, outside the gulf entrance; not a permanent lair. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "Possible seasonal visitor to the outer approach.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Optional concept",
+        "Placement": "Approximate",
+        "Location notes": "Open water northeast of the northern peninsula, outside the gulf entrance; not a permanent lair.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
+    },
+    {
+      "name": "Damietta",
+      "coords": [
+        4766,
+        1235
+      ],
+      "type": "City",
+      "description": "West-coast settlement with a proposed overland connection to Serekh. Broad west-coast placeholder beyond the reference crop; exact location is unspecified. Approximate placement from the Northern Gulf concept reference; not confirmed canon.",
+      "summary": "West-coast settlement with a proposed overland connection to Serekh.",
+      "wikiLink": "",
+      "linkedMapId": "",
+      "properties": {
+        "Status": "Approximate reference",
+        "Placement": "Approximate",
+        "Location notes": "Broad west-coast placeholder beyond the reference crop; exact location is unspecified.",
+        "Source": "Northern Gulf concept reference"
+      },
+      "pronunciation": "",
+      "tags": [
+        "Astrousia",
+        "Northern Gulf",
+        "Provisional"
+      ]
     }
   ],
   "regions": [],
