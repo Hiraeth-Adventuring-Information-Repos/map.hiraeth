@@ -24,6 +24,14 @@ All edits remain in your browser until downloaded. To install them, compare your
 
 New map prepares a ZIP in the browser containing JSON, WebP artwork, a thumbnail, and the updated map index. Artwork is not uploaded. Add the downloaded files to the maps folder yourself, then refresh the editor to work on the new map. WebP export support is required for the thumbnail and for converting PNG/JPEG artwork.
 
+## Campaign journeys
+
+Open **Journeys** in the editor toolbar, then **New journey**. Give it a name and campaign, choose a route color, and use **Add stop on map** to place each moment. Each numbered stop has a name, a free-text in-universe date (including approximate dates or ranges), an optional session, notes, and a full HTTP/HTTPS wiki link. The journey can also link to the campaign wiki. Drag numbered pins to move stops; **Move earlier**, **Move later**, and **Remove stop** change their travel order. Undo/redo and tab recovery cover journey changes. **Cancel stop** or Escape cancels stop placement.
+
+In the viewer, open **Map Layers** (the filter control) and find **Campaign journeys**. Toggle the whole group, or individual journeys; **Show All / Hide All** includes journeys. New journeys start hidden unless **Show by default in viewer** is enabled in the editor. The viewer remembers each visitor's choices per map and journey. Hidden layers are still public map data, so use player-safe notes and links.
+
+Journeys are stored in the map JSON's optional `journeys` array. Each journey has a stable `id`, `name`, `campaign`, `color`, `visibleByDefault`, optional `description`/`wikiLink`, and an ordered `stops` array. Stops have stable `id`, `name`, `[Y, X]` `coords`, and optional `date`, `session`, `description`, and `wikiLink`. Stops connect directly with dotted segments in array order, independent of date text. Journeys belong to their current map; cross-map travel and custom route bends are not yet supported. Download changes includes journeys in the existing map file. No example campaign events are added to published maps.
+
 ## Preservation and publication
 
 The download serializer preserves existing custom fields, nested section metadata, precise untouched coordinates, feature IDs, filter options, and `roads` collection names. The server does not save, upload, generate, recover write journals, or publish anything. All non-GET/HEAD requests are rejected, including requests using old login cookies.
@@ -35,3 +43,11 @@ The older authenticated services remain explicitly available via `npm run studio
 ## Verification
 
 `npm run test:unit` includes read-only server checks and preservation tests. `npm run test:files:e2e` verifies password-free access, actual JSON/ZIP downloads, browser-only new-map creation, mobile layout, and unchanged server files in an isolated fixture.
+
+## POI marker types
+
+POIs use the same AI-generated markers in the editor and viewer. In the POI inspector, the Type field suggests the available types and also accepts custom text. Unknown types use the gray question-mark pin. Existing type names and aliases remain supported.
+
+New types include Library, Guildhall, Hospital, Cemetery, Prison, Farm, Mill, Watchtower, Waterfall, Volcano, Island, Oasis, Inn, Shop, Blacksmith, Apothecary, Ferry, Shipwreck, Battlefield, Encounter, and Quest.
+
+Markers remain 36 × 48 pixels on the map, anchored at [18, 47]. The artwork, original prompts, and a light/dark preview catalog are in `design/poi-markers/`. To rebuild the 384 × 512 PNG exports and 72 × 96 WebP assets from the retained originals, install `scripts/requirements-poi-markers.txt` with pip and run `python3 scripts/prepare_poi_markers.py`. Preparation repairs generated transparency holes and fuzzy fills while preserving the original symbols.

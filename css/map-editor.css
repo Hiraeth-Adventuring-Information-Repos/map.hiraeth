@@ -5980,3 +5980,10 @@ html[data-theme] .map-editor-shell .map-editor-inspector-chrome > .map-editor-fo
     display: none; background: var(--bg-primary); color: var(--primary-color); border: 1px solid var(--border-color);
 }
 html[data-theme] .map-editor-shell:is([data-mode="feature-edit"], [data-mode="draw"]) .map-editor-inspector-chrome > .map-editor-focus-back { display: inline-flex; align-items: center; }
+.journey-stop-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.map-editor-shell[data-placing-journey-stop="true"] #editor-cancel-draw-btn { display: inline-flex !important; }
+#editor-feature-form[data-feature-mode="journeys"]:not([hidden]) { display: flex; flex-direction: column; }
+#editor-feature-form[data-feature-mode="journeys"] > :is(h3, p) { margin: 0; }
+.journey-stop-editor summary { overflow-wrap: anywhere; }
+.map-editor-form input[type="checkbox"] { width: 20px; height: 20px; }
+.map-editor-form input[type="color"] { width: 64px; height: 36px; padding: 3px; }

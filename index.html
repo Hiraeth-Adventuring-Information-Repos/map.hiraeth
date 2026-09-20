@@ -36,7 +36,7 @@
         }
     </style>
     <script>
-        window.APP_ASSET_VERSION = "0.1.70";
+        window.APP_ASSET_VERSION = "0.1.73";
         window.__markAppStylesReady = function markAppStylesReady() {
             document.documentElement.classList.remove("app-booting");
             if (window.__APP_STYLE_READY_TIMEOUT__) {
@@ -158,21 +158,21 @@
         }
     </style>
 
-    <link rel="stylesheet" href="css/leaflet.css?v=0.1.70" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/style.css?v=0.1.70" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/stars.css?v=0.1.70" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/Control.MiniMap.min.css?v=0.1.70" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/leaflet.css?v=0.1.73" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/style.css?v=0.1.73" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/stars.css?v=0.1.73" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/Control.MiniMap.min.css?v=0.1.73" data-app-stylesheet="true">
     <script>window.__markAppStylesReady && window.__markAppStylesReady();</script>
-    <link rel="preload" href="js/libs/leaflet.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/Control.MiniMap.min.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/lucide.min.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/purify.min.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="js/starfield.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="js/shared-utils.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="js/app.js?v=0.1.70" as="script" data-app-preload="true">
-    <link rel="preload" href="maps/atlas-index.json?v=0.1.70" as="fetch" type="application/json" crossorigin="anonymous" data-app-preload="true">
+    <link rel="preload" href="js/libs/leaflet.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/Control.MiniMap.min.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/lucide.min.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/purify.min.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="js/starfield.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="js/shared-utils.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="js/app.js?v=0.1.73" as="script" data-app-preload="true">
+    <link rel="preload" href="maps/atlas-index.json?v=0.1.73" as="fetch" type="application/json" crossorigin="anonymous" data-app-preload="true">
 
-    <script src="js/app-config.js?v=0.1.70"></script>
+    <script src="js/app-config.js?v=0.1.73"></script>
     <script>
         window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
         window.THEME_STORAGE_KEYS = {
@@ -230,7 +230,7 @@
                 "js/libs/lucide.min.js",
                 "js/libs/purify.min.js",
                 "js/starfield.js",
-                "js/shared-utils.js",
+                "js/shared-utils.js", "js/campaign-journeys.js",
                 "js/app.js"
             ].forEach((src) => appendPreload(`${src}?v=${version}`, "script"));
 
@@ -618,7 +618,7 @@
             </div>
             <div id="search-results-container" class="leaflet-control" aria-live="polite" aria-atomic="true"></div>
             <div id="poi-filter-container" class="leaflet-control" role="region" aria-label="Map filters" aria-hidden="true" inert>
-                 <h3>Filter by Type:</h3>
+                 <h3>Map Layers</h3>
                  <div class="filter-item">
                      <input type="checkbox" id="filter-toggle-all" checked>
                      <label for="filter-toggle-all">Show All / Hide All</label>
@@ -659,7 +659,7 @@
       Your browser does not support the audio element.
     </audio>
 
-    <script src="js/libs/purify.min.js?v=0.1.70"></script>
+    <script src="js/libs/purify.min.js?v=0.1.73"></script>
 
     <script>
         (function loadVersionedLocalScripts() {
@@ -683,8 +683,8 @@
                     }, { once: true });
                 }
                 const scripts = window.AppConfig
-                    ? window.AppConfig.get("assets.scripts", ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/app.js"])
-                    : ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/app.js"];
+                    ? window.AppConfig.get("assets.scripts", ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/app.js"])
+                    : ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/app.js"];
                 const appendNext = (index) => {
                     if (index >= scripts.length) return;
                     appendScript(scripts[index], () => appendNext(index + 1));
@@ -696,7 +696,7 @@
                         appendScript("js/libs/lucide.min.js", () => {
                             appendScript("js/starfield.js", () => {
                                 appendScript("js/shared-utils.js", () => {
-                                    appendScript("js/app.js");
+                                    appendScript("js/campaign-journeys.js", () => appendScript("js/app.js"));
                                 });
                             });
                         });

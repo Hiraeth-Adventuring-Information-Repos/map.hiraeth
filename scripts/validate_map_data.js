@@ -6,6 +6,7 @@ const path = require('node:path');
 const repoRoot = path.resolve(__dirname, '..');
 const mapsDir = path.join(repoRoot, 'maps');
 const errors = [];
+const journeys = require('../js/campaign-journeys.js');
 
 function relativeFromRepo(fullPath) {
     return path.relative(repoRoot, fullPath).split(path.sep).join('/');
@@ -238,6 +239,7 @@ function validateMapDocument(mapDocument, context) {
     validateFeatureArray(mapDocument, 'regions', validateRegion, context);
     validateFeatureArray(mapDocument, 'lines', validateLine, context);
     validateFeatureArray(mapDocument, 'roads', validateLine, context);
+    journeys.validate(mapDocument.journeys).forEach(error => addError(`${context}.journeys: ${error}`));
 
     if (mapDocument.encounterTables !== undefined && !Array.isArray(mapDocument.encounterTables)) {
         addError(`${context}.encounterTables: expected an array`);

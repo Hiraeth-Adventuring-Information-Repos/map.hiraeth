@@ -1,0 +1,640 @@
+{
+  "reviewedCount": 70,
+  "markersWithInteriorAlphaDefectsBefore": 34,
+  "markersWithInteriorAlphaDefectsAfter": 0,
+  "method": "Interior alpha below 250, excluding the antialiased outline (2 px in 72x96 WebP; 4 px in 384x512 PNG). Original AI symbols retained, fills flattened, silhouette repaired.",
+  "icons": [
+    {
+      "slug": "settlements",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "f04588d65ca0bf2335bfafaec31486225d942e70e90ac2e10819380fc22b846a",
+      "pngSha256": "9d0ecf5fd33936ec77afbfbc35b45e7f67b996b5606cfb5bd3236a1cf53fd64d",
+      "webpSha256": "573d9bc71555f3c97960fe0d23c9f840ad6c96d6c385414f421c49844bdad3e5"
+    },
+    {
+      "slug": "capital",
+      "beforeRuntimeInteriorAlphaDefects": 114,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "63cf74ca718b8c7ebcc6460c9c961d9ba2b12f26a4510fbbfe7abb923a682b17",
+      "pngSha256": "189c8d58f860c2ca18ffab0abee2ab33cbb803fd7690ccffea10c55042d41542",
+      "webpSha256": "70745a70ffb38cf9f44f6a2f97b7c3b9d4db054c8f3bad19f35aa0f856182bab"
+    },
+    {
+      "slug": "city",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "7045c259fa6c14c7f8061bdb67fcd3ccd8dc7974f2f9db073eb584f54348cf76",
+      "pngSha256": "35f61a1fcb6cf298b55b5a09eb919e4f88370297387eeaaaf1043dc15042e112",
+      "webpSha256": "5f6b448c6e0887a4fe1107457f14bd9af2e9ad5fc23f5a7dc9c3b10c87f2d12b"
+    },
+    {
+      "slug": "town",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "8855bbc2bd6a044c72cddef3723018a2a2a02633f2cb766d70c3ebfe62e0748e",
+      "pngSha256": "a97131c70cd79636ddc3343a4f51abf5dea331149215f4cf519c95ad1a54c0a5",
+      "webpSha256": "2f3712f9ae811e6d659d3a4be0d537cc99655b65d4396621cfe79651005ab408"
+    },
+    {
+      "slug": "village",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "4907f1b3d93b4b9f50dd53d96e9cf8ae7f47323c63bf365629890f092f08db5c",
+      "pngSha256": "ecc6dfce7ed3cfa0dcb62d11f26075c2ada8846cd1b62c1c99f3c0bd274f2bfc",
+      "webpSha256": "0561da50bdef6f4f058bfc66470e39cfb6e1dec9afb2d70704e1abbec2f8b719"
+    },
+    {
+      "slug": "hamlet",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "1f3f9d0b16ebf9375c9bca1ec63dfcaaa30d589c883d5546717333c277347636",
+      "pngSha256": "91d61b333571233fd6ee8a6bfea64eb328e4c7b96562b6215dbf1e36ccaeba6b",
+      "webpSha256": "b93656762097647d3f0313d58cee70ad20e32b5ac868139cc75725d0fdbfc64f"
+    },
+    {
+      "slug": "settlement",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "178705ae24f9433cefccc97bb4b1dc92805523fcebc47a89995c10d4238b0454",
+      "pngSha256": "92a70d8bc9a46f182c0e08a69f254820467adb55447383d987042a9d96c437d7",
+      "webpSha256": "8a439eb8770a950cdaa8ebb3a6f07469a903237ac68bc9e87456773d1134b80b"
+    },
+    {
+      "slug": "structures",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "5744cd51a4e57e4ef4257427c422a71b76f0caf664282226e638c5502a60800f",
+      "pngSha256": "8bc685cb115b4eb3c9b201f6b8056c0d3737100001730625935271a17bf1f9c6",
+      "webpSha256": "b58ee68db20880ba2760072028aa7e2a34d350add3cde16102cd232d4a55a965"
+    },
+    {
+      "slug": "castle",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "99976a87e1d5ffdf6a7fc0d59a747dbad9d1c1d72b892667e2db5960f0eeae93",
+      "pngSha256": "37aed9f5a746bae03fd97295eb24f50a965835b75f6623566b2eb289bc9dde04",
+      "webpSha256": "5b6f51d78d86ca1378436e704c6f4de60e5a3881f2595b281a0d4d6bdf63c4f1"
+    },
+    {
+      "slug": "fortress",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "b645b1dce7ba9c0f4efb2a877dd3e5899aa80c17f895f845f6e03e7831cab5f2",
+      "pngSha256": "d73acf130b7bab7337c845b456d992e761aabe3332fe9733e7e8b31fdd38b555",
+      "webpSha256": "e8f30d2075b8b54bf7811540bda9a8bd8a55a4e208925edd4e14b6953dac8730"
+    },
+    {
+      "slug": "fort",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "820957e8068eb441ce7b69545ef1cc29cb36f6fe017d1696bf09e6cc39e74d3c",
+      "pngSha256": "b5b1a02970a76350bcd29b49b85f88a63afe2124cc08e6450844382fe83a92a8",
+      "webpSha256": "fd71ec0dd97028fcbf4aaf739c2b0dcf5f594c9e8a41c1642fddfa5fd0e2478c"
+    },
+    {
+      "slug": "tower",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "e2e9732e99a0ffb0f88c16cb4f7aa98d5603b042b3c1f93cc2fd59935668b64e",
+      "pngSha256": "4a1265df56fdcb2b8977d1016383e74d9a2f90e1446d5e113d9222dc70c3365d",
+      "webpSha256": "a2a45a8a0f9b4503408d6ddb4bdbbb5f92a81d866aed21b2862104a78d6b58fb"
+    },
+    {
+      "slug": "ruin",
+      "beforeRuntimeInteriorAlphaDefects": 945,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "6988b234b93af08c966158a7870fc21553971591a5d418b27d7e022f0968b505",
+      "pngSha256": "d0410682bb1ed93538768a4fa37b3aed91a8354cc21fa9f4e58781556ef2498e",
+      "webpSha256": "25d18bea0d87c660e459baf35a9b2281305a5e8ed53cb762c6087dc8b851cd26"
+    },
+    {
+      "slug": "temple",
+      "beforeRuntimeInteriorAlphaDefects": 162,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "f36a13dc14a7540f1415d087da39d7cce24edcf10278089bda818d2d772ff06c",
+      "pngSha256": "9c4d78f7d17c9436ab1d8e7e818ce4929cc4938cd94fb91bb813826169dc8663",
+      "webpSha256": "9bc563716e8eeff115baa17458f876d229ff8ec84503778e858bbeb38c655a8f"
+    },
+    {
+      "slug": "shrine",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "59bc3a6d1e8376600b4748bb8674acc9361b329d6a37fc2c0fe6ecad918e610c",
+      "pngSha256": "264d15e48aaee850cddd41ed42df6280601d37ad8a715b0dacd5391e1f91298d",
+      "webpSha256": "ba577435adcf89895bc59b67a8e3b02a4f2e56f1d75e6b56ecc4765857ca4baf"
+    },
+    {
+      "slug": "mine",
+      "beforeRuntimeInteriorAlphaDefects": 183,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "58b9447f79dd2771b5e8f080489c3a0d6f1c9d38a1de5b9f68a1bf644649e151",
+      "pngSha256": "8ba8cc2aa8e430b1e4038bbbc99e1b9ada733c2cb41b3d8d9c8519bb60351e4f",
+      "webpSha256": "01f272ac2d6d0aadd37b20790c99223109e9263f3fbc4711816778035f0f671f"
+    },
+    {
+      "slug": "lighthouse",
+      "beforeRuntimeInteriorAlphaDefects": 549,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "0c15989cfbd947bf1b95daf349b04131be0ab88c472f8541a08c1dac323d9c6f",
+      "pngSha256": "6f01c86bfd77d75fbc1072caed44021c5b7830a3afa45a373a37619a227568ef",
+      "webpSha256": "bc96c753187b49ffeae09d6a2b12d126eeab75d46952844e7e85f244dd967c88"
+    },
+    {
+      "slug": "bridge",
+      "beforeRuntimeInteriorAlphaDefects": 220,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "d47c881be34689ecb75408a1e5888c69eebb6846a5e8255135fa98d69c08746b",
+      "pngSha256": "5a2ecc87b389884e57f2aed63222302a5f43bbc14fa2ffb9ae634aaca794b5c7",
+      "webpSha256": "ad08b111f359c2e0cf507c7c25fbb3b511d6c0c9d03c4e20c8958ca357e187fb"
+    },
+    {
+      "slug": "gate",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "ebe892d357e9de3a7d3e90b719ca92d022c56e208b17f4e1f235c3daf5dc3257",
+      "pngSha256": "f5ffaa6c2d0ae56541dcf6ac724b9b04a8e1f8871c8210bbb05eff4ea4b463c9",
+      "webpSha256": "1d02fd2123eec57caab7bd9542d966743a1d65351af2d16974efd04cc9c8dbbc"
+    },
+    {
+      "slug": "dungeon",
+      "beforeRuntimeInteriorAlphaDefects": 347,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "3aeb55849f43e38e3b5b5213a846596174c375bd74bc6d497df8ceeb0940853c",
+      "pngSha256": "820f00bb90a7a6200244028fac6d85766652d651b11f50a8a472d1a4e20b19a8",
+      "webpSha256": "8b5f9a6a97017e2ce37b61dffe367aa1bab5f3022dff7900cacf644be0b31412"
+    },
+    {
+      "slug": "lair",
+      "beforeRuntimeInteriorAlphaDefects": 161,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "b1a3b6e8a58393df9650b05afadd3177e70bdcf693b1038eab6e9455b88bcdd1",
+      "pngSha256": "71f838f3460e69ade5047f071ec507396ae9d038001702f4b3dac2d9ba867b51",
+      "webpSha256": "5f2c5879e0abbd66408c7d7ae9efa0f5978f90b9be3233a62954ce2b9cda5372"
+    },
+    {
+      "slug": "camp",
+      "beforeRuntimeInteriorAlphaDefects": 990,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "217f475c0e8fe8201037d7a9106ced7f81f22891baf1be524af8c7db73e03cb2",
+      "pngSha256": "5034c085be923a4fa0eb2ae97864bbe143a65dc32272add0d757c35820de7338",
+      "webpSha256": "65dbeacb9e03455a5cfc685299a7c75230dded1fa56a7064c21addd24f5a1392"
+    },
+    {
+      "slug": "asylum",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "c7eb51d07601cac7f0eda9ab8df5ee1e3befff8b5cd647ecd6faf75841d12f83",
+      "pngSha256": "ba62a8db28c3cc227a4c60be8af87dd0d0d86365c271e5ee07e112101ee8cad2",
+      "webpSha256": "58d30a50cbc26eed404e55dc6e4a1b63b347c7d1b73ccd4fc27be5b5d4227c75"
+    },
+    {
+      "slug": "landmark",
+      "beforeRuntimeInteriorAlphaDefects": 802,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "c14436225f3aa32404c96186571967ab78e5ef72b289f8331844c2d901606622",
+      "pngSha256": "9d7c96d0d3360f601e7032abd8e7783bb7833a7afa169205ae0f4bf746a9b140",
+      "webpSha256": "ca2be1cc21db9e7bdda9a30f28eb2cf57d1cfa737a5038d9e516d3f94d9f45c0"
+    },
+    {
+      "slug": "building",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "3a750fa9b4ed737d9522e66d047c06fc713709231c807d641e44ceb7fdd88b4f",
+      "pngSha256": "7dd8acbd2872e5c0936daf9ff43e11efb6349c0a84eab00eb64c811ce472334c",
+      "webpSha256": "b492fed2a1ba4919bdfed10335e3ac64195dc1464e625f27db27998726f4561e"
+    },
+    {
+      "slug": "library",
+      "beforeRuntimeInteriorAlphaDefects": 225,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "9c3ee5d89d3a476b00cfd10a6922cbdfd96765dab44e2d3b027f37e3be9fc683",
+      "pngSha256": "8e017000a4692e734b3e522feae700c98fbf46b5e3e4bc82d26eb36e76b5d3e3",
+      "webpSha256": "039f06bf0969b490c1c62972b088093c1aeaaa78fc5636b604997cb9c492a24a"
+    },
+    {
+      "slug": "guildhall",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "b8a3450b4344e241e4eec84aba3fdb4785461826ddd70151acf0c683fd928c62",
+      "pngSha256": "cc6920972653302cf1cc72b6839e91596ba16aefc58ea45568bab718dd048c33",
+      "webpSha256": "dca485be66c01617c02afdbba8922b10dc622b7778ad535d0cf94360ed6e50df"
+    },
+    {
+      "slug": "hospital",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "e6250dbae78d441dbf923f1a0b4eea6a6ee5147566e77f03a6b9c84a3668026a",
+      "pngSha256": "2b5963d7f5da079953aa78789bd3ab1fbf6643c080c97a2cc4da92b79bc7229b",
+      "webpSha256": "aa17b32d1966eb1ff119847f72f696e1a7bf441d4ee91f80814096a88eb81e94"
+    },
+    {
+      "slug": "cemetery",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "56d74a4cb903a35a79cd0d43442b2643c02976dad892e1cc84ffa4526daa08b8",
+      "pngSha256": "2bf4c7e840a332644d0a8da76b96f63360a1e9b52e163fc7814623d7605bc516",
+      "webpSha256": "3b230077beaadf4f0facd4acf615b37bcabd6053c8f2816d487aa9af5b46ebb5"
+    },
+    {
+      "slug": "prison",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "faf6afc575dbc6e084d2e3341c1c0324e942ef9cffc0a4d853840ab1870c91a9",
+      "pngSha256": "557b5662b421326d0b5e77ff04163db4a0c2286a89318eb0f9750e213218cbf5",
+      "webpSha256": "cc4fd9ff3a72c7fad384d2bb0dd4381d2a5be77200b1989c20b6fa00551065fa"
+    },
+    {
+      "slug": "farm",
+      "beforeRuntimeInteriorAlphaDefects": 260,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "5b9d398e3a85b39c821d2a50c6601b7931eadfd13414f1cf480ea50f17feeebc",
+      "pngSha256": "3904342a52f2bf391285259317122a5e4742388ac979a8eed9bb05e7856bcd15",
+      "webpSha256": "b3f3f70d92926fe0d12281695ff6398af1d8cb073a5d2a10e83f4f4a6c39abfe"
+    },
+    {
+      "slug": "mill",
+      "beforeRuntimeInteriorAlphaDefects": 307,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "4abacf128af2def57eaab8ca28052444eaf31588bb3f80a051869abea8a5efd9",
+      "pngSha256": "26d8bf889c547c0a2309ac38d520ca4b0bee5389538f5613554a767bb1eae25f",
+      "webpSha256": "8ff3e0c2d0129e4c17d33f02571931a0f3162c58a3c10d25dcc3bb8829445c6b"
+    },
+    {
+      "slug": "watchtower",
+      "beforeRuntimeInteriorAlphaDefects": 119,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "489070df4f75ae9b07bddb14ae19b438e0343685a9a9c174787977c655a1efdc",
+      "pngSha256": "8bcdd8100d3c25bd85ae3a23d63ea630061503bbe79492f278a73ee70ee158ff",
+      "webpSha256": "c6020cd4987b6b6cc88d6f27ea4c2bbae5676688ee219a188b8024be2bb0e246"
+    },
+    {
+      "slug": "natural-features",
+      "beforeRuntimeInteriorAlphaDefects": 1689,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "1afb09160e9cb96866f1154a415a4b6686360fba91d69446411ffa3c8a242894",
+      "pngSha256": "e6cdc74a63ea309ed2ce036b796373edae78f74bfe10267891d37e99c8b6799c",
+      "webpSha256": "6125909725c64289363cc50dd4f1b3065536cda209acfb2e7434b9e24b5212aa"
+    },
+    {
+      "slug": "mountain",
+      "beforeRuntimeInteriorAlphaDefects": 1746,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "0f93576ec8c6b0d9eefa97c0529900e22c7112a20e7245d0fd20075dc9fb80c8",
+      "pngSha256": "fcaa210ed134d63e729098d13ff03a4b340e3844aaa3f1f4cf65191d4b86750c",
+      "webpSha256": "c66d7594915d5e38496c1cfe3578b6910f5986dd5c2c493ce481547236158226"
+    },
+    {
+      "slug": "peak",
+      "beforeRuntimeInteriorAlphaDefects": 2050,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "579da3d2c6cc05487ce226f5ac5d18441843eaeb02a2ca7366a5c9835e3b78bb",
+      "pngSha256": "c0300b07ece0c9c3a71c0ce22c446c4bf2e758ea31bcb13e0a0b667afe427b2d",
+      "webpSha256": "a133680446bff116da7bc25f5b99ef9b62ff3e0507f9a0485f2c644cc9074773"
+    },
+    {
+      "slug": "forest",
+      "beforeRuntimeInteriorAlphaDefects": 354,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "18ae5457513f196a06f04936064e1f6052df004825afdfe1820c4d627dd3004a",
+      "pngSha256": "57e91ae23b31533dcc6730bab8f85890ee38786b98ffea33e90a0b782638fc6e",
+      "webpSha256": "ce9319fac8cc04356acb59a45dc30060020a6b004f055858be530630c62f8c89"
+    },
+    {
+      "slug": "wood",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "e47b2e63290b30dc767e1fe0dba455556cdad5e81f9e7071407aa4729fafd4c9",
+      "pngSha256": "9ddd2e171c5825f19d483483c492d158d0ed27de482f795e2b8911b3e41c2576",
+      "webpSha256": "001b9568f5996b3368a2d950bd8641aa1e664b2eb0d7711cddce61bf72600a90"
+    },
+    {
+      "slug": "river",
+      "beforeRuntimeInteriorAlphaDefects": 1001,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "8c2574246502590fb5d193a8d9d88e73a937896645a85e32d3e1e2123f09a7e6",
+      "pngSha256": "8019fd903111598be08de509c74af21bb1bf8ead9cf795ac3e316c3985dcfcbe",
+      "webpSha256": "0c05d00d9390e37793049474186fcadcae5f8e2abfe3ea5f7802dc1740e021ab"
+    },
+    {
+      "slug": "lake",
+      "beforeRuntimeInteriorAlphaDefects": 634,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "db19289927ed1d66f331c5c70a2fdc4e6b7d64016f8a7f41fa81f164b0c8304c",
+      "pngSha256": "20247133bfcdeefda08bdb8c02e677182524812a776b30fa5b29c9d2e9ea9451",
+      "webpSha256": "c6d252b6530953277046b8ce85d9f965072dfb41da08180233f68eb943315879"
+    },
+    {
+      "slug": "cave",
+      "beforeRuntimeInteriorAlphaDefects": 1847,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "13ccd29e8e77600e79f83b8b71f50b73de270ea3bd0ba897b3cde8507852c10b",
+      "pngSha256": "80f9c703bba12a2c900e73691f4a7fbd945f66223a6b55059dd5bbda432f7ee8",
+      "webpSha256": "8120b4746f39f58d55d67fb5af2e3a5dff3a70482d76cbc5bdb891d6d779c5ef"
+    },
+    {
+      "slug": "cavern",
+      "beforeRuntimeInteriorAlphaDefects": 1813,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "0b1bfe99fe561e5d314d157110ebe40b62f64840b44522685b6404ae0851f2d8",
+      "pngSha256": "af247d1a2a8d59cd85dc92b8f9d8388cb9ee1965268c95338c8ac71736edae58",
+      "webpSha256": "0a22d074c4373fb0de90f2848b0e47c78d3527ca039d3ed0fcf70f8965546e0d"
+    },
+    {
+      "slug": "coast",
+      "beforeRuntimeInteriorAlphaDefects": 1140,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "1d37873b425c5f9617627b474c5b60ee9645ea47b44fe0072b9c379add71cb87",
+      "pngSha256": "5f7b32a4e9b69d28c29f0293f70d199f50001f422c2daa3b24e025ae0e00776b",
+      "webpSha256": "b210180a40d7d34f73f075e88a101683350ea90df85bcb93eb245a2c1b89aa44"
+    },
+    {
+      "slug": "bay",
+      "beforeRuntimeInteriorAlphaDefects": 1223,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "71ca1ab456abfe4590ab4db3b2183eba11e18d898b867aa997ff7a1057d44793",
+      "pngSha256": "604226b4b55f0b651b266edd71a2a0dc453f25bdcc1c1a6cd10c4c8e8b232f0b",
+      "webpSha256": "49e270ab7722e52c560ef24c3130fed6fd1c4444378c78339a7d5e70140ab616"
+    },
+    {
+      "slug": "cove",
+      "beforeRuntimeInteriorAlphaDefects": 1477,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "2255581b1b4337783e8d5f3eae339b301bf63d0c606b80b031d6dbaa65b3f0a4",
+      "pngSha256": "393370875ea9ddcf0c4d1d9f670fb52deda7c69a8fc5bfd91b0e88e2f092d721",
+      "webpSha256": "74aba5606545b1691bccb4d6124e2399bd0a135e64ba69e8f7d469fb3ec33a7f"
+    },
+    {
+      "slug": "swamp",
+      "beforeRuntimeInteriorAlphaDefects": 1846,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "36d306deb05dd0d1325b6a368706a4df3cfb99b4c4dc6ec56e4791a4610914c8",
+      "pngSha256": "d91a17562bde2d6e2db1e96105154f70a8d5a49f32b2d2359b311d68be95a0b1",
+      "webpSha256": "4d6a5c645855fe6ff94d9773e8d32ee6e29dbf0924a43829f5b409bb074f88d7"
+    },
+    {
+      "slug": "marsh",
+      "beforeRuntimeInteriorAlphaDefects": 1431,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "acb5527131b1a5b286e6dc3134a75fffd89408ea11f24786da2ff239097e3cc2",
+      "pngSha256": "e944c274535c52c12388920a45f1880cf5cc0e54ec23081fb70024fa6fcc752c",
+      "webpSha256": "aa13ba7fd86a79fbc762f0fc2b4850c0486ddfeeaf794376fa2f8600daffa838"
+    },
+    {
+      "slug": "desert",
+      "beforeRuntimeInteriorAlphaDefects": 1464,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "0702f48034756a6f56846a7ff2ee6cbacc0cdac169fc1aca615d554f4e27b66b",
+      "pngSha256": "ac6b7b81d051a38c4705fdaa0f89b23e1dac232e1dcacbb07a2fdd3e55607aa4",
+      "webpSha256": "8c9f1476a4405d54b638fdcbcdbdc283ab5603f73eb6f087133c8a65ead30eee"
+    },
+    {
+      "slug": "natural-landmark",
+      "beforeRuntimeInteriorAlphaDefects": 1228,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "e9a7e0c8a99ef23cfeae022668f61d37c84070d34ba80217dd463dbe83891a7a",
+      "pngSha256": "054e4121beaa7bf5928e6e0847634f1ab1f57d4042386c04ed38bdf9aa2bb9d6",
+      "webpSha256": "4bb2edcb6b52c19bc561bc0e6cec34702cd7d679b3278451824a9e430a57259a"
+    },
+    {
+      "slug": "waterfall",
+      "beforeRuntimeInteriorAlphaDefects": 527,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "4d2ba4815796effef88529f499a25ad51563741dc837ef5d649422d49796dea5",
+      "pngSha256": "9fc6b58d0fa43727ea9a4515bd5dec0e12bb24d839d91b102649d070c8b19548",
+      "webpSha256": "203a44580624a1deb55c9ed062e62088e00cd2e4e75ad220a1198ecc5c122bba"
+    },
+    {
+      "slug": "volcano",
+      "beforeRuntimeInteriorAlphaDefects": 1436,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "50a8e7a4a0443a1093588342e5b1690960af25ba37ac8b2ad0c147678ee1dbb6",
+      "pngSha256": "8103d9d8714d83fe61d2dc2151a38c7d2f36a870bde7bfe8fe6102eec0b8a8f4",
+      "webpSha256": "6dfa344bbf2d0c6ee0ec9f76a475d80b96773b859dd99774c410f95a9ac6548d"
+    },
+    {
+      "slug": "island",
+      "beforeRuntimeInteriorAlphaDefects": 1259,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "00335f7b3b2cdf1948e8768a3a29f0a93fdf686f4935b2e42dcc40fbc62befe5",
+      "pngSha256": "0ec77edd148e906d6c9b0596fbd043a209625379e21daae4282a2ece758277fc",
+      "webpSha256": "74d9dfeb17c54f31d05ab9cfd61c2da9d76595c5c2988e8ac4b334968d152d7a"
+    },
+    {
+      "slug": "oasis",
+      "beforeRuntimeInteriorAlphaDefects": 1097,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "33c1c57ca9dcb2d91e48f78352080dd247224d283d59494b4f91db05a1ccd440",
+      "pngSha256": "ddc3433664c406121d17b7caef3e9040c14ae2a1e33f4e4959219a42f88e5eec",
+      "webpSha256": "a6c7dd8aa1f56ca3f039121288fe611978f173e3e810ee628eff5706938b26f6"
+    },
+    {
+      "slug": "other",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "f7f8027052be2a04fd90b4b472508f1a803df2e0edcc3ec3f8d57be02ff81c69",
+      "pngSha256": "dfd42be3298e3a93d57c8a00e911219f7b2928b3fe2da726d9f7eb44b2638c72",
+      "webpSha256": "fe999ab5c5c98a9395b7cc53af6875a306c153b93d1a66a54956ae171018c489"
+    },
+    {
+      "slug": "point-of-interest",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "96a2b55e91fe7f4977a2592321ff2581bbd2f12622177b4054fa7611af07420c",
+      "pngSha256": "17957f802d467f533010c3c60437f6c8a7df54c2527f99aed7a9f3dcb9af43fe",
+      "webpSha256": "074c67239226aae7957bed904d39e0c8ac9056e9d59f470cc192dc6c127a4b08"
+    },
+    {
+      "slug": "region",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "c68fd45da27bda98371d77162f5b1ff7be981dc5508508184f6deded7ca99266",
+      "pngSha256": "b874f1973352504d215d893b1a021fb5d0c3329fd705779c3cd5345bffaad866",
+      "webpSha256": "8977cef23204ddb1a125c053308383883f5cfcef80af8dd7dfaabd7999aa17cd"
+    },
+    {
+      "slug": "portal",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "6d8671fb5ec38885179abfc7d8edd67745d7f3fc2daef99aa9f839e1cddc69f6",
+      "pngSha256": "3d4cd9c26649d6263b5905b164167734b8d9647cd49cabdfa6a066315aff9c44",
+      "webpSha256": "ea0af84cd4bc31d16de186c4f2dbb580fabee8d06201234414e65333dcd4b4e7"
+    },
+    {
+      "slug": "tavern",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "099f3c004af39bb8511d117c0e20283ab5dbdfd670df6b7b52eaaa6ec9cc9069",
+      "pngSha256": "c433b2f53cfaec4777d3b7fa4656188de4a38490a3145dfdcef752de5bf5a70c",
+      "webpSha256": "64c6b200d79b5d5924465e7e2d220dba5247b5d82a83917df39facc24d9bbc4a"
+    },
+    {
+      "slug": "dock-trading",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "749bcaa4d84766248104619b1e72ad9812f55323dc68e5a955da466b61f4f434",
+      "pngSha256": "e066779951d51c3af351c581db594d159ca85c21f3cc219daa308e90684550a5",
+      "webpSha256": "0206a00a0008c5766c1f00ba24f046e2d1c949a002b25a67007770cc976b8715"
+    },
+    {
+      "slug": "market-trade",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "ead7ea9eaa8bf6e2fd436fd2c90cdd98547c9aba55514db45c5597dac7702adf",
+      "pngSha256": "ecbb2aae7d62d251e846a830b90baaa74d0b1e225342ab104752089d2587b0a2",
+      "webpSha256": "5563032d582fd1468973d288a7f8ee613ca33deae25eaf3fb546ed22681e9a64"
+    },
+    {
+      "slug": "inn",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "504f954a410e609291c104ff720bf42be7324e1b3aced820a3ab68995550d079",
+      "pngSha256": "594996ff324e3a94cdf1ed3ca10a38fc570624638b541067ca8aefea5a439e35",
+      "webpSha256": "b44b1c914b47b1708695d9bc215d84c2ebef0d8c5270c77c976b51b1680521af"
+    },
+    {
+      "slug": "shop",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "eeee7ce83db166c838aa3abc5d2cb448c84d1d952353ccff104f7ed16c2d291c",
+      "pngSha256": "e27db1cb51a063c0aa639132328dcf23784ee54e3791ed8d4b15a5c0622806e9",
+      "webpSha256": "b08644847dbdbc89d3db8b3dfbb994fe08cf3af59ca25d35df31a6819f01af45"
+    },
+    {
+      "slug": "blacksmith",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "ceecb58821c09fc0642a042719a2fd788664b3d4688e8c1c5cd82e1c83dc6dc6",
+      "pngSha256": "b3b92c0aec0465c1f4fdb4939419bca7eac97d048fc8b957fec216a2a85dab57",
+      "webpSha256": "18b32746127b9c598f394aaae610d049d1ab549ac2bd80d01636907312c182c3"
+    },
+    {
+      "slug": "apothecary",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "b79dc0f2b21d4ab8946dfb48e62e7ed12abafd17a3583e336d5687432815d0e7",
+      "pngSha256": "05c5293e371bd20755512952ed435b244165480a508ea51cabd1b740a20bd228",
+      "webpSha256": "14eef2df887c673661a48a20266001112fca329fd09a6a7d7139eb21f19cc231"
+    },
+    {
+      "slug": "ferry",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "a0f2213ef44cf2c4857ac3369403d3a2b64c236538c016bc3196fb7a9b54962b",
+      "pngSha256": "a11354f474e55c2f8908847d7609b223751819cdd191c74f732aa40544f28970",
+      "webpSha256": "5cb4530da987bf90431d6d126a332db418a309d243180bdcf5360fe0bf16579a"
+    },
+    {
+      "slug": "shipwreck",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "418719b5493978c2c9f8460e9f181f813a788c4b6154838cfcf38bfb4b360a54",
+      "pngSha256": "2bca3525cb0ecfeb5ac0616b60c8a07bdf5fa2732bc60586f86539ead822e24b",
+      "webpSha256": "5d62d8dc66f24c667d85a5e5c7250abfaa1699043ca42cae592534c975499900"
+    },
+    {
+      "slug": "battlefield",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "98e22da014e0a05ce1617ec40003f835ef546ff57ca52804106746955bb262c3",
+      "pngSha256": "79a4cb705aeec73b603d418aaf77ca304c45e521e0ba45f9070e3a8a6841f336",
+      "webpSha256": "6e7fdf34f33ca6c64e423a754fa2cc00b8631c3820260a085fe44d2f71769417"
+    },
+    {
+      "slug": "encounter",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "5fc6d714770f7886277126f8aafd5dd02552d85fa13b67806972ff9dbabbe797",
+      "pngSha256": "c113396d60fe535f1941d080ea0422e842ebc1caea4d241a7f2ccc33b856a01a",
+      "webpSha256": "491c0a6a0a43ebda069fe82590d5cba482f4a72448f957d398b156718efd9e77"
+    },
+    {
+      "slug": "quest",
+      "beforeRuntimeInteriorAlphaDefects": 0,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "2bd9b80980f4540261ada96f7a0d92de554a4c275649f28c036411f706085ce8",
+      "pngSha256": "d619bb237216f32bb7647cb4c7eaeae07dd07d125902fdce4b4e8d49b941ad3a",
+      "webpSha256": "22e5f7f5d2cf864b62eeef92f0bf2dd1c158dee72efb735d0e60cdd2e2a5aafc"
+    },
+    {
+      "slug": "unknown",
+      "beforeRuntimeInteriorAlphaDefects": 678,
+      "afterRuntimeInteriorAlphaDefects": 0,
+      "afterPngInteriorAlphaDefects": 0,
+      "sourceSha256": "6ecd7150ba25f5b72da97db9958452787e9119801472e53577a2f7ad80be3800",
+      "pngSha256": "a882be286c71572cc52564b6e4fbad91f0bb7a3f931db38b0361fb073817a0a0",
+      "webpSha256": "cd789625aa95b9766500250df3b305085941d1d7ffc71e06115f0ca2857243d2"
+    }
+  ],
+  "visualReview": "All 70 markers inspected on light and dark backgrounds at 36x48 and 90x120 pixels; no holes, mottled fills, or detached edge pixels remain.",
+  "browserChecks": "All 70 runtime WebP assets passed interior alpha, single connected silhouette, transparent corner, and 72x96 dimension checks; editor and viewer retain 36x48 display size."
+}

@@ -25,12 +25,14 @@ const functionNames = [
     'renderPointFeatureInspector',
     'renderRegionFeatureInspector',
     'renderLineFeatureInspector',
+    'renderJourneyInspector',
     'renderFeatureInspector'
 ];
 const inspectorFactory = new Function('dependencies', `
     const {
         dom,
         document,
+        window,
         fieldApi,
         state,
         getSelectedFeature,
@@ -38,7 +40,8 @@ const inspectorFactory = new Function('dependencies', `
         stringifyTags,
         stringifyCoordinates,
         renderDetailSectionControls,
-        syncFormAccess
+        syncFormAccess,
+        canMutateWorkspace
     } = dependencies;
     ${functionNames.map(extractFunction).join('\n')}
     return { renderFeatureInspector };
@@ -60,6 +63,7 @@ let detailSectionsFeature = null;
 const { renderFeatureInspector } = inspectorFactory({
     dom,
     document,
+    window: { AppConfig: require('../js/app-config.js') },
     fieldApi,
     state,
     getSelectedFeature: () => selectedFeature,
@@ -69,7 +73,8 @@ const { renderFeatureInspector } = inspectorFactory({
     renderDetailSectionControls: (feature) => {
         detailSectionsFeature = feature;
     },
-    syncFormAccess: () => {}
+    syncFormAccess: () => {},
+    canMutateWorkspace: () => true
 });
 
 renderFeatureInspector();
@@ -95,6 +100,9 @@ assert.equal(dom.featureForm.querySelector('[data-field="propertiesText"]').valu
 assert.equal(dom.featureForm.querySelector('[data-field="tags"]').value, 'Capital\nTrade');
 assert.equal(dom.featureForm.querySelector('[data-field="coordY"]').value, '12');
 assert.equal(detailSectionsFeature, selectedFeature);
+assert.ok(dom.featureForm.querySelector('#feature-points-type-options option[value="Library"]'));
+assert.equal(dom.featureForm.querySelector('[data-field="type"]').getAttribute('list'), 'feature-points-type-options');
+assert.equal(dom.featureForm.querySelector('[data-field="type"]').value, 'City');
 
 selectedFeature = {
     id: 'north',
@@ -126,3 +134,10 @@ assert.equal(dom.featureForm.querySelector('[data-field="dashArray"]').value, '4
 assert.equal(dom.featureForm.querySelector('[data-field="coordinates"]').value, '[[5,6],[7,8]]');
 
 console.log('feature inspector rendering checks passed');
+
+selectedFeature = {name: 'Test trail', campaign: 'Test campaign', color: '#d97706', visibleByDefault: true, stops: [{ id: 'stop', name: 'Arrival', coords: [10, 20], date: 'Autumn, 500 EC' }]};
+state.selectedFeature.mode = 'journeys';
+renderFeatureInspector();
+assert.equal(dom.featureForm.querySelector('[data-field=visibleByDefault]').checked, true);
+assert.equal(dom.featureForm.querySelector('[data-stop-field=date]').value, 'Autumn, 500 EC');
+assert.equal(dom.featureForm.querySelector('[data-journey-stop]').querySelector('button').disabled, true);

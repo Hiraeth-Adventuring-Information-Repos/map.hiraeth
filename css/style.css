@@ -4154,3 +4154,26 @@ html.mobile-layout-v2.map-interacting #map-blurb {
     outline: 3px solid #ff7800;
     outline-offset: 3px;
 }
+/* Campaign routes share their numbered pin design with the editor. */
+.campaign-journey-pin .journey-pin-number {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    box-sizing: border-box;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    color: #fff;
+    font: 700 13px/1 system-ui, sans-serif;
+    text-shadow: 0 1px 2px #000;
+    box-shadow: 0 2px 7px #0008;
+}
+.campaign-journey-pin:focus-visible { outline: 3px solid #fff; outline-offset: 3px; border-radius: 50%; }
+.journey-filters { border-top: 1px solid var(--glass-border); margin-top: 12px; padding-top: 6px; }
+.journey-filters .journey-filter { margin-left: 12px; }
+.journey-filters label { overflow-wrap: anywhere; }
+.journey-popup h3 { margin: 6px 0; }
+.journey-popup .journey-popup-campaign { font-size: 12px; opacity: .8; margin-bottom: 4px; }
+.journey-popup .journey-popup-date { font-weight: 700; }
+.journey-popup-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.journey-popup a { display: block; margin-top: 8px; }

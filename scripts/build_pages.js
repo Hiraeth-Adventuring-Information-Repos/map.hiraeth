@@ -31,6 +31,7 @@ const runtimeAssetFiles = [
     'css/images/marker-shadow.png',
     'js/app-config.js',
     'js/shared-utils.js',
+    'js/campaign-journeys.js',
     'js/libs/leaflet.js',
     'js/libs/purify.min.js',
     'js/libs/lucide.min.js',
@@ -72,6 +73,7 @@ const pagesRuntimeMinifyFiles = [
     { relativePath: 'css/stars.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
     { relativePath: 'js/app-config.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/app.js', loader: 'js', target: 'es2020' },
+    { relativePath: 'js/campaign-journeys.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/shared-utils.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/starfield.js', loader: 'js', target: 'es2020' }
 ];

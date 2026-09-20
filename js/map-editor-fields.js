@@ -66,6 +66,14 @@
     ];
 
     const featureFields = {
+        journeys: [
+            { key: 'name', label: 'Journey name', section: 'Journey', required: true, maxLength: 160 },
+            { key: 'campaign', label: 'Campaign', section: 'Journey', required: true, maxLength: 160 },
+            { key: 'description', label: 'Journey notes', section: 'Journey', control: 'textarea', rows: 3, maxLength: 12000 },
+            { key: 'wikiLink', label: 'Campaign wiki link', section: 'Journey', maxLength: 1000, placeholder: 'https://…' },
+            { key: 'color', label: 'Route color', section: 'Journey', control: 'color' },
+            { key: 'visibleByDefault', label: 'Show by default in viewer', section: 'Journey', control: 'checkbox', update: 'boolean', help: 'Visitors can toggle this journey in Map Layers. This is a display preference, not a privacy setting.' }
+        ],
         points: [
             commonFeatureFields[0],
             { key: 'pronunciation', label: 'Pronunciation', section: 'Content', maxLength: 240 },
@@ -215,7 +223,7 @@
         const control = document.createElement(
             field.control === 'textarea' ? 'textarea' : (field.control === 'select' ? 'select' : 'input')
         );
-        if (control.tagName === 'INPUT') control.type = field.control === 'number' ? 'number' : 'text';
+        if (control.tagName === 'INPUT') control.type = ['number', 'color', 'checkbox'].includes(field.control) ? field.control : 'text';
         if (control.tagName === 'SELECT' && Array.isArray(field.options)) {
             field.options.forEach((option) => {
                 const optionElement = document.createElement('option');
@@ -225,6 +233,17 @@
             });
         }
         applyControlAttributes(control, field, `${idPrefix}-${field.key}`);
+        if (Array.isArray(field.suggestions) && field.suggestions.length) {
+            const list = document.createElement('datalist');
+            list.id = `${idPrefix}-${field.key}-options`;
+            field.suggestions.forEach((value) => {
+                const option = document.createElement('option');
+                option.value = value;
+                list.appendChild(option);
+            });
+            control.setAttribute('list', list.id);
+            label.appendChild(list);
+        }
         if (field.help) control.setAttribute('aria-describedby', `${idPrefix}-${field.key}-help`);
         label.appendChild(control);
         return { control, element: label };
@@ -364,7 +383,9 @@
     }
 
     function renderFeatureFields(document, form, mode, feature, formatters = {}) {
-        const definitions = getFeatureFields(mode);
+        const definitions = getFeatureFields(mode).map(field => mode === 'points' && field.key === 'type'
+            ? { ...field, suggestions: formatters.poiTypes, help: 'Choose a marker type or enter your own.' }
+            : field);
         form.innerHTML = '';
         const sectionOrder = [];
         const sectionFields = new Map();
@@ -398,7 +419,8 @@
         definitions.forEach((field) => {
             const control = form.querySelector(`[data-field="${field.key}"]`);
             if (control && field.control !== 'detailSections') {
-                control.value = getFeatureFieldValue(field, feature, formatters);
+                if (field.control === 'checkbox') control.checked = feature?.[field.key] === true;
+                else control.value = getFeatureFieldValue(field, feature, formatters);
             }
         });
         return definitions;

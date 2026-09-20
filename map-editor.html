@@ -109,7 +109,7 @@
             color: #10131f;
         }
     </style>
-    <script src="js/app-config.js?v=0.1.70"></script>
+    <script src="js/app-config.js?v=0.1.73"></script>
     <script>
         window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
 
@@ -382,6 +382,7 @@
                     <button id="editor-add-poi-btn" type="button">Add POI</button>
                     <button id="editor-add-region-btn" type="button">Draw Region</button>
                     <button id="editor-add-line-btn" type="button">Draw Line</button>
+                    <button id="editor-journeys-btn" type="button" disabled>Journeys</button>
                     <button id="editor-curve-point-btn" type="button" aria-pressed="false" title="Add Bezier handles to the selected point" hidden>Curve point</button>
                     <button id="editor-undo-point-btn" type="button" title="Remove the last drawing point (Backspace)" hidden>Undo point</button>
                     <button id="editor-finish-draw-btn" type="button" hidden>Finish shape</button>
@@ -499,6 +500,7 @@
                         <option value="points">POIs</option>
                         <option value="regions">Regions (polygons)</option>
                         <option value="lines">Lines</option>
+                        <option value="journeys">Campaign journeys</option>
                     </select>
                     <input id="editor-feature-search" type="search" aria-label="Search Features" placeholder="Search features…">
                 </div>
@@ -601,8 +603,8 @@
                 if (window.AppConfig) window.AppConfig.hydrateEditorDom(document);
                 const version = encodeURIComponent(window.APP_ASSET_VERSION || "0");
                 const scripts = window.AppConfig
-                    ? window.AppConfig.get("assets.editorScripts", ["js/editor-shared.js", "js/shared-utils.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"])
-                    : ["js/editor-shared.js", "js/shared-utils.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"];
+                    ? window.AppConfig.get("assets.editorScripts", ["js/editor-shared.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"])
+                    : ["js/editor-shared.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"];
                 const fileScripts = scripts.flatMap((src) => src === "js/map-editor.js"
                     ? ["js/map-file-document.js", "js/map-file-download.js", src, "js/map-file-editor.js"] : [src]);
                 fileScripts.forEach((src) => {

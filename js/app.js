@@ -18,6 +18,7 @@ let loadingProgress = 0;
 let currentRegionGroup = null;
 let regionsVisible = true; // Overall region visibility toggle
 let currentRoadGroup = null; // Holds currently displayed road layers (and lines)
+const currentJourneyLayers = new Map();
 
 let miniMapControl = null; // Global MiniMap control instance
 let miniMapControlMode = null;
@@ -376,11 +377,88 @@ function updateCoordinateDisplay(lat, lon) {
 }
 
 const DEFAULT_POI_TYPE_GROUPS = {
-    "Settlements": ["City", "Town", "Village", "Hamlet", "Settlement", "Capital"],
-    "Structures": ["Castle", "Fortress", "Fort", "Tower", "Ruin", "Temple", "Shrine", "Mine", "Lighthouse", "Bridge", "Dungeon", "Lair", "Camp", "Asylum", "Landmark"],
-    "Natural Features": ["Mountain", "Peak", "Forest", "Wood", "River", "Lake", "Cave", "Cavern", "Coast", "Bay", "Cove", "Swamp", "Marsh", "Desert", "Natural Landmark"],
-    "Other": ["Point of Interest", "Region", "Portal"],
-    "Unknown": ["Unknown"]
+    "Settlements": [
+        "City",
+        "Town",
+        "Village",
+        "Hamlet",
+        "Settlement",
+        "Capital"
+    ],
+    "Structures": [
+        "Castle",
+        "Fortress",
+        "Fort",
+        "Tower",
+        "Ruin",
+        "Temple",
+        "Shrine",
+        "Mine",
+        "Lighthouse",
+        "Bridge",
+        "Gate",
+        "Dungeon",
+        "Lair",
+        "Camp",
+        "Asylum",
+        "Landmark",
+        "Building",
+        "Library",
+        "Guildhall",
+        "Hospital",
+        "Cemetery",
+        "Prison",
+        "Farm",
+        "Mill",
+        "Watchtower",
+        "Ruins"
+    ],
+    "Natural Features": [
+        "Mountain",
+        "Peak",
+        "Forest",
+        "Wood",
+        "River",
+        "Lake",
+        "Cave",
+        "Cavern",
+        "Coast",
+        "Bay",
+        "Cove",
+        "Swamp",
+        "Marsh",
+        "Desert",
+        "Natural Landmark",
+        "Waterfall",
+        "Volcano",
+        "Island",
+        "Oasis"
+    ],
+    "Other": [
+        "Point of Interest",
+        "Region",
+        "Portal",
+        "Tavern",
+        "Dock & Trading",
+        "Market",
+        "Trade",
+        "Market & Trade",
+        "Market / Trade",
+        "Inn",
+        "Shop",
+        "Blacksmith",
+        "Apothecary",
+        "Ferry",
+        "Shipwreck",
+        "Battlefield",
+        "Encounter",
+        "Quest",
+        "Polity / treaty waters",
+        "Seasonal encounter area"
+    ],
+    "Unknown": [
+        "Unknown"
+    ]
 };
 const poiTypeGroups = (typeof getConfigValue === 'function')
     ? getConfigValue('taxonomy.poiTypeGroups', DEFAULT_POI_TYPE_GROUPS)
@@ -750,62 +828,90 @@ for (const groupName in poiTypeGroups) {
     });
 }
 
-const DEFAULT_POI_GROUP_ICON_CONFIG = {
-    "Settlements": "images/poi-icons/settlements.svg",
-    "Structures": "images/poi-icons/structures.svg",
-    "Natural Features": "images/poi-icons/natural-features.svg",
-    "Other": "images/poi-icons/other.svg",
-    "Unknown": "images/poi-icons/unknown.svg"
-};
-const DEFAULT_POI_TYPE_ICON_CONFIG = {
-    "Capital": "images/poi-icons/capital.svg",
-    "City": "images/poi-icons/city.svg",
-    "Town": "images/poi-icons/town.svg",
-    "Village": "images/poi-icons/village.svg",
-    "Hamlet": "images/poi-icons/hamlet.svg",
-    "Settlement": "images/poi-icons/settlement.svg",
-    "Castle": "images/poi-icons/castle.svg",
-    "Fortress": "images/poi-icons/fortress.svg",
-    "Fort": "images/poi-icons/fort.svg",
-    "Tower": "images/poi-icons/tower.svg",
-    "Ruin": "images/poi-icons/ruin.svg",
-    "Temple": "images/poi-icons/temple.svg",
-    "Shrine": "images/poi-icons/shrine.svg",
-    "Mine": "images/poi-icons/mine.svg",
-    "Lighthouse": "images/poi-icons/lighthouse.svg",
-    "Bridge": "images/poi-icons/bridge.svg",
-    "Gate": "images/poi-icons/gate.svg",
-    "Dungeon": "images/poi-icons/dungeon.svg",
-    "Lair": "images/poi-icons/lair.svg",
-    "Camp": "images/poi-icons/camp.svg",
-    "Asylum": "images/poi-icons/asylum.svg",
-    "Landmark": "images/poi-icons/landmark.svg",
-    "Building": "images/poi-icons/building.svg",
-    "Mountain": "images/poi-icons/mountain.svg",
-    "Peak": "images/poi-icons/peak.svg",
-    "Forest": "images/poi-icons/forest.svg",
-    "Wood": "images/poi-icons/wood.svg",
-    "River": "images/poi-icons/river.svg",
-    "Lake": "images/poi-icons/lake.svg",
-    "Cave": "images/poi-icons/cave.svg",
-    "Cavern": "images/poi-icons/cavern.svg",
-    "Coast": "images/poi-icons/coast.svg",
-    "Bay": "images/poi-icons/bay.svg",
-    "Cove": "images/poi-icons/cove.svg",
-    "Swamp": "images/poi-icons/swamp.svg",
-    "Marsh": "images/poi-icons/marsh.svg",
-    "Desert": "images/poi-icons/desert.svg",
-    "Natural Landmark": "images/poi-icons/natural-landmark.svg",
-    "Point of Interest": "images/poi-icons/point-of-interest.svg",
-    "Region": "images/poi-icons/region.svg",
-    "Portal": "images/poi-icons/portal.svg",
-    "Tavern": "images/poi-icons/tavern.svg",
-    "Dock & Trading": "images/poi-icons/dock-trading.svg",
-    "Market": "images/poi-icons/market-trade.svg",
-    "Trade": "images/poi-icons/market-trade.svg",
-    "Market & Trade": "images/poi-icons/market-trade.svg",
-    "Market / Trade": "images/poi-icons/market-trade.svg"
-};
+function createDefaultPoiIconConfig(slugs) {
+    return Object.fromEntries(Object.entries(slugs).map(([type, slug]) => [type, `images/poi-icons/${slug}.webp`]));
+}
+
+const DEFAULT_POI_GROUP_ICON_CONFIG = createDefaultPoiIconConfig({
+    "Settlements": "settlements",
+    "Structures": "structures",
+    "Natural Features": "natural-features",
+    "Other": "other",
+    "Unknown": "unknown"
+});
+const DEFAULT_POI_TYPE_ICON_CONFIG = createDefaultPoiIconConfig({
+    "Capital": "capital",
+    "City": "city",
+    "Town": "town",
+    "Village": "village",
+    "Hamlet": "hamlet",
+    "Settlement": "settlement",
+    "Castle": "castle",
+    "Fortress": "fortress",
+    "Fort": "fort",
+    "Tower": "tower",
+    "Ruin": "ruin",
+    "Temple": "temple",
+    "Shrine": "shrine",
+    "Mine": "mine",
+    "Lighthouse": "lighthouse",
+    "Bridge": "bridge",
+    "Gate": "gate",
+    "Dungeon": "dungeon",
+    "Lair": "lair",
+    "Camp": "camp",
+    "Asylum": "asylum",
+    "Landmark": "landmark",
+    "Building": "building",
+    "Mountain": "mountain",
+    "Peak": "peak",
+    "Forest": "forest",
+    "Wood": "wood",
+    "River": "river",
+    "Lake": "lake",
+    "Cave": "cave",
+    "Cavern": "cavern",
+    "Coast": "coast",
+    "Bay": "bay",
+    "Cove": "cove",
+    "Swamp": "swamp",
+    "Marsh": "marsh",
+    "Desert": "desert",
+    "Natural Landmark": "natural-landmark",
+    "Point of Interest": "point-of-interest",
+    "Region": "region",
+    "Portal": "portal",
+    "Tavern": "tavern",
+    "Dock & Trading": "dock-trading",
+    "Market": "market-trade",
+    "Trade": "market-trade",
+    "Market & Trade": "market-trade",
+    "Market / Trade": "market-trade",
+    "Library": "library",
+    "Guildhall": "guildhall",
+    "Hospital": "hospital",
+    "Cemetery": "cemetery",
+    "Prison": "prison",
+    "Farm": "farm",
+    "Mill": "mill",
+    "Watchtower": "watchtower",
+    "Waterfall": "waterfall",
+    "Volcano": "volcano",
+    "Island": "island",
+    "Oasis": "oasis",
+    "Inn": "inn",
+    "Shop": "shop",
+    "Blacksmith": "blacksmith",
+    "Apothecary": "apothecary",
+    "Ferry": "ferry",
+    "Shipwreck": "shipwreck",
+    "Battlefield": "battlefield",
+    "Encounter": "encounter",
+    "Quest": "quest",
+    "Ruins": "ruin",
+    "Polity / treaty waters": "region",
+    "Seasonal encounter area": "encounter"
+});
 const poiGroupIconConfig = (typeof getConfigValue === 'function')
     ? getConfigValue('assets.poiIcons', DEFAULT_POI_GROUP_ICON_CONFIG)
     : DEFAULT_POI_GROUP_ICON_CONFIG;
@@ -1240,6 +1346,7 @@ function resolveControlVisibilityState({
     hasPOIs = false,
     hasRegions = false,
     hasRoads = false,
+    hasJourneys = false,
     hasValidScale = false,
     hasBlurb = false,
     hasLatLonBounds = false,
@@ -1254,6 +1361,7 @@ function resolveControlVisibilityState({
         hasPOIs,
         hasRegions,
         hasRoads,
+        hasJourneys,
         allowGMToolkit,
         atlasSearchCount
     }, featureEnabled);
@@ -1320,12 +1428,13 @@ function resolveControlFeatureAvailability({
     hasPOIs,
     hasRegions,
     hasRoads,
+    hasJourneys,
     allowGMToolkit,
     atlasSearchCount
 }, featureEnabled) {
     const hasMapMarkers = hasPOIs || hasRegions;
     const hasSearchableFeatures = hasPOIs || hasRegions || hasRoads || atlasSearchCount > 0;
-    const hasFilterableFeatures = hasPOIs || hasRegions || hasRoads;
+    const hasFilterableFeatures = hasPOIs || hasRegions || hasRoads || hasJourneys;
 
     return {
         markers: hasMapMarkers,
@@ -1830,6 +1939,7 @@ function updateMobileLayoutState() {
     syncBottomBarHeightVariable();
 
     const active = mobileLayoutV2Enabled && window.innerWidth <= MOBILE_LAYOUT_BREAKPOINT;
+    const layoutChanged = active !== isMobileLayoutActive;
     isMobileLayoutActive = active;
 
     rootElement.classList.toggle('mobile-layout-v2', mobileLayoutV2Enabled);
@@ -1876,6 +1986,7 @@ function updateMobileLayoutState() {
     syncMiniMapControl();
     if (featureDetailSheetOpen) syncFeatureDetailSheetState();
     clampFloatingPanels();
+    if (layoutChanged && currentMapData) updateCurrentControlVisibility(currentMapData);
 }
 
 function syncMobileSearchPanelState() {
@@ -4940,7 +5051,7 @@ function updateToggleAllCheckboxState() {
             }
         } else if (checkbox.classList.contains('region-type-filter')) {
             regionTypeCheckboxes.push(checkbox);
-        } else if (checkbox.classList.contains('poi-filter-checkbox') || checkbox.classList.contains('line-type-filter')) {
+        } else if (checkbox.classList.contains('poi-filter-checkbox') || checkbox.classList.contains('line-type-filter') || checkbox.classList.contains('journey-filter')) {
             allTopLevelFilters.push(checkbox);
             if (checkbox.checked) {
                 checkedTopLevelFilters.push(checkbox);
@@ -5028,6 +5139,7 @@ function buildControlVisibilityState(mapInfo) {
         isEmbedded: isEmbeddedView,
         isMobileLayout: isMobileLayoutActive,
         advancedControls: advancedControlsUnlocked,
+        hasJourneys: Array.isArray(mapInfo.journeys) && mapInfo.journeys.length > 0,
         hasPOIs,
         hasRegions,
         hasRoads,
@@ -5313,6 +5425,7 @@ if (searchRefineClearBtn) {
         updateVisibleMarkersAndSearch();
         updateVisibleRegions();
         updateVisibleLines();
+        updateVisibleJourneys(true);
         trackAnalytics('search_refine_cleared');
     });
 }
@@ -5965,9 +6078,10 @@ function populateFilters(pointsOfInterest, mapId) {
     const hasRegions = regions.length > 0;
     const lines = visibleLinesCache && visibleLinesCache.length ? visibleLinesCache : [...(selectedMap?.roads || []), ...(selectedMap?.lines || [])];
     const hasRoads = lines.length > 0;
+    const journeys = Array.isArray(selectedMap?.journeys) ? selectedMap.journeys : [];
 
     // Hide filter button if no POIs, no regions, and no roads
-    if (!hasPOIs && !hasRegions && !hasRoads) {
+    if (!hasPOIs && !hasRegions && !hasRoads && !journeys.length) {
         poiFilterContainer.classList.remove('visible');
         toggleFiltersBtn.style.display = 'none';
         filtersPanelVisible = false;
@@ -5994,6 +6108,7 @@ function populateFilters(pointsOfInterest, mapId) {
     if (hasRoads) {
         populateLineFilters(lines, hasPOIs, hasRegions);
     }
+    populateJourneyFilters(journeys, mapId);
 
     // Show filter button since we have filters
     toggleFiltersBtn.style.display = 'block';
@@ -6013,8 +6128,78 @@ function populateFilters(pointsOfInterest, mapId) {
     refreshLucideIcons();
 
     // Set initial state of the master toggle
+    staticPoiFilterCheckboxesCache = null;
     updateToggleAllCheckboxState();
     updateActiveFilterChips();
+}
+
+function journeyPreferenceKey(mapId, journeyId) {
+    return `campaignJourney:${encodeURIComponent(mapId)}:${encodeURIComponent(journeyId)}`;
+}
+
+function populateJourneyFilters(journeys, mapId) {
+    if (!journeys.length) return;
+    const section = document.createElement('section');
+    section.className = 'journey-filters';
+    const heading = document.createElement('h3');
+    heading.textContent = 'Campaign journeys';
+    section.append(heading);
+    const makeToggle = (id, label, className) => {
+        const row = document.createElement('div');
+        row.className = 'filter-item';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = id;
+        checkbox.className = className;
+        const text = document.createElement('label');
+        text.htmlFor = id;
+        text.textContent = label;
+        row.append(checkbox, text);
+        section.append(row);
+        return checkbox;
+    };
+    makeToggle('filter-journeys-all', 'Show campaign journeys', 'journey-group-filter');
+    journeys.forEach((journey, index) => {
+        const checkbox = makeToggle(`filter-journey-${index}`, `${journey.campaign} · ${journey.name}`, 'journey-filter');
+        checkbox.dataset.journeyId = journey.id;
+        checkbox.dataset.preferenceKey = journeyPreferenceKey(mapId, journey.id);
+        const preference = safeGetStorage(checkbox.dataset.preferenceKey);
+        checkbox.checked = preference === null ? journey.visibleByDefault === true : preference === 'true';
+        checkbox.nextElementSibling.style.borderLeft = `3px solid ${CampaignJourneys.color(journey.color)}`;
+        checkbox.nextElementSibling.style.paddingLeft = '8px';
+    });
+    dynamicFiltersContainer.append(section);
+    syncJourneyGroupToggle();
+}
+
+function syncJourneyGroupToggle() {
+    const parent = document.getElementById('filter-journeys-all');
+    if (!parent) return;
+    const choices = Array.from(poiFilterContainer.querySelectorAll('.journey-filter'));
+    const checkedCount = choices.filter(input => input.checked).length;
+    parent.checked = choices.length > 0 && checkedCount === choices.length;
+    parent.indeterminate = checkedCount > 0 && checkedCount < choices.length;
+}
+
+function updateVisibleJourneys(persist = false) {
+    poiFilterContainer.querySelectorAll('.journey-filter').forEach(checkbox => {
+        const layer = currentJourneyLayers.get(checkbox.dataset.journeyId);
+        if (layer) {
+            if (checkbox.checked) layer.addTo(map);
+            else map.removeLayer(layer);
+        }
+        if (persist) safeSetStorage(checkbox.dataset.preferenceKey, String(checkbox.checked));
+    });
+    syncJourneyGroupToggle();
+}
+
+function addJourneysToMap(selectedMap) {
+    currentJourneyLayers.forEach(layer => map.removeLayer(layer));
+    currentJourneyLayers.clear();
+    (Array.isArray(selectedMap.journeys) ? selectedMap.journeys : []).forEach(journey => {
+        currentJourneyLayers.set(journey.id, CampaignJourneys.createLayer(L, document, journey));
+    });
+    updateVisibleJourneys();
 }
 
 function populatePOIFilters(pointsOfInterest) {
@@ -6929,6 +7114,8 @@ function replaceMapHistoryState(mapId, updateHash = true) {
 }
 
 function resetMapState() {
+    currentJourneyLayers.forEach(layer => map.removeLayer(layer));
+    currentJourneyLayers.clear();
     cancelIdleTileWarmup({ removeDetailLayer: true });
     if (isMeasuringMultiPoint) finalizeMultiPointMeasure(false);
     measurementLayerGroup.clearLayers();
@@ -7149,6 +7336,7 @@ function renderMapFeatures(selectedMap, requestedMapId) {
 
     addRegionsToMap(requestedMapId);
     addRoadsToMap(requestedMapId);
+    addJourneysToMap(selectedMap);
     updateVisibleRegions();
     if (typeof updateVisibleLines === 'function') {
         updateVisibleLines();
@@ -8830,6 +9018,9 @@ poiFilterContainer.addEventListener('change', (e) => {
     }
 
     // Handle master "Show All / Hide All" checkbox
+    if (target.classList.contains('journey-group-filter')) {
+        poiFilterContainer.querySelectorAll('.journey-filter').forEach(checkbox => { checkbox.checked = target.checked; });
+    }
     if (target.id === 'filter-toggle-all') {
         const isChecked = target.checked;
         setFilterCheckboxesChecked(isChecked);
@@ -8848,6 +9039,9 @@ poiFilterContainer.addEventListener('change', (e) => {
     }
     if (target.classList.contains('line-type-filter') || target.id === 'filter-toggle-all') {
         updateVisibleLines();
+    }
+    if (target.classList.contains('journey-filter') || target.classList.contains('journey-group-filter') || target.id === 'filter-toggle-all') {
+        updateVisibleJourneys(true);
     }
 
     updateActiveFilterChips();

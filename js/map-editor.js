@@ -42,7 +42,7 @@
     const RECOVERY_STORAGE_PREFIX = `mapEditorRecovery:v${RECOVERY_VERSION}`;
     const RECOVERY_MAX_BYTES = 1500000;
     const RECOVERY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-    const RECOVERY_FEATURE_KEYS = new Set(['pointsOfInterest', 'regions', 'lines', 'roads', 'filterGroups']);
+    const RECOVERY_FEATURE_KEYS = new Set(['pointsOfInterest', 'regions', 'lines', 'roads', 'journeys', 'filterGroups']);
 
     const state = {
         atlasTree: [],
@@ -79,6 +79,8 @@
         pointLayer: null,
         regionLayer: null,
         lineLayer: null,
+        journeyLayer: null,
+        placingJourneyStop: false,
         vertexLayer: null,
         draftLayer: null,
         accessChecked: false,
@@ -176,6 +178,7 @@
         addPoiButton: document.getElementById('editor-add-poi-btn'),
         addRegionButton: document.getElementById('editor-add-region-btn'),
         addLineButton: document.getElementById('editor-add-line-btn'),
+        journeysButton: document.getElementById('editor-journeys-btn'),
         finishDrawButton: document.getElementById('editor-finish-draw-btn'),
         curvePointButton: document.getElementById('editor-curve-point-btn'),
         geometryHelp: document.getElementById('editor-geometry-help'),
@@ -274,6 +277,11 @@
             state.currentMap.pointsOfInterest = [];
         }
         return state.currentMap.pointsOfInterest;
+    }
+
+    function getCurrentJourneys() {
+        if (!state.currentMap) return [];
+        return state.currentMap.journeys ||= [];
     }
 
     function getCurrentRegions() {
@@ -621,6 +629,7 @@
     }
 
     function getFeatureTypeCopy(type = state.featureListState.type) {
+        if (type === 'journeys') return { plural: 'Campaign journeys', singular: 'journey', create: 'New journey', summary: 'Record ordered stops, in-universe dates, and campaign memories on this map.' };
         if (type === 'regions') {
             return {
                 plural: 'Regions',
@@ -868,7 +877,7 @@
             dom.focusSummary.textContent = canMutateWorkspace()
                 ? (state.selectedFeature?.mode === 'points'
                     ? 'Edit the fields below. Drag the marker on the map to move this POI.'
-                    : 'Edit the fields below. Drag the orange corner handles to reshape this feature.')
+                    : (state.selectedFeature?.mode === 'journeys' ? 'Add and reorder stops below. Drag numbered pins to move them.' : 'Edit the fields below. Drag the orange corner handles to reshape this feature.'))
                 : `This ${featureCopy.singular} is read-only. You can inspect its content and position.`;
             dom.collapseInspectorButton.setAttribute('aria-label', `Hide ${featureCopy.singular} properties`);
             dom.collapseInspectorButton.title = `Hide ${featureCopy.singular} properties`;
@@ -879,7 +888,7 @@
                 dom.toolbarHint.textContent = canMutateWorkspace()
                     ? (state.selectedFeature?.mode === 'points'
                         ? 'Drag the selected marker to update its position.'
-                        : 'Drag the orange vertex handles to reshape the selected geometry.')
+                        : (state.selectedFeature?.mode === 'journeys' ? 'Drag numbered stops to move them. Use Add stop to record the next moment.' : 'Drag the orange vertex handles to reshape the selected geometry.'))
                     : 'Position and geometry are shown for review. Open a writable Studio workspace to move them.';
             }
             queueMapLayout();
@@ -1040,7 +1049,8 @@
     }
 
     function openFeatureBrowser(type) {
-        state.featureListState.type = ['points', 'regions', 'lines'].includes(type) ? type : 'points';
+        state.placingJourneyStop = false;
+        state.featureListState.type = ['points', 'regions', 'lines', 'journeys'].includes(type) ? type : 'points';
         state.featureListState.searchQuery = '';
         state.featureListState.expanded = false;
         if (dom.featureTypeSelect) dom.featureTypeSelect.value = state.featureListState.type;
@@ -1059,6 +1069,7 @@
             return;
         }
         const type = state.featureListState.type;
+        if (type === 'journeys') { createJourney(); return; }
         setWorkflowMode('draw');
         beginDrawMode(type === 'points' ? 'point' : (type === 'regions' ? 'region' : 'line'));
     }
@@ -1404,7 +1415,7 @@
         normalized[state.lineCollectionKey] = getCurrentLines().map(utils.normalizeLine);
         const session = fileDocuments.createSession(rawDocument, normalized);
         state.fileSnapshot = session.snapshot;
-        for (const key of ['pointsOfInterest', 'regions', state.lineCollectionKey]) {
+        for (const key of ['pointsOfInterest', 'regions', state.lineCollectionKey, 'journeys']) {
             state.currentMap[key] = session.editableDocument[key];
         }
     }
@@ -1507,7 +1518,8 @@
             field: String(control.dataset.field || ''),
             detailSectionField: String(control.dataset.detailSectionField || ''),
             detailSectionRow: String(control.closest('[data-detail-section-row]')?.dataset.detailSectionRow || ''),
-            value: String(control.value || '')
+            value: String(control.value || ''),
+            ...(control.type === 'checkbox' ? { checked: control.checked } : {})
         }));
     }
 
@@ -1521,7 +1533,10 @@
                 return candidate.dataset.detailSectionField === entry.detailSectionField &&
                     String(candidate.closest('[data-detail-section-row]')?.dataset.detailSectionRow || '') === entry.detailSectionRow;
             });
-            if (control) control.value = String(entry.value || '');
+            if (control) {
+                control.value = String(entry.value || '');
+                if (control.type === 'checkbox' && typeof entry.checked === 'boolean') control.checked = entry.checked;
+            }
         });
     }
 
@@ -2081,6 +2096,7 @@
         if (mode === 'points') return getCurrentPoints();
         if (mode === 'regions') return getCurrentRegions();
         if (mode === 'lines') return getCurrentLines();
+        if (mode === 'journeys') return getCurrentJourneys();
         return [];
     }
 
@@ -2091,6 +2107,7 @@
     }
 
     function clearDrawMode() {
+        state.placingJourneyStop = false;
         const discardedUnfinishedDraft = hasUnfinishedGeometryDraft();
         state.geometryDragActive = false;
         state.drawMode = '';
@@ -2112,6 +2129,7 @@
     }
 
     function selectFeature(mode, index) {
+        state.placingJourneyStop = false;
         if (state.selectedFeature?.mode !== mode || state.selectedFeature?.index !== index) state.selectedVertexIndex = -1;
         const collection = getCurrentFeatureCollection(mode);
         if (!collection[index]) {
@@ -2149,6 +2167,7 @@
         dom.addPoiButton.disabled = !canEditGeometry;
         dom.addRegionButton.disabled = !canEditGeometry;
         dom.addLineButton.disabled = !canEditGeometry;
+        if (dom.journeysButton) dom.journeysButton.disabled = !canViewMap;
         dom.resetViewButton.disabled = !canViewMap;
         dom.deleteSelectionButton.disabled = !canMutateWorkspace() || !state.selectedFeature;
         const requiredDraftPoints = state.drawMode === 'region' ? 3 : (state.drawMode === 'line' ? 2 : 0);
@@ -2163,7 +2182,9 @@
         dom.finishDrawButton.title = remainingDraftPoints > 0
             ? `Add ${remainingDraftPoints} more ${remainingDraftPoints === 1 ? 'point' : 'points'} to finish.`
             : 'Finish this shape.';
-        dom.cancelDrawButton.hidden = !state.drawMode;
+        dom.cancelDrawButton.hidden = !state.drawMode && !state.placingJourneyStop;
+        dom.cancelDrawButton.textContent = state.placingJourneyStop ? 'Cancel stop' : 'Cancel drawing';
+        dom.appShell.dataset.placingJourneyStop = String(state.placingJourneyStop || false);
         const unfinishedDraft = hasUnfinishedGeometryDraft();
         const canExportCurrentMap = canRenderMap(state.currentMap) && dom.appShell.dataset.mode !== 'library' && !unfinishedDraft;
         dom.exportCurrentMapButton.disabled = !canExportCurrentMap;
@@ -2350,17 +2371,19 @@
         const points = getCurrentPoints().length;
         const regions = getCurrentRegions().length;
         const lines = getCurrentLines().length;
-        return String(points + regions + lines);
+        return String(points + regions + lines + getCurrentJourneys().length);
     }
 
     function getFeatureItems(type) {
         if (type === 'points') return getCurrentPoints();
         if (type === 'regions') return getCurrentRegions();
         if (type === 'lines') return getCurrentLines();
+        if (type === 'journeys') return getCurrentJourneys();
         return [];
     }
 
     function getFeatureItemMetaShort(type, item) {
+        if (type === 'journeys') return `${item.campaign || 'Campaign'} · ${(item.stops || []).length} stops`;
         if (type === 'points') return item.type || 'Point';
         if (type === 'regions') return item.value || item.type || 'Region';
         return item.type || 'Line';
@@ -2370,6 +2393,7 @@
         const shortMeta = getFeatureItemMetaShort(type, item);
         const editorialContext = String(item.summary || item.description || '').trim().replace(/\s+/g, ' ');
         if (editorialContext) return `${shortMeta} · ${editorialContext}`;
+        if (type === 'journeys') return shortMeta;
         if (item.linkedMapId) return `${shortMeta} · Opens ${item.linkedMapId}`;
         if (type === 'points') return `${shortMeta} · No card summary yet`;
         const verticesCount = Array.isArray(item.coordinates) ? item.coordinates.length : 0;
@@ -2680,7 +2704,8 @@
         fieldApi.renderFeatureFields(document, dom.featureForm, mode, feature, {
             stringifyCoordinates,
             stringifyKeyFacts,
-            stringifyTags
+            stringifyTags,
+            poiTypes: Object.values(window.AppConfig?.get('taxonomy.poiTypeGroups', {}) || {}).flat().sort()
         });
         if (mode === 'points') renderDetailSectionControls(feature);
     }
@@ -2697,9 +2722,150 @@
         renderFeatureSchema('lines', 'Line', feature);
     }
 
+    function createJourney() {
+        if (!canMutateWorkspace() || !canRenderMap(state.currentMap)) return;
+        checkpointHistory('Create journey');
+        getCurrentJourneys().push({ id: CampaignJourneys.createId(), name: 'New journey', campaign: '', color: CampaignJourneys.defaultColor, visibleByDefault: false, stops: [] });
+        selectFeature('journeys', getCurrentJourneys().length - 1);
+        markCurrentMapDirty('New journey needs a campaign and at least one stop.');
+    }
+
+    function focusJourneyStop(index) {
+        const row = dom.featureForm.querySelector(`[data-journey-stop="${index}"]`);
+        if (!row) return;
+        row.open = true;
+        row.querySelector('input')?.focus();
+    }
+
+    function updateJourneyStopField(control) {
+        const journey = getSelectedFeature();
+        const stop = journey?.stops?.[Number(control.dataset.stopIndex)];
+        if (!stop) return false;
+        const key = control.dataset.stopField;
+        if (!['name', 'date', 'session', 'description', 'wikiLink'].includes(key)) return false;
+        const value = control.value;
+        const error = key === 'name' && !value.trim() ? 'Give this stop a name.'
+            : key === 'wikiLink' && value.trim() && !CampaignJourneys.safeWikiLink(value.trim()) ? 'Use a full http or https wiki URL.' : '';
+        control.setCustomValidity(error);
+        if (error) { setSelectionStatus(error); return false; }
+        stop[key] = value;
+        const summary = control.closest('details').querySelector('summary');
+        summary.textContent = `${Number(control.dataset.stopIndex) + 1}. ${stop.name}${stop.date ? ` · ${stop.date}` : ''}`;
+        markCurrentMapDirty('Journey stop details changed.');
+        return true;
+    }
+
+    function renderJourneyInspector(journey) {
+        renderFeatureSchema('journeys', 'Journey', journey);
+        dom.featureForm.querySelector('details').open = !journey.stops?.length;
+        const heading = document.createElement('h3');
+        heading.textContent = 'Stops in travel order';
+        const help = document.createElement('p');
+        help.className = 'map-editor-field-help';
+        help.textContent = 'Dotted lines connect stops in this order. Dates can use any in-universe calendar; order is controlled below.';
+        dom.featureForm.append(heading, help);
+        const button = (label, action, parent = dom.featureForm, disabled = false) => {
+            const control = document.createElement('button');
+            control.type = 'button';
+            control.textContent = label;
+            control.disabled = disabled || !canMutateWorkspace();
+            if (disabled) control.dataset.alwaysReadonly = '';
+            control.addEventListener('click', () => { if (canMutateWorkspace()) action(); });
+            parent.append(control);
+            return control;
+        };
+        button('Add stop on map', () => {
+            if (!flushSelectedFeatureForm()) return;
+            state.placingJourneyStop = true;
+            syncToolbarState();
+            setInspectorCollapsed(true, false);
+            setSelectionStatus('Click the map to place the next journey stop, or choose Cancel stop.');
+        }).id = 'editor-add-journey-stop-btn';
+        (journey.stops || []).forEach((stop, index) => {
+            const row = document.createElement('details');
+            row.className = 'map-editor-feature-section journey-stop-editor';
+            row.dataset.journeyStop = index;
+            const summary = document.createElement('summary');
+            summary.textContent = `${index + 1}. ${stop.name}${stop.date ? ` · ${stop.date}` : ''}`;
+            row.append(summary);
+            const body = document.createElement('div');
+            body.className = 'map-editor-feature-section-body';
+            for (const [key, label, placeholder] of [
+                ['name', 'Stop name', 'Arrival, discovery, battle…'],
+                ['date', 'In-universe date', 'Any calendar, approximate date, or date range'],
+                ['session', 'Session', 'Session number or title (optional)'],
+                ['description', 'What happened', 'Notes about this moment'],
+                ['wikiLink', 'Stop wiki link', 'https://…']
+            ]) {
+                const field = document.createElement('label');
+                const labelText = document.createElement('span');
+                labelText.textContent = label;
+                const input = document.createElement(key === 'description' ? 'textarea' : 'input');
+                input.value = stop[key] || '';
+                input.placeholder = placeholder;
+                input.dataset.stopField = key;
+                input.dataset.stopIndex = index;
+                if (key === 'name') input.required = true;
+                field.append(labelText, input);
+                body.append(field);
+            }
+            const actions = document.createElement('div');
+            actions.className = 'journey-stop-actions';
+            const move = delta => {
+                if (!flushSelectedFeatureForm()) return;
+                checkpointHistory('Reorder journey stops');
+                journey.stops.splice(index + delta, 0, journey.stops.splice(index, 1)[0]);
+                renderFeatureInspector();
+                renderMapLayers(false);
+                markCurrentMapDirty('Journey stop order changed.');
+                focusJourneyStop(index + delta);
+            };
+            button('Move earlier', () => move(-1), actions, index === 0);
+            button('Move later', () => move(1), actions, index === journey.stops.length - 1);
+            button('Locate', () => state.map.panTo(stop.coords), actions);
+            button('Remove stop', () => {
+                checkpointHistory('Remove journey stop');
+                journey.stops.splice(index, 1);
+                renderFeatureInspector();
+                renderFeatureLists();
+                renderMapLayers(false);
+                markCurrentMapDirty('Journey stop removed. Undo restores it.');
+            }, actions);
+            body.append(actions);
+            row.append(body);
+            dom.featureForm.append(row);
+        });
+    }
+
+    function renderJourneysLayer() {
+        if (dom.appShell.dataset.mode === 'draw') return;
+        getCurrentJourneys().forEach((journey, index) => {
+            if (dom.appShell.dataset.mode === 'feature-edit' &&
+                (state.selectedFeature?.mode !== 'journeys' || state.selectedFeature.index !== index)) return;
+            const selected = state.selectedFeature?.mode === 'journeys' && state.selectedFeature.index === index;
+            const group = CampaignJourneys.createLayer(L, document, journey, {
+                draggable: selected && canMutateWorkspace(),
+                onSelect: stopIndex => {
+                    if (state.placingJourneyStop) return;
+                    selectFeature('journeys', index);
+                    if (Number.isInteger(stopIndex)) focusJourneyStop(stopIndex);
+                },
+                onDragStart: () => { checkpointHistory('Move journey stop'); state.geometryDragActive = true; },
+                onDragEnd: (stopIndex, latlng) => {
+                    journey.stops[stopIndex].coords = roundLatLng(latlng);
+                    state.geometryDragActive = false;
+                    renderMapLayers(false);
+                    markCurrentMapDirty('Journey stop moved.');
+                }
+            });
+            group.addTo(state.journeyLayer);
+        });
+    }
+
     function renderFeatureInspector() {
         const feature = getSelectedFeature();
         dom.featureForm.innerHTML = '';
+        dom.featureForm.dataset.featureMode = feature ? state.selectedFeature.mode : '';
 
         if (!feature) {
             dom.featureForm.hidden = true;
@@ -2714,7 +2880,8 @@
         const renderInspector = {
             points: renderPointFeatureInspector,
             regions: renderRegionFeatureInspector,
-            lines: renderLineFeatureInspector
+            lines: renderLineFeatureInspector,
+            journeys: renderJourneyInspector
         }[state.selectedFeature.mode] || renderLineFeatureInspector;
         renderInspector(feature);
         syncFormAccess(dom.featureForm);
@@ -2727,7 +2894,9 @@
         if (validationError) throw new Error(validationError);
         const updateKind = definition.update || 'text';
 
-        if (updateKind === 'pointCoordinate') {
+        if (updateKind === 'boolean') {
+            feature[field] = control.checked;
+        } else if (updateKind === 'pointCoordinate') {
             const nextY = field === 'coordY' ? rawValue : dom.featureForm.querySelector('[data-field="coordY"]').value;
             const nextX = field === 'coordX' ? rawValue : dom.featureForm.querySelector('[data-field="coordX"]').value;
             feature.coords = [roundCoordinate(nextY), roundCoordinate(nextX)];
@@ -2761,6 +2930,11 @@
         const feature = getSelectedFeature();
         if (!feature || !selection) return false;
 
+        if (selection.mode === 'journeys' && !event.target.dataset.journeyHistory) {
+            checkpointHistory('Edit journey details');
+            event.target.dataset.journeyHistory = 'true';
+        }
+        if (selection.mode === 'journeys' && event.target.dataset.stopField) return updateJourneyStopField(event.target);
         const field = event.target.dataset.field;
         if (!field) return false;
         const definition = fieldApi.getFeatureFields(selection.mode)
@@ -2789,6 +2963,11 @@
         const feature = getSelectedFeature();
         const selection = state.selectedFeature;
         if (!feature || !selection || dom.featureForm.hidden) return true;
+        if (selection.mode === 'journeys') {
+            for (const control of dom.featureForm.querySelectorAll('[data-stop-field]')) {
+                if (!updateJourneyStopField(control)) { control.closest('details').open = true; control.focus(); return false; }
+            }
+        }
         const definitions = fieldApi.getFeatureFields(selection.mode);
         for (const definition of definitions) {
             const control = definition.control === 'detailSections'
@@ -3164,6 +3343,21 @@
         state.imageLayer.addTo(state.map);
     }
 
+    const pointIconCache = new Map();
+    function getEditorPointIcon(type) {
+        const normalized = String(type || '').trim().toLowerCase();
+        const typeIcons = window.AppConfig?.get('assets.poiTypeIcons', {}) || {};
+        const groups = window.AppConfig?.get('taxonomy.poiTypeGroups', {}) || {};
+        const groupIcons = window.AppConfig?.get('assets.poiIcons', {}) || {};
+        const typeKey = Object.keys(typeIcons).find(key => key.trim().toLowerCase() === normalized);
+        const group = Object.keys(groups).find(key => groups[key].some(value => value.trim().toLowerCase() === normalized));
+        const iconUrl = typeIcons[typeKey] || groupIcons[group] || groupIcons.Unknown || 'images/poi-icons/unknown.webp';
+        if (!pointIconCache.has(iconUrl)) {
+            pointIconCache.set(iconUrl, L.icon({ iconUrl, iconSize: [36, 48], iconAnchor: [18, 47], popupAnchor: [0, -40], className: 'poi-custom-icon' }));
+        }
+        return pointIconCache.get(iconUrl);
+    }
+
     function renderPointsLayer() {
         getCurrentPoints().forEach((point, index) => {
             if (dom.appShell.dataset.mode === 'draw') return;
@@ -3172,6 +3366,7 @@
             if (!Array.isArray(point.coords) || point.coords.length !== 2) return;
             const markerLabel = getPointMarkerAccessibleName(point, index);
             const marker = L.marker(point.coords, {
+                icon: getEditorPointIcon(point.type),
                 draggable: canMutateWorkspace() && state.activeTool === 'select',
                 title: markerLabel,
                 alt: markerLabel
@@ -3239,6 +3434,7 @@
         state.pointLayer.clearLayers();
         state.regionLayer.clearLayers();
         state.lineLayer.clearLayers();
+        state.journeyLayer.clearLayers();
 
         const mapIsRenderable = canRenderMap(state.currentMap);
 
@@ -3273,6 +3469,7 @@
         renderPointsLayer();
         renderRegionsLayer();
         renderLinesLayer();
+        renderJourneysLayer();
 
         renderVertexHandles();
         renderDraftGeometry();
@@ -3358,6 +3555,16 @@
 
     function handleMapClick(event) {
         if (!state.currentMap || !canRenderMap(state.currentMap) || !canMutateWorkspace()) return;
+        if (state.placingJourneyStop && state.selectedFeature?.mode === 'journeys') {
+            const journey = getSelectedFeature();
+            checkpointHistory('Add journey stop');
+            journey.stops.push({ id: CampaignJourneys.createId(), name: `Stop ${journey.stops.length + 1}`, coords: roundLatLng(event.latlng), date: '', session: '', description: '', wikiLink: '' });
+            const index = state.selectedFeature.index;
+            selectFeature('journeys', index);
+            markCurrentMapDirty('Journey stop added.');
+            focusJourneyStop(journey.stops.length - 1);
+            return;
+        }
         // Drafts survive task navigation but accept vertices only in drawing mode.
         if (dom.appShell.dataset.mode !== 'draw') return;
         const coordinate = roundLatLng(event.latlng);
@@ -3484,6 +3691,8 @@
     function exportCurrentMapJson() {
         if (!state.currentMap) return;
         try {
+            const journeyErrors = CampaignJourneys.validate(state.currentMap.journeys);
+            if (journeyErrors.length) throw new Error(journeyErrors[0]);
             const exportedDocument = serializePreservedMap({
                 masterMapData: state.atlasTree,
                 currentMapId: state.currentMap.id,
@@ -3574,6 +3783,8 @@
         syncEditingAvailability();
         refreshSaveControls();
         try {
+            const journeyErrors = CampaignJourneys.validate(state.currentMap.journeys);
+            if (journeyErrors.length) throw new Error(journeyErrors[0]);
             const exportedDocument = serializePreservedMap({
                 masterMapData: state.atlasTree,
                 currentMapId: state.currentMap.id,
@@ -3970,6 +4181,7 @@
         state.pointLayer = L.layerGroup().addTo(state.map);
         state.regionLayer = L.layerGroup().addTo(state.map);
         state.lineLayer = L.layerGroup().addTo(state.map);
+        state.journeyLayer = L.layerGroup().addTo(state.map);
         state.vertexLayer = L.layerGroup().addTo(state.map);
         state.draftLayer = L.layerGroup().addTo(state.map);
         window.addEventListener('resize', () => {
@@ -3979,6 +4191,11 @@
     }
 
     function registerEventListeners() {
+        dom.journeysButton?.addEventListener('click', () => {
+            if (hasUnfinishedGeometryDraft()) { setSelectionStatus('Finish or cancel the drawing first.'); return; }
+            clearDrawMode();
+            openFeatureBrowser('journeys');
+        });
         const debouncedRenderAtlasTree = debounce((value) => {
             state.treeSearch = String(value || '').trim();
             renderAtlasTree();
@@ -4039,7 +4256,10 @@
 
         dom.featureForm.addEventListener('change', updateSelectedFeatureFromForm);
         dom.featureForm.addEventListener('focusin', () => {
-            checkpointHistory('Edit feature details');
+            if (state.selectedFeature?.mode !== 'journeys') checkpointHistory('Edit feature details');
+        });
+        dom.featureForm.addEventListener('focusout', (event) => {
+            if (event.target.dataset) delete event.target.dataset.journeyHistory;
         });
         dom.featureForm.addEventListener('click', (event) => {
             const target = event.target instanceof Element ? event.target : null;
@@ -4089,7 +4309,7 @@
         dom.featureForm.addEventListener('input', (event) => {
             if (!canMutateWorkspace()) return;
             const field = event.target.dataset.field;
-            if (!field) return;
+            if (!field && !event.target.dataset.stopField) return;
             const selection = state.selectedFeature ? {
                 mapId: state.currentMapId,
                 mode: state.selectedFeature.mode,
@@ -4165,6 +4385,12 @@
         dom.undoPointButton?.addEventListener('click', undoDraftPoint);
         dom.curvePointButton?.addEventListener('click', toggleSelectedPointCurve);
         dom.cancelDrawButton.addEventListener('click', () => {
+            if (state.placingJourneyStop) {
+                clearDrawMode();
+                setInspectorCollapsed(false);
+                setSelectionStatus('Stop placement cancelled.');
+                return;
+            }
             clearDrawMode();
             setSelectionStatus('Canceled the current drawing.');
             openFeatureBrowser(state.featureListState.type);
@@ -4365,6 +4591,12 @@
                     if (!dom.finishDrawButton.disabled && !dom.finishDrawButton.hidden) finishDraftGeometry();
                     return;
                 }
+            }
+            if (event.key === 'Escape' && state.placingJourneyStop) {
+                clearDrawMode();
+                setInspectorCollapsed(false);
+                setSelectionStatus('Stop placement cancelled.');
+                return;
             }
             if (event.key === 'Escape' && state.openAppMenu) {
                 event.preventDefault();

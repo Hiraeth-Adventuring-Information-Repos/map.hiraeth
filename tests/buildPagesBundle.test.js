@@ -143,6 +143,7 @@ assert.equal(
 
 assert.equal(shouldCopyRuntimeAsset('images/poi-icons/city.png'), false);
 assert.equal(shouldCopyRuntimeAsset('images/poi-icons/city.svg'), true);
+assert.equal(shouldCopyRuntimeAsset('images/poi-icons/city.webp'), true);
 assert.equal(shouldCopyRuntimeAsset('images/hiraeth-maps-preview.png'), true);
 assert.equal(shouldCopyRuntimeAsset('sounds/night-ambient.mp3'), true);
 assert.equal(defaultTileCachePath.endsWith(path.join('.cache', 'pages-tiles')), true);

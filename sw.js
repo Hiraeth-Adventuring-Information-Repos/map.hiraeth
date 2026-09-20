@@ -15,6 +15,7 @@ const DEFAULT_VERSIONED_SHELL_ASSETS = [
     'css/Control.MiniMap.min.css',
     'js/app-config.js',
     'js/shared-utils.js',
+    'js/campaign-journeys.js',
     'js/libs/leaflet.js',
     'js/libs/lucide.min.js',
     'js/libs/purify.min.js',
@@ -37,11 +38,11 @@ const DEFAULT_STATIC_SHELL_ASSETS = [
     'css/images/marker-icon.png',
     'css/images/marker-icon-2x.png',
     'css/images/marker-shadow.png',
-    'images/poi-icons/settlements.svg',
-    'images/poi-icons/structures.svg',
-    'images/poi-icons/natural-features.svg',
-    'images/poi-icons/other.svg',
-    'images/poi-icons/unknown.svg'
+    'images/poi-icons/settlements.webp',
+    'images/poi-icons/structures.webp',
+    'images/poi-icons/natural-features.webp',
+    'images/poi-icons/other.webp',
+    'images/poi-icons/unknown.webp'
 ];
 
 function versionAsset(asset) {

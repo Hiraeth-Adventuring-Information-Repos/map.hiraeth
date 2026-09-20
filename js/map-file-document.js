@@ -3,7 +3,7 @@
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.MapFileDocument = api;
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-    const collections = ['pointsOfInterest', 'regions', 'lines', 'roads'];
+    const collections = ['pointsOfInterest', 'regions', 'lines', 'roads', 'journeys'];
     const clone = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
     const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);

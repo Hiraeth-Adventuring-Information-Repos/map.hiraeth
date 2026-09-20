@@ -1,0 +1,933 @@
+{
+  "generator": "Built-in ImageGen",
+  "displaySize": [
+    36,
+    48
+  ],
+  "pngExportSize": [
+    384,
+    512
+  ],
+  "webpSize": [
+    72,
+    96
+  ],
+  "icons": [
+    {
+      "slug": "settlements",
+      "label": "Settlements",
+      "symbol": "three grouped simple gabled houses",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Edit this map marker template into the Settlements marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with three grouped simple gabled houses. Set the flat pin body color to #2f7dff. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [],
+      "groupFallbacks": [
+        "Settlements"
+      ],
+      "source": "sources/settlements.png"
+    },
+    {
+      "slug": "capital",
+      "label": "Capital",
+      "symbol": "a broad three-point crown",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Edit this map marker template into the Capital marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a broad three-point crown. Set the flat pin body color to #2f7dff. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Capital"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/capital.png"
+    },
+    {
+      "slug": "city",
+      "label": "City",
+      "symbol": "two crenellated city towers and an arched gate",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Use case: logo-brand. Asset type: ONE production fantasy atlas map marker, City. Generate a new simple flat UI icon as a transparent PNG, portrait 3:4 aspect ratio (ideally 768x1024). A single centered upright teardrop map pin, large circular top tapering smoothly to one precise bottom-center point. Pin fills almost the entire canvas, same silhouette as a standard map location pin. Solid flat royal blue #2f7dff body, a thin ivory outline to separate it from detailed map artwork, and ONE bold ivory pictogram centered high in the circular head: a walled medieval city represented by two square crenellated towers and a simple central arched gate. Symbol must be very large and instantly legible when this whole pin is displayed at only 36 by 48 pixels. Simplify to a few solid geometric masses and generous negative space. True transparent alpha background outside pin. No text, letters, labels, icon sheet, tiles, checkerboard graphic, decorative flourishes, shading, gradients, perspective, tiny windows, glow, cast shadow, or texture. One complete pin only. The bottom point must be sharp and centered. Preserve an uncluttered, consistent professional wayfinding style.",
+      "types": [
+        "City"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/city.png"
+    },
+    {
+      "slug": "town",
+      "label": "Town",
+      "symbol": "two adjacent gabled houses, one taller",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Edit this map marker template into the Town marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two adjacent gabled houses, one taller. Set the flat pin body color to #2f7dff. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Town"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/town.png"
+    },
+    {
+      "slug": "village",
+      "label": "Village",
+      "symbol": "two small simple cottages under broad roofs",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Edit this map marker template into the Village marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two small simple cottages under broad roofs. Set the flat pin body color to #2f7dff. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Village"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/village.png"
+    },
+    {
+      "slug": "hamlet",
+      "label": "Hamlet",
+      "symbol": "one low cottage with one doorway",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Edit this map marker template into the Hamlet marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one low cottage with one doorway. Set the flat pin body color to #2f7dff. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Hamlet"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/hamlet.png"
+    },
+    {
+      "slug": "settlement",
+      "label": "Settlement",
+      "symbol": "one gabled house within a plain circular enclosure",
+      "category": "settlements",
+      "color": "#2f7dff",
+      "prompt": "Edit this map marker template into the Settlement marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one gabled house within a plain circular enclosure. Set the flat pin body color to #2f7dff. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Settlement"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/settlement.png"
+    },
+    {
+      "slug": "structures",
+      "label": "Structures",
+      "symbol": "a simple square building with a triangular roof and doorway",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Structures marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a simple square building with a triangular roof and doorway. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [],
+      "groupFallbacks": [
+        "Structures"
+      ],
+      "source": "sources/structures.png"
+    },
+    {
+      "slug": "castle",
+      "label": "Castle",
+      "symbol": "a castle keep with two pointed-roof towers",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Castle marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a castle keep with two pointed-roof towers. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Castle"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/castle.png"
+    },
+    {
+      "slug": "fortress",
+      "label": "Fortress",
+      "symbol": "a squat heavy crenellated stronghold with a central gate",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Fortress marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a squat heavy crenellated stronghold with a central gate. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Fortress"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/fortress.png"
+    },
+    {
+      "slug": "fort",
+      "label": "Fort",
+      "symbol": "a plain square wooden palisade with a single gate",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Fort marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a plain square wooden palisade with a single gate. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Fort"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/fort.png"
+    },
+    {
+      "slug": "tower",
+      "label": "Tower",
+      "symbol": "one tall crenellated stone tower",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Tower marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one tall crenellated stone tower. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Tower"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/tower.png"
+    },
+    {
+      "slug": "ruin",
+      "label": "Ruin",
+      "symbol": "one broken classical column and a fallen lintel",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Ruin marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one broken classical column and a fallen lintel. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Ruin",
+        "Ruins"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/ruin.png"
+    },
+    {
+      "slug": "temple",
+      "label": "Temple",
+      "symbol": "a classical triangular pediment supported by three thick columns",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Temple marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a classical triangular pediment supported by three thick columns. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Temple"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/temple.png"
+    },
+    {
+      "slug": "shrine",
+      "label": "Shrine",
+      "symbol": "one lit candle within a small peaked alcove",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Shrine marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one lit candle within a small peaked alcove. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Shrine"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/shrine.png"
+    },
+    {
+      "slug": "mine",
+      "label": "Mine",
+      "symbol": "two thick crossed pickaxes",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Mine marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two thick crossed pickaxes. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Mine"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/mine.png"
+    },
+    {
+      "slug": "lighthouse",
+      "label": "Lighthouse",
+      "symbol": "one striped lighthouse tower with two short light rays",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Lighthouse marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one striped lighthouse tower with two short light rays. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Lighthouse"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/lighthouse.png"
+    },
+    {
+      "slug": "bridge",
+      "label": "Bridge",
+      "symbol": "one broad arched bridge with two square end supports",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Bridge marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one broad arched bridge with two square end supports. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Bridge"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/bridge.png"
+    },
+    {
+      "slug": "gate",
+      "label": "Gate",
+      "symbol": "an arched gateway with three heavy portcullis bars",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Gate marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with an arched gateway with three heavy portcullis bars. Set the flat pin body color to #8b5cf6. The new ivory symbol must be large, centered in the round head, bold, simple, unmistakable at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Gate"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/gate.png"
+    },
+    {
+      "slug": "dungeon",
+      "label": "Dungeon",
+      "symbol": "three large steps descending through a square stone doorway",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Dungeon marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with three large steps descending through a square stone doorway. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Dungeon"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/dungeon.png"
+    },
+    {
+      "slug": "lair",
+      "label": "Lair",
+      "symbol": "one bold three-toed claw print",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Lair marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one bold three-toed claw print. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Lair"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/lair.png"
+    },
+    {
+      "slug": "camp",
+      "label": "Camp",
+      "symbol": "one triangular camping tent with a dark open doorway",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Camp marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one triangular camping tent with a dark open doorway. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Camp"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/camp.png"
+    },
+    {
+      "slug": "asylum",
+      "label": "Asylum",
+      "symbol": "a simple house enclosing a calm circular sun symbol",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Asylum marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a simple house enclosing a calm circular sun symbol. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Asylum"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/asylum.png"
+    },
+    {
+      "slug": "landmark",
+      "label": "Landmark",
+      "symbol": "a tall simple obelisk on a broad base",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Landmark marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a tall simple obelisk on a broad base. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Landmark"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/landmark.png"
+    },
+    {
+      "slug": "building",
+      "label": "Building",
+      "symbol": "a two-story square building with four large windows",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Building marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a two-story square building with four large windows. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Building"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/building.png"
+    },
+    {
+      "slug": "library",
+      "label": "Library",
+      "symbol": "a single broad open book",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Library marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a single broad open book. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Library"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/library.png"
+    },
+    {
+      "slug": "guildhall",
+      "label": "Guildhall",
+      "symbol": "one plain shield beneath a simple triangular roof",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Guildhall marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one plain shield beneath a simple triangular roof. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Guildhall"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/guildhall.png"
+    },
+    {
+      "slug": "hospital",
+      "label": "Hospital",
+      "symbol": "one simple equal-armed medical cross",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Hospital marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one simple equal-armed medical cross. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Hospital"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/hospital.png"
+    },
+    {
+      "slug": "cemetery",
+      "label": "Cemetery",
+      "symbol": "two rounded gravestones rising from a single short base",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Cemetery marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two rounded gravestones rising from a single short base. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Cemetery"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/cemetery.png"
+    },
+    {
+      "slug": "prison",
+      "label": "Prison",
+      "symbol": "a square window with three heavy bars",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Prison marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a square window with three heavy bars. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Prison"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/prison.png"
+    },
+    {
+      "slug": "farm",
+      "label": "Farm",
+      "symbol": "a barn beside one large stalk of wheat",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Farm marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a barn beside one large stalk of wheat. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Farm"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/farm.png"
+    },
+    {
+      "slug": "mill",
+      "label": "Mill",
+      "symbol": "one simple windmill with four broad sails",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Mill marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one simple windmill with four broad sails. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Mill"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/mill.png"
+    },
+    {
+      "slug": "watchtower",
+      "label": "Watchtower",
+      "symbol": "a square watchtower topped by a small pennant",
+      "category": "structures",
+      "color": "#8b5cf6",
+      "prompt": "Edit this map marker template into the Watchtower marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a square watchtower topped by a small pennant. Set the solid flat pin body color to #8b5cf6. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Watchtower"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/watchtower.png"
+    },
+    {
+      "slug": "natural-features",
+      "label": "Natural Features",
+      "symbol": "one triangular mountain beside one simple fir tree",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Natural Features marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one triangular mountain beside one simple fir tree. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [],
+      "groupFallbacks": [
+        "Natural Features"
+      ],
+      "source": "sources/natural-features.png"
+    },
+    {
+      "slug": "mountain",
+      "label": "Mountain",
+      "symbol": "two broad mountain peaks with a contrasting snowy cap",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Mountain marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two broad mountain peaks with a contrasting snowy cap. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Mountain"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/mountain.png"
+    },
+    {
+      "slug": "peak",
+      "label": "Peak",
+      "symbol": "one tall sharp mountain summit with a broad snowy cap",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Peak marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one tall sharp mountain summit with a broad snowy cap. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Peak"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/peak.png"
+    },
+    {
+      "slug": "forest",
+      "label": "Forest",
+      "symbol": "three overlapping fir-tree silhouettes",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Forest marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with three overlapping fir-tree silhouettes. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Forest"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/forest.png"
+    },
+    {
+      "slug": "wood",
+      "label": "Wood",
+      "symbol": "one broad round-canopied oak tree with a sturdy trunk",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Wood marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one broad round-canopied oak tree with a sturdy trunk. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Wood"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/wood.png"
+    },
+    {
+      "slug": "river",
+      "label": "River",
+      "symbol": "two broad parallel winding river banks making a single S bend",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the River marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two broad parallel winding river banks making a single S bend. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "River"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/river.png"
+    },
+    {
+      "slug": "lake",
+      "label": "Lake",
+      "symbol": "one oval pool beneath two short horizontal wave lines",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Lake marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one oval pool beneath two short horizontal wave lines. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Lake"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/lake.png"
+    },
+    {
+      "slug": "cave",
+      "label": "Cave",
+      "symbol": "an irregular rock arch with a wide dark opening",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Cave marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with an irregular rock arch with a wide dark opening. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Cave"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/cave.png"
+    },
+    {
+      "slug": "cavern",
+      "label": "Cavern",
+      "symbol": "two broad stalactites above one stalagmite",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Cavern marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two broad stalactites above one stalagmite. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Cavern"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/cavern.png"
+    },
+    {
+      "slug": "coast",
+      "label": "Coast",
+      "symbol": "a broad diagonal shoreline dividing solid land from two short waves",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Coast marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a broad diagonal shoreline dividing solid land from two short waves. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Coast"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/coast.png"
+    },
+    {
+      "slug": "bay",
+      "label": "Bay",
+      "symbol": "a wide U-shaped sheltered inlet enclosing two simple waves",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Bay marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a wide U-shaped sheltered inlet enclosing two simple waves. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Bay"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/bay.png"
+    },
+    {
+      "slug": "cove",
+      "label": "Cove",
+      "symbol": "a small crescent-shaped rocky inlet around one wave",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Cove marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a small crescent-shaped rocky inlet around one wave. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Cove"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/cove.png"
+    },
+    {
+      "slug": "swamp",
+      "label": "Swamp",
+      "symbol": "one bare bent tree rooted above two simple waves",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Swamp marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one bare bent tree rooted above two simple waves. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Swamp"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/swamp.png"
+    },
+    {
+      "slug": "marsh",
+      "label": "Marsh",
+      "symbol": "three thick cattail reeds rising from one wave",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Marsh marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with three thick cattail reeds rising from one wave. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Marsh"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/marsh.png"
+    },
+    {
+      "slug": "desert",
+      "label": "Desert",
+      "symbol": "two broad sand dune curves beneath a small solid sun",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Desert marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two broad sand dune curves beneath a small solid sun. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Desert"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/desert.png"
+    },
+    {
+      "slug": "natural-landmark",
+      "label": "Natural Landmark",
+      "symbol": "a single broad standing stone with a small four-point sparkle beside it",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Natural Landmark marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a single broad standing stone with a small four-point sparkle beside it. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Natural Landmark"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/natural-landmark.png"
+    },
+    {
+      "slug": "waterfall",
+      "label": "Waterfall",
+      "symbol": "two bold vertical falling-water ribbons flowing over a wide ledge",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Waterfall marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two bold vertical falling-water ribbons flowing over a wide ledge. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Waterfall"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/waterfall.png"
+    },
+    {
+      "slug": "volcano",
+      "label": "Volcano",
+      "symbol": "a broad volcano cone with one large flame emerging from its crater",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Volcano marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a broad volcano cone with one large flame emerging from its crater. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Volcano"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/volcano.png"
+    },
+    {
+      "slug": "island",
+      "label": "Island",
+      "symbol": "a small palm tree on one oval island above one wave",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Island marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a small palm tree on one oval island above one wave. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Island"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/island.png"
+    },
+    {
+      "slug": "oasis",
+      "label": "Oasis",
+      "symbol": "one palm tree above a small crescent pool",
+      "category": "natural",
+      "color": "#16a34a",
+      "prompt": "Edit this map marker template into the Oasis marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one palm tree above a small crescent pool. Set the solid flat pin body color to #16a34a. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Oasis"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/oasis.png"
+    },
+    {
+      "slug": "other",
+      "label": "Other",
+      "symbol": "a bold four-point compass star",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Other marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a bold four-point compass star. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [],
+      "groupFallbacks": [
+        "Other"
+      ],
+      "source": "sources/other.png"
+    },
+    {
+      "slug": "point-of-interest",
+      "label": "Point of Interest",
+      "symbol": "one large five-point star",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Point of Interest marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one large five-point star. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Point of Interest"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/point-of-interest.png"
+    },
+    {
+      "slug": "region",
+      "label": "Region",
+      "symbol": "a broad waving flag on a straight short pole",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Region marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a broad waving flag on a straight short pole. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Region",
+        "Polity / treaty waters"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/region.png"
+    },
+    {
+      "slug": "portal",
+      "label": "Portal",
+      "symbol": "one thick oval magical doorway with a simple spiral inside",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Portal marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one thick oval magical doorway with a simple spiral inside. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Portal"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/portal.png"
+    },
+    {
+      "slug": "tavern",
+      "label": "Tavern",
+      "symbol": "one broad tankard with a handle and a single foam cap",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Tavern marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one broad tankard with a handle and a single foam cap. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Tavern"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/tavern.png"
+    },
+    {
+      "slug": "dock-trading",
+      "label": "Dock & Trading",
+      "symbol": "one large simple anchor",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Dock & Trading marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one large simple anchor. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Dock & Trading"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/dock-trading.png"
+    },
+    {
+      "slug": "market-trade",
+      "label": "Market & Trade",
+      "symbol": "a broad market-stall awning above a simple counter",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Market & Trade marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a broad market-stall awning above a simple counter. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Market",
+        "Trade",
+        "Market & Trade",
+        "Market / Trade"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/market-trade.png"
+    },
+    {
+      "slug": "inn",
+      "label": "Inn",
+      "symbol": "a simple bed with a pillow beneath one small roof",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Inn marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a simple bed with a pillow beneath one small roof. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Inn"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/inn.png"
+    },
+    {
+      "slug": "shop",
+      "label": "Shop",
+      "symbol": "one cloth satchel with a thick handle",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Shop marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one cloth satchel with a thick handle. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Shop"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/shop.png"
+    },
+    {
+      "slug": "blacksmith",
+      "label": "Blacksmith",
+      "symbol": "a broad anvil with one hammer above it",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Blacksmith marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a broad anvil with one hammer above it. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Blacksmith"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/blacksmith.png"
+    },
+    {
+      "slug": "apothecary",
+      "label": "Apothecary",
+      "symbol": "a single round potion bottle with a cork and one large leaf emblem",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Apothecary marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a single round potion bottle with a cork and one large leaf emblem. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Apothecary"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/apothecary.png"
+    },
+    {
+      "slug": "ferry",
+      "label": "Ferry",
+      "symbol": "one simple low ferry boat with a cabin above two waves",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Ferry marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one simple low ferry boat with a cabin above two waves. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Ferry"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/ferry.png"
+    },
+    {
+      "slug": "shipwreck",
+      "label": "Shipwreck",
+      "symbol": "a tilted broken ship's hull with a snapped mast",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Shipwreck marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with a tilted broken ship's hull with a snapped mast. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Shipwreck"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/shipwreck.png"
+    },
+    {
+      "slug": "battlefield",
+      "label": "Battlefield",
+      "symbol": "two broad crossed swords",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Battlefield marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with two broad crossed swords. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Battlefield"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/battlefield.png"
+    },
+    {
+      "slug": "encounter",
+      "label": "Encounter",
+      "symbol": "one bold exclamation mark inside a simple warning triangle",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Encounter marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one bold exclamation mark inside a simple warning triangle. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Encounter",
+        "Seasonal encounter area"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/encounter.png"
+    },
+    {
+      "slug": "quest",
+      "label": "Quest",
+      "symbol": "one unfurled parchment scroll with a simple four-point star",
+      "category": "other",
+      "color": "#f59e0b",
+      "prompt": "Edit this map marker template into the Quest marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one unfurled parchment scroll with a simple four-point star. Set the solid flat pin body color to #f59e0b. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [
+        "Quest"
+      ],
+      "groupFallbacks": [],
+      "source": "sources/quest.png"
+    },
+    {
+      "slug": "unknown",
+      "label": "Unknown",
+      "symbol": "one large bold question mark",
+      "category": "unknown",
+      "color": "#6b7280",
+      "prompt": "Edit this map marker template into the Unknown marker. Preserve the exact upright teardrop outline, thin ivory border, pointed bottom-center anchor, transparent alpha exterior, and 3:4 portrait composition. Replace the central ivory pictogram with one large bold question mark. Set the solid flat pin body color to #6b7280. All pixels inside the pin must be completely opaque, with a uniform flat color and no blotches or transparent holes. The new ivory symbol must be large, centered in the round head, bold, simple, legible at a final display size of 36x48 pixels, with generous negative space and very few details. Solid flat fills, no gradients or texture, no letters or labels except the requested symbol, no surrounding objects or cast shadow. Clean smooth exterior contour. Produce ONE standalone complete transparent marker, no sheet.",
+      "types": [],
+      "groupFallbacks": [
+        "Unknown"
+      ],
+      "source": "sources/unknown.png"
+    }
+  ]
+}
