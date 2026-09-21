@@ -13451,25 +13451,54 @@
           1104,
           1451
         ],
-        "name": "Cat and Hound",
-        "pronunciation": "",
+        "name": "TBD (The Best Drink)",
+        "pronunciation": "tee-bee-dee",
         "type": "Tavern",
-        "description": "The Cat and Hound is a warm, cozy sanctuary situated on a raised mezzanine level overlooking the street, its timbers vibrating gently with the rhythmic passing of nearby trains.",
-        "summary": "A cozy, evening-only tavern run by two sisters, offering cheap, hearty food and a welcoming atmosphere on a lowered building near the train tracks.",
+        "description": "Conversation hums over the clink of glasses, carrying the smell of spilled ale and experimental cocktails through a well-used drinking room. Cats slip between chair legs while patrons settle into corners to trade news. Beneath the everyday bustle hangs the watchfulness of an occupied city, where even an ordinary conversation can carry more than one meaning.",
+        "summary": "The former Cat and Hound, reborn as The Best Drink: a Stomion tavern that serves as the party’s business, gathering place, and base of operations.",
         "wikiLink": "",
         "properties": {
-          "Map": "The Port City of Stomion"
+          "Map": "Stomion",
+          "City": "Stomion",
+          "Former Name": "The Cat and Hound",
+          "Alternate Name": "The Black Rose",
+          "Proprietors": "The adventuring party; Veylan secured the property deed under a shell identity.",
+          "Services": "Drinks, cocktails, and a place to gather.",
+          "Notable Regular": "Lilibeth Goldwyn, who works behind the bar and experiments with cocktails.",
+          "Animals": "A stray mother cat gave birth to seven kittens here.",
+          "Opening Hours": "Not established.",
+          "Prices": "Not established."
         },
         "detailSections": [
           {
-            "heading": "Context",
-            "body": "Owned by the sisters Kallista and Eleni, the tavern is a beloved staple for the city's mid-level workers looking for a quiet evening. Kallista, a stoic veteran of the national army, is known as 'The Hound,' while the tavern's name serves as a quiet, melancholic memorial to her lost lover, a Felis—'The Cat'—who vanished during the war. While Kallista handles security and the heavy lifting, Eleni, who worked the floor under the previous owner, manages the patrons with practiced grace. They are famous for serving high-quality meals at unbeatable prices, a feat accomplished by the sisters personally scouring the markets at dawn to source fresh ingredients themselves. Open only from 4 PM to midnight, the tavern enforces strict rules against politics and magic, allowing patrons to enjoy the piano music and hearty stew while the owners secretly harbor sympathies for the rebellion."
+            "heading": "A Name Worth Keeping",
+            "body": "When reports described the former Cat and Hound’s new name as 'to be determined,' the party adopted TBD as the name itself. Its hidden meaning is The Best Drink. Earlier accounts also call the premises the Black Rose."
+          },
+          {
+            "heading": "Behind the Bar",
+            "body": "Lilibeth has worked at the bar and experimented enthusiastically with potential house cocktails. Rain gave shelter to a pregnant stray cat, who delivered seven kittens inside the tavern. The establishment has become a home as well as a business."
+          },
+          {
+            "heading": "History",
+            "body": "The Cat and Hound was previously run by the sisters Kallista and Eleni. In its former incarnation, it was a warm, cozy sanctuary on a raised mezzanine overlooking the street, its timbers vibrating with the passing of nearby trains. It was a beloved evening refuge for the city’s mid-level workers. Kallista, a stoic veteran of the national army known as 'The Hound,' handled security and heavy lifting. The name commemorated her lost lover, a Felis—'The Cat'—who vanished during the war. Eleni, who had worked the floor under the previous owner, managed the patrons. The sisters sourced fresh ingredients at dawn and served high-quality, inexpensive meals, with piano music and hearty stew among the tavern’s comforts. Under their management, it opened from 4 PM to midnight and prohibited politics and magic, although the sisters privately sympathized with the rebellion. These hours, prices, and rules describe the former establishment, not confirmed policies under the party’s ownership. An Imperial raid made it part of the party’s earliest struggle in Stomion. Veylan later acquired the seized property through Arfraduren Bank under a shell identity, securing a six-month rent deferral and giving the group a permanent foothold in the city."
+          },
+          {
+            "heading": "Behind Closed Doors — GM Information",
+            "body": "The party uses the tavern as a cover business and intelligence hub. Beneath the building lies a concealed cult chamber with connections to deeper tunnels. The premises offer shelter and access to the city’s hidden routes, but official interest in the cellar threatens the security of the entire operation."
           }
         ],
         "tags": [
-          "The Port City of Stomion",
-          "Hospitality",
-          "Magic"
+          "Stomion",
+          "Eschatia",
+          "tavern",
+          "The Best Drink",
+          "TBD",
+          "Cat and Hound",
+          "Black Rose",
+          "Rebels of Eschatia",
+          "party base",
+          "cocktails",
+          "cats"
         ]
       },
       {
