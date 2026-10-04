@@ -7,11 +7,12 @@ const localAccessScriptMatch = htmlSource.match(/<script>\s*(\(function resolveM
 
 assert.ok(localAccessScriptMatch, 'local access bootstrap script should exist');
 
-function evaluateLocalAccess(protocol, hostname) {
+function evaluateLocalAccess(protocol, hostname, downloadOnly = false) {
     const addedClasses = [];
     const context = {
         window: {
-            location: { protocol, hostname }
+            location: { protocol, hostname },
+            __MAP_EDITOR_DOWNLOAD_ONLY__: downloadOnly
         },
         document: {
             documentElement: {
@@ -55,3 +56,5 @@ function evaluateLocalAccess(protocol, hostname) {
 });
 
 console.log('map-editor local access checks passed');
+
+assert.equal(evaluateLocalAccess('https:', 'maps.hiraeth.wiki', true).allowed, true, 'The published download editor should work on its public hostname');

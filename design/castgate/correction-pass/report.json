@@ -1,0 +1,1491 @@
+{
+  "passId": "castgate-source-correction-20261003",
+  "beforeBuildings": 446,
+  "afterBuildings": 442,
+  "retiredBuildings": [
+    {
+      "id": "castgate-building-0002",
+      "address": "2 Northgate Way",
+      "aliases": [],
+      "survivingBuildingId": null,
+      "reason": "Tree crown beside School for Adventures, not a building."
+    },
+    {
+      "id": "castgate-building-0068",
+      "address": "8 Embassy Street",
+      "aliases": [],
+      "survivingBuildingId": null,
+      "reason": "Decorative pond in northern garden, not a roof."
+    },
+    {
+      "id": "castgate-building-0077",
+      "address": "1 North Pier",
+      "aliases": [],
+      "survivingBuildingId": null,
+      "reason": "Moored ship at northern pier, not a stationary building."
+    },
+    {
+      "id": "castgate-building-0113",
+      "address": "1 Western Quay",
+      "aliases": [],
+      "survivingBuildingId": null,
+      "reason": "Moored ship at middle pier, not a stationary building."
+    },
+    {
+      "id": "castgate-building-0074",
+      "address": "7 Eastern Lane",
+      "aliases": [],
+      "survivingBuildingId": "castgate-building-0091",
+      "reason": "Embassy perimeter wall and open garden fragment, not a second building."
+    },
+    {
+      "id": "castgate-building-0321",
+      "address": "22 South Market Street",
+      "aliases": [],
+      "survivingBuildingId": "castgate-building-0340",
+      "reason": "Interior palace skylight was falsely assigned a separate address."
+    },
+    {
+      "id": "castgate-building-0336",
+      "address": "30 South Market Street",
+      "aliases": [],
+      "survivingBuildingId": null,
+      "reason": "Open-air barrels/goods, not a roof."
+    }
+  ],
+  "correctedRoofs": [
+    {
+      "id": "castgate-building-0340",
+      "new": false,
+      "nativeBounds": [
+        2280,
+        5450,
+        3070,
+        6250
+      ],
+      "reason": "Join southwest palace into one contiguous architectural roof including the attached blue crescent glazing/awnings; interior skylights are not independent buildings. Keep the open cobbled garden outside the curved roof silhouette.",
+      "holeCount": 0
+    },
+    {
+      "id": "castgate-building-0031",
+      "new": false,
+      "nativeBounds": [
+        2750,
+        2050,
+        3460,
+        2760
+      ],
+      "reason": "Restore full connected northern harbor roof around the former interior ornament; exclude tiled public terrace and sea.",
+      "holeCount": 0
+    },
+    {
+      "id": "castgate-building-0087",
+      "new": false,
+      "nativeBounds": [
+        3450,
+        2790,
+        4260,
+        3430
+      ],
+      "reason": "Replace shoreline/pier outline with joined cream roof silhouette; preserve source circular glazing and harbor edge outside roof.",
+      "holeCount": 0
+    },
+    {
+      "id": "castgate-building-0091",
+      "new": false,
+      "nativeBounds": [
+        4940,
+        2740,
+        5680,
+        3460
+      ],
+      "reason": "Trace only continuous embassy roof; remove perimeter garden walls, ornamental pool paving and palm canopy from footprint. Garden inside annular wing remains open courtyard.",
+      "holeCount": 1
+    },
+    {
+      "id": "castgate-building-correction-pink-east",
+      "new": true,
+      "nativeBounds": [
+        6100,
+        6000,
+        6460,
+        6320
+      ],
+      "reason": "Recover large joined pink roof entirely missed by tan-only contour selection; exclude open courtyard.",
+      "holeCount": 0
+    },
+    {
+      "id": "castgate-building-0323",
+      "new": false,
+      "nativeBounds": [
+        3955,
+        5701,
+        4415,
+        6191
+      ],
+      "reason": "Trim address footprint to actual market-stall roof, excluding open-air barrels above it.",
+      "holeCount": 0
+    },
+    {
+      "id": "castgate-building-correction-harbor-south",
+      "new": true,
+      "nativeBounds": [
+        2750,
+        2050,
+        3460,
+        2760
+      ],
+      "reason": "Recover separate connected southern harbor roof; keep public tiled terrace between north/south roofs unfilled.",
+      "holeCount": 0
+    },
+    {
+      "id": "castgate-building-correction-snow-east",
+      "new": true,
+      "nativeBounds": [
+        7660,
+        4220,
+        7930,
+        4480
+      ],
+      "reason": "Recover the missing connected snow-covered roof beside the Dwarf Brewery lore pin. Exact tenant is unconfirmed; preserve the original destination pin and route around this physical roof.",
+      "holeCount": 0
+    }
+  ],
+  "repairedNodes": [
+    {
+      "id": "castgate-junction-0008",
+      "before": [
+        2366,
+        2746
+      ],
+      "after": [
+        2410,
+        2746
+      ]
+    },
+    {
+      "id": "castgate-junction-0014",
+      "before": [
+        2218,
+        2746
+      ],
+      "after": [
+        2178,
+        2710
+      ]
+    },
+    {
+      "id": "castgate-junction-0021",
+      "before": [
+        2362,
+        2754
+      ],
+      "after": [
+        2414,
+        2766
+      ]
+    },
+    {
+      "id": "castgate-junction-0038",
+      "before": [
+        3698,
+        3642
+      ],
+      "after": [
+        3698,
+        3504
+      ]
+    },
+    {
+      "id": "castgate-junction-0304",
+      "before": [
+        3870,
+        7810
+      ],
+      "after": [
+        3870,
+        7855
+      ]
+    }
+  ],
+  "repairedStreets": [
+    {
+      "id": "castgate-street-0006",
+      "beforePoints": 37,
+      "afterPoints": 73
+    },
+    {
+      "id": "castgate-street-0011",
+      "beforePoints": 14,
+      "afterPoints": 58
+    },
+    {
+      "id": "castgate-street-0012",
+      "beforePoints": 8,
+      "afterPoints": 11
+    },
+    {
+      "id": "castgate-street-0019",
+      "beforePoints": 21,
+      "afterPoints": 21
+    },
+    {
+      "id": "castgate-street-0024",
+      "beforePoints": 3,
+      "afterPoints": 3
+    },
+    {
+      "id": "castgate-street-0025",
+      "beforePoints": 18,
+      "afterPoints": 38
+    },
+    {
+      "id": "castgate-street-0026",
+      "beforePoints": 25,
+      "afterPoints": 34
+    },
+    {
+      "id": "castgate-street-0027",
+      "beforePoints": 8,
+      "afterPoints": 14
+    },
+    {
+      "id": "castgate-street-0029",
+      "beforePoints": 8,
+      "afterPoints": 22
+    },
+    {
+      "id": "castgate-street-0039",
+      "beforePoints": 4,
+      "afterPoints": 4
+    },
+    {
+      "id": "castgate-street-0104",
+      "beforePoints": 2,
+      "afterPoints": 7
+    },
+    {
+      "id": "castgate-street-0112",
+      "beforePoints": 19,
+      "afterPoints": 23
+    },
+    {
+      "id": "castgate-street-0423",
+      "beforePoints": 118,
+      "afterPoints": 118
+    },
+    {
+      "id": "castgate-landmark-dwarf-brewery-walk",
+      "beforePoints": 33,
+      "afterPoints": 3
+    }
+  ],
+  "repairedEntrances": [
+    {
+      "id": "castgate-building-0031",
+      "oldLineId": "castgate-street-0033",
+      "newLineId": "castgate-street-0033"
+    },
+    {
+      "id": "castgate-building-0087",
+      "oldLineId": "castgate-street-0120",
+      "newLineId": "castgate-street-0084"
+    },
+    {
+      "id": "castgate-building-0091",
+      "oldLineId": "castgate-street-0296",
+      "newLineId": "castgate-street-0309"
+    },
+    {
+      "id": "castgate-building-0275",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0276",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0277",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0287",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0288",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0301",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0319",
+      "oldLineId": "castgate-street-0006",
+      "newLineId": "castgate-street-0006"
+    },
+    {
+      "id": "castgate-building-0323",
+      "oldLineId": "castgate-street-0128",
+      "newLineId": "castgate-street-0112"
+    },
+    {
+      "id": "castgate-building-0340",
+      "oldLineId": "castgate-street-0019",
+      "newLineId": "castgate-street-0026"
+    },
+    {
+      "id": "castgate-building-0343",
+      "oldLineId": "castgate-street-0112",
+      "newLineId": "castgate-street-0112"
+    },
+    {
+      "id": "castgate-building-0352",
+      "oldLineId": "castgate-street-0026",
+      "newLineId": "castgate-street-0026"
+    },
+    {
+      "id": "castgate-building-0354",
+      "oldLineId": "castgate-street-0112",
+      "newLineId": "castgate-street-0112"
+    },
+    {
+      "id": "castgate-building-0360",
+      "oldLineId": "castgate-street-0019",
+      "newLineId": "castgate-street-0026"
+    },
+    {
+      "id": "castgate-building-0371",
+      "oldLineId": "castgate-street-0352",
+      "newLineId": "castgate-street-0352"
+    },
+    {
+      "id": "castgate-building-0372",
+      "oldLineId": "castgate-street-0019",
+      "newLineId": "castgate-street-0005"
+    },
+    {
+      "id": "castgate-building-correction-pink-east",
+      "oldLineId": null,
+      "newLineId": "castgate-street-0352"
+    },
+    {
+      "id": "castgate-building-correction-harbor-south",
+      "oldLineId": null,
+      "newLineId": "castgate-street-0035"
+    },
+    {
+      "id": "castgate-building-correction-snow-east",
+      "oldLineId": null,
+      "newLineId": "castgate-street-0423"
+    }
+  ],
+  "counts": {
+    "travelLinks": 444,
+    "nodes": 319,
+    "roofsWithCourtyards": 1,
+    "walkingObstacles": 2
+  },
+  "failures": [],
+  "overlappingRoofPixels": [],
+  "topologyChecked": 442,
+  "sourceSha256": "dc6a88fe6d8b91a6245b5831fa6d3d1ae26990c43e55a9cc907af1ec82a1dd51",
+  "canonicalSha256": "fa744d7eb6c6c09a43946be7427deda64379d4a51142e22ea2d61d9b27f61e47",
+  "scope": "Pixel collision against every final roof/courtyard and continuous harbor mask; source alignment reviewed in native closeups.",
+  "removedPhantomDeckAreas": [
+    {
+      "id": "south-pier-phantom-arm",
+      "nativePolygon": [
+        [
+          3511,
+          4482
+        ],
+        [
+          3616,
+          4482
+        ],
+        [
+          3616,
+          4510
+        ],
+        [
+          3511,
+          4510
+        ]
+      ],
+      "reason": "Actual first T-head ends nearx3510; the next head starts nearx3617. The intervening open harbor is not deck."
+    },
+    {
+      "id": "castgate-reviewed-east-pier-ghost-stem",
+      "nativePolygon": [
+        [
+          4070,
+          4467
+        ],
+        [
+          4148,
+          4467
+        ],
+        [
+          4148,
+          4972
+        ],
+        [
+          4070,
+          4972
+        ]
+      ],
+      "reason": "Clear old straight eastern stem and west-edge lower approach water allowance before restoring only source-confirmed timber centers."
+    }
+  ],
+  "sourcePierCorrections": [
+    {
+      "id": "castgate-street-0039",
+      "nativePath": [
+        [
+          3458,
+          4874
+        ],
+        [
+          3430,
+          4866
+        ],
+        [
+          3430,
+          4494
+        ],
+        [
+          3504,
+          4494
+        ]
+      ],
+      "reason": "Trace actual timber center and first T-head endpoint; remove110px invented arm over open harbor."
+    },
+    {
+      "id": "castgate-street-0104",
+      "nativePath": [
+        [
+          4098,
+          4454
+        ],
+        [
+          4133,
+          4454
+        ],
+        [
+          4133,
+          4465
+        ],
+        [
+          4133,
+          4480
+        ],
+        [
+          4129,
+          4520
+        ],
+        [
+          4124,
+          4580
+        ],
+        [
+          4119,
+          4640
+        ],
+        [
+          4113,
+          4700
+        ],
+        [
+          4107,
+          4762
+        ],
+        [
+          4098,
+          4762
+        ]
+      ],
+      "reason": "Follow the real horizontal T-head to its stem meeting, then the actual slanted timber centerline; no straight shortcut through open harbor."
+    },
+    {
+      "id": "castgate-street-0423",
+      "nativePath": [
+        [
+          6682,
+          4218
+        ],
+        [
+          6698,
+          4234
+        ],
+        [
+          6710,
+          4234
+        ],
+        [
+          6714,
+          4238
+        ],
+        [
+          6774,
+          4238
+        ],
+        [
+          6778,
+          4242
+        ],
+        [
+          7038,
+          4242
+        ],
+        [
+          7042,
+          4246
+        ],
+        [
+          7106,
+          4246
+        ],
+        [
+          7118,
+          4258
+        ],
+        [
+          7146,
+          4258
+        ],
+        [
+          7170,
+          4282
+        ],
+        [
+          7170,
+          4290
+        ],
+        [
+          7166,
+          4294
+        ],
+        [
+          7166,
+          4302
+        ],
+        [
+          7154,
+          4314
+        ],
+        [
+          7154,
+          4346
+        ],
+        [
+          7146,
+          4354
+        ],
+        [
+          7146,
+          4370
+        ],
+        [
+          7142,
+          4374
+        ],
+        [
+          7142,
+          4474
+        ],
+        [
+          7126,
+          4490
+        ],
+        [
+          7126,
+          4494
+        ],
+        [
+          7122,
+          4498
+        ],
+        [
+          7122,
+          4522
+        ],
+        [
+          7114,
+          4530
+        ],
+        [
+          7114,
+          4594
+        ],
+        [
+          7110,
+          4598
+        ],
+        [
+          7110,
+          4614
+        ],
+        [
+          7106,
+          4618
+        ],
+        [
+          7106,
+          4634
+        ],
+        [
+          7102,
+          4638
+        ],
+        [
+          7102,
+          4654
+        ],
+        [
+          7098,
+          4658
+        ],
+        [
+          7098,
+          4690
+        ],
+        [
+          7094,
+          4694
+        ],
+        [
+          7094,
+          4698
+        ],
+        [
+          7090,
+          4702
+        ],
+        [
+          7090,
+          4710
+        ],
+        [
+          7086,
+          4714
+        ],
+        [
+          7086,
+          4722
+        ],
+        [
+          7074,
+          4734
+        ],
+        [
+          7074,
+          4782
+        ],
+        [
+          7070,
+          4786
+        ],
+        [
+          7070,
+          4798
+        ],
+        [
+          7066,
+          4802
+        ],
+        [
+          7066,
+          4814
+        ],
+        [
+          7062,
+          4818
+        ],
+        [
+          7062,
+          4830
+        ],
+        [
+          7058,
+          4834
+        ],
+        [
+          7058,
+          4850
+        ],
+        [
+          7054,
+          4854
+        ],
+        [
+          7054,
+          4862
+        ],
+        [
+          7050,
+          4866
+        ],
+        [
+          7050,
+          4934
+        ],
+        [
+          7070,
+          4934
+        ],
+        [
+          7070,
+          4938
+        ],
+        [
+          7098,
+          4938
+        ],
+        [
+          7098,
+          4930
+        ],
+        [
+          7102,
+          4926
+        ],
+        [
+          7102,
+          4922
+        ],
+        [
+          7106,
+          4918
+        ],
+        [
+          7106,
+          4902
+        ],
+        [
+          7114,
+          4894
+        ],
+        [
+          7114,
+          4874
+        ],
+        [
+          7118,
+          4870
+        ],
+        [
+          7118,
+          4854
+        ],
+        [
+          7122,
+          4850
+        ],
+        [
+          7122,
+          4846
+        ],
+        [
+          7126,
+          4842
+        ],
+        [
+          7126,
+          4818
+        ],
+        [
+          7130,
+          4814
+        ],
+        [
+          7130,
+          4802
+        ],
+        [
+          7134,
+          4798
+        ],
+        [
+          7134,
+          4794
+        ],
+        [
+          7138,
+          4790
+        ],
+        [
+          7138,
+          4774
+        ],
+        [
+          7146,
+          4766
+        ],
+        [
+          7146,
+          4758
+        ],
+        [
+          7150,
+          4754
+        ],
+        [
+          7150,
+          4718
+        ],
+        [
+          7154,
+          4714
+        ],
+        [
+          7154,
+          4694
+        ],
+        [
+          7162,
+          4686
+        ],
+        [
+          7162,
+          4666
+        ],
+        [
+          7166,
+          4662
+        ],
+        [
+          7166,
+          4642
+        ],
+        [
+          7174,
+          4634
+        ],
+        [
+          7174,
+          4626
+        ],
+        [
+          7178,
+          4622
+        ],
+        [
+          7178,
+          4586
+        ],
+        [
+          7182,
+          4582
+        ],
+        [
+          7182,
+          4562
+        ],
+        [
+          7186,
+          4558
+        ],
+        [
+          7186,
+          4534
+        ],
+        [
+          7190,
+          4530
+        ],
+        [
+          7190,
+          4510
+        ],
+        [
+          7194,
+          4506
+        ],
+        [
+          7194,
+          4482
+        ],
+        [
+          7198,
+          4478
+        ],
+        [
+          7198,
+          4458
+        ],
+        [
+          7202,
+          4454
+        ],
+        [
+          7202,
+          4430
+        ],
+        [
+          7206,
+          4426
+        ],
+        [
+          7206,
+          4422
+        ],
+        [
+          7210,
+          4418
+        ],
+        [
+          7210,
+          4410
+        ],
+        [
+          7298,
+          4322
+        ],
+        [
+          7330,
+          4322
+        ],
+        [
+          7346,
+          4306
+        ],
+        [
+          7662,
+          4306
+        ],
+        [
+          7666,
+          4302
+        ],
+        [
+          7740,
+          4306
+        ],
+        [
+          7750,
+          4275
+        ],
+        [
+          7800,
+          4274
+        ],
+        [
+          7838,
+          4270
+        ],
+        [
+          7855,
+          4285
+        ],
+        [
+          7855,
+          4322
+        ]
+      ],
+      "reason": "Preserve eastern snow road, detouring north/east of the newly reviewed snow-covered roof to the dry junction."
+    },
+    {
+      "id": "castgate-landmark-dwarf-brewery-walk",
+      "nativePath": [
+        [
+          7842,
+          4450
+        ],
+        [
+          7842,
+          4450
+        ],
+        [
+          7855,
+          4410
+        ],
+        [
+          7855,
+          4360
+        ],
+        [
+          7855,
+          4322
+        ]
+      ],
+      "reason": "Keep the original Brewery lore pin; approach the street along visible clear snow east of the physical roof, whose tenant is unconfirmed."
+    },
+    {
+      "id": "castgate-street-0025",
+      "nativePath": [
+        [
+          2710.0,
+          6014.0
+        ],
+        [
+          2654.0,
+          6014.0
+        ],
+        [
+          2650.0,
+          6010.0
+        ],
+        [
+          2646.0,
+          6010.0
+        ],
+        [
+          2642.0,
+          6006.0
+        ],
+        [
+          2642.0,
+          5974.0
+        ],
+        [
+          2622.0,
+          5954.0
+        ],
+        [
+          2606.0,
+          5954.0
+        ],
+        [
+          2598.0,
+          5946.0
+        ],
+        [
+          2566.0,
+          5946.0
+        ],
+        [
+          2550.0,
+          5930.0
+        ],
+        [
+          2526.0,
+          5930.0
+        ],
+        [
+          2510.0,
+          5914.0
+        ],
+        [
+          2510.0,
+          5826.0
+        ],
+        [
+          2526.0,
+          5810.0
+        ],
+        [
+          2526.0,
+          5702.0
+        ],
+        [
+          2530.0,
+          5698.0
+        ],
+        [
+          2530.0,
+          5694.0
+        ],
+        [
+          2534.0,
+          5690.0
+        ],
+        [
+          2534.0,
+          5614.0
+        ],
+        [
+          2538.0,
+          5610.0
+        ],
+        [
+          2542.0,
+          5610.0
+        ],
+        [
+          2546.0,
+          5606.0
+        ],
+        [
+          2554.0,
+          5606.0
+        ],
+        [
+          2558.0,
+          5602.0
+        ],
+        [
+          2734.0,
+          5602.0
+        ],
+        [
+          2754.0,
+          5622.0
+        ],
+        [
+          2754.0,
+          5640
+        ],
+        [
+          2785,
+          5655
+        ],
+        [
+          2785,
+          5715
+        ],
+        [
+          2754.0,
+          5722
+        ],
+        [
+          2754.0,
+          5722.0
+        ],
+        [
+          2758.0,
+          5726.0
+        ],
+        [
+          2758.0,
+          5778.0
+        ],
+        [
+          2766.0,
+          5778.0
+        ]
+      ],
+      "reason": "Retain the repaired palace garden street on clear cobbles east of the ornamental fountain; do not cross pool water or curb."
+    },
+    {
+      "id": "castgate-street-0027",
+      "nativePath": [
+        [
+          2750.0,
+          5534.0
+        ],
+        [
+          2750.0,
+          5538.0
+        ],
+        [
+          2754.0,
+          5542.0
+        ],
+        [
+          2754.0,
+          5640
+        ],
+        [
+          2785,
+          5655
+        ],
+        [
+          2785,
+          5715
+        ],
+        [
+          2754.0,
+          5722
+        ],
+        [
+          2754.0,
+          5722.0
+        ],
+        [
+          2758.0,
+          5726.0
+        ],
+        [
+          2758.0,
+          5778.0
+        ],
+        [
+          2766.0,
+          5778.0
+        ]
+      ],
+      "reason": "Retain the repaired palace garden street on clear cobbles east of the ornamental fountain; do not cross pool water or curb."
+    }
+  ],
+  "addedWalkingObstacles": [
+    {
+      "id": "castgate-palace-garden-fountain",
+      "kind": "ornamental fountain basin",
+      "nativePolygon": [
+        [
+          2732,
+          5654
+        ],
+        [
+          2720,
+          5659
+        ],
+        [
+          2713,
+          5667
+        ],
+        [
+          2714,
+          5673
+        ],
+        [
+          2709,
+          5680
+        ],
+        [
+          2709,
+          5696
+        ],
+        [
+          2713,
+          5705
+        ],
+        [
+          2723,
+          5716
+        ],
+        [
+          2729,
+          5717
+        ],
+        [
+          2735,
+          5724
+        ],
+        [
+          2745,
+          5725
+        ],
+        [
+          2758,
+          5720
+        ],
+        [
+          2765,
+          5712
+        ],
+        [
+          2765,
+          5707
+        ],
+        [
+          2764,
+          5706
+        ],
+        [
+          2770,
+          5696
+        ],
+        [
+          2769,
+          5682
+        ],
+        [
+          2763,
+          5670
+        ],
+        [
+          2755,
+          5662
+        ],
+        [
+          2751,
+          5661
+        ],
+        [
+          2749,
+          5662
+        ],
+        [
+          2744,
+          5655
+        ]
+      ],
+      "reason": "The palace garden ornamental fountain contains blue water and a solid curb; shared street paths must remain on surrounding cobbles. This feature has no building address.",
+      "method": "Source ink-bound pool/curb interior contour50147 expanded seven native pixels to the drawn cream curb; attached palms and public cobbled garden remain walkable."
+    }
+  ],
+  "addedPierApproaches": [
+    {
+      "id": "castgate-street-correction-inner-pier-access",
+      "from": "castgate-junction-0068",
+      "to": "castgate-junction-0082",
+      "sourceNativePath": [
+        [
+          3762,
+          5026
+        ],
+        [
+          3762,
+          5070
+        ],
+        [
+          3765,
+          5125
+        ],
+        [
+          3785,
+          5138
+        ],
+        [
+          3855,
+          5120
+        ],
+        [
+          3910,
+          5080
+        ],
+        [
+          3954,
+          5030
+        ]
+      ],
+      "reason": "Finish actual timber stem, then traverse clear shore to existing Newt Street terminal."
+    },
+    {
+      "id": "castgate-street-correction-outer-pier-access",
+      "from": "castgate-junction-0089",
+      "to": "castgate-junction-0083",
+      "sourceNativePath": [
+        [
+          4098,
+          4762
+        ],
+        [
+          4107,
+          4762
+        ],
+        [
+          4104,
+          4830
+        ],
+        [
+          4100,
+          4900
+        ],
+        [
+          4096,
+          4948
+        ],
+        [
+          4090,
+          4978
+        ],
+        [
+          4106,
+          5010
+        ]
+      ],
+      "reason": "Finish actual sloping timber stem, then follow clear shore/cobble edge to existing street junction."
+    }
+  ],
+  "reviewedDeckMaskSha256": "a86949a7193d0cc44243710568b52d8b726048c003c6c97d93691b84c9581c90",
+  "controlsSha256": "19d283caf6a0adfbba5986edefab642a371b67e4277b79f8d4a09c3d357fdbc2",
+  "baselineSha256": "8b01522515dee9f6fda28c0213de040ab174e77de8c401805de1392153185d1e",
+  "roofAreaChanges": [
+    {
+      "id": "castgate-building-0031",
+      "beforeAreaPixels": 1155.5,
+      "afterAreaPixels": 46208.5,
+      "nativeExtent": [
+        2839.0,
+        2085.0,
+        3156.0,
+        2326.0
+      ],
+      "courtyardAreaPixels": 0
+    },
+    {
+      "id": "castgate-building-0087",
+      "beforeAreaPixels": 89372.0,
+      "afterAreaPixels": 81505.0,
+      "nativeExtent": [
+        3894.0,
+        2893.0,
+        4203.0,
+        3267.0
+      ],
+      "courtyardAreaPixels": 0
+    },
+    {
+      "id": "castgate-building-0091",
+      "beforeAreaPixels": 163949.5,
+      "afterAreaPixels": 93321.0,
+      "nativeExtent": [
+        5157.0,
+        2923.0,
+        5578.0,
+        3311.0
+      ],
+      "courtyardAreaPixels": 24657.5
+    },
+    {
+      "id": "castgate-building-0323",
+      "beforeAreaPixels": 8944.5,
+      "afterAreaPixels": 6293.5,
+      "nativeExtent": [
+        4143.0,
+        5901.0,
+        4227.0,
+        6003.0
+      ],
+      "courtyardAreaPixels": 0
+    },
+    {
+      "id": "castgate-building-0340",
+      "beforeAreaPixels": 3951.5,
+      "afterAreaPixels": 116634.0,
+      "nativeExtent": [
+        2514.0,
+        5605.0,
+        2932.0,
+        6104.0
+      ],
+      "courtyardAreaPixels": 0
+    },
+    {
+      "id": "castgate-building-correction-pink-east",
+      "beforeAreaPixels": 0,
+      "afterAreaPixels": 42130.5,
+      "nativeExtent": [
+        6171.0,
+        6014.0,
+        6405.0,
+        6250.0
+      ],
+      "courtyardAreaPixels": 0
+    },
+    {
+      "id": "castgate-building-correction-harbor-south",
+      "beforeAreaPixels": 0,
+      "afterAreaPixels": 40458.0,
+      "nativeExtent": [
+        3096.0,
+        2294.0,
+        3350.0,
+        2624.0
+      ],
+      "courtyardAreaPixels": 0
+    },
+    {
+      "id": "castgate-building-correction-snow-east",
+      "beforeAreaPixels": 0,
+      "afterAreaPixels": 6367.5,
+      "nativeExtent": [
+        7729.0,
+        4288.0,
+        7842.0,
+        4391.0
+      ],
+      "courtyardAreaPixels": 0
+    }
+  ]
+}

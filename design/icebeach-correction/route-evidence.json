@@ -1,0 +1,289 @@
+{
+  "map": "IceBeach",
+  "mapSha256": "4137afe945d9a192247a595ed14d3b052c04b9e6cf58176bf8e8a7966ced9887",
+  "graphErrors": [],
+  "sourceCounts": {
+    "sourceTrailLegs": 23,
+    "unresolvedTownAccessGaps": 4,
+    "mappedLinks": 49,
+    "activeTrailLinks": 27,
+    "closedWaterSpans": 8,
+    "nodes": 47,
+    "preservedWaterAndLandingLinks": 14
+  },
+  "preservedPlaceRecords": 19,
+  "preservedWaterAndLandingRecords": 14,
+  "isolatedDestinations": [
+    "Flamore",
+    "Morana's Fang",
+    "Mt. Solaria",
+    "The Foaming Burrow",
+    "The Hope Tree",
+    "Wynwood Peak"
+  ],
+  "disconnectedDestinations": [
+    {
+      "name": "Gernerum",
+      "reason": "Its printed coastal trail reaches the dry Thrawbreak north bank. The river crossing into Thrawbreak is unconfirmed and closed; no glacier shortcut or boat service is invented.",
+      "withheldAccessGraphId": "IceBeach-transport-048",
+      "trailSourceId": "printed-east-06"
+    }
+  ],
+  "isolatedReason": "No walking spur is depicted in the artwork. The previous generator invented these connections.",
+  "journeys": [
+    {
+      "from": "Castgate",
+      "to": "Icemoor",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 284.62168121971297,
+      "movingHours": 94.87389373990432,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-034",
+        "IceBeach-transport-003"
+      ],
+      "sourceTrailIds": [
+        "printed-north-05",
+        "printed-north-03"
+      ]
+    },
+    {
+      "from": "Sleetmond",
+      "to": "Ottiker",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 233.76339226298862,
+      "movingHours": 77.92113075432954,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-009",
+        "IceBeach-transport-040"
+      ],
+      "sourceTrailIds": [
+        "printed-lake-04",
+        "printed-lake-05"
+      ]
+    },
+    {
+      "from": "Sleetmond",
+      "to": "Quilt",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 341.7953760435188,
+      "movingHours": 113.93179201450624,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-009",
+        "IceBeach-transport-041",
+        "IceBeach-transport-042"
+      ],
+      "sourceTrailIds": [
+        "printed-lake-04",
+        "printed-lake-06",
+        "printed-lake-08"
+      ]
+    },
+    {
+      "from": "Gernerum",
+      "to": "Thrawbreak north-bank trail access",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 238.2432143444354,
+      "movingHours": 79.41440478147847,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-006"
+      ],
+      "sourceTrailIds": [
+        "printed-east-01"
+      ]
+    },
+    {
+      "from": "Nil Buldin",
+      "to": "Quilt",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 544.0857104525079,
+      "movingHours": 181.3619034841693,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-038",
+        "IceBeach-transport-036",
+        "IceBeach-transport-037"
+      ],
+      "sourceTrailIds": [
+        "printed-east-05",
+        "printed-east-03",
+        "printed-east-04"
+      ]
+    },
+    {
+      "from": "Shiverwallow",
+      "to": "Houlen Top north-bank trail access",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 261.1111422176039,
+      "movingHours": 87.03704740586797,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-013"
+      ],
+      "sourceTrailIds": [
+        "printed-west-01"
+      ]
+    },
+    {
+      "from": "Shiverwallow",
+      "to": "Quilt west-bank trail access",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 1120.9004466747283,
+      "movingHours": 373.63348222490947,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-012",
+        "IceBeach-transport-044"
+      ],
+      "sourceTrailIds": [
+        "printed-west-02",
+        "printed-west-04"
+      ]
+    },
+    {
+      "from": "Fractured Point",
+      "to": "Ottiker",
+      "allowedModes": [
+        "trail"
+      ],
+      "km": 542.8857790567388,
+      "movingHours": 180.96192635224628,
+      "fareGp": 0,
+      "graphIds": [
+        "IceBeach-transport-010",
+        "IceBeach-transport-039",
+        "IceBeach-transport-009",
+        "IceBeach-transport-040"
+      ],
+      "sourceTrailIds": [
+        "printed-lake-01",
+        "printed-lake-02",
+        "printed-lake-04",
+        "printed-lake-05"
+      ]
+    }
+  ],
+  "withheldScenarios": [
+    {
+      "from": "Whitedrift",
+      "to": "Icemoor",
+      "allowedModes": [
+        "trail"
+      ],
+      "result": "Unavailable until a usable bridge is confirmed"
+    },
+    {
+      "from": "Quilt west-bank trail access",
+      "to": "Quilt",
+      "allowedModes": [
+        "trail"
+      ],
+      "result": "Unavailable until a usable bridge is confirmed"
+    },
+    {
+      "from": "Shiverwallow",
+      "to": "Houlen Top",
+      "allowedModes": [
+        "trail"
+      ],
+      "result": "Unavailable until a usable bridge is confirmed"
+    },
+    {
+      "from": "Gernerum",
+      "to": "Thrawbreak",
+      "allowedModes": [
+        "trail"
+      ],
+      "result": "Unavailable until a usable bridge is confirmed"
+    }
+  ],
+  "activeGraphComponents": [
+    [
+      "Castgate",
+      "Castgate harbor",
+      "Fractured Point",
+      "Fractured Point harbor",
+      "Fractured Point trail fork",
+      "Fractured Point trail fork – Ottiker: from river bank 1",
+      "Fractured Point trail fork – Ottiker: to river bank 2",
+      "Frostmaple lake east trail fork",
+      "Houlen Top",
+      "Houlen Top harbor",
+      "Houlen Top north-bank trail access",
+      "Houlen Top – Houlen Top–Shiverwallow–Quilt trail fork: from river bank 1",
+      "Houlen Top – Houlen Top–Shiverwallow–Quilt trail fork: to river bank 1",
+      "Houlen Top–Shiverwallow–Quilt trail fork",
+      "Icemoor",
+      "Icemoor–Winrich–Castgate trail fork",
+      "Little Rock Mentle Asylam",
+      "Little Rock Mentle Asylam harbor",
+      "Nil Buldin",
+      "Nil Buldin trail fork",
+      "Ottiker",
+      "Ottiker lake landing",
+      "Ottiker–Sleetmond–Quilt trail fork",
+      "Quilt",
+      "Quilt west-bank trail access",
+      "Shiverwallow",
+      "Shiverwallow harbor",
+      "Sleetmond",
+      "Sleetmond lake landing",
+      "Spinegate",
+      "Thrawbreak",
+      "Whitedrift",
+      "Whitedrift harbor",
+      "Whitedrift – Icemoor: from river bank 1",
+      "Whitedrift – Icemoor: to river bank 1",
+      "Winrich Fortress",
+      "Winrich Fortress north-bank trail access"
+    ],
+    [
+      "Flamore"
+    ],
+    [
+      "Gernerum",
+      "Thrawbreak north-bank trail access"
+    ],
+    [
+      "Morana's Fang"
+    ],
+    [
+      "Mt. Solaria"
+    ],
+    [
+      "The Foaming Burrow"
+    ],
+    [
+      "The Hope Tree"
+    ],
+    [
+      "Wynwood Peak"
+    ],
+    [
+      "Fractured Point trail fork – Ottiker: from river bank 2",
+      "Fractured Point trail fork – Ottiker: to river bank 1"
+    ]
+  ],
+  "limits": [
+    "Source trails remain proposed availability; speeds are moving-time estimates.",
+    "Original regional scale is preserved.",
+    "Water services remain the earlier proposed routes with unknown fares."
+  ]
+}

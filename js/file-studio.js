@@ -3,6 +3,9 @@
   const $ = id => document.getElementById(id);
   let busy = false, customId = false, objectUrl = '';
   const query = new URLSearchParams(location.search);
+  const publicEditor = window.__MAP_EDITOR_DOWNLOAD_ONLY__ === true;
+  const editorUrl = publicEditor ? 'map-editor.html' : '/studio/editor';
+  if (publicEditor) document.querySelectorAll('a[href="/studio/editor"]').forEach(link => { link.href = editorUrl; });
   const status = message => { $('file-status').textContent = message; };
   function theme(value) { document.documentElement.dataset.theme = value; try { localStorage.setItem('hiraethDmTheme', value); } catch (_) {} }
   try { theme(localStorage.getItem('hiraethDmTheme') === 'dark' ? 'dark' : 'light'); } catch (_) {}
@@ -16,8 +19,8 @@
   async function openEditor() {
 
     if (query.has('help')) { $('file-help').hidden = false; status(''); return; }
-    if (!query.has('new-map')) { location.replace('/studio/editor'); return; }
-    const data = await request('/api/studio/map-options');
+    if (!query.has('new-map')) { location.replace(editorUrl); return; }
+    const data = publicEditor ? { parents: (await request('maps/editor-catalog.json')).manifest } : await request('/api/studio/map-options');
     for (const parent of data.parents || []) {
       const option = document.createElement('option'); option.value = parent.id; option.textContent = parent.name || parent.id; $('map-parent').append(option);
     }
@@ -39,7 +42,7 @@
     let bitmap;
     try {
       const id = $('map-id').value, name = $('map-name').value, parentId = $('map-parent').value;
-      const manifest = await request('/maps/maps.json');
+      const manifest = await request(publicEditor ? 'maps/maps.json' : '/maps/maps.json');
       const entries = Array.isArray(manifest) ? manifest : manifest.maps;
       if (entries.some(entry => entry.id === id)) throw new Error('That file name is already used. Choose another name.');
       bitmap = await createImageBitmap(artwork);

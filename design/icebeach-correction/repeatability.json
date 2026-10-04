@@ -1,0 +1,10 @@
+{
+  "canonicalSha256": "4137afe945d9a192247a595ed14d3b052c04b9e6cf58176bf8e8a7966ced9887",
+  "isolatedReproductionSha256": "4137afe945d9a192247a595ed14d3b052c04b9e6cf58176bf8e8a7966ced9887",
+  "canonicalAfterSha256": "4137afe945d9a192247a595ed14d3b052c04b9e6cf58176bf8e8a7966ced9887",
+  "idempotent": true,
+  "canonicalNotRewritten": true,
+  "laterEditorMutationRejected": true,
+  "baselineAndArtworkHashesVerified": true,
+  "controlInventorySha256": "a1c762737298cdc926c66020d6a6f055319ad37d1f962cb9a5c7ae13134fa08f"
+}

@@ -68,6 +68,11 @@ fs.writeFileSync(path.join(mapsDir, 'file-backed-map.json'), `${JSON.stringify({
         zoomOffset: 1
     },
     updatedAt: '2026-07-09T12:00:00.000Z',
+    lines: [
+        { id: 'river', name: 'River', type: 'River', coordinates: [[0, 0], [50, 50]] },
+        { id: 'road-a', streetId: 'main', name: 'Main Street', travelMode: 'road', coordinates: [[10, 0], [10, 50]] },
+        { id: 'road-b', streetId: 'main', name: 'Main Street', travelMode: 'road', coordinates: [[10, 50], [10, 100]] }
+    ],
     regions: [
         { name: 'Harbor', points: [[0, 0], [0, 10], [10, 10]] },
         { name: 'Old Town', points: [[10, 10], [10, 20], [20, 20]] }
@@ -170,6 +175,8 @@ assert.match(filePoi.searchText, /Faction Harbor Guild/);
 assert.equal(filePoi.detailSections, undefined);
 assert.equal(filePoi.tags, undefined);
 assert.equal(filePoi.properties, undefined);
+assert.deepEqual(atlas.searchIndex.filter(entry => entry.mapId === 'file-backed-map' && entry.kind === 'line').map(entry => entry.name), ['River'],
+    'ordinary atlas search must not repeat internal route fragments with no focusable feature layer');
 
 const ignored = atlas.searchIndex.find((entry) => entry.mapId === 'unreferenced-map');
 assert.equal(ignored, undefined);

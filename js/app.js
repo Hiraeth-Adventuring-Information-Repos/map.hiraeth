@@ -19,6 +19,8 @@ let currentRegionGroup = null;
 let regionsVisible = true; // Overall region visibility toggle
 let currentRoadGroup = null; // Holds currently displayed road layers (and lines)
 const currentJourneyLayers = new Map();
+let travelPlanner = null;
+let cityAddresses = null;
 
 let miniMapControl = null; // Global MiniMap control instance
 let miniMapControlMode = null;
@@ -725,6 +727,10 @@ function handleMapPopupAction(event) {
         );
     } else if (action === 'open-linked-map') {
         window.openLinkedMapFromPopup(event, actionElement.dataset.linkedMapId);
+    } else if (action === 'address-directions') {
+        event.preventDefault();
+        map.closePopup();
+        travelPlanner?.setEndpoint(actionElement.dataset.buildingId || `node:${actionElement.dataset.travelNodeId}`, actionElement.dataset.role);
     }
 }
 
@@ -773,6 +779,13 @@ function buildPopupHeader(data, type, safePronunciation) {
     }
     if (safePronunciation) {
         headerHtml += `<p style="margin-top: -10px; margin-bottom: 5px;"><em>${safePronunciation}</em></p>`;
+    }
+    if (data.address && data.buildingId) {
+        const buildingId = escapeHtml(data.buildingId);
+        headerHtml += `<div class="city-address-popup"><p>${escapeHtml(data.address)}</p><div class="city-address-actions"><button type="button" data-popup-action="address-directions" data-building-id="${buildingId}" data-role="from">Directions from here</button><button type="button" data-popup-action="address-directions" data-building-id="${buildingId}" data-role="to">Directions to here</button></div></div>`;
+    } else if (data.travelNodeId) {
+        const travelNodeId = escapeHtml(data.travelNodeId);
+        headerHtml += `<div class="city-address-popup"><div class="city-address-actions"><button type="button" data-popup-action="address-directions" data-travel-node-id="${travelNodeId}" data-role="from">Directions from here</button><button type="button" data-popup-action="address-directions" data-travel-node-id="${travelNodeId}" data-role="to">Directions to here</button></div></div>`;
     }
     const linkedMap = resolveLinkedMapData(data);
     if (linkedMap) {
@@ -1148,6 +1161,7 @@ if (poiFilterContainer) {
 const filterToggleAllCheckbox = document.getElementById('filter-toggle-all');
 const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
 const measureToolBtn = document.getElementById('measure-tool-btn');
+const directionsBtn = document.getElementById('directions-btn');
 const loadingIndicator = document.getElementById('loading-indicator');
 const loadingRetryBtn = document.getElementById('loading-retry-btn');
 const searchRefineFiltersBtn = document.getElementById('search-refine-filters-btn');
@@ -1165,6 +1179,7 @@ const mobileSearchResultsCard = document.getElementById('mobile-search-card-resu
 const mobileSearchPanelResultsSlot = document.getElementById('mobile-search-card-results-slot');
 const mobileMarkersBtn = document.getElementById('mobile-markers-btn');
 const mobileFiltersBtn = document.getElementById('mobile-filters-btn');
+const mobileDirectionsBtn = document.getElementById('mobile-directions-btn');
 const mobileMeasureBtn = document.getElementById('mobile-measure-btn');
 const mobileSoundBtn = document.getElementById('mobile-sound-btn');
 const mobileShareViewBtn = document.getElementById('mobile-share-view-btn');
@@ -1347,6 +1362,7 @@ function resolveControlVisibilityState({
     hasRegions = false,
     hasRoads = false,
     hasJourneys = false,
+    hasTravelRoutes = false,
     hasValidScale = false,
     hasBlurb = false,
     hasLatLonBounds = false,
@@ -1390,6 +1406,7 @@ function resolveControlVisibilityState({
         showFiltersButton: desktop.filtersButton,
         showSearchFilterAction: features.filters,
         showMeasureButton: desktop.measureButton,
+        showDirectionsButton: !isEmbedded && hasTravelRoutes,
         showSoundButton: desktop.soundButton,
         showBlurbButton: desktop.blurbButton,
         showCoordsButton: desktop.coordsButton,
@@ -1405,6 +1422,7 @@ function resolveControlVisibilityState({
         showMobileMarkersAction: mobile.markersAction,
         showMobileFiltersAction: mobile.filtersAction,
         showMobileMeasureAction: mobile.measureAction,
+        showMobileDirectionsAction: layout.mobileSheet && hasTravelRoutes,
         showMobileShareAction: mobile.shareAction,
         showMobileSoundAction: mobile.soundAction,
         showMobileCoordsAction: mobile.coordsAction,
@@ -2107,6 +2125,7 @@ function hasVisibleMobileToolAction() {
     return [
         mobileMarkersBtn,
         mobileFiltersBtn,
+        mobileDirectionsBtn,
         mobileMeasureBtn,
         mobileSoundBtn,
         mobileShareViewBtn,
@@ -2118,6 +2137,7 @@ function hasVisibleMobileToolAction() {
 }
 
 function syncMobileSheetActionState(visibilityState) {
+    if (mobileDirectionsBtn) mobileDirectionsBtn.hidden = !visibilityState.showMobileDirectionsAction;
     syncMobileUtilityButton(mobileMarkersBtn, {
         visible: visibilityState.showMobileMarkersAction,
         pressed: markersVisible,
@@ -2244,13 +2264,13 @@ function syncMobileDockState() {
 function markControlTouch(event) {
     const target = event?.target;
     if (!(target instanceof Element)) return;
-    if (!target.closest('.leaflet-control, .map-control-button, #toggle-sidebar-btn, #mobile-info-help-btn, #mobile-tools-launcher-btn, #mobile-dock, #mobile-search-card, #mobile-tools-card, #sidebar, #feature-detail-sheet, #map-blurb, #sidebar-backdrop, .modal-overlay, .modal-content')) return;
+    if (!target.closest('.leaflet-control, .map-control-button, #toggle-sidebar-btn, #mobile-info-help-btn, #mobile-tools-launcher-btn, #mobile-dock, #mobile-search-card, #mobile-tools-card, #sidebar, #feature-detail-sheet, #map-blurb, #travel-panel, #sidebar-backdrop, .modal-overlay, .modal-content')) return;
     lastControlTouchAt = Date.now();
 }
 
 function shouldIgnoreMapPointerEvent(event) {
     const target = event?.originalEvent?.target;
-    if (target instanceof Element && target.closest('.leaflet-control, .map-control-button, #toggle-sidebar-btn, #mobile-info-help-btn, #mobile-tools-launcher-btn, #mobile-dock, #mobile-search-card, #mobile-tools-card, #sidebar, #feature-detail-sheet, #map-blurb, .modal-overlay, .modal-content')) {
+    if (target instanceof Element && target.closest('.leaflet-control, .map-control-button, #toggle-sidebar-btn, #mobile-info-help-btn, #mobile-tools-launcher-btn, #mobile-dock, #mobile-search-card, #mobile-tools-card, #sidebar, #feature-detail-sheet, #map-blurb, #travel-panel, .modal-overlay, .modal-content')) {
         return true;
     }
     if (isMobileLayoutActive && (Date.now() - lastControlTouchAt) < 150) {
@@ -5140,6 +5160,7 @@ function buildControlVisibilityState(mapInfo) {
         isMobileLayout: isMobileLayoutActive,
         advancedControls: advancedControlsUnlocked,
         hasJourneys: Array.isArray(mapInfo.journeys) && mapInfo.journeys.length > 0,
+        hasTravelRoutes: travelPlanner?.hasRoutes() || false,
         hasPOIs,
         hasRegions,
         hasRoads,
@@ -5158,6 +5179,10 @@ function applyPrimaryControlVisibility(visibilityState) {
     searchControlContainer.style.display = visibilityState.showSearchControl ? 'block' : 'none';
     toggleFiltersBtn.style.display = visibilityState.showFiltersButton ? 'block' : 'none';
     measureToolBtn.style.display = visibilityState.showMeasureButton ? 'block' : 'none';
+    if (directionsBtn) {
+        directionsBtn.hidden = !visibilityState.showDirectionsButton;
+        directionsBtn.style.display = visibilityState.showDirectionsButton ? 'block' : 'none';
+    }
     if (toggleSoundBtn) toggleSoundBtn.style.display = visibilityState.showSoundButton ? 'block' : 'none';
     toggleBlurbBtn.style.display = visibilityState.showBlurbButton ? 'block' : 'none';
     toggleCoordsBtn.style.display = visibilityState.showCoordsButton ? 'block' : 'none';
@@ -6076,7 +6101,7 @@ function populateFilters(pointsOfInterest, mapId) {
     const selectedMap = getMapRuntimeData(mapId);
     const regions = visibleRegionsCache && visibleRegionsCache.length ? visibleRegionsCache : (selectedMap?.regions || []);
     const hasRegions = regions.length > 0;
-    const lines = visibleLinesCache && visibleLinesCache.length ? visibleLinesCache : [...(selectedMap?.roads || []), ...(selectedMap?.lines || [])];
+    const lines = (visibleLinesCache && visibleLinesCache.length ? visibleLinesCache : [...(selectedMap?.roads || []), ...(selectedMap?.lines || [])]).filter(line => !line.travelMode);
     const hasRoads = lines.length > 0;
     const journeys = Array.isArray(selectedMap?.journeys) ? selectedMap.journeys : [];
 
@@ -7114,6 +7139,8 @@ function replaceMapHistoryState(mapId, updateHash = true) {
 }
 
 function resetMapState() {
+    if (typeof travelPlanner !== 'undefined') travelPlanner?.reset();
+    if (typeof cityAddresses !== 'undefined') cityAddresses?.load({});
     currentJourneyLayers.forEach(layer => map.removeLayer(layer));
     currentJourneyLayers.clear();
     cancelIdleTileWarmup({ removeDetailLayer: true });
@@ -7264,6 +7291,8 @@ function finalizeMapUI(requestedMapId, selectedMap) {
     }
 
     currentlyLoadedMapId = requestedMapId;
+    const editorLink = document.getElementById('map-editor-link');
+    if (editorLink) editorLink.href = `map-editor.html?map=${encodeURIComponent(requestedMapId)}`;
     safeSetStorage(UX_STORAGE_KEYS.lastMapId, requestedMapId);
     loadingMapId = null;
     schedulePostLoadPrefetch(selectedMap);
@@ -7337,6 +7366,18 @@ function renderMapFeatures(selectedMap, requestedMapId) {
     addRegionsToMap(requestedMapId);
     addRoadsToMap(requestedMapId);
     addJourneysToMap(selectedMap);
+    if (!travelPlanner) travelPlanner = TravelNetwork.createPlanner({ map, L, document, onOpen: () => {
+        if (isMeasuringMultiPoint) finalizeMultiPointMeasure(false);
+        if (isMobileLayoutActive) closeMobileSheet({ restoreFocus: false });
+        if (filtersPanelVisible) toggleFilterPanel();
+        setMapBlurbVisible(false);
+    } });
+    travelPlanner.load(selectedMap, visibleLinesCache);
+    if (!cityAddresses && typeof CityAddresses !== 'undefined') {
+        cityAddresses = CityAddresses.create({ map, L, document,
+            onChoose: (building, role) => travelPlanner.setEndpoint(building.id, role) });
+    }
+    cityAddresses?.load({ ...selectedMap, buildings: (selectedMap.buildings || []).filter(visibilityAllowed) });
     updateVisibleRegions();
     if (typeof updateVisibleLines === 'function') {
         updateVisibleLines();
@@ -8472,6 +8513,7 @@ function addRoadsToMap(mapId) {
     }
 
     allLines.forEach(road => {
+        if (road.travelMode) return; // The directions tool owns travel-network visibility.
         if (!road.coordinates || road.coordinates.length < 2) {
             console.warn(`Invalid coordinates for road: ${road.name}`);
             return;

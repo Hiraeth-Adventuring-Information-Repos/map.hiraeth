@@ -1,0 +1,31 @@
+{
+  "status": "approved and frozen",
+  "reviewer": "/root/independent_source_audit",
+  "correctedMapSha256": "4137afe945d9a192247a595ed14d3b052c04b9e6cf58176bf8e8a7966ced9887",
+  "sourceArtwork": "maps/IceBeach.webp",
+  "sourceArtworkSha256": "e75f9de76dee49323bca005d80ca40702f82ae86a497786ce508c21f2ac4b0b8",
+  "printedTrailLegsReviewed": 23,
+  "closedRiverAndTownSpansReviewed": 8,
+  "validatedArtworkMaskExceptionRegions": 8,
+  "sourceFindingsResolved": [
+    "Generated glacier and mountain spurs removed.",
+    "All clearly printed dotted walking trails traced and shared forks connected.",
+    "Real water under Houlen Top and Thrawbreak lettering distinguished from label outlines.",
+    "Winrich Fortress symbol does not assert a bridge; dry banks remain separate.",
+    "Quilt upper town anchor receives northern approaches before the river outlet; southern access remains closed.",
+    "Terminal dot clusters from other branches no longer create retrace loops."
+  ],
+  "remainingTracingTolerance": {
+    "maximumReviewedForkCenterOffsetPx": 16,
+    "description": "Lake east and Nil Buldin graph nodes sit slightly down the same continuously printed shared stem. Independent native review accepted this small tracing tolerance; it does not create a crossing, gap or unsupported connection.",
+    "reviewedNativeForkCenters": {
+      "lakeEast": [3664, 3073],
+      "nilBuldin": [4668, 2756]
+    }
+  },
+  "limits": [
+    "Source geometry is an illustrated regional map, not a surveyed ground route.",
+    "Walking speed and service availability remain estimates.",
+    "Unconfirmed river and town access spans remain excluded from directions."
+  ]
+}

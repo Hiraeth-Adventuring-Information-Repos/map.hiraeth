@@ -30,6 +30,9 @@
         const settings = action('Settings', 'editor-edit-map-details-btn');
         const setup = action('Artwork & scale', 'editor-edit-map-advanced-btn');
         toolbar.append(features);
+        const network = shell.querySelector('[data-dm-tab="network"]');
+        network.classList.add('file-editor-network');
+        toolbar.append(network);
         const more = document.createElement('details');
         more.className = 'file-editor-more';
         const summary = document.createElement('summary');
@@ -44,9 +47,14 @@
         help.textContent = 'Click a feature to edit. Drag markers or orange corners to move them. Download changes keeps a local copy; server files stay unchanged.';
         options.append(help);
         const fileHelp = document.createElement('a');
-        fileHelp.href = '/studio?help=1';
+        fileHelp.href = window.__MAP_EDITOR_DOWNLOAD_ONLY__ ? 'file-studio.html?help=1' : '/studio?help=1';
         fileHelp.textContent = 'Files and publishing';
         options.append(fileHelp);
+        if (window.__MAP_EDITOR_DOWNLOAD_ONLY__) {
+            const guide = document.createElement('a');
+            guide.href = 'editor-guide.html'; guide.textContent = 'Buildings and routes: examples';
+            options.append(guide);
+        }
         more.append(summary, options);
         shell.querySelector('.map-editor-appbar').append(more);
         options.addEventListener('click', (event) => {
@@ -70,6 +78,7 @@
             panelActions.hidden = !selected;
             reopen.hidden = !selected;
             features.hidden = selected;
+            network.disabled = !shell.querySelector('[data-dm-tab="feature-browser"]') || shell.querySelector('[data-dm-tab="feature-browser"]').disabled;
             features.disabled = byId('editor-add-poi-btn').disabled;
             settings.disabled = byId('editor-edit-map-details-btn').disabled;
             setup.disabled = byId('editor-edit-map-advanced-btn').disabled;

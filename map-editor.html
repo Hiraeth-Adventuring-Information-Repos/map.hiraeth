@@ -14,7 +14,7 @@
             const pathname = window.location.pathname || "";
             const localHostnames = new Set(["localhost", "::1", "[::1]"]);
             const isStudioAccess = pathname === "/studio/editor";
-            const isLocalAccess = isStudioAccess || window.location.protocol === "file:" ||
+            const isLocalAccess = window.__MAP_EDITOR_DOWNLOAD_ONLY__ === true || isStudioAccess || window.location.protocol === "file:" ||
                 localHostnames.has(hostname) ||
                 /^127\./.test(hostname) ||
                 hostname.endsWith(".localhost");
@@ -108,62 +108,126 @@
             background: #429fe3;
             color: #10131f;
         }
-    </style>
-    <script src="js/app-config.js?v=0.1.73"></script>
-    <script>
-        window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
-
-        function injectLeafletStylesheet() {
-            const link = document.createElement("link");
-            link.rel = "stylesheet";
-            const version = encodeURIComponent(window.APP_ASSET_VERSION || "0");
-            link.href = `css/leaflet.css?v=${version}`;
-            document.head.appendChild(link);
+        #editor-startup-error:not([hidden]) {
+            display: block; position: fixed; inset: 24px auto auto 50%; transform: translateX(-50%);
+            z-index: 10000; width: min(560px, calc(100vw - 48px)); box-sizing: border-box;
+            padding: 24px; border: 2px solid #97372a; border-radius: 12px;
+            background: #fffaf3; color: #3d2a1e; box-shadow: 0 12px 60px #0005;
+            font: 16px/1.5 system-ui, sans-serif;
         }
-
-        (function applyInitialTheme() {
-            const root = document.documentElement;
-            let preference = 'light';
-            try { preference = localStorage.getItem('hiraethDmTheme') || 'light'; } catch (_) {}
-            const effectiveTheme = preference === 'dark' ? 'dark' : 'light';
-            root.setAttribute('data-theme', effectiveTheme);
-            root.style.colorScheme = effectiveTheme;
-            if (window.AppConfig) {
-                window.AppConfig.applyThemeTokens(document);
-                window.AppConfig.injectFont(document);
+        #editor-startup-error-detail { overflow-wrap: anywhere; }
+        #editor-startup-retry { padding: 10px 18px; font: inherit; cursor: pointer; }
+    </style>
+    <script>
+        // Keep this guard inline: it must work even when the editor scripts fail to download.
+        window.EditorLoading = (() => {
+            let failed = false, complete = false, workspaceReady = false, scriptsReady = false, currentStage = 'Preparing the editor';
+            const domReady = new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+            function stage(label) {
+                currentStage = label;
+                const copy = document.getElementById('editor-loading-copy');
+                if (copy) copy.textContent = label;
             }
-        })();
-
-        (function loadConfigAndInjectVersionedAssets() {
-            const loadConfig = window.AppConfig ? window.AppConfig.loadConfig() : Promise.resolve();
-            loadConfig.then(() => {
-                if (window.AppConfig) {
-                    window.AppConfig.applyThemeTokens(document);
-                    window.AppConfig.injectFont(document);
-                }
-                if (!window.__MAP_EDITOR_LOCAL_ACCESS__) return;
-                injectLeafletStylesheet();
-                if (window.AppConfig) {
-                    window.AppConfig.hydrateEditorDom(document);
-                    document.addEventListener("DOMContentLoaded", () => {
-                        window.AppConfig.hydrateEditorDom(document);
-                    }, { once: true });
-                }
-                const version = encodeURIComponent(window.APP_ASSET_VERSION || "0");
-                const editorStylesheets = window.AppConfig
-                    ? window.AppConfig.get("assets.editorStylesheets", ["css/style.css", "css/map-editor.css"])
-                    : ["css/style.css", "css/map-editor.css"];
-                [...editorStylesheets, "css/map-file-editor.css"].forEach((href) => {
-                    const link = document.createElement("link");
-                    link.rel = "stylesheet";
-                    link.href = `${href}?v=${version}`;
-                    document.head.appendChild(link);
+            function fail(error) {
+                if (failed || complete) return;
+                failed = true;
+                clearTimeout(watchdog);
+                const message = error?.message || String(error || 'An unexpected startup error occurred.');
+                const show = () => {
+                    document.getElementById('editor-startup-error').hidden = false;
+                    document.getElementById('editor-startup-error-detail').textContent = message;
+                    const shell = document.getElementById('map-editor-app');
+                    shell.dataset.loading = 'false';
+                    shell.inert = true;
+                    document.getElementById('editor-startup-retry').onclick = () => window.location.reload();
+                    document.getElementById('editor-startup-retry').focus();
+                };
+                if (document.getElementById('editor-startup-error')) show();
+                else domReady.then(show);
+            }
+            function deadline(task, label, abort, milliseconds = 20000) {
+                stage(`Loading ${label}…`);
+                return new Promise((resolve, reject) => {
+                    const timer = setTimeout(() => {
+                        reject(new Error(`Timed out loading ${label}. Check your LAN or VPN connection, then try again.`));
+                        abort?.();
+                    }, milliseconds);
+                    Promise.resolve(task).then(value => {
+                        clearTimeout(timer);
+                        if (failed) reject(new Error('Editor startup stopped. Use Retry to start again.'));
+                        else resolve(value);
+                    }, error => { clearTimeout(timer); reject(error); });
                 });
+            }
+            function asset(url, stylesheet = false) {
+                const node = document.createElement(stylesheet ? 'link' : 'script');
+                if (stylesheet) { node.rel = 'stylesheet'; node.href = url; }
+                else { node.src = url; node.async = false; }
+                const task = new Promise((resolve, reject) => {
+                    node.onload = resolve;
+                    node.onerror = () => reject(new Error(`Could not load ${url}. Check your connection and retry.`));
+                    document.head.appendChild(node);
+                });
+                return deadline(task, url, () => node.remove());
+            }
+            async function json(url) {
+                const controller = new AbortController();
+                return deadline((async () => {
+                    const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                    if (!response.ok) throw new Error(`Could not load ${url} (HTTP ${response.status}).`);
+                    let data;
+                    try { data = await response.json(); }
+                    catch (error) {
+                        if (controller.signal.aborted) throw error;
+                        throw new Error(`Invalid JSON returned by ${url}.`);
+                    }
+                    return { data, response };
+                })(), url, () => controller.abort());
+            }
+            const watchdog = window.__MAP_EDITOR_LOCAL_ACCESS__ ? setTimeout(() => {
+                fail(new Error(`The editor stopped responding during: ${currentStage}. Check your connection and retry.`));
+            }, 60000) : null;
+            window.addEventListener('error', event => {
+                if (!complete && event.message) fail(new Error(event.message));
             });
+            window.addEventListener('unhandledrejection', event => {
+                if (!complete) fail(event.reason);
+            });
+            domReady.then(() => stage(currentStage));
+            return {
+                asset, json, deadline, fail, stage,
+                get failed() { return failed; },
+                complete(part = 'workspace') {
+                    if (part === 'workspace') workspaceReady = true;
+                    if (part === 'scripts') scriptsReady = true;
+                    if (!failed && workspaceReady && scriptsReady) { complete = true; clearTimeout(watchdog); }
+                }
+            };
         })();
+        window.__EDITOR_ASSETS_READY__ = (async () => {
+            if (!window.__MAP_EDITOR_LOCAL_ACCESS__) return;
+            await EditorLoading.asset('js/app-config.js?v=0.1.79');
+            const { data } = await EditorLoading.json('site.config.json');
+            AppConfig.setConfig(data);
+            window.APP_ASSET_VERSION = AppConfig.get('assets.version', '0');
+            let theme = 'light';
+            try { theme = localStorage.getItem('hiraethDmTheme') === 'dark' ? 'dark' : 'light'; } catch (_) {}
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.colorScheme = theme;
+            AppConfig.applyThemeTokens(document);
+            AppConfig.injectFont(document);
+            const styles = ['css/leaflet.css', ...AppConfig.get('assets.editorStylesheets', ['css/style.css', 'css/map-editor.css']), 'css/map-file-editor.css'];
+            await Promise.all(styles.map(url => EditorLoading.asset(`${url}?v=${encodeURIComponent(window.APP_ASSET_VERSION)}`, true)));
+        })().catch(error => EditorLoading.fail(error));
     </script>
 </head>
 <body class="map-editor-body">
+    <section id="editor-startup-error" role="alert" hidden aria-labelledby="editor-startup-error-title">
+        <h1 id="editor-startup-error-title">The editor could not finish loading</h1>
+        <p id="editor-startup-error-detail"></p>
+        <p>Your saved browser draft has not been cleared. Retry when your LAN or VPN connection is available.</p>
+        <button id="editor-startup-retry" type="button">Retry loading editor</button>
+    </section>
     <section id="map-editor-remote-notice" aria-labelledby="map-editor-remote-title">
         <div class="map-editor-remote-card">
             <p class="map-editor-remote-label">Map Editor</p>
@@ -233,6 +297,7 @@
             <button type="button" data-dm-tab="library" aria-current="page">Maps</button>
             <button type="button" data-dm-tab="map-details" disabled>Map &amp; Scale</button>
             <button type="button" data-dm-tab="feature-browser" disabled>Features</button>
+            <button type="button" data-dm-tab="network" disabled>Travel network</button>
             <button type="button" id="dm-panel-toggle" aria-controls="editor-inspector" aria-expanded="true" hidden>Hide panel</button>
             <button type="button" data-dm-theme aria-label="Toggle DM dark theme">◐</button>
         </nav>
@@ -457,6 +522,8 @@
 
             <strong id="editor-current-map-id" class="map-editor-visually-hidden">No map</strong>
 
+            <section id="editor-network-panel" class="network-editor map-editor-form" aria-label="Travel network editor" hidden></section>
+
             <form id="map-settings-form" class="map-editor-form map-editor-inspector-form">
                 <section id="editor-panel-overview" class="map-editor-tab-panel" role="region" aria-labelledby="editor-tool-details" data-inspector-panel="overview">
                     <div class="map-editor-panel-intro">
@@ -585,39 +652,20 @@
     </div>
 
     <script>
-        (function injectVersionedScripts() {
+        (async function injectVersionedScripts() {
             if (!window.__MAP_EDITOR_LOCAL_ACCESS__) return;
-            const ready = window.AppConfig ? window.AppConfig.ready : Promise.resolve();
-
-            function appendScript(src, options = {}) {
-                const script = document.createElement("script");
-                script.src = src;
-                script.async = false;
-                if (options.integrity) script.integrity = options.integrity;
-                if (options.crossOrigin !== undefined) script.crossOrigin = options.crossOrigin;
-                if (typeof options.onload === "function") script.onload = options.onload;
-                document.body.appendChild(script);
-            }
-
-            function injectEditorScripts() {
-                if (window.AppConfig) window.AppConfig.hydrateEditorDom(document);
+            try {
+                await window.__EDITOR_ASSETS_READY__;
+                if (EditorLoading.failed) return;
+                AppConfig.hydrateEditorDom(document);
                 const version = encodeURIComponent(window.APP_ASSET_VERSION || "0");
-                const scripts = window.AppConfig
-                    ? window.AppConfig.get("assets.editorScripts", ["js/editor-shared.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"])
-                    : ["js/editor-shared.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"];
-                const fileScripts = scripts.flatMap((src) => src === "js/map-editor.js"
-                    ? ["js/map-file-document.js", "js/map-file-download.js", src, "js/map-file-editor.js"] : [src]);
-                fileScripts.forEach((src) => {
-                    appendScript(`${src}?v=${version}`);
-                });
-            }
-
-            ready.then(() => {
-                appendScript(
-                    `js/libs/leaflet.js?v=${encodeURIComponent(window.APP_ASSET_VERSION || "0")}`,
-                    { onload: injectEditorScripts }
-                );
-            });
+                await EditorLoading.asset(`js/libs/leaflet.js?v=${version}`);
+                const scripts = AppConfig.get("assets.editorScripts", ["js/editor-shared.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/travel-network.js", "js/map-editor-fields.js", "js/map-editor-history.js", "js/map-editor.js"]);
+                const fileScripts = scripts.flatMap(src => src === "js/map-editor.js"
+                    ? ["js/map-file-document.js", "js/map-file-download.js", "js/travel-network-editor.js", src, "js/map-file-editor.js"] : [src]);
+                for (const src of fileScripts) await EditorLoading.asset(`${src}?v=${version}`);
+                EditorLoading.complete('scripts');
+            } catch (error) { EditorLoading.fail(error); }
         })();
     </script>
 </body>

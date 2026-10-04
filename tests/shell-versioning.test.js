@@ -30,7 +30,7 @@ assert.match(indexSource, new RegExp(`<script src="js/app-config\\.js\\?v=${appC
     assert.match(indexSource, new RegExp(`<link rel="preload" href="${escapedScriptPath}\\?v=${appConfigVersion}" as="script" data-app-preload="true">`));
 });
 assert.match(indexSource, new RegExp(`<link rel="preload" href="maps/atlas-index\\.json\\?v=${appConfigVersion}" as="fetch"[^>]+data-app-preload="true">`));
-assert.match(mapEditorSource, new RegExp(`<script src="js/app-config\\.js\\?v=${appConfigVersion}"></script>`));
+assert.match(mapEditorSource, new RegExp(`EditorLoading\\.asset\\('js/app-config\\.js\\?v=${appConfigVersion}'\\)`));
 assert.match(indexSource, new RegExp(`window\\.APP_ASSET_VERSION\\s*=\\s*"${appConfigVersion}"`));
 assert.match(indexSource, /window\.APP_ASSET_VERSION\s*=\s*window\.AppConfig \? window\.AppConfig\.get\("assets\.version", "0"\) : "0"/);
 assert.match(indexSource, /window\.AppConfig\.get\("assets\.stylesheets"/);

@@ -306,6 +306,7 @@ function extractFunction(name) {
             invalidateLivePreview, setReadinessItem, setExportStatus, refreshSaveControls
         } = dependencies;
         const RECOVERY_MAX_BYTES = 1500000;
+        const TravelNetwork = { modes: { road: {}, trail: {}, rail: {}, sail: {}, ferry: {} } };
         ${extractFunction('restoreRecoverySnapshot')}
         return restoreRecoverySnapshot;
     `);
@@ -471,7 +472,7 @@ function extractFunction(name) {
     const find = (items, id) => items.find((item) => item.id === id);
     const factory = new Function('dependencies', `
         const {
-            state, utils, fetch, fetchJsonAsset, clearDrawMode, deselectFeature, replaceNodeById,
+            state, utils, window, fetchJsonAsset, clearDrawMode, deselectFeature, replaceNodeById,
             editHistory, syncHistoryControls, renderAtlasTree, renderMapSettingsForm,
             renderFeatureLists, renderFeatureInspector, setSelectionStatus,
             recordSavedWorkspaceBaseline, setExportStatus, setReadinessItem, setWorkflowMode,
@@ -488,7 +489,7 @@ function extractFunction(name) {
             resolveFileBackedMapDocument: (map) => deferred[map.id].promise,
             detectLineCollectionKey: () => 'lines'
         },
-        fetch: url => { const id = url.match(/map-[ab]/)[0]; return deferred[id].promise.then(value => ({ ok: true, json: async () => value, headers: { get: name => name === 'ETag' ? `fresh-${id}` : null } })); },
+        window: { EditorLoading: { json: url => { const id = url.match(/map-[ab]/)[0]; return deferred[id].promise.then(data => ({ data, response: { headers: { get: name => name === 'ETag' ? `fresh-${id}` : null } } })); } } },
         fetchJsonAsset: () => {},
         clearDrawMode: () => {},
         deselectFeature: () => {},

@@ -5987,3 +5987,54 @@ html[data-theme] .map-editor-shell:is([data-mode="feature-edit"], [data-mode="dr
 .journey-stop-editor summary { overflow-wrap: anywhere; }
 .map-editor-form input[type="checkbox"] { width: 20px; height: 20px; }
 .map-editor-form input[type="color"] { width: 64px; height: 36px; padding: 3px; }
+
+/* Travel network shares the map workspace, with its own focused inspector. */
+html[data-theme] .map-editor-shell[data-mode="network"] :is(#map-settings-form, #editor-panel-features, .map-editor-inspector-footer) { display: none !important; }
+html[data-theme] .map-editor-shell[data-mode="network"] .map-editor-canvas-panel { display: flex; }
+html[data-theme] .map-editor-shell[data-mode="network"] #editor-network-panel:not([hidden]) { display: flex; flex-direction: column; gap: 12px; }
+.network-editor { padding-bottom: 18px; }
+.network-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+html[data-theme] .network-editor button { border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); border-radius: 5px; min-height: 34px; padding: 6px 9px; font: inherit; font-size: 13px; cursor: pointer; }
+html[data-theme] .network-editor button[aria-pressed="true"] { background: var(--primary-color); color: var(--bg-primary); }
+.network-editor button:disabled { opacity: .5; cursor: default; }
+.network-editor :is(p, small) { font-size: 12px; line-height: 1.5; margin: 0; }
+.network-editor .network-count { color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.network-selection { display: grid; gap: 10px; }
+.network-selection h3 { font-size: 17px; margin: 0; }
+.network-editor label { display: flex; flex-direction: column; gap: 5px; }
+.network-editor label:has(input[type="checkbox"]) { flex-direction: row-reverse; align-items: center; justify-content: flex-end; }
+html[data-theme] .network-editor :is(input, select) { width: 100%; min-width: 0; min-height: 34px; padding: 6px 8px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; }
+html[data-theme] .network-editor input[type="checkbox"] { width: 18px; min-height: 18px; }
+.network-editor details { border-top: 1px solid var(--border-color); padding-top: 10px; }
+.network-editor details > :not(summary) { margin-top: 10px; }
+.network-editor details > button { display: block; width: 100%; text-align: left; }
+.network-editor summary { cursor: pointer; font-size: 15px; }
+.network-node { border: 2px solid #3b2546; border-radius: 50%; background: #fff9e4; color: #3b2546; box-shadow: 0 1px 5px #0007; text-align: center; font: 17px/22px sans-serif; }
+.network-node.selected { border-color: #e56c24; box-shadow: 0 0 0 4px #ed893660; }
+.network-node-label { background: #fff9e4; color: #342a20; border: 1px solid #a28d63; font-size: 11px; padding: 2px 5px; }
+.network-bend { background: #ed8936; border: 2px solid white; border-radius: 3px; }
+@media (max-width: 720px) {
+    html[data-theme] .network-editor button { min-height: 44px; }
+    html[data-theme] .dm-task-tabs { overflow-x: auto; }
+}
+
+/* Building addresses in the travel network inspector. */
+.network-address-handle { display: flex; align-items: center; justify-content: center; background: #ed8936; color: #1d252c; border: 2px solid #fff; border-radius: 50%; font-weight: 700; box-shadow: 0 2px 8px #0006; }
+.network-address-list > div > button { display: block; width: 100%; margin-top: 5px; text-align: left; }
+.network-editor .travel-address-suggestions > button { display: block; width: 100%; text-align: left; border-radius: 0; }
+.network-editor .travel-address-suggestions > button[aria-selected="true"] { background: var(--primary-color); color: var(--bg-primary); }
+.network-editor .travel-address-suggestions { max-height: 220px; overflow-y: auto; }
+.network-overview { display: grid; gap: 10px; }
+.network-overview h3 { margin: 0; font-size: 19px; }
+.network-mode-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.network-mode-filters button { border-left: 4px solid var(--transport-color, var(--primary-color)) !important; }
+.network-review-note { color: var(--text-secondary); border-left: 3px solid var(--primary-color); padding: 6px 10px; background: var(--bg-secondary); border-radius: 3px; }
+.network-editor .network-tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.network-editor .network-help { padding: 10px; background: var(--bg-secondary); border-radius: 5px; }
+.network-editor .network-selection { border: 1px solid var(--border-color); padding: 12px; border-radius: 7px; }
+.network-editor .network-preview > summary { font-weight: 600; }
+.network-editor .travel-field-controls { position: relative; }
+.network-editor .travel-field-controls input { padding-right: 42px; }
+.network-editor .travel-field-clear { position: absolute; right: 0; top: 0; width: 38px; min-height: 34px; border: 0; background: transparent; padding: 0; }
+.network-editor .travel-address-suggestions :is(strong, span) { display: block; }
+html[data-theme] .network-editor textarea { width: 100%; min-height: 120px; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 4px; font: inherit; }

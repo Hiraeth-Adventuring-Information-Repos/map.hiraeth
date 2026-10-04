@@ -1,0 +1,4 @@
+.city-address-popup strong { display: block; font-size: 15px; }
+.city-address-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.city-address-actions button { padding: 7px 9px; border: 1px solid #9d8050; border-radius: 6px; cursor: pointer; font: inherit; }
+.city-address-actions button:focus-visible { outline: 3px solid #d6ad60; outline-offset: 2px; }

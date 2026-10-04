@@ -272,7 +272,9 @@
             wikiLink: base.wikiLink || '',
             linkedMapId: base.linkedMapId || '',
             coordinates: Array.isArray(base.coordinates)
-                ? base.coordinates.map((coord) => [Math.round(Number(coord[0]) || 0), Math.round(Number(coord[1]) || 0)])
+                ? base.coordinates.map((coord) => base.travelMode
+                    ? [Number(coord[0]), Number(coord[1])]
+                    : [Math.round(Number(coord[0]) || 0), Math.round(Number(coord[1]) || 0)])
                 : [],
             properties: base.properties && typeof base.properties === 'object' ? cloneJson(base.properties) : {}
         };
@@ -1052,7 +1054,8 @@
 
     // Cubic Bezier segments pass through the anchors. Null handles give exact
     // straight segments. Adaptive subdivision bounds curve error to half a map
-    // pixel before rounding to the editor's integer-coordinate file format.
+    // pixel before rounding interior samples. Open endpoints retain their exact
+    // coordinates so transport links stay attached to fractional network points.
     function sampleBezierPath(anchors, handles = [], closed = false) {
         if (anchors.length < 2) return anchors.map(point => point.slice());
         const result = [anchors[0].slice()];
@@ -1089,6 +1092,8 @@
             if (outgoing || incoming) subdivide(start, outgoing || start, incoming || end, end);
             else append(end);
         }
+        if (!closed && result.length > 1) result[result.length - 1] = anchors.at(-1).slice();
+        else if (!closed && !result[0].every((value, axis) => value === anchors.at(-1)[axis])) result.push(anchors.at(-1).slice());
         if (closed && result.length > 1 && result.at(-1).every((value, axis) => value === result[0][axis])) result.pop();
         return result;
     }

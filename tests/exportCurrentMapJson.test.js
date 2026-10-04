@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 global.CampaignJourneys = require('../js/campaign-journeys.js');
+global.TravelNetwork = require('../js/travel-network.js');
 
 const editorSource = fs.readFileSync('js/map-editor.js', 'utf8');
 

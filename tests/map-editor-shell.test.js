@@ -320,7 +320,7 @@ assert.match(jsSource, /title:\s*markerLabel,\s*alt:\s*markerLabel/);
 assert.match(jsSource, /setMapEmptyState/);
 assert.match(jsSource, /getMapPresetGroupLabel/);
 assert.match(jsSource, /imageLayer\.once\('load'/);
-assert.match(jsSource, /imageLayer\.once\('error'/);
+assert.match(jsSource, /imageLayer\.once\(tiled \? 'tileerror' : 'error'/);
 assert.doesNotMatch(jsSource, /Save this map before publishing\./);
 
 console.log('map-editor shell regression checks passed');

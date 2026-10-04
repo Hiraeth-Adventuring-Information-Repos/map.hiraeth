@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "preview": "node scripts/preview_server.js",
     "editor": "node scripts/map_file_server.js",
     "studio": "node scripts/map_file_server.js",
     "generate:atlas": "node scripts/generate_atlas_index.js",

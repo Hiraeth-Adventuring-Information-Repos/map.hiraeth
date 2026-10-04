@@ -13,6 +13,7 @@ const iconNames = collectPagesLucideIconNames();
 [
     'circle-help',
     'crosshair',
+    'footprints',
     'funnel',
     'layout-grid',
     'link-2',
@@ -21,7 +22,9 @@ const iconNames = collectPagesLucideIconNames();
     'minimize-2',
     'search',
     'share-2',
+    'ship',
     'sliders-horizontal',
+    'train-front',
     'volume-2',
     'volume-x',
     'x'

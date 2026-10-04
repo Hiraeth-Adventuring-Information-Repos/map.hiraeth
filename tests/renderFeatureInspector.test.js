@@ -36,6 +36,7 @@ const inspectorFactory = new Function('dependencies', `
         fieldApi,
         state,
         getSelectedFeature,
+        getCurrentLines,
         stringifyKeyFacts,
         stringifyTags,
         stringifyCoordinates,
@@ -62,6 +63,7 @@ let selectedFeature = null;
 let detailSectionsFeature = null;
 const { renderFeatureInspector } = inspectorFactory({
     dom,
+    getCurrentLines: () => [],
     document,
     window: { AppConfig: require('../js/app-config.js') },
     fieldApi,

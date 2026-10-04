@@ -2,7 +2,7 @@
 
 An interactive map viewer for the world of Hiraeth, built with Leaflet.js.
 
-**[Live Demo](https://maps.hiraeth.wiki)**
+**[Live maps](https://maps.hiraeth.wiki) · [Web editor](https://maps.hiraeth.wiki/map-editor.html)**
 
 ## About The Project
 

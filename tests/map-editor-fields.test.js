@@ -98,10 +98,10 @@ assert.equal(featureForm.querySelector('[data-feature-section="position"]').open
 assert.equal(featureForm.querySelector('[data-field="summary"]').previousElementSibling?.textContent, 'A short description for search results, cards, and quick previews.');
 
 fields.registerMapField({ key: 'maintainerNote', label: 'Maintainer Note', surface: 'advanced', help: 'Extension field.' });
-fields.registerFeatureField('lines', { key: 'travelMode', label: 'Travel Mode' });
+fields.registerFeatureField('lines', { key: 'customTravelNote', label: 'Travel Mode' });
 assert.equal(fields.getMapFields('advanced').at(-1).key, 'maintainerNote');
-assert.equal(fields.getFeatureFields('lines').at(-1).key, 'travelMode');
-assert.throws(() => fields.registerFeatureField('lines', { key: 'travelMode', label: 'Duplicate' }), /already exists/);
+assert.equal(fields.getFeatureFields('lines').at(-1).key, 'customTravelNote');
+assert.throws(() => fields.registerFeatureField('lines', { key: 'customTravelNote', label: 'Duplicate' }), /already exists/);
 
 console.log('map editor field registry checks passed');
 

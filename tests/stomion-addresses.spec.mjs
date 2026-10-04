@@ -1,0 +1,171 @@
+import { test, expect, firefox } from '@playwright/test';
+import path from 'node:path';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { createMapFileServer } = require('../scripts/map_file_server.js');
+const T = require('../js/travel-network.js');
+let server, base;
+test.beforeAll(async () => {
+    server = createMapFileServer({ repoRoot: path.resolve(import.meta.dirname, '..'), allowedHosts: '127.0.0.1' });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    base = `http://127.0.0.1:${server.address().port}`;
+});
+test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
+async function openCity(page, mobile = false) {
+    if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+    else await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(base + '/index.html#The-Port-City-of-Stomion-s=c');
+    await page.waitForFunction(() => typeof currentMapData !== 'undefined' && currentMapData?.buildings?.length > 1000);
+    await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
+    await page.evaluate(() => { setMapBlurbVisible(false); if (markersVisible) toggleMarkersBtn.click(); });
+    if (mobile) {
+        await page.locator('#mobile-tools-launcher-btn').click();
+        await page.locator('#mobile-directions-btn').click();
+    } else await page.locator('#directions-btn').click();
+    return page.evaluate(() => currentMapData);
+}
+const formatTotal = trip => {
+    const number = n => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return `${trip.km < 1 ? number(trip.km * 1000) + ' m' : number(trip.km) + ' km'} · ${trip.cost === null ? 'Fare unknown' : trip.cost === 0 ? 'Free' : number(trip.cost) + ' gp'}`;
+};
+async function typeRoute(page, from, to) {
+    await page.locator('#travel-from').fill(from); await page.locator('#travel-to').fill(to);
+    await page.getByRole('button', { name: 'Find route', exact: true }).click();
+}
+test('real city typed routes agree with geometry; clean artwork, clickable roofs, aliases and invalid input work', async ({ page }) => {
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    const data = await openCity(page), graph = T.build(data);
+    expect(T.validate(data)).toEqual([]);
+    const from = data.buildings.find(b => b.aliases?.includes('TBD (The Best Drink)'));
+    const to = data.buildings.find(b => b.aliases?.includes("Governor's Castle"));
+    expect(from).toBeTruthy(); expect(to).toBeTruthy();
+    const trip = T.route(graph, from.address, to.address, { allowedModes: ['road', 'trail', 'ferry'] });
+    expect(trip).toBeTruthy();
+    const geometryKm = trip.legs.reduce((sum, leg) => sum + leg.coordinates.slice(1).reduce((length, point, i) => length + Math.hypot(point[0] - leg.coordinates[i][0], point[1] - leg.coordinates[i][1]), 0), 0) * data.scaleKilometers / data.scalePixels;
+    expect(trip.km).toBeCloseTo(geometryKm, 8);
+    await page.locator('#travel-from').fill('TBD'); await page.locator('#travel-from').press('ArrowDown'); await page.locator('#travel-from').press('Enter');
+    await expect(page.locator('#travel-from')).toHaveValue(from.address);
+    await page.locator('#travel-to').fill(to.address); await page.getByRole('button', { name: 'Find route', exact: true }).click();
+    await expect(page.locator('.travel-total')).toHaveText(formatTotal(trip));
+    await expect(page.locator('.travel-total')).toHaveAttribute('data-hours', String(trip.hours));
+    await expect(page.locator('.travel-results')).not.toContainText('Stomion junction');
+    expect((await page.locator('#travel-from').boundingBox()).y).toBeLessThan(300);
+    await expect(page.locator('.city-address-key, .city-house-number, .travel-start-building, .travel-destination-building')).toHaveCount(0);
+    await page.screenshot({ path: path.resolve(import.meta.dirname, '../design/stomion/verification/route-desktop.png') });
+    await page.locator('.travel-options > summary').click();
+    await page.getByLabel('Show the whole travel network').check();
+    await expect(page.locator('.travel-network-line')).toHaveCount(data.lines.filter(T.active).length);
+    await page.screenshot({ path: path.resolve(import.meta.dirname, '../design/stomion/verification/street-network.png') });
+    await page.getByLabel('Show the whole travel network').uncheck();
+    await expect(page.locator('.travel-network-line')).toHaveCount(0);
+    await page.locator('.travel-options > summary').click();
+    await page.getByRole('button', { name: 'Swap start and destination' }).click(); await page.getByRole('button', { name: 'Find route', exact: true }).click();
+    await expect(page.locator('.travel-total')).toHaveText(formatTotal(trip));
+    await expect(page.locator('.travel-total')).toHaveAttribute('data-hours', String(trip.hours));
+    await typeRoute(page, from.address, from.address); await expect(page.locator('.travel-results')).toContainText('Choose two different places');
+    await typeRoute(page, '999999 Imaginary Street', to.address); await expect(page.locator('.travel-results')).toContainText('Choose a mapped address');
+    await expect(page.locator('.travel-result-line')).toHaveCount(0);
+    for (const status of ['unmapped', 'isolated']) {
+        const unresolved = data.buildings.find(building => building.accessReview?.status === status);
+        if (!unresolved) continue;
+        await typeRoute(page, from.address, unresolved.address);
+        await expect(page.locator('.travel-results')).toContainText('Walking access');
+        await expect(page.locator('.travel-results')).toContainText('still being checked');
+        await expect(page.locator('.travel-result-line')).toHaveCount(0);
+    }
+    await typeRoute(page, from.address, to.address);
+    await expect(page.locator('.travel-total')).toHaveText(formatTotal(trip));
+    await expect(page.locator('.travel-total')).toHaveAttribute('data-hours', String(trip.hours));
+    await page.getByRole('button', { name: 'Close directions' }).click();
+    await page.evaluate(coords => { map.setView(coords, Math.min(2, map.getMaxZoom()), { animate: false }); map.panBy([0, map.getSize().y * .4], { animate: false }); }, from.coordinates);
+    await expect(page.locator('.city-house-number, .city-address-key')).toHaveCount(0);
+    const screen = await page.evaluate(coords => { const point = map.latLngToContainerPoint(coords), box = map.getContainer().getBoundingClientRect(); return { x: box.x + point.x, y: box.y + point.y }; }, from.coordinates);
+    await page.mouse.click(screen.x, screen.y);
+    await expect(page.locator('.city-address-popup')).toContainText(from.address);
+    await page.waitForTimeout(400); // Complete the popup's automatic pan and parcel redraw.
+    await expect(page.locator('.city-address-popup')).toBeVisible();
+    await page.screenshot({ path: path.resolve(import.meta.dirname, '../design/stomion/verification/numbered-houses.png') });
+    await page.getByRole('button', { name: 'Directions from here', exact: true }).click();
+    await expect(page.locator('#travel-from')).toHaveValue(from.address);
+    await expect(page.locator('#travel-panel')).toBeVisible();
+    expect(errors).toEqual([]);
+});
+test('real city mobile route reaches the isolated river address and explains ferry dependence', async ({ page }) => {
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    const data = await openCity(page, true);
+    const from = data.buildings.find(b => b.aliases?.includes('TBD (The Best Drink)'));
+    const island = data.buildings.find(b => b.id === 'stomion-building-river-islet'); expect(island).toBeTruthy();
+    const trip = T.route(T.build(data), from.address, island.address, { allowedModes: ['road', 'trail', 'ferry'] });
+    expect(trip).toBeTruthy(); expect(trip.legs.some(leg => leg.line.travelMode === 'ferry')).toBe(true);
+    await typeRoute(page, from.address, island.address); await expect(page.locator('.travel-total')).toHaveText(formatTotal(trip));
+    await expect(page.locator('.travel-total')).toHaveAttribute('data-hours', String(trip.hours));
+    await expect(page.locator('.travel-results')).toContainText('Ferry (proposed)');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+    await page.locator('#travel-panel').evaluate(panel => panel.scrollTop = 0);
+    const panel = await page.locator('#travel-panel').boundingBox(), total = await page.locator('.travel-total').boundingBox(), destination = await page.locator('#travel-to').boundingBox();
+    expect(total.y).toBeGreaterThan(panel.y); expect(total.y + total.height).toBeLessThan(panel.y + panel.height);
+    expect(destination.y + destination.height).toBeLessThan(panel.y + panel.height);
+    expect(total.y).toBeGreaterThan((await page.locator('#travel-to').boundingBox()).y);
+    await expect(page.locator('.city-address-key, .city-house-number')).toHaveCount(0);
+    await page.screenshot({ path: path.resolve(import.meta.dirname, '../design/stomion/verification/route-mobile.png') });
+    await page.locator('.travel-options > summary').click(); await page.getByLabel('Ferry', { exact: true }).uncheck();
+    await page.getByRole('button', { name: 'Find route', exact: true }).click(); await expect(page.locator('.travel-results')).toContainText('This journey needs a ferry');
+    expect(errors).toEqual([]);
+});
+test('real city address search and route display work in Firefox', async () => {
+    const browser = await firefox.launch();
+    try {
+        const page = await browser.newPage();
+        const errors = []; page.on('pageerror', error => errors.push(error.message));
+        const data = await openCity(page), from = data.buildings.find(b => b.aliases?.includes('TBD (The Best Drink)'));
+        const to = data.buildings.find(b => b.aliases?.includes("Governor's Castle"));
+        await typeRoute(page, from.address, to.address);
+        await expect(page.locator('.travel-total')).toHaveText(formatTotal(T.route(T.build(data), from.address, to.address, { allowedModes: ['road', 'trail', 'ferry'] })));
+        await page.screenshot({ path: path.resolve(import.meta.dirname, '../design/stomion/verification/route-firefox.png') });
+        expect(errors).toEqual([]);
+    } finally { await browser.close(); }
+});
+test('full city editor edits one address and exports the complete navigable map', async ({ page }, testInfo) => {
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    const original = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '../maps/The-Port-City-of-Stomion.json')));
+    const home = original.buildings.find(b => b.aliases?.includes('TBD (The Best Drink)'));
+    const destination = original.buildings.find(b => b.aliases?.includes("Governor's Castle"));
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(base + '/studio/editor?map=The-Port-City-of-Stomion');
+    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
+    await expect(page.locator('#editor-current-map-id')).toHaveText('The-Port-City-of-Stomion');
+    await page.getByRole('button', { name: 'Travel network', exact: true }).click();
+    const panel = page.locator('#editor-network-panel');
+    await panel.locator('summary').filter({ hasText: 'Building addresses' }).click();
+    await panel.getByLabel('Find a building address').fill('TBD');
+    await panel.getByRole('button', { name: `${home.address} · ${home.name}`, exact: true }).click();
+    await expect(panel.getByLabel('Full address')).toHaveValue(home.address);
+    const editedName = home.name + ' — editor verification';
+    await panel.getByLabel('Building name').fill(editedName);
+    await panel.getByLabel('Building name').press('Tab');
+    await panel.locator('summary').filter({ hasText: 'Test a journey' }).click();
+    await panel.locator('#network-test-from').fill(home.address);
+    await panel.locator('#network-test-to').fill(destination.address);
+    await panel.getByRole('button', { name: 'Calculate journey', exact: true }).click();
+    await expect(panel.locator('.network-test-result')).not.toContainText('No connected route');
+    await expect(panel.locator('.network-test-result')).toContainText('km');
+    const pending = page.waitForEvent('download');
+    await page.locator('#save-current-map-btn').click();
+    const download = await pending, output = testInfo.outputPath('stomion-edited.json');
+    await download.saveAs(output);
+    const saved = JSON.parse(fs.readFileSync(output));
+    expect(T.validate(saved)).toEqual([]);
+    expect(saved.buildings).toHaveLength(original.buildings.length);
+    expect(saved.buildings.find(b => b.id === home.id)).toEqual({ ...home, name: editedName });
+    expect(saved.buildings.filter(b => b.id !== home.id)).toEqual(original.buildings.filter(b => b.id !== home.id));
+    expect(saved.lines).toEqual(original.lines);
+    expect(saved.regions).toEqual(original.regions);
+    expect(saved.pointsOfInterest).toEqual(original.pointsOfInterest);
+    expect(saved.scalePixels).toBe(original.scalePixels);
+    expect(saved.scaleKilometers).toBe(original.scaleKilometers);
+    const options = { allowedModes: ['road', 'trail', 'ferry'] };
+    expect(T.route(T.build(saved), home.address, destination.address, options).km).toBeCloseTo(T.route(T.build(original), home.address, destination.address, options).km, 10);
+    await page.screenshot({ path: path.resolve(import.meta.dirname, '../design/stomion/verification/editor-city.png') });
+    expect(errors).toEqual([]);
+});

@@ -99,6 +99,19 @@
         ],
         lines: [
             ...commonFeatureFields,
+            { key: 'travelMode', label: 'Travel mode', section: 'Travel routing', control: 'select', update: 'travelMode', options: [
+                { value: '', label: 'Decorative line (no routing)' }, { value: 'road', label: 'Road' },
+                { value: 'trail', label: 'Trail' }, { value: 'rail', label: 'Train' },
+                { value: 'sail', label: 'Sailing' }, { value: 'ferry', label: 'Ferry' }
+            ], help: 'Enable directions along this line. Starter speeds are editable estimates.' },
+            { key: 'travelFrom', label: 'Start place', section: 'Travel routing', update: 'travelEndpoint', maxLength: 160, help: 'Name a town, junction, port or station. Reuse a name to connect and snap to that endpoint.' },
+            { key: 'travelTo', label: 'End place', section: 'Travel routing', update: 'travelEndpoint', maxLength: 160 },
+            { key: 'travelSpeedKph', label: 'Speed (km/h)', section: 'Travel routing', control: 'number', update: 'travelNumber', min: 0.01, step: 'any' },
+            { key: 'travelFareGp', label: 'Fare or toll (gp)', section: 'Travel routing', control: 'number', update: 'travelNumber', min: 0, step: 'any', help: 'Per traveler, charged once for this segment. Blank means unknown; enter 0 for free.' },
+            { key: 'travelCostPerKmGp', label: 'Additional fare (gp/km)', section: 'Travel routing', control: 'number', update: 'travelNumber', min: 0, step: 'any' },
+            { key: 'travelDelayHours', label: 'Wait or boarding time (hours)', section: 'Travel routing', control: 'number', update: 'travelNumber', min: 0, step: 'any', help: 'Added once for each segment traversed, in either permitted direction.' },
+            { key: 'travelOneWay', label: 'One way: start to end', section: 'Travel routing', control: 'checkbox', update: 'travelBoolean' },
+            { key: 'travelVisible', label: 'Show route on map by default', section: 'Travel routing', control: 'checkbox', update: 'travelBoolean', help: 'When unchecked, directions still use this route. The selected trip is always highlighted.' },
             { key: 'color', label: 'Color', section: 'Presentation', maxLength: 40, group: 'style' },
             { key: 'weight', label: 'Weight', section: 'Presentation', control: 'number', min: 1, step: 1, update: 'number', group: 'style' },
             { key: 'dashArray', label: 'Dash Array', section: 'Presentation', maxLength: 80, group: 'style' },

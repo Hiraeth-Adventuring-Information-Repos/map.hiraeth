@@ -7,6 +7,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const mapsDir = path.join(repoRoot, 'maps');
 const errors = [];
 const journeys = require('../js/campaign-journeys.js');
+const travel = require('../js/travel-network.js');
 
 function relativeFromRepo(fullPath) {
     return path.relative(repoRoot, fullPath).split(path.sep).join('/');
@@ -239,6 +240,7 @@ function validateMapDocument(mapDocument, context) {
     validateFeatureArray(mapDocument, 'regions', validateRegion, context);
     validateFeatureArray(mapDocument, 'lines', validateLine, context);
     validateFeatureArray(mapDocument, 'roads', validateLine, context);
+    travel.validate(mapDocument).forEach(error => addError(`${context}.travel: ${error}`));
     journeys.validate(mapDocument.journeys).forEach(error => addError(`${context}.journeys: ${error}`));
 
     if (mapDocument.encounterTables !== undefined && !Array.isArray(mapDocument.encounterTables)) {

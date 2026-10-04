@@ -36,7 +36,7 @@
         }
     </style>
     <script>
-        window.APP_ASSET_VERSION = "0.1.73";
+        window.APP_ASSET_VERSION = "0.1.79";
         window.__markAppStylesReady = function markAppStylesReady() {
             document.documentElement.classList.remove("app-booting");
             if (window.__APP_STYLE_READY_TIMEOUT__) {
@@ -158,21 +158,22 @@
         }
     </style>
 
-    <link rel="stylesheet" href="css/leaflet.css?v=0.1.73" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/style.css?v=0.1.73" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/stars.css?v=0.1.73" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/Control.MiniMap.min.css?v=0.1.73" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/leaflet.css?v=0.1.79" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/style.css?v=0.1.79" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/city-addresses.css?v=0.1.79" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/stars.css?v=0.1.79" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/Control.MiniMap.min.css?v=0.1.79" data-app-stylesheet="true">
     <script>window.__markAppStylesReady && window.__markAppStylesReady();</script>
-    <link rel="preload" href="js/libs/leaflet.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/Control.MiniMap.min.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/lucide.min.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/purify.min.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="js/starfield.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="js/shared-utils.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="js/app.js?v=0.1.73" as="script" data-app-preload="true">
-    <link rel="preload" href="maps/atlas-index.json?v=0.1.73" as="fetch" type="application/json" crossorigin="anonymous" data-app-preload="true">
+    <link rel="preload" href="js/libs/leaflet.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/Control.MiniMap.min.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/lucide.min.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/purify.min.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="js/starfield.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="js/shared-utils.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="js/app.js?v=0.1.79" as="script" data-app-preload="true">
+    <link rel="preload" href="maps/atlas-index.json?v=0.1.79" as="fetch" type="application/json" crossorigin="anonymous" data-app-preload="true">
 
-    <script src="js/app-config.js?v=0.1.73"></script>
+    <script src="js/app-config.js?v=0.1.79"></script>
     <script>
         window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
         window.THEME_STORAGE_KEYS = {
@@ -221,8 +222,8 @@
 
             window.__HIRAETH_APPEND_STYLESHEETS__ = appendStylesheets;
             appendStylesheets(window.AppConfig
-                ? window.AppConfig.get("assets.stylesheets", ["css/leaflet.css", "css/style.css", "css/stars.css", "css/Control.MiniMap.min.css"])
-                : ["css/leaflet.css", "css/style.css", "css/stars.css", "css/Control.MiniMap.min.css"]);
+                ? window.AppConfig.get("assets.stylesheets", ["css/leaflet.css", "css/style.css", "css/city-addresses.css", "css/stars.css", "css/Control.MiniMap.min.css"])
+                : ["css/leaflet.css", "css/style.css", "css/city-addresses.css", "css/stars.css", "css/Control.MiniMap.min.css"]);
 
             [
                 "js/libs/leaflet.js",
@@ -230,7 +231,7 @@
                 "js/libs/lucide.min.js",
                 "js/libs/purify.min.js",
                 "js/starfield.js",
-                "js/shared-utils.js", "js/campaign-journeys.js",
+                "js/shared-utils.js", "js/campaign-journeys.js", "js/travel-network.js", "js/city-addresses.js",
                 "js/app.js"
             ].forEach((src) => appendPreload(`${src}?v=${version}`, "script"));
 
@@ -343,8 +344,8 @@
                     window.AppConfig.injectFont(document);
                 }
                 const localStylesheets = window.AppConfig
-                    ? window.AppConfig.get("assets.stylesheets", ["css/style.css", "css/stars.css", "css/Control.MiniMap.min.css"])
-                    : ["css/style.css", "css/stars.css", "css/Control.MiniMap.min.css"];
+                    ? window.AppConfig.get("assets.stylesheets", ["css/style.css", "css/city-addresses.css", "css/stars.css", "css/Control.MiniMap.min.css"])
+                    : ["css/style.css", "css/city-addresses.css", "css/stars.css", "css/Control.MiniMap.min.css"];
                 if (typeof window.__HIRAETH_APPEND_STYLESHEETS__ === "function") {
                     window.__HIRAETH_APPEND_STYLESHEETS__(localStylesheets);
                 }
@@ -482,6 +483,9 @@
                 <button id="toggle-filters-btn" title="Toggle Filters" aria-label="Toggle Filters" aria-expanded="false" class="map-control-button">
                     <i class="ui-icon" data-lucide="funnel" aria-hidden="true"></i>
                 </button>
+                <button id="directions-btn" type="button" title="Plan a journey (A to B)" aria-label="Plan a journey" aria-expanded="false" aria-controls="travel-panel" class="map-control-button" hidden>
+                    <i class="ui-icon" data-lucide="route" aria-hidden="true"></i>
+                </button>
                 <button id="measure-tool-btn" title="Measure Distance" aria-label="Measure Distance" aria-pressed="false" class="map-control-button">
                     <i class="ui-icon" data-lucide="ruler" aria-hidden="true"></i>
                 </button>
@@ -580,6 +584,9 @@
                             <i class="ui-icon" data-lucide="funnel" aria-hidden="true"></i>
                             <span>Filters</span>
                         </button>
+                        <button id="mobile-directions-btn" type="button" aria-expanded="false" aria-controls="travel-panel" hidden>
+                            <i class="ui-icon" data-lucide="route" aria-hidden="true"></i><span>Directions</span>
+                        </button>
                         <button id="mobile-measure-btn" type="button" aria-pressed="false">
                             <i class="ui-icon" data-lucide="ruler" aria-hidden="true"></i>
                             <span>Measure</span>
@@ -659,7 +666,7 @@
       Your browser does not support the audio element.
     </audio>
 
-    <script src="js/libs/purify.min.js?v=0.1.73"></script>
+    <script src="js/libs/purify.min.js?v=0.1.79"></script>
 
     <script>
         (function loadVersionedLocalScripts() {
@@ -683,8 +690,8 @@
                     }, { once: true });
                 }
                 const scripts = window.AppConfig
-                    ? window.AppConfig.get("assets.scripts", ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/app.js"])
-                    : ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/app.js"];
+                    ? window.AppConfig.get("assets.scripts", ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/travel-network.js", "js/city-addresses.js", "js/app.js"])
+                    : ["js/libs/leaflet.js", "js/libs/Control.MiniMap.min.js", "js/libs/lucide.min.js", "js/starfield.js", "js/shared-utils.js", "js/campaign-journeys.js", "js/travel-network.js", "js/city-addresses.js", "js/app.js"];
                 const appendNext = (index) => {
                     if (index >= scripts.length) return;
                     appendScript(scripts[index], () => appendNext(index + 1));
@@ -696,7 +703,7 @@
                         appendScript("js/libs/lucide.min.js", () => {
                             appendScript("js/starfield.js", () => {
                                 appendScript("js/shared-utils.js", () => {
-                                    appendScript("js/campaign-journeys.js", () => appendScript("js/app.js"));
+                                    appendScript("js/campaign-journeys.js", () => appendScript("js/travel-network.js", () => appendScript("js/city-addresses.js", () => appendScript("js/app.js"))));
                                 });
                             });
                         });

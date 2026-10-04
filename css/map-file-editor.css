@@ -37,7 +37,7 @@
     position: relative !important; display: flex !important; flex-direction: column; order: 1;
     width: var(--editor-inspector-width, 340px) !important; flex: 0 0 var(--editor-inspector-width, 340px);
     max-height: none !important; height: 100% !important; overflow-y: auto !important;
-    border: 0; border-right: 1px solid var(--border-color); border-radius: 0; margin: 0;
+    border: 0; border-right: 1px solid var(--border-color); border-radius: 0; margin: 0; padding-top: 0 !important;
 }
 #map-editor-app[data-file-mode="true"] .map-editor-workspace[data-inspector-collapsed="true"] .map-editor-inspector,
 #map-editor-app[data-file-mode="true"][data-mode="draw"] .map-editor-inspector { display: none !important; }
@@ -115,3 +115,18 @@ html[data-theme="dark"] #map-editor-app[data-file-mode="true"] {
     #map-editor-app[data-file-mode="true"] :is(#editor-undo-btn, #editor-redo-btn) { min-width: 34px; }
     #map-editor-app[data-file-mode="true"] .file-editor-options #editor-export-btn { display: flex !important; }
 }
+#map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-toolbar { display: flex !important; }
+#map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-toolbar-group > :not(.file-editor-network):not(.file-editor-action) { display: none !important; }
+#map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-canvas-status { display: block !important; }
+#map-editor-app[data-file-mode="true"][data-mode="network"] #editor-collapse-inspector-btn { display: none !important; }
+#map-editor-app[data-file-mode="true"] .network-editor { padding: 0 12px 18px; }
+#map-editor-app[data-file-mode="true"] .file-editor-network[aria-current="page"],
+#map-editor-app[data-file-mode="true"] .file-editor-network[aria-current="page"]:hover:not(:disabled) { background: #62446f; color: #fff; border-color: #62446f; }
+@media (max-width: 680px) {
+    #map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-workspace { flex-direction: column !important; }
+    #map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-inspector { position: relative !important; inset: auto !important; order: 2; width: 100% !important; height: 45% !important; flex: 0 0 45%; padding: 0 !important; border-top: 1px solid var(--border-color) !important; }
+    #map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-canvas-panel { order: 1; }
+    #map-editor-app[data-file-mode="true"][data-mode="network"] .map-editor-inspector-chrome { position: static; }
+    #map-editor-app[data-file-mode="true"] .map-editor-toolbar-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+#map-editor-app[data-file-mode="true"][data-mode="network"] :is(#editor-add-poi-btn, #editor-add-region-btn, #editor-add-line-btn, #editor-journeys-btn) { display: none !important; }

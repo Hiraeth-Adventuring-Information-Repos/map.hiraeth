@@ -96,3 +96,14 @@ test('catalog reflects external JSON edits without generating atlas output', () 
         assert.equal(fs.readFileSync(path.join(root, 'maps/atlas-index.json'), 'utf8'), 'generated untouched');
     } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
+test('catalog omits city geometry while source files retain the complete routing inventory', () => {
+    const { root, document } = fixture();
+    try {
+        const inventory = { ...document, buildings: [{ id: 'roof', custom: 'keep' }], travelNodes: [{ id: 'junction', coordinates: [1, 2] }], walkingObstacles: [{ id: 'basin' }] };
+        fs.writeFileSync(path.join(root, 'maps/world.json'), JSON.stringify(inventory));
+        const node = getFileCatalog(root).tree[0];
+        for (const key of ['buildings', 'travelNodes', 'walkingObstacles']) assert.equal(node[key], undefined);
+        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'maps/world.json'))), inventory);
+        assert.deepEqual(node.extra, { retained: true });
+    } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});

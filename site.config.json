@@ -15,7 +15,7 @@
     }
   },
   "assets": {
-    "version": "0.1.73",
+    "version": "0.1.79",
     "cloudTexture": "images/clouds.webp",
     "previewImage": "images/hiraeth-maps-preview.png",
     "poiIcons": {
@@ -299,6 +299,11 @@
         "label": "About",
         "href": "#",
         "id": "about-link"
+      },
+      {
+        "label": "Editor",
+        "href": "map-editor.html",
+        "id": "map-editor-link"
       },
       {
         "label": "Source",

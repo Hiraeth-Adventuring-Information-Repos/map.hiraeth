@@ -29,6 +29,7 @@ global.refreshLucideIcons = () => {};
 global.searchControlContainer = { style: { display: 'block' } };
 global.mobileMarkersBtn = { hidden: false };
 global.mobileFiltersBtn = { hidden: false };
+global.mobileDirectionsBtn = { hidden: false };
 global.mobileMeasureBtn = { hidden: false };
 global.mobileSoundBtn = { hidden: false };
 global.mobileShareViewBtn = { hidden: false };

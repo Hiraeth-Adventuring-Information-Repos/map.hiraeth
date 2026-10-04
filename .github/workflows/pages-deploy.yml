@@ -10,10 +10,6 @@ on:
       - .gitignore
       - tests/**
       - .github/workflows/pages-build-check.yml
-      - map-editor.html
-      - css/map-editor.css
-      - js/map-editor.js
-      - js/editor-shared.js
       - js/libs/text-toolbar.js
       - scripts/editor_server.js
   workflow_dispatch:

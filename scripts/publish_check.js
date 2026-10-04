@@ -10,15 +10,22 @@ const requiredPagesFiles = [
     '.nojekyll',
     'CNAME',
     'index.html',
+    'map-editor.html',
+    'js/travel-network-editor.js',
+    'js/map-file-download.js',
+    'maps/editor-catalog.json',
+    'maps/maps.json',
     'site.config.json',
     'maps/atlas-index.json',
     'maps/atlas-search-index.json',
     'tile/manifest.json'
 ];
 const optimizedAssetBudgets = {
-    // The current viewer plus map sharing is about 222 KiB minified.
-    appBytes: 225 * 1024,
-    styleBytes: 100 * 1024,
+    // Map sharing plus city-address and journey lifecycle hooks use about
+    // 226.5 KiB minified; the routing and parcel renderers remain separate.
+    appBytes: 228 * 1024,
+    // Directions cards, route suggestions and the mobile sheet add about 5 KiB.
+    styleBytes: 108 * 1024,
     atlasShellBytes: 32 * 1024
 };
 
@@ -211,6 +218,24 @@ function printChangedFileSummary() {
     }
 }
 
+function assertPublicEditorBundle() {
+    const catalog = readJson('dist/maps/editor-catalog.json');
+    const tiles = new Map(readJson('dist/tile/manifest.json').maps.map(map => [map.id, map]));
+    const html = fs.readFileSync(path.join(repoRoot, 'dist/map-editor.html'), 'utf8');
+    if (!html.includes('window.__MAP_EDITOR_DOWNLOAD_ONLY__=true')) throw new Error('Public editor must use browser downloads.');
+    (function check(nodes) {
+        for (const node of nodes) {
+            if (tiles.has(node.id)) {
+                const expected = tiles.get(node.id);
+                if (!node.tileSource?.urlTemplate || node.tileSource.cacheVersion !== expected.cacheVersion) {
+                    throw new Error(`Public editor is missing compiled artwork tiles: ${node.id}`);
+                }
+            }
+            if (node.children) check(node.children);
+        }
+    })(catalog.tree);
+}
+
 runStep('Generate atlas index', process.execPath, ['scripts/generate_atlas_index.js']);
 runStep('Validate map data', process.execPath, ['scripts/validate_map_data.js']);
 runStep('Run unit tests', process.execPath, ['--test', ...getUnitTestFiles()]);
@@ -219,6 +244,7 @@ assertForbiddenFilesAbsent();
 assertRequiredPagesFilesPresent();
 assertTileCacheVersionsPresent();
 assertNativeTileQualityPreserved();
+assertPublicEditorBundle();
 const optimizedRuntime = assertOptimizedRuntimeAssets();
 
 const atlas = readJson('maps/atlas-index.json');
@@ -229,7 +255,8 @@ console.log('\nPublish check passed.');
 console.log(`- Search entries: ${Array.isArray(atlas.searchIndex) ? atlas.searchIndex.length : 0}`);
 console.log(`- Pages bundle files: ${distFileCount}`);
 console.log('- Required Pages files present');
-console.log('- Forbidden editor/internal files absent from dist/');
+console.log('- Internal server files absent from dist/');
+console.log('- Public download editor and compiled map artwork present');
 console.log('- Legacy POI PNG copies absent from dist/');
 console.log('- Per-map tile cache fingerprints present');
 console.log('- Native map resolution and detail quality preserved');

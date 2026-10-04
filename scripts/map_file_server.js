@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { getFileCatalog } = require('./map_file_catalog.js');
 const { applySecurityHeaders, isAllowedHost, parseAllowedHosts } = require('./map_studio_server.js');
 const { getManifestEntries } = require('./map_studio_maps.js');
 
@@ -51,45 +52,7 @@ function writeMapFiles(root, writes) {
         fs.rmSync(journal);
     } catch (error) { recoverFileWrites(root); throw error; }
 }
-function getFileCatalog(root) {
-    const versions = {};
-    const read = relative => {
-        const target = path.resolve(root, relative);
-        mapPath(root, target);
-        const bytes = fs.readFileSync(target);
-        versions[relative] = revision(bytes);
-        return JSON.parse(bytes);
-    };
-    const manifest = read('maps/maps.json');
-    const entries = getManifestEntries(manifest);
-    const nodes = entries.map(entry => {
-        const document = entry.dataUrl ? read(entry.dataUrl) : {};
-        const node = { ...entry, ...document, children: [] };
-        // JSON artwork/descriptions/names are editable directly; the manifest owns navigation.
-        for (const key of ['id', 'dataUrl', 'parentId', 'order', 'type']) {
-            if (Object.prototype.hasOwnProperty.call(entry, key)) node[key] = entry[key];
-            else delete node[key];
-        }
-        // Feature geometry stays in its source file; the catalog is navigation metadata.
-        delete node.pointsOfInterest; delete node.regions; delete node.lines; delete node.roads;
-        node.regionCount = Array.isArray(document.regions) ? document.regions.length : 0;
-        return node;
-    });
-    const byId = new Map(nodes.map(node => [node.id, node]));
-    const tree = [];
-    nodes.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
-    for (const node of nodes) {
-        const ancestors = new Set([node.id]);
-        let parent = byId.get(node.parentId);
-        while (parent) {
-            if (ancestors.has(parent.id)) throw new Error('Map hierarchy contains a cycle.');
-            ancestors.add(parent.id); parent = byId.get(parent.parentId);
-        }
-        const owner = byId.get(node.parentId);
-        (owner ? owner.children : tree).push(node);
-    }
-    return { ok: true, tree, versions, manifest };
-}
+
 function createMapFileServer(options = {}) {
     const root = fs.realpathSync(path.resolve(options.repoRoot || process.env.MAP_STUDIO_REPO_ROOT || path.join(__dirname, '..')));
     const allowed = parseAllowedHosts(options.allowedHosts || process.env.MAP_STUDIO_ALLOWED_HOSTS || '127.0.0.1,localhost,::1');

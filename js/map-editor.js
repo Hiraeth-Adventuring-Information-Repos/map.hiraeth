@@ -28,6 +28,7 @@
     const fileDocuments = window.MapFileDocument;
 
     if (!utils || !sharedUtils || !fieldApi || !historyApi || typeof L === 'undefined') {
+        window.EditorLoading?.fail(new Error('Map editor prerequisites are missing. Retry loading the editor.'));
         console.error('Map editor prerequisites are missing.');
         return;
     }
@@ -42,8 +43,9 @@
     const RECOVERY_STORAGE_PREFIX = `mapEditorRecovery:v${RECOVERY_VERSION}`;
     const RECOVERY_MAX_BYTES = 1500000;
     const RECOVERY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-    const RECOVERY_FEATURE_KEYS = new Set(['pointsOfInterest', 'regions', 'lines', 'roads', 'journeys', 'filterGroups']);
+    const RECOVERY_FEATURE_KEYS = new Set(['pointsOfInterest', 'regions', 'lines', 'roads', 'journeys', 'travelNodes', 'buildings', 'filterGroups']);
 
+    let networkEditor = null;
     const state = {
         atlasTree: [],
         fileMode: false,
@@ -300,7 +302,7 @@
         return state.currentMap[state.lineCollectionKey];
     }
 
-    const fetchJsonAsset = sharedUtils.fetchJsonAsset;
+    const fetchJsonAsset = url => window.EditorLoading.json(sharedUtils.withAssetVersion(url)).then(result => result.data);
 
     function findNodeLocation(items, id, parentId = '') {
         if (!Array.isArray(items)) return null;
@@ -407,7 +409,7 @@
 
     function hasUnfinishedGeometryDraft() {
         return Boolean(
-            (state.drawMode === 'region' || state.drawMode === 'line') &&
+            (['region', 'line', 'network'].includes(state.drawMode)) &&
             Array.isArray(state.draftCoordinates) &&
             state.draftCoordinates.length > 0
         );
@@ -514,7 +516,8 @@
         'map-advanced',
         'feature-browser',
         'feature-edit',
-        'draw'
+        'draw',
+        'network'
     ]);
 
     function getMiniMapImageUrl(imageUrl) {
@@ -710,7 +713,7 @@
 
     function syncDmTabs() {
         const mode = dom.appShell.dataset.mode;
-        const active = mode === 'library' ? 'library' : ['map-details', 'map-advanced'].includes(mode) ? 'map-details' : 'feature-browser';
+        const active = mode === 'network' ? 'network' : mode === 'library' ? 'library' : ['map-details', 'map-advanced'].includes(mode) ? 'map-details' : 'feature-browser';
         document.querySelectorAll('[data-dm-tab]').forEach(button => {
             button.disabled = button.dataset.dmTab !== 'library' && !state.currentMap;
             if (button.dataset.dmTab === active) button.setAttribute('aria-current', 'page');
@@ -769,7 +772,7 @@
         tabs.forEach(button => {
             button.addEventListener('click', () => {
                 let target = button.dataset.dmTab;
-                if (target === 'feature-browser') target = state.drawMode ? 'draw' : (state.selectedFeature ? 'feature-edit' : 'feature-browser');
+                if (target === 'feature-browser') target = state.drawMode && state.drawMode !== 'network' ? 'draw' : (state.selectedFeature ? 'feature-edit' : 'feature-browser');
                 // A tab switch never cancels or commits an unfinished shape.
                 setWorkflowMode(target);
                 if (target !== 'library') setInspectorCollapsed(false, false);
@@ -794,6 +797,11 @@
     function setWorkflowMode(mode) {
         const nextMode = mode === 'hub' ? 'map-details' : (workflowModes.has(mode) ? mode : 'library');
         const previousMode = dom.appShell.dataset.mode;
+        if (nextMode === 'network' && previousMode !== 'network') {
+            if (!flushSelectedFeatureForm()) return;
+            state.selectedFeature = null;
+            renderFeatureInspector();
+        }
         if (nextMode === 'library' && !state.inspectorCollapsed) {
             setInspectorCollapsed(true, false);
         } else if (nextMode !== 'library' && state.inspectorCollapsed) {
@@ -835,6 +843,13 @@
             updateMapHome();
             setActiveTool('pan', { render: false });
             setSelectionStatus('Choose an editing task.');
+        } else if (nextMode === 'network') {
+            setActiveTool('features', { render: false });
+            dom.focusEyebrow.textContent = currentName;
+            dom.focusTitle.textContent = 'Travel network';
+            dom.focusSummary.textContent = 'Build connections once. Calculate journeys between any connected places.';
+            setSelectionStatus('Edit connection points and transport links.');
+            queueMapLayout();
         } else if (nextMode === 'map-details') {
             setActiveTool('details', { render: false });
             setInspectorTab('overview', false);
@@ -917,6 +932,7 @@
         syncToolbarState();
         refreshAppMenuState();
         syncDmTabs();
+        networkEditor?.refresh();
     }
 
     function setActiveTool(tool, options = {}) {
@@ -1558,6 +1574,8 @@
             lineCollectionKey: state.lineCollectionKey,
             editorDirty: state.editorDirty,
             drawMode: hasUnfinishedGeometryDraft() ? state.drawMode : '',
+            networkMode: state.networkMode || 'road',
+            networkTool: state.networkTool || 'connect',
             draftCoordinates: hasUnfinishedGeometryDraft() ? utils.cloneJson(state.draftCoordinates) : [],
             draftHandles: utils.cloneJson(state.draftHandles || []),
             selectedVertexIndex: state.selectedVertexIndex,
@@ -1578,7 +1596,12 @@
         const storageKey = getRecoveryStorageKey();
         if (!snapshot || !storageKey) return false;
         try {
-            const serialized = JSON.stringify(snapshot);
+            // Reload already hydrates lossless source sessions and verifies the
+            // complete canonical baseline before restoring this draft. Keeping
+            // duplicate raw/baseline/feature copies here exhausts tab storage on
+            // real city inventories. Retain the edited map and manifest tree;
+            // reuse the freshly loaded, matching source sessions on restore.
+            const serialized = JSON.stringify({ ...snapshot, fileSnapshot: null, manifestSource: null, manifestSnapshots: null });
             if (serialized.length > RECOVERY_MAX_BYTES) {
                 window.sessionStorage.removeItem(storageKey);
                 state.recoveryStorageKey = '';
@@ -1620,7 +1643,7 @@
         const recoveredDraftCoordinates = Array.isArray(snapshot?.draftCoordinates) ? snapshot.draftCoordinates : [];
         const hasRecoveredDraft = Boolean(recoveredDrawMode && recoveredDraftCoordinates.length > 0);
         const draftIsValid = (!recoveredDrawMode && recoveredDraftCoordinates.length === 0) ||
-            (['region', 'line'].includes(recoveredDrawMode) && recoveredDraftCoordinates.every((coordinate) => (
+            (['region', 'line', 'network'].includes(recoveredDrawMode) && recoveredDraftCoordinates.every((coordinate) => (
                 Array.isArray(coordinate) && coordinate.length >= 2 &&
                 Number.isFinite(Number(coordinate[0])) && Number.isFinite(Number(coordinate[1]))
             )));
@@ -1682,7 +1705,9 @@
         state.selectedFeature = snapshot.selectedFeature ? { ...snapshot.selectedFeature } : null;
         state.libraryReturnMode = workflowModes.has(snapshot.libraryReturnMode) ? snapshot.libraryReturnMode : 'hub';
         state.editorDirty = snapshot.editorDirty !== false;
-        state.drawMode = ['region', 'line'].includes(snapshot.drawMode) ? snapshot.drawMode : '';
+        state.drawMode = ['region', 'line', 'network'].includes(snapshot.drawMode) ? snapshot.drawMode : '';
+        state.networkMode = Object.hasOwn(TravelNetwork.modes, snapshot.networkMode) ? snapshot.networkMode : 'road';
+        state.networkTool = snapshot.networkTool === 'address' ? 'address' : 'connect';
         state.draftCoordinates = state.drawMode && Array.isArray(snapshot.draftCoordinates)
             ? utils.cloneJson(snapshot.draftCoordinates)
             : [];
@@ -1695,7 +1720,7 @@
         renderFeatureLists();
         renderFeatureInspector();
         setWorkflowMode(hasUnfinishedGeometryDraft()
-            ? 'draw'
+            ? (state.drawMode === 'network' ? 'network' : 'draw')
             : (workflowModes.has(snapshot.mode) ? snapshot.mode : 'hub'));
         restoreFormValues(dom.mapSettingsForm, snapshot.mapFormValues);
         restoreFormValues(dom.featureForm, snapshot.featureFormValues);
@@ -1767,6 +1792,7 @@
             ...(snapshot.featureListState || {})
         };
         state.currentMap = utils.findMapRecursive(state.atlasTree, state.currentMapId);
+        networkEditor?.invalidate();
         state.selectedFeature = snapshot.selectedFeature ? { ...snapshot.selectedFeature } : null;
         renderAtlasTree();
         renderMapSettingsForm();
@@ -2129,6 +2155,7 @@
     }
 
     function selectFeature(mode, index) {
+        if (dom.appShell.dataset.mode === 'network') return;
         state.placingJourneyStop = false;
         if (state.selectedFeature?.mode !== mode || state.selectedFeature?.index !== index) state.selectedVertexIndex = -1;
         const collection = getCurrentFeatureCollection(mode);
@@ -2720,6 +2747,13 @@
 
     function renderLineFeatureInspector(feature) {
         renderFeatureSchema('lines', 'Line', feature);
+        const names = new Set(getCurrentLines().filter(line => line !== feature && line.travelMode)
+            .flatMap(line => [line.travelFrom, line.travelTo]).filter(Boolean));
+        const suggestions = document.createElement('datalist');
+        suggestions.id = 'travel-endpoint-names';
+        names.forEach(name => { const option = document.createElement('option'); option.value = name; suggestions.append(option); });
+        dom.featureForm.append(suggestions);
+        ['travelFrom', 'travelTo'].forEach(field => dom.featureForm.querySelector(`[data-field="${field}"]`).setAttribute('list', suggestions.id));
     }
 
     function createJourney() {
@@ -2894,7 +2928,33 @@
         if (validationError) throw new Error(validationError);
         const updateKind = definition.update || 'text';
 
-        if (updateKind === 'boolean') {
+        if (updateKind === 'travelMode') {
+            if (feature.travelMode === rawValue || (!feature.travelMode && !rawValue)) return;
+            if (!rawValue) { delete feature.travelMode; return; }
+            feature.travelMode = rawValue;
+            if (feature.travelSpeedKph === undefined) {
+                feature.travelSpeedKph = TravelNetwork.modes[rawValue].speed;
+                dom.featureForm.querySelector('[data-field="travelSpeedKph"]').value = feature.travelSpeedKph;
+            }
+        } else if (updateKind === 'travelEndpoint') {
+            if (!feature.travelMode && !Object.hasOwn(feature, field) && !rawValue) return;
+            if (feature[field] !== rawValue.trim() && TravelNetwork.connectEndpoint(feature, field, rawValue, getCurrentLines())) {
+                if (feature.bezier) feature.coordinates = utils.sampleBezierPath(feature.bezier.anchors, feature.bezier.handles, false);
+                const coordinates = dom.featureForm.querySelector('[data-field="coordinates"]');
+                if (coordinates) coordinates.value = stringifyCoordinates(feature.coordinates);
+            }
+            feature[field] = rawValue.trim();
+            if (feature[`${field}Node`]) {
+                const node = state.currentMap.travelNodes?.find(node => node.name.toLowerCase() === rawValue.trim().toLowerCase());
+                if (node) TravelNetwork.attach(feature, field, node);
+                else delete feature[`${field}Node`];
+            }
+        } else if (updateKind === 'travelNumber') {
+            if (rawValue === '') delete feature[field];
+            else feature[field] = Number(rawValue);
+        } else if (updateKind === 'travelBoolean') {
+            if (feature.travelMode || Object.hasOwn(feature, field) || control.checked) feature[field] = control.checked;
+        } else if (updateKind === 'boolean') {
             feature[field] = control.checked;
         } else if (updateKind === 'pointCoordinate') {
             const nextY = field === 'coordY' ? rawValue : dom.featureForm.querySelector('[data-field="coordY"]').value;
@@ -2917,6 +2977,7 @@
             const coordinates = parseCoordinatePairs(rawValue, minimumPoints);
             if (JSON.stringify(coordinates) !== JSON.stringify(feature.coordinates)) delete feature.bezier;
             feature.coordinates = coordinates;
+            if (feature.travelMode) syncTravelGeometry(feature);
         } else if (updateKind === 'number') {
             feature[field] = Number(rawValue);
         } else {
@@ -3098,6 +3159,7 @@
     }
 
     function getGeometryEditingContext() {
+        if (dom.appShell.dataset.mode === 'network') return null;
         if (dom.appShell.dataset.mode === 'draw' && ['region', 'line'].includes(state.drawMode)) {
             state.draftHandles = utils.normalizeBezierHandles(state.draftCoordinates, state.draftHandles);
             return { isDraft: true, anchors: state.draftCoordinates, handles: state.draftHandles, closed: state.drawMode === 'region' };
@@ -3108,6 +3170,15 @@
         const geometry = utils.getFeatureBezierGeometry(feature, closed);
         const anchors = geometry?.anchors || feature.coordinates || [];
         return { feature, anchors, handles: geometry?.handles || anchors.map(() => null), closed };
+    }
+
+    function syncTravelGeometry(feature) {
+        if (!feature.travelMode) return;
+        for (const field of ['travelFrom', 'travelTo']) {
+            if (!feature[`${field}Node`]) continue;
+            const coordinates = field === 'travelFrom' ? feature.coordinates[0] : feature.coordinates.at(-1);
+            TravelNetwork.updateNode(state.currentMap, feature[`${field}Node`], { coordinates }, getCurrentLines(), utils.sampleBezierPath);
+        }
     }
 
     function storeGeometry(context) {
@@ -3158,6 +3229,7 @@
             renderDraftGeometry();
             markGeometryDraftUnsaved();
         } else {
+            syncTravelGeometry(context.feature);
             renderMapLayers(false);
             renderFeatureInspector();
             renderFeatureLists();
@@ -3320,14 +3392,39 @@
         });
         setSelectionStatus(`Loading image for "${state.currentMap.name || state.currentMap.id}"...`);
 
-        const imageLayer = L.imageOverlay(state.currentMap.imageUrl, nextBounds);
+        const tiles = window.__MAP_EDITOR_DOWNLOAD_ONLY__ && state.currentMap.tileSource;
+        const tiled = tiles && String(tiles.urlTemplate || '').includes('{z}');
+        let imageLayer;
+        if (tiled) {
+            // Match the viewer's image coordinate system: Leaflet rows are negative
+            // above Y=0, while generated tiles count downward from the image top.
+            const ImageTiles = L.TileLayer.extend({
+                getTileUrl(coords) {
+                    const zoom = this._getZoomForUrl();
+                    const height = Math.max(1, Math.ceil(mapHeight * Math.pow(2, zoom - tiles.maxZoom)));
+                    const rows = Math.ceil(height / (tiles.tileSize || 256));
+                    return L.TileLayer.prototype.getTileUrl.call(this, { ...coords, y: coords.y < 0 ? coords.y + rows : coords.y });
+                }
+            });
+            const offset = Number(tiles.zoomOffset ?? tiles.maxZoom);
+            const root = AppConfig.get('performance.tileAssetRoot', 'tile').replace(/\/$/, '');
+            const template = String(tiles.urlTemplate).replace(/^tile\//, root + '/');
+            const version = tiles.cacheVersion || window.APP_ASSET_VERSION || '0';
+            imageLayer = new ImageTiles(template + (template.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(version), {
+                tileSize: tiles.tileSize || 256, zoomOffset: offset,
+                minNativeZoom: Number(tiles.minNativeZoom ?? (tiles.minZoom - offset)),
+                maxNativeZoom: Number(tiles.maxNativeZoom ?? tiles.leafletNativeZoom ?? 0),
+                minZoom: -6, maxZoom: 3, bounds: nextBounds, noWrap: true, zIndex: 250
+            });
+            imageLayer.editorImageUrl = state.currentMap.imageUrl;
+        } else imageLayer = L.imageOverlay(state.currentMap.imageUrl, nextBounds);
         imageLayer.once('load', () => {
             if (state.imageLayer !== imageLayer) return;
             setMapEmptyState({ hidden: true });
             setSelectionStatus(`Image loaded for "${state.currentMap.name || state.currentMap.id}".`);
             queueMapViewportReset();
         });
-        imageLayer.once('error', () => {
+        imageLayer.once(tiled ? 'tileerror' : 'error', () => {
             if (state.imageLayer !== imageLayer) return;
             state.map.removeLayer(imageLayer);
             state.imageLayer = null;
@@ -3410,7 +3507,7 @@
 
     function renderLinesLayer() {
         getCurrentLines().forEach((line, index) => {
-            if (dom.appShell.dataset.mode === 'draw') return;
+            if (dom.appShell.dataset.mode === 'draw' || (dom.appShell.dataset.mode === 'network' && line.travelMode)) return;
             if (dom.appShell.dataset.mode === 'feature-edit' &&
                 (state.selectedFeature?.mode !== 'lines' || state.selectedFeature.index !== index)) return;
             if (!Array.isArray(line.coordinates) || line.coordinates.length < 2) return;
@@ -3420,7 +3517,7 @@
                 dashArray: line.dashArray || ''
             });
             layer.on('click', () => {
-                if (state.activeTool === 'select' || state.activeTool === 'features') selectFeature('lines', index);
+                if (dom.appShell.dataset.mode !== 'network' && (state.activeTool === 'select' || state.activeTool === 'features')) selectFeature('lines', index);
             });
             layer.editorFeature = line;
             state.lineLayer.addLayer(layer);
@@ -3450,7 +3547,7 @@
             state.currentBounds[1][0] !== mapHeight ||
             state.currentBounds[1][1] !== mapWidth ||
             !state.imageLayer ||
-            state.imageLayer._url !== state.currentMap.imageUrl;
+            (state.imageLayer.editorImageUrl || state.imageLayer._url) !== state.currentMap.imageUrl;
 
         if (needsImageReset) {
             setupImageUnderlay(mapHeight, mapWidth, nextBounds);
@@ -3470,6 +3567,7 @@
         renderRegionsLayer();
         renderLinesLayer();
         renderJourneysLayer();
+        networkEditor?.refresh();
 
         renderVertexHandles();
         renderDraftGeometry();
@@ -3554,6 +3652,7 @@
     }
 
     function handleMapClick(event) {
+        if (dom.appShell.dataset.mode === 'network') { networkEditor?.click(event.latlng); return; }
         if (!state.currentMap || !canRenderMap(state.currentMap) || !canMutateWorkspace()) return;
         if (state.placingJourneyStop && state.selectedFeature?.mode === 'journeys') {
             const journey = getSelectedFeature();
@@ -3595,7 +3694,7 @@
             return;
         }
 
-        if (state.drawMode === 'region' || state.drawMode === 'line') {
+        if (['region', 'line', 'network'].includes(state.drawMode)) {
             state.draftCoordinates.push(coordinate);
             (state.draftHandles ||= []).push(null);
             const previousIndex = state.draftCoordinates.length - 2;
@@ -3691,6 +3790,8 @@
     function exportCurrentMapJson() {
         if (!state.currentMap) return;
         try {
+            const travelErrors = TravelNetwork.validate(state.currentMap, getCurrentLines());
+            if (travelErrors.length) throw new Error(travelErrors[0]);
             const journeyErrors = CampaignJourneys.validate(state.currentMap.journeys);
             if (journeyErrors.length) throw new Error(journeyErrors[0]);
             const exportedDocument = serializePreservedMap({
@@ -3783,6 +3884,8 @@
         syncEditingAvailability();
         refreshSaveControls();
         try {
+            const travelErrors = TravelNetwork.validate(state.currentMap, getCurrentLines());
+            if (travelErrors.length) throw new Error(travelErrors[0]);
             const journeyErrors = CampaignJourneys.validate(state.currentMap.journeys);
             if (journeyErrors.length) throw new Error(journeyErrors[0]);
             const exportedDocument = serializePreservedMap({
@@ -4005,9 +4108,8 @@
         if (canResolve) {
             try {
                 if (resolvedDataUrl) {
-                    const response = await fetch(resolvedDataUrl.startsWith('/') ? resolvedDataUrl : '/' + resolvedDataUrl, { cache: 'no-store' });
-                    if (!response.ok) throw new Error(`Could not load map JSON (HTTP ${response.status}).`);
-                    rawDocument = await response.json();
+                    const { response, data } = await window.EditorLoading.json(resolvedDataUrl.startsWith('/') ? resolvedDataUrl : '/' + resolvedDataUrl);
+                    rawDocument = data;
                     rawRevision = response.headers.get('ETag');
                     resolvedMap = { ...atlasNode, ...utils.cloneJson(rawDocument) };
                 } else {
@@ -4130,6 +4232,9 @@
     }
 
     function configureStudioNavigation() {
+        if (window.__MAP_EDITOR_DOWNLOAD_ONLY__ === true) {
+            document.getElementById('dm-new-map').href = 'file-studio.html?new-map=1';
+        }
         const studioHosted = isStudioHostedPath(window.location.pathname);
         [dom.studioHomeLink, dom.menuStudioLink, dom.accessStudioLink, dom.previewStudioLink]
             .filter(Boolean)
@@ -4184,6 +4289,14 @@
         state.journeyLayer = L.layerGroup().addTo(state.map);
         state.vertexLayer = L.layerGroup().addTo(state.map);
         state.draftLayer = L.layerGroup().addTo(state.map);
+        networkEditor = TravelNetworkEditor.create({
+            state, panel: document.getElementById('editor-network-panel'),
+            isOpen: () => dom.appShell.dataset.mode === 'network', editable: () => canMutateWorkspace() && (!state.drawMode || state.drawMode === 'network'),
+            lines: getCurrentLines, checkpoint: checkpointHistory, clearDraft: clearDrawMode,
+            changed: message => { renderFeatureLists(); markCurrentMapDirty(message); },
+            draftChanged: () => { if (state.draftCoordinates.length) markGeometryDraftUnsaved(); else reconcileCurrentMapDirty(); },
+            status: setSelectionStatus, resample: utils.sampleBezierPath
+        });
         window.addEventListener('resize', () => {
             applyInspectorWidth(state.inspectorWidth, false);
             queueMapLayout();
@@ -4580,6 +4693,7 @@
         document.addEventListener('keydown', async (event) => {
             const target = event.target instanceof Element ? event.target : null;
             const isTyping = Boolean(target?.closest('input, textarea, select, [contenteditable="true"]'));
+            if (dom.appShell.dataset.mode === 'network' && !isTyping && !event.ctrlKey && !event.metaKey && !event.altKey && !target?.closest('button, a, summary') && networkEditor.keydown(event)) { event.preventDefault(); return; }
             if (dom.appShell.dataset.mode === 'draw' && !isTyping && !event.metaKey && !event.ctrlKey && !event.altKey && !dom.exportDialog?.open) {
                 if (event.key === 'Backspace' || event.key === 'Delete') {
                     event.preventDefault();
@@ -4610,7 +4724,7 @@
                 openFeatureBrowser(state.featureListState.type);
                 return;
             }
-            if (!isTyping && !event.metaKey && !event.ctrlKey && !event.altKey && state.currentMap) {
+            if (dom.appShell.dataset.mode !== 'network' && !isTyping && !event.metaKey && !event.ctrlKey && !event.altKey && state.currentMap) {
                 const shortcut = event.key.toLowerCase();
                 if (shortcut === 'v' || shortcut === 'h' || shortcut === 'p' || shortcut === 'r' || shortcut === 'l') {
                     event.preventDefault();
@@ -4648,11 +4762,22 @@
     async function detectLocalSaveApi() {
         state.accessChecked = false;
         setLocalSaveAvailability(false);
+        if (window.__MAP_EDITOR_DOWNLOAD_ONLY__ === true) {
+            state.downloadOnly = true;
+            state.fileMode = true;
+            state.accessChecked = true;
+            state.recoveryWorkspaceId = `web:${window.location.origin}`;
+            dom.appShell.dataset.downloadOnly = 'true';
+            dom.appShell.dataset.fileMode = 'true';
+            applyServerReadiness({ fileMode: true, downloadOnly: true, canPreview: false, previewUrl: '' });
+            setLocalSaveAvailability(true);
+            setReadinessItem('saveServer', 'pass', 'Editing a browser copy.');
+            setExportStatus('Edits stay in this browser. Download changes to keep a copy.');
+            return;
+        }
         setReadinessItem('saveServer', 'pending', 'Checking local editor server.');
         try {
-            const response = await fetch('/api/editor/status', { cache: 'no-store' });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const payload = await response.json();
+            const { data: payload } = await window.EditorLoading.json('/api/editor/status');
             if (!payload || typeof payload.saveEnabled !== 'boolean') {
                 throw new Error('Save API returned an invalid status.');
             }
@@ -4665,8 +4790,7 @@
             if (payload.saveEnabled || state.downloadOnly) {
                 if (window.location.pathname === '/studio/editor') {
                     try {
-                        const workspaceResponse = await fetch('/api/studio/workspace', { cache: 'no-store' });
-                        const workspacePayload = workspaceResponse.ok ? await workspaceResponse.json() : null;
+                        const { data: workspacePayload } = await window.EditorLoading.json('/api/studio/workspace');
                         const workspace = workspacePayload?.workspace;
                         const workspaceIdentity = String(
                             workspace?.draft?.id || workspace?.draft?.branch || workspace?.branch || ''
@@ -4675,6 +4799,7 @@
                         state.recoveryWorkspaceId = workspaceIdentity ? `${state.fileMode ? 'files' : 'studio'}:${workspaceIdentity}` : '';
                     } catch (error) {
                         state.recoveryWorkspaceId = '';
+                        throw error;
                     }
                 }
                 setLocalSaveAvailability(true);
@@ -4692,6 +4817,7 @@
                 setExportStatus(message);
             }
         } catch (error) {
+            if (window.location.pathname === '/studio/editor') throw error;
             state.accessChecked = true;
             setLocalSaveAvailability(false);
             setReadinessItem('saveServer', 'fail', 'Run npm run editor.');
@@ -4715,10 +4841,7 @@
             setLoadingStage('Loading atlas index', 'Reading the map catalog…');
             await accessPromise;
             const atlas = state.fileMode
-                ? await fetch('/api/editor/catalog', { cache: 'no-store' }).then(response => {
-                    if (!response.ok) throw new Error('Could not load the source file catalog.');
-                    return response.json();
-                })
+                ? (await window.EditorLoading.json(window.__MAP_EDITOR_DOWNLOAD_ONLY__ ? 'maps/editor-catalog.json' : '/api/editor/catalog')).data
                 : await fetchJsonAsset('maps/atlas-index.json');
             if (atlas.versions) state.fileVersions = { ...atlas.versions };
             if (!atlas || !Array.isArray(atlas.tree)) {
@@ -4727,9 +4850,7 @@
 
             state.atlasTree = utils.normalizeManifestTree(atlas.tree);
             if (fileDocuments) {
-                const manifestResponse = await fetch('/maps/maps.json', { cache: 'no-store' });
-                if (!manifestResponse.ok) throw new Error('Could not read the source map index.');
-                state.manifestSource = await manifestResponse.json();
+                state.manifestSource = (await window.EditorLoading.json('maps/maps.json')).data;
                 const sourceEntries = Array.isArray(state.manifestSource) ? state.manifestSource : state.manifestSource.maps;
                 const editableEntries = utils.serializeFlatManifestState({ masterMapData: state.atlasTree });
                 state.manifestSnapshots = Object.create(null);
@@ -4771,7 +4892,9 @@
                 setSelectionStatus('No loadable maps were found in the atlas.');
                 setWorkflowMode('library');
             }
+            window.EditorLoading.complete();
         } catch (error) {
+            window.EditorLoading.fail(error);
             console.error(error);
             setSelectionStatus(error.message || 'Could not initialize the map editor.');
             dom.atlasTree.innerHTML = '';

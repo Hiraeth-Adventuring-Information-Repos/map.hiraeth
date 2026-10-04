@@ -13,6 +13,9 @@ const maxPagesBundleBytes = 225 * 1024 * 1024;
 
 const runtimeFiles = [
     'index.html',
+    'map-editor.html',
+    'file-studio.html',
+    'editor-guide.html',
     'CNAME',
     'sw.js',
     'favicon-16x16.png',
@@ -24,6 +27,7 @@ const runtimeFiles = [
 const runtimeAssetFiles = [
     'css/leaflet.css',
     'css/style.css',
+    'css/city-addresses.css',
     'css/stars.css',
     'css/Control.MiniMap.min.css',
     'css/images/marker-icon.png',
@@ -32,6 +36,20 @@ const runtimeAssetFiles = [
     'js/app-config.js',
     'js/shared-utils.js',
     'js/campaign-journeys.js',
+    'js/travel-network.js',
+    'js/city-addresses.js',
+    'js/editor-shared.js',
+    'js/map-editor-fields.js',
+    'js/map-editor-history.js',
+    'js/map-file-document.js',
+    'js/map-file-download.js',
+    'js/travel-network-editor.js',
+    'js/map-editor.js',
+    'js/map-file-editor.js',
+    'js/file-studio.js',
+    'css/map-editor.css',
+    'css/map-file-editor.css',
+    'css/file-studio.css',
     'js/libs/leaflet.js',
     'js/libs/purify.min.js',
     'js/libs/lucide.min.js',
@@ -46,12 +64,7 @@ const runtimeDirectories = [
 ];
 
 const forbiddenPublicFiles = [
-    'map-editor.html',
-    'js/map-editor.js',
-    'js/editor-shared.js',
     'js/libs/text-toolbar.js',
-    'css/map-editor.css',
-    'maps/maps.json',
     'tests',
     'scripts',
     'node_modules'
@@ -69,11 +82,14 @@ const pagesLucideReferenceFiles = [
 ];
 const pagesAtlasSearchIndexPath = 'maps/atlas-search-index.json';
 const pagesRuntimeMinifyFiles = [
+    { relativePath: 'css/city-addresses.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
     { relativePath: 'css/style.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
     { relativePath: 'css/stars.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
     { relativePath: 'js/app-config.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/app.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/campaign-journeys.js', loader: 'js', target: 'es2020' },
+    { relativePath: 'js/city-addresses.js', loader: 'js', target: 'es2020' },
+    { relativePath: 'js/travel-network.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/shared-utils.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/starfield.js', loader: 'js', target: 'es2020' }
 ];
@@ -267,6 +283,11 @@ function collectPagesLucideIconNames(sourceTexts = null) {
             match = iconPattern.exec(String(sourceText || ''));
         }
     });
+
+    // The directions toolbar builds its icons from shared profile metadata.
+    if (!Array.isArray(sourceTexts)) {
+        require('../js/travel-network.js').plannerProfiles.forEach(profile => iconNames.add(profile.icon));
+    }
 
     return Array.from(iconNames).sort();
 }
@@ -603,6 +624,23 @@ function buildPagesBundle() {
     console.log(`Generated previews for ${sharePageCount} maps.`);
     const tileManifest = populatePagesTiles();
     const tileCacheVersions = applyPagesTileCacheVersions(tileManifest);
+    // The public editor reads static files and downloads edits; it needs no API.
+    copyFile('maps/maps.json');
+    const { getFileCatalog } = require('./map_file_catalog.js');
+    const editorCatalog = getFileCatalog(outputDir);
+    const compiledTiles = new Map(tileManifest.maps.map(map => [map.id, { ...map.tileSource, cacheVersion: map.cacheVersion }]));
+    (function attachTiles(nodes) {
+        for (const node of nodes) {
+            if (compiledTiles.has(node.id)) node.tileSource = compiledTiles.get(node.id);
+            if (node.children) attachTiles(node.children);
+        }
+    })(editorCatalog.tree);
+    fs.writeFileSync(resolveOutputPath('maps/editor-catalog.json'), JSON.stringify(editorCatalog) + '\n');
+    for (const file of ['map-editor.html', 'file-studio.html']) {
+        const target = resolveOutputPath(file);
+        const html = fs.readFileSync(target, 'utf8').replace('<head>', '<head>\n<script>window.__MAP_EDITOR_DOWNLOAD_ONLY__=true;</script>');
+        fs.writeFileSync(target, html);
+    }
     const atlasSearchSplit = splitPagesAtlasSearchIndex();
     const runtimeOptimization = optimizePagesRuntimeAssets();
     const jsonOptimization = compactPagesJsonAssets();

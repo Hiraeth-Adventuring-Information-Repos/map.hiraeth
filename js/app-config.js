@@ -19,15 +19,17 @@
 
     function getDefaultAssetsConfig() {
         return {
-                version: '0.1.73',
+                version: '0.1.79',
                 stylesheets: [
                     'css/leaflet.css',
                     'css/style.css',
+                    'css/city-addresses.css',
                     'css/stars.css',
                     'css/Control.MiniMap.min.css'
                 ],
                 editorStylesheets: [
                     'css/style.css',
+                    'css/city-addresses.css',
                     'css/map-editor.css'
                 ],
                 scripts: [
@@ -37,12 +39,15 @@
                     'js/starfield.js',
                     'js/shared-utils.js',
                     'js/campaign-journeys.js',
+                    'js/travel-network.js',
+                    'js/city-addresses.js',
                     'js/app.js'
                 ],
                 editorScripts: [
                     'js/editor-shared.js',
                     'js/shared-utils.js',
                     'js/campaign-journeys.js',
+                    'js/travel-network.js',
                     'js/map-editor-fields.js',
                     'js/map-editor-history.js',
                     'js/map-editor.js'
@@ -136,12 +141,15 @@
                 serviceWorker: {
                     versionedShellAssets: [
                         'css/style.css',
+                    'css/city-addresses.css',
                         'css/leaflet.css',
                         'css/stars.css',
                         'css/Control.MiniMap.min.css',
                         'js/app-config.js',
                         'js/shared-utils.js',
                         'js/campaign-journeys.js',
+                        'js/travel-network.js',
+                        'js/city-addresses.js',
                         'js/libs/leaflet.js',
                         'js/libs/lucide.min.js',
                         'js/libs/purify.min.js',
@@ -413,6 +421,7 @@
                     { label: 'Wiki', href: 'https://jsnj.link/maps-to-wiki' },
                     { label: 'Blog', href: 'https://jsnj.link/maps-blog-post' },
                     { label: 'About', href: '#', id: 'about-link' },
+                    { label: 'Editor', href: 'map-editor.html', id: 'map-editor-link' },
                     { label: 'Source', href: 'https://jsnj.link/map-hiraeth-source' }
                 ],
                 help: {

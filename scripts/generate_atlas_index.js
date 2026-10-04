@@ -315,6 +315,9 @@ function buildSearchEntriesForMap(context, item) {
         ...(Array.isArray(item.lines) ? item.lines : [])
     ];
     lines.forEach((line, index) => {
+        // Travel fragments belong to the directions graph. They have no
+        // ordinary feature layer to focus and would repeat one street many times.
+        if (line?.travelMode) return;
         const lineName = line && (line.name || line.type);
         if (!lineName) return;
         addSearchEntry(context, {
