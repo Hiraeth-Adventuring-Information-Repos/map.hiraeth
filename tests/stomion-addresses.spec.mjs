@@ -15,7 +15,7 @@ test.afterAll(async () => { await new Promise(resolve => server.close(resolve));
 async function openCity(page, mobile = false) {
     if (mobile) await page.setViewportSize({ width: 390, height: 844 });
     else await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto(base + '/index.html#The-Port-City-of-Stomion-s=c');
+    await page.goto(base + '/index.html?routing=1#The-Port-City-of-Stomion-s=c');
     await page.waitForFunction(() => typeof currentMapData !== 'undefined' && currentMapData?.buildings?.length > 1000);
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { setMapBlurbVisible(false); if (markersVisible) toggleMarkersBtn.click(); });
@@ -132,7 +132,7 @@ test('full city editor edits one address and exports the complete navigable map'
     const home = original.buildings.find(b => b.aliases?.includes('TBD (The Best Drink)'));
     const destination = original.buildings.find(b => b.aliases?.includes("Governor's Castle"));
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto(base + '/studio/editor?map=The-Port-City-of-Stomion');
+    await page.goto(base + '/studio/editor?routing=1&map=The-Port-City-of-Stomion');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await expect(page.locator('#editor-current-map-id')).toHaveText('The-Port-City-of-Stomion');
     await page.getByRole('button', { name: 'Travel network', exact: true }).click();

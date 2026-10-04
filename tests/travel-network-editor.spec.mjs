@@ -14,7 +14,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
 async function open(page, data, suffix = '') {
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/studio/editor' + suffix);
+    await page.goto(base + '/studio/editor?routing=1' + suffix.replace(/^\?/, '&'));
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await page.locator('[data-map-id="main_continent"]').first().click();
     await page.getByRole('button', { name: 'Travel network', exact: true }).click();
@@ -102,7 +102,7 @@ test('build a network, calculate mixed travel, move shared nodes, undo, recover 
     expect(saved.lines.find(line => line.travelMode === 'rail').coordinates[0]).toEqual(station.coordinates);
     expect(saved.lines.every(line => line.travelVisible === false)).toBe(true);
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: saved }));
-    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
@@ -159,7 +159,7 @@ test('unfinished connections recover after navigation and reload; cancellation a
     await expect(panel(page)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
     await page.screenshot({ path: testInfo.outputPath('network-mobile.png') });
-    await page.goto(base + '/studio/editor?mode=review');
+    await page.goto(base + '/studio/editor?routing=1&mode=review');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await page.locator('[data-map-id="main_continent"]').first().click();
     await page.getByRole('button', { name: 'Travel network', exact: true }).click();

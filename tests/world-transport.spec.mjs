@@ -14,7 +14,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => new Promise(resolve => server.close(resolve)));
 const data = name => JSON.parse(fs.readFileSync(path.join(root, `maps/${name}.json`)));
 async function viewer(page, id) {
-    await page.goto(`${base}/index.html#${id}-s=c`);
+    await page.goto(`${base}/index.html?routing=1#${id}-s=c`);
     await page.waitForFunction(id => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === id, id);
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
@@ -89,7 +89,7 @@ test('Firefox keeps a calculated city route when the destination loses focus', a
 });
 test('real city draft restores, mode filtering is display-only and export retains geometry and custom review metadata', async ({ page }, testInfo) => {
     const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.goto(`${base}/studio/editor?map=castgate`);
+    await page.goto(`${base}/studio/editor?routing=1&map=castgate`);
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await page.getByRole('button', { name: 'Travel network', exact: true }).click();
     const panel = page.locator('#editor-network-panel'), city = data('castgate'), building = city.buildings.find(b => b.aliases?.includes("Chai en' Steep Inn"));

@@ -231,11 +231,14 @@ assert.equal(defaultsOnlyVisibility.showMobileSheetToggle, false);
 
 // Directions depend on a usable route graph, independently of advanced tools.
 for (const isMobileLayout of [false, true]) {
-    const routed = resolveControlVisibilityState({ isMobileLayout, hasTravelRoutes: true });
+    const routed = resolveControlVisibilityState({ isMobileLayout, hasTravelRoutes: true, routingEnabled: true });
     assert.equal(routed.showDirectionsButton, true);
     assert.equal(routed.showMobileDirectionsAction, isMobileLayout);
     assert.equal(resolveControlVisibilityState({ isMobileLayout }).showDirectionsButton, false);
-    const embedded = resolveControlVisibilityState({ isMobileLayout, hasTravelRoutes: true, isEmbedded: true });
+    const unflagged = resolveControlVisibilityState({ isMobileLayout, hasTravelRoutes: true });
+    assert.equal(unflagged.showDirectionsButton, false);
+    assert.equal(unflagged.showMobileDirectionsAction, false);
+    const embedded = resolveControlVisibilityState({ isMobileLayout, hasTravelRoutes: true, routingEnabled: true, isEmbedded: true });
     assert.equal(embedded.showDirectionsButton, false);
     assert.equal(embedded.showMobileDirectionsAction, false);
 }

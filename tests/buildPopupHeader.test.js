@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const { JSDOM } = require('jsdom');
 
 (function() {
+    const routingExperimentEnabled = false;
     const appSource = fs.readFileSync('js/app.js', 'utf8');
 
     // We need the HTML and URL helpers used by buildPopupHeader.

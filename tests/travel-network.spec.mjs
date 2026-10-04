@@ -29,11 +29,126 @@ async function expectEndpointConnector(page) {
     expect(Math.abs(geometry.end - geometry.centers[1])).toBeLessThan(1);
 }
 
+test('routing is absent by default, requires the URL flag and does not persist after it is removed', async ({ page }) => {
+    const errors = []; page.on('pageerror', error => errors.push(error.message));
+    const data = makeMap(); data.lines[0].travelVisible = true;
+    data.buildings = [{ id: 'home', name: 'The Lantern', address: '12 Harbor Road', number: 12,
+        coordinates: [1100, 1100], footprint: [[1050, 1050], [1050, 1150], [1150, 1150], [1150, 1050]],
+        entrance: [1100, 1100], access: { lineId: 'Harbor road', coordinates: [1000, 1100] } }];
+    data.pointsOfInterest = [{ name: 'The Lantern', type: 'Tavern', coords: [1100, 1100], buildingId: 'home', address: '12 Harbor Road' }];
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
+    const load = async query => {
+        await page.goto(`${base}/index.html${query}#main_continent-s=o`);
+        await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
+        await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
+    };
+    for (const query of ['', '?routing=0', '?routing=true']) {
+        await load(query);
+        await expect(page.locator('#directions-btn')).toBeHidden();
+        await expect(page.locator('#mobile-directions-btn')).toBeHidden();
+        await expect(page.locator('#travel-panel, .travel-network-line')).toHaveCount(0);
+        expect(await page.evaluate(() => travelPlanner === null && cityAddresses === null)).toBe(true);
+        expect(await page.evaluate(() => buildPopupHeader(currentMapData.pointsOfInterest[0], 'poi', ''))).not.toContain('address-directions');
+    }
+    await load('?routing=1');
+    await expect(page.locator('#directions-btn')).toBeVisible();
+    await expect(page.locator('.travel-network-line')).toHaveCount(1);
+    expect(await page.evaluate(() => travelPlanner !== null && cityAddresses !== null)).toBe(true);
+    expect(await page.evaluate(() => buildPopupHeader(currentMapData.pointsOfInterest[0], 'poi', ''))).toContain('address-directions');
+    expect(await page.locator('#map-editor-link').getAttribute('href')).toContain('routing=1');
+    expect(new URL(await page.evaluate(() => buildCurrentViewShareUrl())).searchParams.get('routing')).toBe('1');
+    await page.evaluate(() => setSidebarState('c', true));
+    expect(new URL(page.url()).searchParams.get('routing')).toBe('1');
+    await page.evaluate(() => loadMap('Astrousia'));
+    await expect(page.locator('#directions-btn')).toBeVisible();
+    expect(new URL(page.url()).searchParams.get('routing')).toBe('1');
+    await load('');
+    await expect(page.locator('#directions-btn')).toBeHidden();
+    await expect(page.locator('#travel-panel')).toHaveCount(0);
+    expect(await page.locator('#map-editor-link').getAttribute('href')).not.toContain('routing=1');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => isMobileLayoutActive);
+    await page.locator('#mobile-tools-launcher-btn').click();
+    await expect(page.locator('#mobile-directions-btn')).toBeHidden();
+    await expect(page.locator('#travel-panel')).toHaveCount(0);
+    expect(errors).toEqual([]);
+});
+
+test('editor routing tools require opt-in and ordinary downloads retain routing data', async ({ page }, testInfo) => {
+    const data = makeMap();
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
+    await page.goto(`${base}/studio/editor?map=main_continent`);
+    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
+    await expect(page.getByRole('button', { name: 'Travel network', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Features', exact: true }).click();
+    await page.locator('#editor-feature-type-select').selectOption('lines');
+    await page.getByRole('button', { name: /Harbor road/ }).first().click();
+    await expect(page.locator('[data-feature-section="travel-routing"]')).toHaveCount(0);
+    await page.locator('#feature-lines-name').fill('Reviewed harbor road');
+    await page.locator('#feature-lines-name').press('Tab');
+    const pending = page.waitForEvent('download'); await page.locator('#save-current-map-btn').click();
+    const download = await pending, output = testInfo.outputPath('normal-editor-routing-preserved.json');
+    await download.saveAs(output); const saved = JSON.parse(fs.readFileSync(output));
+    expect(saved.lines[0]).toEqual({ ...data.lines[0], name: 'Reviewed harbor road' });
+    await page.goto(`${base}/studio/editor?routing=1&map=main_continent`);
+    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
+    await page.getByRole('button', { name: 'Travel network', exact: true }).click();
+    await expect(page.locator('#editor-network-panel')).toBeVisible();
+    await page.goto(`${base}/studio/editor?map=main_continent`);
+    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
+    await expect(page.getByRole('button', { name: 'Travel network', exact: true })).toHaveCount(0);
+    await expect(page.locator('#editor-network-panel')).toBeHidden();
+});
+
+test('directions docks beside the canvas, restores the Atlas and becomes a mobile sheet', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: makeMap() }));
+    await page.goto(base + '/index.html?routing=1#main_continent-s=o');
+    await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
+    await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
+    const panel = page.locator('#travel-panel'), sidebar = page.locator('#sidebar');
+    for (const state of ['o', 'c']) {
+        await page.evaluate(state => setSidebarState(state, false), state);
+        await page.locator('#directions-btn').click();
+        await expect(sidebar).toBeHidden();
+        await expect(page.locator('#toggle-sidebar-btn')).toBeHidden();
+        const dock = await panel.boundingBox(), canvas = await page.locator('#map').boundingBox();
+        expect(dock.x).toBe(0); expect(dock.y).toBe(0); expect(dock.height).toBe(1000);
+        expect(canvas.x).toBe(dock.x + dock.width); expect(canvas.width + dock.width).toBe(1440);
+        expect(await page.evaluate(() => map.getSize().x)).toBe(canvas.width);
+        await page.locator('#travel-from').fill('Town'); await page.locator('#travel-to').fill('Island');
+        await page.getByRole('button', { name: 'Find route', exact: true }).click();
+        await expect(page.locator('.travel-total')).toBeVisible();
+        for (const endpoint of await page.locator('.travel-map-endpoint').all()) {
+            const bounds = await endpoint.boundingBox(); expect(bounds.x).toBeGreaterThan(canvas.x);
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(canvas.x + canvas.width);
+        }
+        await page.getByRole('button', { name: 'Close directions', exact: true }).click();
+        await expect(panel).toBeHidden();
+        expect(await page.locator('.container').evaluate(el => el.classList.contains('sidebar-collapsed'))).toBe(state === 'c');
+        await expect(page.locator('#directions-btn')).toBeFocused();
+        if (state === 'o') await expect(sidebar).toBeVisible();
+    }
+    await page.locator('#directions-btn').click();
+    await page.setViewportSize({ width: 900, height: 500 });
+    await expect.poll(async () => (await panel.boundingBox()).width).toBe(320);
+    await page.locator('.travel-options > summary').click();
+    await panel.evaluate(el => el.scrollTop = el.scrollHeight);
+    await expect(page.getByRole('button', { name: 'Close directions', exact: true })).toBeInViewport();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(900);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => isMobileLayoutActive);
+    const sheet = await panel.boundingBox(), canvas = await page.locator('#map').boundingBox();
+    expect(sheet.x).toBe(10); expect(sheet.width).toBe(370); expect(sheet.y).toBeGreaterThan(0);
+    expect(canvas.x).toBe(0); expect(canvas.width).toBe(390);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
 test('route cards, transport buttons and focused steps keep the map clean on desktop and mobile', async ({ page }) => {
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: makeMap() }));
-    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
@@ -100,7 +215,7 @@ test('hidden network, mixed routes, known fares, mode restrictions and map chang
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     const data = makeMap();
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
@@ -163,7 +278,7 @@ test('left toolbar offers A to B on supported maps in both layouts and updates a
     const data = makeMap();
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
     await page.route('**/maps/The-Port-City-of-Stomion.json*', route => route.fulfill({ json: { ...data, lines: [], roads: [], travelNodes: [], buildings: [] } }));
-    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await expect(page.locator('#directions-btn')).toBeVisible();
@@ -191,7 +306,7 @@ test('left toolbar offers A to B on supported maps in both layouts and updates a
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.waitForFunction(() => !isMobileLayoutActive);
     await expect(page.locator('#directions-btn')).toBeVisible();
-    await page.goto(base + '/index.html?embed=true#main_continent-s=c');
+    await page.goto(base + '/index.html?embed=true&routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await expect(page.locator('#directions-btn')).toBeHidden();
     expect(errors).toEqual([]);
@@ -201,7 +316,7 @@ test('editor configures, connects, recovers and downloads routing without changi
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     const data = makeMap();
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/studio/editor');
+    await page.goto(base + '/studio/editor?routing=1');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await page.locator('[data-map-id="main_continent"]').first().click();
     await page.getByRole('button', { name: 'Features', exact: true }).click();
@@ -230,7 +345,7 @@ test('draw and connect a new route, validate missing settings, and show default-
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     const data = makeMap(); data.lines[0].travelVisible = true;
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/studio/editor');
+    await page.goto(base + '/studio/editor?routing=1');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await page.locator('[data-map-id="main_continent"]').first().click();
     await page.locator('#editor-add-line-btn').click();
@@ -254,7 +369,7 @@ test('draw and connect a new route, validate missing settings, and show default-
     expect(line.coordinates[0]).toEqual([1000, 1000]);
     expect(line.travelMode).toBe('rail'); expect(line.travelOneWay).toBe(true); expect(line.travelFareGp).toBe(3);
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: saved }));
-    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
     await expect(page.locator('.travel-network-line')).toHaveCount(1);
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });

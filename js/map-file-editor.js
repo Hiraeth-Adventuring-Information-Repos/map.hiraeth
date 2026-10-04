@@ -47,12 +47,12 @@
         help.textContent = 'Click a feature to edit. Drag markers or orange corners to move them. Download changes keeps a local copy; server files stay unchanged.';
         options.append(help);
         const fileHelp = document.createElement('a');
-        fileHelp.href = window.__MAP_EDITOR_DOWNLOAD_ONLY__ ? 'file-studio.html?help=1' : '/studio?help=1';
+        fileHelp.href = window.SharedUtils.withRoutingExperiment(window.__MAP_EDITOR_DOWNLOAD_ONLY__ ? 'file-studio.html?help=1' : '/studio?help=1', window.location.search);
         fileHelp.textContent = 'Files and publishing';
         options.append(fileHelp);
-        if (window.__MAP_EDITOR_DOWNLOAD_ONLY__) {
+        if (window.__MAP_EDITOR_DOWNLOAD_ONLY__ && window.SharedUtils.isRoutingExperimentEnabled(window.location.search)) {
             const guide = document.createElement('a');
-            guide.href = 'editor-guide.html'; guide.textContent = 'Buildings and routes: examples';
+            guide.href = window.SharedUtils.withRoutingExperiment('editor-guide.html', window.location.search); guide.textContent = 'Buildings and routes: examples';
             options.append(guide);
         }
         more.append(summary, options);

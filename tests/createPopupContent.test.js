@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
 const appSource = fs.readFileSync('js/app.js', 'utf8');
+const routingExperimentEnabled = false;
 const formatStart = appSource.indexOf('function formatPropertiesForPopup(properties, hasFollowingDescription) {');
 const sanitizeStart = appSource.indexOf('function escapeHtml(value) {');
 const wikiLinkStart = appSource.indexOf('function sanitizeWikiLinkForHref(value) {');

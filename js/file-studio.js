@@ -4,8 +4,9 @@
   let busy = false, customId = false, objectUrl = '';
   const query = new URLSearchParams(location.search);
   const publicEditor = window.__MAP_EDITOR_DOWNLOAD_ONLY__ === true;
-  const editorUrl = publicEditor ? 'map-editor.html' : '/studio/editor';
-  if (publicEditor) document.querySelectorAll('a[href="/studio/editor"]').forEach(link => { link.href = editorUrl; });
+  const editorUrl = SharedUtils.withRoutingExperiment(publicEditor ? 'map-editor.html' : '/studio/editor', location.search);
+  document.querySelectorAll('a[href="/studio/editor"]').forEach(link => { link.href = editorUrl; });
+  SharedUtils.preserveRoutingExperimentLinks(document, location.search);
   const status = message => { $('file-status').textContent = message; };
   function theme(value) { document.documentElement.dataset.theme = value; try { localStorage.setItem('hiraethDmTheme', value); } catch (_) {} }
   try { theme(localStorage.getItem('hiraethDmTheme') === 'dark' ? 'dark' : 'light'); } catch (_) {}

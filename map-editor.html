@@ -206,7 +206,7 @@
         })();
         window.__EDITOR_ASSETS_READY__ = (async () => {
             if (!window.__MAP_EDITOR_LOCAL_ACCESS__) return;
-            await EditorLoading.asset('js/app-config.js?v=0.1.79');
+            await EditorLoading.asset('js/app-config.js?v=0.1.80');
             const { data } = await EditorLoading.json('site.config.json');
             AppConfig.setConfig(data);
             window.APP_ASSET_VERSION = AppConfig.get('assets.version', '0');
@@ -297,7 +297,7 @@
             <button type="button" data-dm-tab="library" aria-current="page">Maps</button>
             <button type="button" data-dm-tab="map-details" disabled>Map &amp; Scale</button>
             <button type="button" data-dm-tab="feature-browser" disabled>Features</button>
-            <button type="button" data-dm-tab="network" disabled>Travel network</button>
+            <button type="button" data-dm-tab="network" hidden disabled>Travel network</button>
             <button type="button" id="dm-panel-toggle" aria-controls="editor-inspector" aria-expanded="true" hidden>Hide panel</button>
             <button type="button" data-dm-theme aria-label="Toggle DM dark theme">◐</button>
         </nav>

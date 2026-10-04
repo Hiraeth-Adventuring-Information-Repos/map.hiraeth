@@ -32,7 +32,7 @@ test('Opening a preview preserves targets and sidebar state, including under a s
     const html = renderSharePage({ id: 'IceBeach', name: 'IceBeach' }, brand);
     const document = new JSDOM(html).window.document;
     const script = document.querySelector('script').textContent;
-    for (const query of ['?view=1.234,5.678,3&src=share&stype=view', '?poi=Old%20Dock&src=share&stype=poi', '?region=North', '?line=Road', '']) {
+    for (const query of ['?routing=1&view=1.234,5.678,3&src=share&stype=view', '?routing=1', '?routing=0', '?view=1.234,5.678,3&src=share&stype=view', '?poi=Old%20Dock&src=share&stype=poi', '?region=North', '?line=Road', '']) {
         let redirected;
         const location = { href: `https://maps.example.com/atlas/share/IceBeach/${query}#wrong-s=c`,
             search: query, hash: '#wrong-s=c', replace: value => { redirected = value; } };

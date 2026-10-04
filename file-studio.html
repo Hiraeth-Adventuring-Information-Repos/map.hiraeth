@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Hiraeth · Map editor</title>
   <link rel="stylesheet" href="/css/file-studio.css">
+  <script defer src="/js/shared-utils.js?v=0.1.80"></script>
   <script defer src="/js/map-file-download.js"></script>
   <script defer src="/js/file-studio.js"></script>
 </head>
@@ -28,7 +29,7 @@
     <section id="file-help" hidden aria-labelledby="help-title">
       <a class="back" href="/studio/editor">← Back to maps</a>
       <h1 id="help-title">Your map files</h1>
-      <p><a href="editor-guide.html">Buildings and routes: editor examples</a></p>
+      <p><a href="editor-guide.html" data-routing-link>Buildings and routes: editor examples</a></p>
       <p><strong>Open a map → edit → Download changes.</strong></p>
       <p>Edits stay in your browser. Download changes saves a JSON copy to your device. If map-index settings also changed, it downloads a ZIP containing both JSON files.</p>
       <p>The editor cannot overwrite server files. To install your changes, compare the downloaded files with the current originals and copy them into the maps folder yourself.</p>

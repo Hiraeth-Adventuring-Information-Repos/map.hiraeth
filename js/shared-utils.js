@@ -5,6 +5,29 @@
     }
     root.SharedUtils = factory();
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+    function isRoutingExperimentEnabled(search = '') {
+        return new URLSearchParams(search).get('routing') === '1';
+    }
+
+    function withRoutingExperiment(url, search = '') {
+        const value = String(url);
+        if (!isRoutingExperimentEnabled(search)) return value;
+        const hashIndex = value.indexOf('#');
+        const pathAndQuery = hashIndex >= 0 ? value.slice(0, hashIndex) : value;
+        const hash = hashIndex >= 0 ? value.slice(hashIndex) : '';
+        const queryIndex = pathAndQuery.indexOf('?');
+        const pathname = queryIndex >= 0 ? pathAndQuery.slice(0, queryIndex) : pathAndQuery;
+        const params = new URLSearchParams(queryIndex >= 0 ? pathAndQuery.slice(queryIndex + 1) : '');
+        params.set('routing', '1');
+        return `${pathname}?${params}${hash}`;
+    }
+
+    function preserveRoutingExperimentLinks(document, search = '') {
+        document.querySelectorAll('a[data-routing-link]').forEach(link => {
+            link.setAttribute('href', withRoutingExperiment(link.getAttribute('href'), search));
+        });
+    }
+
     function withAssetVersion(url, versionOverride = '') {
         const fallbackVersion = typeof window !== 'undefined' && window.APP_ASSET_VERSION
             ? window.APP_ASSET_VERSION
@@ -40,6 +63,9 @@
     }
 
     return {
+        isRoutingExperimentEnabled,
+        withRoutingExperiment,
+        preserveRoutingExperimentLinks,
         debounce,
         withAssetVersion,
         fetchJsonAsset

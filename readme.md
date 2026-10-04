@@ -42,6 +42,8 @@ You need a modern web browser, Node.js 22 or newer, and a local web server. Imag
 
 ## Validation And Deployment
 
+Routing is an experimental URL opt-in. Add `?routing=1` before the map hash, for example `/index.html?routing=1#Astrousia-s=o`. Normal URLs hide Directions, building address hit areas and routing shortcuts. The flag is retained during map navigation and sharing, and is passed to the Editor link; it is never saved as a browser preference. The editor's Travel network tools and routing fields also require `routing=1`. Existing map data and ordinary map editing remain available with the experiment off.
+
 Maintainers who want an authenticated LAN editor with guided map creation, persistent previews, and draft pull-request automation can run **Hiraeth Map Studio**. See [MAP_STUDIO.md](MAP_STUDIO.md) for Docker Compose setup and security guidance.
 
 Install dependencies and run the complete local release check:

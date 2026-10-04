@@ -672,7 +672,11 @@
         const legend = el('div', '', 'travel-mode-legend'); legend.hidden = true; panel.append(legend);
         const info = el('details', '', 'travel-info'); info.append(el('summary', 'About these directions'), review);
         const note = el('p', 'Travel time uses the mapped speeds and configured delays. It excludes overnight rests, timetables and weather. Fares are per traveler in gp; supplies and lodging are extra.', 'travel-note'); info.append(note); panel.append(info);
-        document.body.append(panel);
+        // Share the workspace column with the Atlas on desktop; the same
+        // panel becomes a fixed bottom sheet on mobile.
+        const mapContainer = map.getContainer().closest('#map-container');
+        if (mapContainer) mapContainer.before(panel);
+        else document.body.append(panel);
         const networkLayer = L.layerGroup().addTo(map), alternativesLayer = L.layerGroup().addTo(map), resultLayer = L.featureGroup().addTo(map), stepLayer = L.featureGroup().addTo(map);
         let graph = build({}), lines = [], opener = null, fieldsState = '', routeChoices = [], selectedChoice = 0, focusedMap = null, resizeTimer;
         const number = value => value.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -700,8 +704,8 @@
             const mobile = document.defaultView.innerWidth <= 768, box = panel.getBoundingClientRect();
             const mapBox = map.getContainer().getBoundingClientRect(); focusedMap = { coordinates, maxZoom };
             const toolbarBox = document.getElementById('directions-btn')?.getBoundingClientRect();
-            const mobileLeft = Math.max(30, toolbarBox?.width ? toolbarBox.right - mapBox.left + 24 : 0);
-            map.fitBounds(L.latLngBounds(coordinates), { paddingTopLeft: mobile ? [mobileLeft, 70] : [Math.max(30, box.right - mapBox.left + 24), 90], paddingBottomRight: mobile ? [30, Math.min(document.defaultView.innerHeight * .75, document.defaultView.innerHeight - box.top + 24)] : [60, 120], maxZoom, animate: false });
+            const controlsLeft = Math.max(30, toolbarBox?.width ? toolbarBox.right - mapBox.left + 24 : 0);
+            map.fitBounds(L.latLngBounds(coordinates), { paddingTopLeft: mobile ? [controlsLeft, 70] : [Math.max(controlsLeft, box.right - mapBox.left + 24), 90], paddingBottomRight: mobile ? [30, Math.min(document.defaultView.innerHeight * .75, document.defaultView.innerHeight - box.top + 24)] : [60, 120], maxZoom, animate: false });
         };
         map.on('resize', () => { if (focusedMap && !panel.hidden) focusCoordinates(focusedMap.coordinates, focusedMap.maxZoom); });
         document.defaultView.addEventListener('resize', () => {
@@ -823,7 +827,14 @@
         swap.addEventListener('click', () => { [from.value, to.value] = [to.value, from.value]; addressFields.forEach(field => field.input.dispatchEvent(new Event('input', { bubbles: true }))); addressFields.forEach(field => field.hide()); updateFields(); });
         show.addEventListener('change', () => { legend.hidden = !show.checked; paintNetwork(); });
         const buttons = ['directions-btn', 'mobile-directions-btn'].map(id => document.getElementById(id)).filter(Boolean);
-        const setOpen = value => { panel.hidden = !value; document.body.classList.toggle('travel-planner-open', value); buttons.forEach(button => button.setAttribute('aria-expanded', String(value))); };
+        const setOpen = value => {
+            panel.hidden = !value;
+            document.body.classList.toggle('travel-planner-open', value);
+            buttons.forEach(button => button.setAttribute('aria-expanded', String(value)));
+            // Docking changes the actual canvas width, including when the
+            // Atlas was collapsed. Keep Leaflet's viewport in sync immediately.
+            map.invalidateSize({ animate: false });
+        };
         const dismiss = () => {
             setOpen(false);
             const target = opener?.closest('[inert]') ? document.getElementById('mobile-tools-launcher-btn') : opener;

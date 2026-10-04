@@ -18,7 +18,7 @@ test.beforeAll(async () => {
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
 async function viewer(page, data) {
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
     await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
@@ -39,7 +39,7 @@ test('open courtyards stay out of roof click areas and survive editor changes an
     };
     await clickMap([2850, 3000]); await expect(page.locator('.city-address-popup')).toContainText('1 Court Lane');
     await page.evaluate(() => map.closePopup()); await clickMap([3000, 3000]); await expect(page.locator('.city-address-popup')).toHaveCount(0);
-    await page.goto(`${base}/studio/editor?map=main_continent`);
+    await page.goto(`${base}/studio/editor?routing=1&map=main_continent`);
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
     await page.getByRole('button', { name: 'Travel network', exact: true }).click();
     const panel = page.locator('#editor-network-panel');
@@ -91,7 +91,7 @@ test('typed addresses, keyboard suggestions, aliases, reverse routes and unknown
 test('building address editing preserves metadata, updates access and exports working routes; used street cannot be deleted', async ({ page }, testInfo) => {
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     const data = fixture(); data.pointsOfInterest = [{ id: 'lantern-place', name: 'The Lantern', type: 'Tavern', coordinates: [2200, 1500], buildingId: 'home', address: '12 Harbor Street', description: 'Keep the place.' }];
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data })); await page.goto(base + '/studio/editor');
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data })); await page.goto(base + '/studio/editor?routing=1');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false'); await page.locator('[data-map-id="main_continent"]').first().click(); await page.getByRole('button', { name: 'Travel network', exact: true }).click();
     const panel = page.locator('#editor-network-panel'); await panel.locator('summary').filter({ hasText: 'Building addresses' }).click(); await panel.getByLabel('Find a building address').fill('Lantern'); await panel.getByRole('button', { name: '12 Harbor Street · The Lantern', exact: true }).click();
     await expect(panel.getByLabel('Full address')).toHaveValue('12 Harbor Street'); await panel.getByLabel('Entrance Y', { exact: true }).fill('2250'); await panel.getByLabel('Entrance Y', { exact: true }).press('Tab');
@@ -108,7 +108,7 @@ test('building address editing preserves metadata, updates access and exports wo
 test('bent entrance paths can be edited, retained through renaming, routed after download and cleared by a moved entrance', async ({ page }, testInfo) => {
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     const data = fixture(); data.buildings[0].access.path = [[2200, 1500], [2200, 1700], [2000, 1700], [2000, 1500]];
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data })); await page.goto(base + '/studio/editor');
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data })); await page.goto(base + '/studio/editor?routing=1');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false'); await page.locator('[data-map-id="main_continent"]').first().click(); await page.getByRole('button', { name: 'Travel network', exact: true }).click();
     const panel = page.locator('#editor-network-panel'); await panel.locator('summary').filter({ hasText: 'Building addresses' }).click(); await panel.getByLabel('Find a building address').fill('Lantern'); await panel.getByRole('button', { name: '12 Harbor Street · The Lantern', exact: true }).click();
     await expect(page.locator('.network-address-approach')).toHaveCount(1);
@@ -156,7 +156,7 @@ test('city suggestions include named landmark entrances and exclude technical ju
 
 test('editor creates, edits, downloads, routes and removes an address with undo and drawing safeguards', async ({ page }, testInfo) => {
     const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: fixture() })); await page.goto(base + '/studio/editor');
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: fixture() })); await page.goto(base + '/studio/editor?routing=1');
     await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false'); await page.locator('[data-map-id="main_continent"]').first().click(); await page.getByRole('button', { name: 'Travel network', exact: true }).click();
     const panel = page.locator('#editor-network-panel'), canvas = page.locator('#editor-map');
     await panel.getByRole('button', { name: 'Add address', exact: true }).click(); await canvas.click({ position: { x: 240, y: 180 } });

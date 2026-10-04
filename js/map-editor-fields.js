@@ -396,9 +396,11 @@
     }
 
     function renderFeatureFields(document, form, mode, feature, formatters = {}) {
-        const definitions = getFeatureFields(mode).map(field => mode === 'points' && field.key === 'type'
-            ? { ...field, suggestions: formatters.poiTypes, help: 'Choose a marker type or enter your own.' }
-            : field);
+        const definitions = getFeatureFields(mode)
+            .filter(field => formatters.routingEnabled !== false || field.section !== 'Travel routing')
+            .map(field => mode === 'points' && field.key === 'type'
+                ? { ...field, suggestions: formatters.poiTypes, help: 'Choose a marker type or enter your own.' }
+                : field);
         form.innerHTML = '';
         const sectionOrder = [];
         const sectionFields = new Map();

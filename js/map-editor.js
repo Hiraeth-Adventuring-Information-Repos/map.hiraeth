@@ -47,6 +47,7 @@
 
     let networkEditor = null;
     const state = {
+        routingEnabled: sharedUtils.isRoutingExperimentEnabled(window.location.search),
         atlasTree: [],
         fileMode: false,
         downloadOnly: false,
@@ -519,6 +520,8 @@
         'draw',
         'network'
     ]);
+    if (!state.routingEnabled) workflowModes.delete('network');
+    document.querySelector('[data-dm-tab="network"]').hidden = !state.routingEnabled;
 
     function getMiniMapImageUrl(imageUrl) {
         const normalizedUrl = String(imageUrl || '').trim();
@@ -779,7 +782,7 @@
             });
             button.addEventListener('keydown', event => {
                 if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-                const enabled = tabs.filter(tab => !tab.disabled);
+                const enabled = tabs.filter(tab => !tab.disabled && !tab.hidden);
                 const index = enabled.indexOf(button);
                 const next = event.key === 'Home' ? 0 : event.key === 'End' ? enabled.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + enabled.length) % enabled.length;
                 enabled[next].focus();
@@ -1498,7 +1501,8 @@
 
     function getRecoveryStorageKey() {
         if (!state.currentMapId || !state.recoveryWorkspaceId) return '';
-        return `${RECOVERY_STORAGE_PREFIX}:${hashRecoveryValue(state.recoveryWorkspaceId)}:${encodeURIComponent(state.currentMapId)}`;
+        // Keep drafts from each editor mode separate without deleting either.
+        return `${RECOVERY_STORAGE_PREFIX}:${hashRecoveryValue(state.recoveryWorkspaceId)}:${encodeURIComponent(state.currentMapId)}:${state.routingEnabled ? 'routing' : 'standard'}`;
     }
 
     function clearRecoverySnapshot() {
@@ -1670,7 +1674,16 @@
         if (!storageKey) return false;
         let snapshot = null;
         try {
-            const serialized = window.sessionStorage.getItem(storageKey);
+            let serialized = window.sessionStorage.getItem(storageKey);
+            if (!serialized) {
+                const legacyKey = storageKey.replace(/:(routing|standard)$/, '');
+                const legacy = window.sessionStorage.getItem(legacyKey);
+                if (legacy && legacy.length <= RECOVERY_MAX_BYTES) {
+                    const previous = JSON.parse(legacy);
+                    const routingDraft = previous.mode === 'network' || previous.drawMode === 'network';
+                    if (routingDraft === (state.routingEnabled === true)) serialized = legacy;
+                }
+            }
             if (!serialized || serialized.length > RECOVERY_MAX_BYTES) return false;
             snapshot = JSON.parse(serialized);
         } catch (error) {
@@ -2732,7 +2745,8 @@
             stringifyCoordinates,
             stringifyKeyFacts,
             stringifyTags,
-            poiTypes: Object.values(window.AppConfig?.get('taxonomy.poiTypeGroups', {}) || {}).flat().sort()
+            poiTypes: Object.values(window.AppConfig?.get('taxonomy.poiTypeGroups', {}) || {}).flat().sort(),
+            routingEnabled: state.routingEnabled
         });
         if (mode === 'points') renderDetailSectionControls(feature);
     }
@@ -2747,13 +2761,16 @@
 
     function renderLineFeatureInspector(feature) {
         renderFeatureSchema('lines', 'Line', feature);
+        const endpointFields = ['travelFrom', 'travelTo']
+            .map(field => dom.featureForm.querySelector(`[data-field="${field}"]`)).filter(Boolean);
+        if (!endpointFields.length) return;
         const names = new Set(getCurrentLines().filter(line => line !== feature && line.travelMode)
             .flatMap(line => [line.travelFrom, line.travelTo]).filter(Boolean));
         const suggestions = document.createElement('datalist');
         suggestions.id = 'travel-endpoint-names';
         names.forEach(name => { const option = document.createElement('option'); option.value = name; suggestions.append(option); });
         dom.featureForm.append(suggestions);
-        ['travelFrom', 'travelTo'].forEach(field => dom.featureForm.querySelector(`[data-field="${field}"]`).setAttribute('list', suggestions.id));
+        endpointFields.forEach(control => control.setAttribute('list', suggestions.id));
     }
 
     function createJourney() {
@@ -4235,6 +4252,11 @@
         if (window.__MAP_EDITOR_DOWNLOAD_ONLY__ === true) {
             document.getElementById('dm-new-map').href = 'file-studio.html?new-map=1';
         }
+        [document.getElementById('dm-new-map'), document.querySelector('.map-editor-remote-link'),
+            dom.studioHomeLink, dom.menuStudioLink, dom.accessStudioLink, dom.previewStudioLink]
+            .filter(Boolean).forEach(link => {
+                link.setAttribute('href', sharedUtils.withRoutingExperiment(link.getAttribute('href'), window.location.search));
+            });
         const studioHosted = isStudioHostedPath(window.location.pathname);
         [dom.studioHomeLink, dom.menuStudioLink, dom.accessStudioLink, dom.previewStudioLink]
             .filter(Boolean)
@@ -4289,7 +4311,7 @@
         state.journeyLayer = L.layerGroup().addTo(state.map);
         state.vertexLayer = L.layerGroup().addTo(state.map);
         state.draftLayer = L.layerGroup().addTo(state.map);
-        networkEditor = TravelNetworkEditor.create({
+        if (state.routingEnabled) networkEditor = TravelNetworkEditor.create({
             state, panel: document.getElementById('editor-network-panel'),
             isOpen: () => dom.appShell.dataset.mode === 'network', editable: () => canMutateWorkspace() && (!state.drawMode || state.drawMode === 'network'),
             lines: getCurrentLines, checkpoint: checkpointHistory, clearDraft: clearDrawMode,

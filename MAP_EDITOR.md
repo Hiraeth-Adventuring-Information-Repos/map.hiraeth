@@ -5,7 +5,8 @@
 ## Start
 
 The public editor is available at **https://maps.hiraeth.wiki/map-editor.html**.
-Choose **Editor** in the viewer, select a map, then edit its features or travel network.
+Choose **Editor** in the viewer, select a map, then edit its features.
+Travel-network editing is experimental: add `?routing=1` to the editor URL (or `&routing=1` after another query parameter). The viewer's experimental Editor link carries the flag automatically.
 It uses the viewer's native-resolution map tiles and needs no local server or login.
 Edits stay in your browser; **Download changes** saves a map JSON or ZIP to your device.
 Published source maps are changed only through the repository release process.
@@ -62,7 +63,7 @@ Markers remain 36 × 48 pixels on the map, anchored at [18, 47]. The artwork, or
 
 ## Travel directions: roads, trails, trains and boats
 
-Open a map and choose **Travel network** in the toolbar (or workspace tabs in the full editor). The map needs a positive **Scale Pixels / Scale Kilometers** calibration under Artwork & scale.
+Open the editor with `routing=1`, select a map and choose **Travel network** in the toolbar (or workspace tabs in the full editor). The viewer's Directions button, address clicks and routing shortcuts use the same opt-in. Removing the flag disables the experiment; no preference is saved. Normal and experimental editor sessions keep separate recovery drafts, and earlier drafts are retained. The map needs a positive **Scale Pixels / Scale Kilometers** calibration under Artwork & scale.
 
 1. Choose **Add point**, select Junction, Town, Station, Port, or Landmark, then click the map. Give each point a distinct name in the panel.
 2. Choose **Draw connection**, select Road, Trail, Train, Sailing, or Ferry, then click a start point. Click any bends you need and click another point to finish. **Finish connection** creates a new point at an empty endpoint. Nearby points and links snap automatically.

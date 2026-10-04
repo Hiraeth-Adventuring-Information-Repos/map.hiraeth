@@ -7,7 +7,9 @@ const VERSIONED_FILES = [
     'site.config.json',
     'js/app-config.js',
     'index.html',
-    'map-editor.html'
+    'map-editor.html',
+    'file-studio.html',
+    'editor-guide.html'
 ];
 
 function nextPatchVersion(version) {

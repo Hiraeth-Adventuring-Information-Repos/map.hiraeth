@@ -1,6 +1,8 @@
 // --- Global Variables ---
 const APP_CONFIG = typeof window !== 'undefined' && window.AppConfig ? window.AppConfig : null;
 const { debounce, withAssetVersion, fetchJsonAsset } = typeof window !== 'undefined' && window.SharedUtils ? window.SharedUtils : {};
+// URL-only opt-in: removing the parameter always returns to the normal atlas.
+const routingExperimentEnabled = window.SharedUtils?.isRoutingExperimentEnabled?.(window.location.search) === true && !isEmbedModeFromUrl();
 const getConfigValue = (path, fallbackValue) => APP_CONFIG ? APP_CONFIG.get(path, fallbackValue) : fallbackValue;
 const getFeatureFlag = (name, fallbackValue = true) => getConfigValue(`features.${name}`, fallbackValue) !== false;
 const getPerformanceNumber = (name, fallbackValue) => {
@@ -727,7 +729,7 @@ function handleMapPopupAction(event) {
         );
     } else if (action === 'open-linked-map') {
         window.openLinkedMapFromPopup(event, actionElement.dataset.linkedMapId);
-    } else if (action === 'address-directions') {
+    } else if (action === 'address-directions' && routingExperimentEnabled) {
         event.preventDefault();
         map.closePopup();
         travelPlanner?.setEndpoint(actionElement.dataset.buildingId || `node:${actionElement.dataset.travelNodeId}`, actionElement.dataset.role);
@@ -780,10 +782,10 @@ function buildPopupHeader(data, type, safePronunciation) {
     if (safePronunciation) {
         headerHtml += `<p style="margin-top: -10px; margin-bottom: 5px;"><em>${safePronunciation}</em></p>`;
     }
-    if (data.address && data.buildingId) {
+    if (routingExperimentEnabled && data.address && data.buildingId) {
         const buildingId = escapeHtml(data.buildingId);
         headerHtml += `<div class="city-address-popup"><p>${escapeHtml(data.address)}</p><div class="city-address-actions"><button type="button" data-popup-action="address-directions" data-building-id="${buildingId}" data-role="from">Directions from here</button><button type="button" data-popup-action="address-directions" data-building-id="${buildingId}" data-role="to">Directions to here</button></div></div>`;
-    } else if (data.travelNodeId) {
+    } else if (routingExperimentEnabled && data.travelNodeId) {
         const travelNodeId = escapeHtml(data.travelNodeId);
         headerHtml += `<div class="city-address-popup"><div class="city-address-actions"><button type="button" data-popup-action="address-directions" data-travel-node-id="${travelNodeId}" data-role="from">Directions from here</button><button type="button" data-popup-action="address-directions" data-travel-node-id="${travelNodeId}" data-role="to">Directions to here</button></div></div>`;
     }
@@ -1363,6 +1365,7 @@ function resolveControlVisibilityState({
     hasRoads = false,
     hasJourneys = false,
     hasTravelRoutes = false,
+    routingEnabled = false,
     hasValidScale = false,
     hasBlurb = false,
     hasLatLonBounds = false,
@@ -1406,7 +1409,7 @@ function resolveControlVisibilityState({
         showFiltersButton: desktop.filtersButton,
         showSearchFilterAction: features.filters,
         showMeasureButton: desktop.measureButton,
-        showDirectionsButton: !isEmbedded && hasTravelRoutes,
+        showDirectionsButton: routingEnabled && !isEmbedded && hasTravelRoutes,
         showSoundButton: desktop.soundButton,
         showBlurbButton: desktop.blurbButton,
         showCoordsButton: desktop.coordsButton,
@@ -1422,7 +1425,7 @@ function resolveControlVisibilityState({
         showMobileMarkersAction: mobile.markersAction,
         showMobileFiltersAction: mobile.filtersAction,
         showMobileMeasureAction: mobile.measureAction,
-        showMobileDirectionsAction: layout.mobileSheet && hasTravelRoutes,
+        showMobileDirectionsAction: routingEnabled && layout.mobileSheet && hasTravelRoutes,
         showMobileShareAction: mobile.shareAction,
         showMobileSoundAction: mobile.soundAction,
         showMobileCoordsAction: mobile.coordsAction,
@@ -5161,6 +5164,7 @@ function buildControlVisibilityState(mapInfo) {
         advancedControls: advancedControlsUnlocked,
         hasJourneys: Array.isArray(mapInfo.journeys) && mapInfo.journeys.length > 0,
         hasTravelRoutes: travelPlanner?.hasRoutes() || false,
+        routingEnabled: routingExperimentEnabled,
         hasPOIs,
         hasRegions,
         hasRoads,
@@ -7292,7 +7296,7 @@ function finalizeMapUI(requestedMapId, selectedMap) {
 
     currentlyLoadedMapId = requestedMapId;
     const editorLink = document.getElementById('map-editor-link');
-    if (editorLink) editorLink.href = `map-editor.html?map=${encodeURIComponent(requestedMapId)}`;
+    if (editorLink) editorLink.href = `map-editor.html?map=${encodeURIComponent(requestedMapId)}${routingExperimentEnabled ? '&routing=1' : ''}`;
     safeSetStorage(UX_STORAGE_KEYS.lastMapId, requestedMapId);
     loadingMapId = null;
     schedulePostLoadPrefetch(selectedMap);
@@ -7366,18 +7370,20 @@ function renderMapFeatures(selectedMap, requestedMapId) {
     addRegionsToMap(requestedMapId);
     addRoadsToMap(requestedMapId);
     addJourneysToMap(selectedMap);
-    if (!travelPlanner) travelPlanner = TravelNetwork.createPlanner({ map, L, document, onOpen: () => {
-        if (isMeasuringMultiPoint) finalizeMultiPointMeasure(false);
-        if (isMobileLayoutActive) closeMobileSheet({ restoreFocus: false });
-        if (filtersPanelVisible) toggleFilterPanel();
-        setMapBlurbVisible(false);
-    } });
-    travelPlanner.load(selectedMap, visibleLinesCache);
-    if (!cityAddresses && typeof CityAddresses !== 'undefined') {
-        cityAddresses = CityAddresses.create({ map, L, document,
-            onChoose: (building, role) => travelPlanner.setEndpoint(building.id, role) });
+    if (routingExperimentEnabled) {
+        if (!travelPlanner) travelPlanner = TravelNetwork.createPlanner({ map, L, document, onOpen: () => {
+            if (isMeasuringMultiPoint) finalizeMultiPointMeasure(false);
+            if (isMobileLayoutActive) closeMobileSheet({ restoreFocus: false });
+            if (filtersPanelVisible) toggleFilterPanel();
+            setMapBlurbVisible(false);
+        } });
+        travelPlanner.load(selectedMap, visibleLinesCache);
+        if (!cityAddresses && typeof CityAddresses !== 'undefined') {
+            cityAddresses = CityAddresses.create({ map, L, document,
+                onChoose: (building, role) => travelPlanner.setEndpoint(building.id, role) });
+        }
+        cityAddresses?.load({ ...selectedMap, buildings: (selectedMap.buildings || []).filter(visibilityAllowed) });
     }
-    cityAddresses?.load({ ...selectedMap, buildings: (selectedMap.buildings || []).filter(visibilityAllowed) });
     updateVisibleRegions();
     if (typeof updateVisibleLines === 'function') {
         updateVisibleLines();
