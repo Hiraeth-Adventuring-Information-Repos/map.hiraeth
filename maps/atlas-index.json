@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T22:02:46.034Z",
+  "generatedAt": "2026-10-05T03:33:09.453Z",
   "tree": [
     {
       "type": "folder",
@@ -4061,11 +4061,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Ankhet",
-      "summary": "Ankhet’s painted memorial courts rise behind a working harbor of workshops and passenger landings. Families come to bury, remember, and recover their dead. Its public record houses preserve names that more powerful cities have sometimes found convenient to forget.",
-      "description": "Ankhet combines a practical coastal economy with a reputation for memorial crafts and public records. Painters, stoneworkers, linen sellers, cooks, and boat crews share streets where funeral processions pass ordinary shops. Families renew painted names during remembrance gatherings, bringing food for neighbors and relatives. A Council of Houses represents residential wards and major civic institutions. The Painted Ward contains workshops producing everything from modest household markers to elaborate monuments. The House of Names preserves burial and household records, while the Open Table provides meals and temporary lodging for visiting families. Ankhet imports linen, pigments, timber, and stone, exporting finished crafts and serving coastal passenger traffic. Wealthy patrons compete for lasting remembrance, sometimes seeking land already used for communal burials. Residents disagree over whose names deserve protection and whether an official record should outweigh living testimony.",
+      "summary": "A working harbor renowned for painted memorials, public records, and the households that keep the names of the dead alive.",
+      "description": "Ankhet combines a busy coastal economy with an enduring commitment to remembrance. Painters, stoneworkers, linen sellers, cooks, and boat crews share streets where funeral processions pass ordinary shops. The House of Names preserves household and burial records, while the Open Table feeds visiting families and offers temporary lodging. The Keeper of the Living Names, the city's sacred ruler, governs alongside institutions whose authority reaches into individual wards and households. In the Painted Ward, modest household markers stand beside commissions from wealthy patrons. Disputes over burial land, missing names, and the claims of living witnesses make remembrance a matter of everyday politics as well as devotion.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Approved name; proposed lore Placement Current pin retained Source Lore team handoff Previous label City Ank Familiar name Ank"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04) Previous label City Ank Familiar name Ank"
     },
     {
       "kind": "poi",
@@ -4100,11 +4100,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "The Courts of Veyru",
-      "summary": "Broken courtyards and reused foundations mark the Courts of Veyru. Successive occupants altered its halls, inscriptions, and waterworks, leaving several histories in stone. Nearby communities still visit parts of the site, despite outsiders describing it as abandoned.",
-      "description": "Veyru once served as an inland administrative and stopping place, but its surviving structures belong to multiple periods. Later occupants repaired some buildings, dismantled others, and recut inscriptions to reflect new claims. Its earliest builders and precise chronology remain unresolved. The Court of Recut Names preserves visible alterations to older inscriptions. The Lower Cisterns reveal successive repairs and changes in use. Around the Pilgrims’ Kitchen, seasonal visitors maintain shelter and a hearth despite the collapse of neighboring structures. Local custodians, surrounding communities, and visiting researchers disagree over access and ownership. Guiding, transport, supplies, and conservation work support a small seasonal economy. Permits issued elsewhere do not necessarily command local respect, particularly where excavations threaten places still used for remembrance or gathering.",
+      "summary": "Well-known broken courts with recut inscriptions, repaired cisterns, and seasonal gathering places still tended by surrounding communities.",
+      "description": "The Courts of Veyru once served as an inland administrative and stopping place. Their surviving buildings belong to several periods: doorways were blocked, foundations reused, and inscriptions altered to suit later claims. The Court of Recut Names displays some of these changes openly, while the Lower Cisterns preserve successive repairs. Around the Pilgrims' Kitchen, seasonal visitors still maintain shelter and a hearth despite the collapse of neighboring structures. Local custodians, nearby households, and visiting researchers disagree over access and the removal of material. Veyru is a known place with living connections to its surroundings, and permission obtained in a distant city does not necessarily settle who may work there.",
       "typeLabel": "Ruins",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Proposed name and identity Placement Current pin retained Source Lore team handoff Previous label Ruins"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04) Previous label Ruins"
     },
     {
       "kind": "poi",
@@ -4126,11 +4126,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Djeskar",
-      "summary": "Hammering carries across Djeskar’s harbor from dawn until dark. Its yards build fishing boats, merchant vessels, and warships for competing employers. Shipwrights, sailmakers, and waterfront households celebrate every launch—and remember every unpaid debt.",
-      "description": "Djeskar’s waterfront is crowded with unfinished hulls, cranes, stacked planks, and drying rope. Neighborhoods gather around individual shipyards, sharing ovens and eating houses that serve workers between shifts. Launching days become neighborhood celebrations, with household emblems painted onto the vessels residents helped build. The Assembly of Yards represents shipbuilding enterprises and recognized trades. Major owners dominate contracts, but coordinated work crews can bring the harbor to a standstill. Foreign naval commissions promise employment while raising uncomfortable questions about who might eventually command those ships. The Long Ways contain the principal slipways. At the House of Soundings, navigators report damaged charts and faults discovered at sea. The Unpaid Bell summons public witnesses to disputed wages. Djeskar imports timber, Tameret’s sailcloth, food, and copper traded through Kharaset; its exports include ships, repairs, rope, and fittings.",
+      "summary": "A shipbuilding city of crowded slipways, skilled crews, and powerful yards, where every launching is celebrated and unpaid wages remembered.",
+      "description": "Hammering carries across Djeskar's waterfront from dawn until dark. Its yards build fishing boats, merchant vessels, and warships, drawing timber, food, metal, and sailcloth from a wide network of suppliers. The Assembly of Yards shares public authority with the Bearer of the Keel Oath, the city's sacred ruler, while organized crews can halt the harbor through collective action. The Long Ways hold the principal slipways, the House of Soundings gathers navigators' reports, and the Unpaid Bell calls witnesses to wage disputes. Neighborhoods gather around their yards, sharing ovens and celebrating launches. Foreign commissions bring prosperity but also arguments about whose wars Djeskar's ships may eventually fight.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Approved name; proposed lore Placement Current pin retained Source Lore team handoff Previous label Kesh"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04) Previous label Kesh"
     },
     {
       "kind": "poi",
@@ -4139,11 +4139,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Oseret",
-      "summary": "At the gulf’s western end, Oseret gathers the produce of its hinterland. Market courts, storehouses, and lending houses connect inland communities to coastal buyers. Harvests are often sold before they are gathered, making credit both a lifeline and a source of lasting resentment.",
-      "description": "Oseret serves the communities behind the western gulf shore. Roads converge on its livestock yards and market courts, where small deliveries are assembled into cargoes large enough to ship profitably. Homes surround storage rooms and shaded courtyards, and market streets fill with carts, pack animals, and baskets of produce. A Market Council shares authority with representatives from contributing rural districts. Local lenders advance seed, tools, and transport costs against future harvests. Some maintain trusted relationships across generations; others acquire land whenever borrowers endure a bad year. The Hundred Doors is a district of independently owned warehouses. At the Witness Court, oral testimony can challenge written contracts. The Evening Market serves smaller buyers after the major merchants finish trading. Oseret distributes agricultural goods, wool, hides, and inland crafts, importing salt, metalwork, and coastal products. Its financial influence is primarily regional.",
+      "summary": "The western gulf's great market city, where growers, warehouse households, and lenders turn inland harvests into coastal trade.",
+      "description": "Oseret gathers produce from the communities behind the western gulf shore. Livestock yards, shaded market courts, and independent warehouses allow small deliveries to become cargoes large enough for coastal trade. Its Witness-Crowned Sovereign holds sacred authority, while the Market Council and rural representatives negotiate the practical business of prices, storage, and access. At the Hundred Doors, merchants assemble goods from many households; at the Witness Court, spoken testimony may challenge a written contract. The Evening Market serves smaller buyers after the largest deals are concluded. Loans for seed, tools, and transport keep farms working, but poor harvests can turn a useful advance into a debt that outlives its borrower.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Approved name; proposed lore Placement Current pin retained Source Lore team handoff Previous label Orun"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04) Previous label Orun"
     },
     {
       "kind": "poi",
@@ -4152,11 +4152,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Kharaset",
-      "summary": "Kharaset is where caravan bells meet harbor chains. Copper, salt, and inland goods pass through its weighing courts before reaching the gulf. Its independence depends on keeping roads open, measures trustworthy, and travelers supplied.",
-      "description": "Kharaset’s streets widen around caravan courts where wagons and pack animals gather beneath deep shade. Workshops repair equipment for both road and sea, while lodging houses accommodate travelers carrying news and goods from the interior. Chickpea cakes and onion broth are common meals around the working markets. The Council of Gates includes market wards, caravan associations, and established merchant households. It regulates storage, public measures, and caravan facilities. Beyond the city, however, route communities maintain their own wells and agreements, limiting how far Kharaset can impose its authority. The Copper Court assays metal and stamps approved weights. At the Court of First Water, travelers receive a drink before lodging fees are discussed. Brokers at the Western Gate arrange journeys toward Damietta along a proposed overland connection. Kharaset trades inland copper, salt, stone, and crafted goods for grain, cloth, timber, and maritime supplies. Claims over road tolls remain a recurring source of conflict.",
+      "summary": "A caravan and harbor city whose weighing courts, water customs, and repair workshops sustain the exchange between interior and coast.",
+      "description": "Kharaset's streets open into caravan courts crowded with pack animals, wagons, repair shops, and travelers carrying news from the interior. Copper, salt, stone, and crafted goods pass through its weighing houses before reaching coastal buyers. The Guardian of the First Water embodies the city's sacred claim to protect passage and provision, alongside the Council of Gates and its competing commercial interests. At the Copper Court, assayers test metal and certify weights; at the Court of First Water, travelers receive a drink before lodging charges are discussed. Route communities retain their own wells and agreements. Kharaset's influence depends on those relationships, and ambitious toll collectors can threaten the trade they are meant to support.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Approved name; proposed lore Placement Current pin retained Source Lore team handoff Previous label Serekh"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04) Previous label Serekh"
     },
     {
       "kind": "poi",
@@ -4165,11 +4165,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Isethra",
-      "summary": "Isethra is the principal harbor of Ilyra, receiving ocean travelers and preparing gulf vessels for distant voyages. Pilots, translators, shipping houses, and waterfront families sustain its prosperity. Smaller island ports dispute how much authority that prosperity should buy.",
-      "description": "Isethra’s waterfront changes with every arrival. Visiting merchants, interpreters, sailors’ families, and warehouse workers share streets filled with unfamiliar cargo and competing announcements. Lodging houses advertise through painted symbols as well as words, while messages await returning crews at harbor-side stalls. A Harbor Compact joins Isethra to Ilyra’s smaller port communities. The city provides commercial courts, shipping finance, and convoy organization. Other harbors supply crews, food, anchorages, and local knowledge, and resist being treated as dependencies. Ocean arrivals gather at Lantern Quay. The Exchange Courts handle shipping loans, cargo guarantees, and disputes. At the Returning Wall, families leave messages for absent sailors, sometimes for years. Isethra depends on mainland provisions and Djeskar’s yards. Its influence comes from reliable services and information rather than an uncontested right to control every approach to the gulf.",
+      "summary": "Ilyra's principal harbor, sustained by pilots, interpreters, shipping houses, and the lights that guide crews home from the open sea.",
+      "description": "Isethra receives ocean travelers and prepares gulf vessels for distant voyages. Lantern Quay fills with unfamiliar cargo, returning crews, interpreters, and people waiting for news. The Patron of the Returning Light holds sacred authority, while the Harbor Compact binds the city to smaller ports that supply crews, provisions, and local knowledge. Shipping loans and cargo disputes come before the Exchange Courts. At the Returning Wall, families leave messages for absent sailors, sometimes renewing them for years. The city's prosperity depends on reliable services, freshwater, mainland food, and sound vessels. Smaller island communities value its rescue lights and commercial connections while resisting attempts to make every useful service compulsory.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Approved city name; Ilyra retained as the proposed island name Placement Current pin retained Source Lore team handoff Previous label Ilyra Island Ilyra Island pronunciation ih-LEER-ah Island status Proposed name"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04) Previous label Ilyra Island Ilyra Island pronunciation ih-LEER-ah Island status User-supplied name"
     },
     {
       "kind": "poi",
@@ -4178,11 +4178,11 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Caerulean",
-      "summary": "The Azure Sovereign’s city carries her imposed identity in its monuments, offices, and ceremonial harbor. Since her fall, residents have rebuilt beneath competing claims of authority. Beccin retains a nominal hold over part of the city, while the sovereign’s fate remains disputed.",
-      "description": "The city was shaped to express the Azure Sovereign’s authority. Public buildings, ceremonial approaches, and civic institutions carried the identity her rule required. That inheritance remains visible even where damaged monuments and altered streets reveal the upheaval of her fall. Today, clerks register births beside damaged government buildings, markets occupy former ceremonial spaces, and displaced households preserve addresses whose buildings no longer stand. Authority is divided among surviving offices, neighborhood representatives, religious institutions, and a limited Beccin presence. The Harbor Secretariat coordinates essential services without resolving who legitimately rules Nwt. The Blue Steps connect the waterfront to the administrative quarter. The Court of Petitions receives requests for compensation and restitution. Around the Palace Precinct, ownership and access remain contested. The city imports food, construction materials, and manufactured goods, while providing administrative, legal, and specialist services. Older financial houses hold obligations whose validity is disputed alongside the former regime’s authority.",
+      "summary": "Nwt's former capital remains a major city of damaged ceremonial buildings, working offices, crowded markets, and disputed authority.",
+      "description": "Caerulean still carries the architectural imprint of Nwt's long rule: monumental approaches, blue ornament, government courts, and a harbor shaped to display sovereign power. Since the catastrophe of 58 BEC, markets have spread into ceremonial spaces and displaced households have rebuilt around surviving streets. Clerks continue to register births, property claims, and petitions beside damaged public buildings. The Harbor Secretariat coordinates essential services amid competing civic offices, neighborhood representatives, religious institutions, and a limited Beccin presence. The Blue Steps lead toward the administrative quarter, while the Court of Petitions hears demands for restitution. The city remains influential, but its continuing life has not settled who may legitimately inherit its former ruler's authority.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Retain label temporarily; replacement unresolved Placement Current pin retained Source Lore team handoff"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04)"
     },
     {
       "kind": "poi",
@@ -4217,11 +4217,219 @@
       "mapId": "Astrousia",
       "mapName": "Astrousia",
       "name": "Damietta",
-      "summary": "Damietta surrounds a deep bay famed for the dungeon beneath its waters. The Alhafar rulers receive homage in a glass temple above the harbor, while merchants, brewers, and treasure seekers fill the streets below. Jungle presses against the city’s poorer wards.",
-      "description": "Damietta’s Alhafar dynasty traces its prestige to the first delvers of the bay’s underwater dungeon. The family secured autonomy during Nut’s expansion, maintaining a city whose wealth and identity developed around maritime commerce and discoveries brought up from below. Their glass temple serves as residence and audience chamber within greenish sandstone walls. The Grand Bazaar exchanges everyday necessities and unusual finds. Beergate’s breweries supply a city where beer is central to social life, while coffee and grapes grow in the farming district. The Married Oysters, a tavern shaped like a great treasure chest, offers gambling and fighting pits. In Jungle’s Edge, overcrowded households live beside encroaching vegetation, and the Panther’s Paw exercises informal authority. A proposed overland connection to Kharaset could expand trade into the gulf, while provoking disputes over land, investment, and who receives the benefits.",
+      "summary": "An independent western port ruled by the Alhafar dynasty, famed for its glass temple, lively markets, breweries, and underwater dungeon.",
+      "description": "Damietta surrounds a deep bay whose underwater dungeon helped establish the prestige of the Alhafar dynasty. Its rulers receive homage in a glass temple within greenish sandstone walls, maintaining a sacred kingship and a tradition of autonomy that survived Nwt's expansion. The Grand Bazaar trades everyday necessities alongside unusual recoveries from below, while Beergate's breweries supply the city's social life. Coffee and grapes grow in the farming district. At the Married Oysters, gambling and fighting pits draw travelers and residents alike. Beyond prosperous commercial streets, crowded households in Jungle's Edge negotiate the influence of the Panther's Paw and the pressure of surrounding vegetation. Maritime wealth supports the city without reaching every neighborhood equally.",
       "typeLabel": "City",
       "visibility": "public",
-      "searchText": "Astrousia Proposed lore Status Existing name and older lore; connecting material proposed Placement Current pin retained Source Lore team handoff"
+      "searchText": "Astrousia Status User-supplied name and lore Placement Current pin retained Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:13",
+      "itemId": "Khevaren",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Khevaren",
+      "summary": "A modest town south of Ankhet, known as the Painted Measure for its market weights, decorated wares, and careful household accounts.",
+      "description": "Khevaren serves the settlements south of Ankhet, assembling small deliveries and providing storage, repairs, and lodging for carriers. Its familiar name, the Painted Measure, survives on colored market boards and the marked weights used to settle ordinary purchases. Potters, painters, and account keepers work beside households that combine trade with cultivation. The town has changed political masters without losing its usefulness as a place where goods can be counted, checked, and exchanged. Travelers find practical workshops and shared courtyards rather than monumental avenues. Local disputes usually concern access, tolls, damaged cargo, and whether an agreement witnessed in one generation still binds the next.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:14",
+      "itemId": "Vaskeru",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Vaskeru",
+      "summary": "Known as Beam and Sail, Vaskeru gathers timber, cordage, and skilled labor for the shipbuilding economy around Djeskar.",
+      "description": "Vaskeru stands northwest of Djeskar and serves the wider shipbuilding trade. Its Beam and Sail markets gather timber, cordage, cloth, and repair materials before they move onward to larger yards. Storage courts and eating houses support carriers and craft workers, while local households cultivate the ground needed to feed a town dependent on outside contracts. Older boundary stones survive beside repeatedly repaired streets, reminders of past struggles over the movement of valuable supplies. Today's merchants prefer predictable deliveries to grand territorial claims. A delayed payment or blocked route can still divide employers, workers, and growers over who must bear the cost of keeping business moving.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:15",
+      "itemId": "Eshoran",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Eshoran",
+      "summary": "A thriving market town northwest of Oseret, where shaded courts gather produce, pack animals, pottery, and news from surrounding communities.",
+      "description": "Eshoran's Broadshade Market draws growers, livestock keepers, carriers, and household traders from the country northwest of Oseret. Its prosperity rests on assembling the small, irregular deliveries that larger merchants find inconvenient to collect themselves. Shaded courts provide space for bargaining and animal care, while lodging houses fill during the busiest market periods. Repaired paving and older property boundaries show how often its valuable commercial position has been contested. Residents judge distant authorities by the safety of access roads and the fairness of levies. Eshoran remains a town of working households and neighboring farms, even when its market days attract crowds large enough to suggest a much greater city.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:16",
+      "itemId": "Rakhavel",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Rakhavel",
+      "summary": "A reduced but inhabited trading town southwest of Kharaset, where assayers, metal dealers, and repairers keep the Copperweight market working.",
+      "description": "Rakhavel is still called Copperweight, although its active market now occupies only part of the space earlier generations maintained. Assayers, metal dealers, carriers, and repairers work among reused storehouses southwest of Kharaset. Its livelihood comes from checking and exchanging metal cargoes and repairing the equipment that moves them; the town's name does not imply a mine beneath its streets. Households supplement commercial work with other trades and local food production. Empty compounds and patched market walls make its diminished fortunes visible. Visitors can still obtain an experienced judgment on a suspect weight or damaged tool, provided they arrive when the right craft household is in residence.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:17",
+      "itemId": "Velithra",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Velithra",
+      "summary": "An inhabited town on Ilyra, known for sail repair, cordage, household workshops, and the practical skills of the Island Menders.",
+      "description": "Velithra supports Ilyra's maritime economy through work performed in courtyards, stores, and family workshops. Its Island Menders repair sails, cordage, clothing, and the smaller fittings that keep vessels useful between major refits. Food sellers and lodging households serve workers and customers moving through the island. Connections with Isethra bring business, but residents depend equally on agreements with smaller communities and independent crews. Public water points and shared storage are maintained through local contributions. The town's standing rests on dependable workmanship: a well-repaired sail is a lasting recommendation, while a hurried repair that fails at sea can become a dispute remembered across several harbors.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:18",
+      "itemId": "Vaereth",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Vaereth",
+      "summary": "A struggling but inhabited town southwest of Caerulean, where surviving households repair older buildings beneath remnants of blue plaster.",
+      "description": "Vaereth's familiar name, Blue Plaster, recalls the decorated walls that once advertised its connections to Caerulean. It remains inhabited, though occupied houses and workshops now stand among compounds too large for the families maintaining them. Small-scale repair work, cultivation, and services for passing travelers support the remaining community. Residents reuse old masonry and keep a few common spaces functional rather than attempting to restore every abandoned room. The town's closeness to the former capital brings work as well as uncertainty over old obligations and property claims. For a traveler, Vaereth offers modest hospitality and practical knowledge of the surrounding country, with visible reminders of more prosperous times.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:19",
+      "itemId": "Daveret",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Daveret",
+      "summary": "Damietta's western Claybank Market gathers pottery, provisions, and household goods for carriers moving between inland communities and the port.",
+      "description": "Daveret lies west of Damietta, where its Claybank Market connects household production with the demands of a much larger port. Potters, food sellers, carriers, and repairers exchange durable everyday goods rather than the spectacular finds celebrated in the city. Market courts double as places to arrange transport, locate relatives, and hear news of changing prices. Repeated repairs to older yards reflect a long history of storms, interrupted trade, and the maintenance of useful ground. Local households maintain their own agreements over water, work, and storage. Damietta's merchants are valuable customers, but bargaining with them is a regular necessity rather than an assurance of easy prosperity.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:20",
+      "itemId": "Amaleth",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Amaleth",
+      "summary": "A small western town called Seven Courtyards, offering modest markets, shared ovens, repairs, and lodging along local exchange routes.",
+      "description": "Amaleth's Seven Courtyards give their name to a town whose activity gathers around a small number of maintained communal spaces. Households share ovens, arrange repairs, store modest cargoes, and accommodate travelers moving through the western country. Some older compounds stand partly empty, and market days are more important than the quiet streets between them might suggest. The town depends on nearby producers and reliable local arrangements rather than the wealth of a great harbor. Residents value news about the condition of routes and the availability of supplies. For outsiders, a host who knows the surrounding communities is often more useful than a merchant offering distant promises.",
+      "typeLabel": "Town",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:21",
+      "itemId": "Djaseret",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Djaseret",
+      "summary": "A prosperous agricultural village southeast of Oseret, where the Upper Reed Gardens support growers, seed keepers, and seasonal produce markets.",
+      "description": "Djaseret remains a village despite the strength of its agricultural economy. Its Upper Reed Gardens support households whose work follows planting, water maintenance, harvest, and the preparation of produce for exchange. Communal stores and seed keeping help bridge poor seasons, while carriers connect local growers with larger markets. The village's importance comes from dependable food and experienced cultivators, not a monumental court or a large permanent garrison. Rights to plots and access to maintained water points are matters of close local attention. Visitors arriving at harvest encounter a busy settlement; at other times, the same households are dispersed among the gardens and their everyday maintenance work.",
+      "typeLabel": "Village",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:22",
+      "itemId": "Orenuva",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Orenuva",
+      "summary": "A small southern settlement known as Southlake Exchange, where local households maintain a modest meeting place for provisions, repairs, and trade.",
+      "description": "Orenuva preserves the name Southlake Exchange on a scale much smaller than its reputation might suggest. A limited group of households maintains storage space, a meeting court, and basic services for surrounding communities and occasional travelers. Trade arrives unevenly, so cultivation, repair work, and reciprocal help matter as much as coin or commercial cargo. Older foundations extend beyond the places now kept in regular use. Residents can arrange provisions and introduce visitors to people who know local routes, but large expeditions must bring their own support. Its continuing presence gives the southern country a familiar meeting point without making it a new regional capital.",
+      "typeLabel": "Village",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:23",
+      "itemId": "Aleruva Quay",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Aleruva Quay",
+      "summary": "An old quay north of Djeskar, recognizable by stranded masonry, silted waterworks, and the foundations of a vanished working neighborhood.",
+      "description": "Aleruva Quay is a familiar landmark in the country north of Djeskar. Its surviving stonework and silted waterworks preserve the outline of a landing place whose commercial functions moved elsewhere long ago. Domestic foundations behind the quay show that workers and their families once lived beside the movement of goods. Later sediment and repeated damage made the old arrangement increasingly difficult to read, but local guides can still identify several lines of construction. Visitors come to examine the masonry, compare old accounts, or use the place as a route marker. The site is remembered openly; its interest lies in the ordinary harbor life preserved beneath centuries of change.",
+      "typeLabel": "Ruins",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:24",
+      "itemId": "Esholvar Yard",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Esholvar Yard",
+      "summary": "The remains of an old working yard northwest of Djeskar, with reused paving, household foundations, and channels from successive periods of activity.",
+      "description": "Esholvar Yard, also remembered as Blueweight Yard, survives as a spread of working courts, domestic foundations, boundary stones, and partly silted channels. Its services eventually shifted to other establishments, leaving the older site to be reused piecemeal rather than rebuilt as a functioning town. Differences in paving and repairs reveal a longer history than its few standing walls suggest. People from the surrounding country know its position and use its conspicuous stones as landmarks. Craft workers and curious travelers visit to inspect old workmanship, while nearby households dispute the removal of useful material. It offers an approachable record of labor and exchange without the grandeur of a royal monument.",
+      "typeLabel": "Ruins",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:25",
+      "itemId": "Orvakar Causeway",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Orvakar Causeway",
+      "summary": "A broken southern causeway whose raised road surfaces and old boundary stones remain familiar landmarks to local travelers.",
+      "description": "Orvakar Causeway once supported a maintained crossing and the households that serviced it. Surviving stretches of raised road, boundary stones, and adjoining foundations show successive building campaigns rather than a single uninterrupted work. After an early abandonment, later inhabitants returned and repaired parts of the site before its permanent services disappeared again. Local travelers still know the route of the old causeway, although missing sections make its historical alignment easier to recognize than to follow. Visitors can see changes in road level and masonry without entering a hidden complex. The ruins are a reminder that even modest crossings could attract labor, tolls, settlement, and political rivalry.",
+      "typeLabel": "Ruins",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:26",
+      "itemId": "Omaluve Steps",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Omaluve Steps",
+      "summary": "Ancient landing steps in the southern interior, bordered by ruined stores, old waterworks, and the traces of repeated rebuilding.",
+      "description": "Omaluve Steps preserve the remains of a former landing and the small working settlement behind it. Broad masonry, altered channels, and domestic foundations mark a place rebuilt after one abandonment and eventually left without a permanent community again. The familiar name Reedline Steps survives among people who travel through the surrounding country. Seasonal growth and changing water conditions reveal different portions of the older works at different times. Visitors know where to find the site, but cannot assume that an ancient landing still provides a useful modern access point. Its surviving structures draw interest for the practical lives they reveal: storage, loading, shelter, and the repeated maintenance needed to keep exchange possible.",
+      "typeLabel": "Ruins",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:27",
+      "itemId": "Djenareth Quarry",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Djenareth Quarry",
+      "summary": "A well-known abandoned stone quarry with cut faces, unfinished blocks, lifting sockets, and haulways remembered by surviving craft traditions.",
+      "description": "Djenareth Quarry contains worked faces, wedge holes, unfinished blocks, and the remains of routes used to move heavy stone. Earlier workings were abandoned and later reopened before the last resident establishment closed in 8 BEC. Stone remained in the landscape, but reaching and transporting worthwhile material beyond the serviced faces demanded more labor and provisioning than the operation could sustain. The site remains known to masons and carriers, and its recent closure preserves memories alongside older physical traces. Visitors can study the stages of cutting and movement in the exposed works. Occasional salvage does not amount to the return of a permanently staffed quarry settlement.",
+      "typeLabel": "Ruins",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
+    },
+    {
+      "kind": "poi",
+      "id": "poi:Astrousia:28",
+      "itemId": "Averet Kilns",
+      "mapId": "Astrousia",
+      "mapName": "Astrousia",
+      "name": "Averet Kilns",
+      "summary": "Abandoned clay pits and kiln floors south of Ankhet, where broken firing batches record generations of ordinary pottery production.",
+      "description": "Averet Kilns preserve clay pits, firing floors, discarded batches, and broken channels from a long-lived pottery district. The works were abandoned, reopened centuries later, and finally lost their resident establishment in 122 BBEC. The practical problem was access to workable material within the district's supported reach, rather than the disappearance of every clay deposit in the region. Potters recognize useful lessons in the failed vessels and changing kiln layouts, while nearby communities remember the place as part of their working landscape. Seasonal visits and small-scale collection continue around an otherwise uninhabited site. Its ruins preserve everyday production rather than a lost palace or an undiscovered royal tomb.",
+      "typeLabel": "Ruins",
+      "visibility": "public",
+      "searchText": "Astrousia Status User-supplied name and lore Source User-supplied map update (2026-10-04)"
     },
     {
       "kind": "map",

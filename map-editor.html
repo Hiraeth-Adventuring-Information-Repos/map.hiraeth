@@ -206,7 +206,7 @@
         })();
         window.__EDITOR_ASSETS_READY__ = (async () => {
             if (!window.__MAP_EDITOR_LOCAL_ACCESS__) return;
-            await EditorLoading.asset('js/app-config.js?v=0.1.80');
+            await EditorLoading.asset('js/app-config.js?v=0.1.81');
             const { data } = await EditorLoading.json('site.config.json');
             AppConfig.setConfig(data);
             window.APP_ASSET_VERSION = AppConfig.get('assets.version', '0');
