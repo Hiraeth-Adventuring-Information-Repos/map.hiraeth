@@ -2,6 +2,8 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { buildManifestTreeFromDocument, assertManifestCoverage } = require('./manifest_hierarchy.js');
+const { getManifestHierarchy } = require('./generate_atlas_index.js');
 
 const repoRoot = path.resolve(__dirname, '..');
 const mapsDir = path.join(repoRoot, 'maps');
@@ -135,11 +137,11 @@ function assertCoordinatePair(value, context) {
         addError(`${context}: expected [y, x] coordinate pair`);
         return;
     }
-    value.forEach((coordinate, index) => {
-        if (!Number.isFinite(Number(coordinate))) {
+    for (let index = 0; index < 2; index++) {
+        if (!Number.isFinite(value[index])) {
             addError(`${context}[${index}]: expected a finite number`);
         }
-    });
+    }
 }
 
 function validatePoint(point, context) {
@@ -248,42 +250,21 @@ function validateMapDocument(mapDocument, context) {
     }
 }
 
-function getManifestEntries(manifestDocument) {
-    if (Array.isArray(manifestDocument)) return manifestDocument;
-    if (manifestDocument && Array.isArray(manifestDocument.maps)) return manifestDocument.maps;
-    return null;
-}
+let manifestHierarchy = null;
 
 function validateManifest() {
     const manifest = readJson('maps/maps.json');
-    const entries = getManifestEntries(manifest);
-    if (!entries) {
-        addError('maps/maps.json: expected an array or an object with a maps array');
-        return;
+    try {
+        const tree = buildManifestTreeFromDocument(manifest);
+        manifestHierarchy = getManifestHierarchy({ repoRoot, tree });
+        for (const [id, { node }] of manifestHierarchy) {
+            const context = `maps/maps.json[${id}]`;
+            assertNonEmptyString(node.name, `${context}.name`);
+            if (node.dataUrl) assertExistingRelativeFile(node.dataUrl, `${context}.dataUrl`);
+        }
+    } catch (error) {
+        addError(error.message);
     }
-
-    const knownIds = new Set();
-    entries.forEach((entry, index) => {
-        const context = `maps/maps.json[${index}]`;
-        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-            addError(`${context}: expected an object`);
-            return;
-        }
-        assertNonEmptyString(entry.id, `${context}.id`);
-        assertNonEmptyString(entry.name, `${context}.name`);
-        if (entry.id) {
-            if (knownIds.has(entry.id)) addError(`${context}.id: duplicate id "${entry.id}"`);
-            knownIds.add(entry.id);
-        }
-        if (entry.dataUrl) assertExistingRelativeFile(entry.dataUrl, `${context}.dataUrl`);
-    });
-
-    entries.forEach((entry, index) => {
-        if (!entry || !entry.parentId) return;
-        if (!knownIds.has(entry.parentId)) {
-            addError(`maps/maps.json[${index}].parentId: unknown parent "${entry.parentId}"`);
-        }
-    });
 }
 
 function validateAtlasNode(node, context) {
@@ -316,6 +297,10 @@ function validateAtlasIndex() {
         addError('maps/atlas-index.json.tree: expected an array');
     } else {
         atlas.tree.forEach((node, index) => validateAtlasNode(node, `maps/atlas-index.json.tree[${index}]`));
+        if (manifestHierarchy) {
+            try { assertManifestCoverage(manifestHierarchy, atlas.tree); }
+            catch (error) { addError(error.message); }
+        }
     }
     if (!Array.isArray(atlas.searchIndex)) {
         addError('maps/atlas-index.json.searchIndex: expected an array');

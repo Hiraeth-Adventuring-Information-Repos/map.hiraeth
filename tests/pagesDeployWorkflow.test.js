@@ -28,14 +28,15 @@ assert.match(deployWorkflow, /uses: actions\/deploy-pages@v5/);
     assert.match(workflow, /npm ci --no-audit --no-fund/);
     assert.match(workflow, /npm run validate:data && npm run test:unit/);
     assert.match(workflow, /npm run build:pages/);
+    assert.match(workflow, /npm run validate:dist/);
+    assert.match(workflow, /npx playwright install --with-deps chromium firefox/);
+    assert.match(workflow, /npm run test:pages/);
 });
 
 assert.match(deployWorkflow, /uses: actions\/cache@v6/);
 assert.match(checkWorkflow, /uses: actions\/cache@v6/);
 assert.doesNotMatch(checkWorkflow, /uses: actions\/cache\/restore@v6/);
 assert.match(checkWorkflow, /uses: actions\/upload-artifact@v6/);
-assert.match(checkWorkflow, /npx playwright install --with-deps firefox/);
-assert.match(checkWorkflow, /npm run test:firefox/);
 assert.match(checkWorkflow, /fetch-depth: 2/);
 assert.doesNotMatch(checkWorkflow, /fetch-depth: 0/);
 assert.match(checkWorkflow, /pull_request:\s*\n\s*paths-ignore:[\s\S]*- dist\/\*\*/);

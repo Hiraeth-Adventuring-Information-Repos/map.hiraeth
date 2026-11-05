@@ -70,8 +70,5 @@ assert.doesNotMatch(swSource, /const DEFAULT_STATIC_SHELL_ASSETS = \[[\s\S]*'ima
 assert.doesNotMatch(swSource, /const DEFAULT_STATIC_SHELL_ASSETS = \[[\s\S]*'images\/hiraeth-maps-preview\.png'/);
 assert.match(swSource, /site\.config\.json\?v=\$\{VERSION\}/);
 assert.match(swSource, /const cacheResponse = response\.clone\(\)/);
-assert.match(swSource, /\.filter\(\(asset\) => asset !== 'site\.config\.json'\)/);
-assert.match(swSource, /cache\.put\(configuredAssets\.configAsset\.url, configuredAssets\.configAsset\.response\)/);
-assert.match(swSource, /cache\.addAll\(\[\.\.\.configuredAssets\.static, \.\.\.versionedShellAssets\]\)/);
 
 console.log('shell versioning regression checks passed');

@@ -1,6 +1,6 @@
 // --- Global Variables ---
 const APP_CONFIG = typeof window !== 'undefined' && window.AppConfig ? window.AppConfig : null;
-const { debounce, withAssetVersion, fetchJsonAsset } = typeof window !== 'undefined' && window.SharedUtils ? window.SharedUtils : {};
+const { debounce, withAssetVersion, fetchJsonAsset, fetchMapAsset } = typeof window !== 'undefined' && window.SharedUtils ? window.SharedUtils : {};
 // URL-only opt-in: removing the parameter always returns to the normal atlas.
 const routingExperimentEnabled = window.SharedUtils?.isRoutingExperimentEnabled?.(window.location.search) === true && !isEmbedModeFromUrl();
 const getConfigValue = (path, fallbackValue) => APP_CONFIG ? APP_CONFIG.get(path, fallbackValue) : fallbackValue;
@@ -3475,8 +3475,9 @@ async function runIdleTileWarmup(generation) {
         mobile ? 'idleTileUpgradeMobileMaxTiles' : 'idleTileUpgradeMaxTiles',
         mobile ? 72 : 160
     )));
-    const warmupCandidates = candidates.slice(0, maxTiles);
-    const canUpgradeVisibleMap = candidates.length <= displayLimit && candidates.length <= maxTiles;
+    // Partial overview warmups cannot produce a visible detail upgrade.
+    if (candidates.length > displayLimit || candidates.length > maxTiles) return;
+    const warmupCandidates = candidates;
     let allTilesCached = true;
 
     for (let index = 0; index < warmupCandidates.length; index += batchSize) {
@@ -3495,7 +3496,7 @@ async function runIdleTileWarmup(generation) {
         }
     }
 
-    if (allTilesCached && canUpgradeVisibleMap) {
+    if (allTilesCached && isIdleTileWarmupAllowed()) {
         showIdleDetailTileLayer(mapInfo, tileSource, generation);
     }
 }
@@ -4541,7 +4542,7 @@ async function getMapDefinition(mapId, preResolvedMap = null) {
     }
 
     const dataUrl = getMapDataUrl(manifestEntry);
-    const definitionPromise = fetchJsonAsset(dataUrl)
+    const definitionPromise = fetchMapAsset(dataUrl, routingExperimentEnabled)
         .then((mapDefinition) => {
             const mergedDefinition = {
                 ...manifestEntry,
@@ -7207,7 +7208,7 @@ function populatePOIsOnMap(selectedMap) {
 
     visiblePointsCache.forEach(point => {
         try {
-            if (point.coords && point.coords.length === 2 && !isNaN(point.coords[0]) && !isNaN(point.coords[1])) {
+            if (Array.isArray(point.coords) && point.coords.length === 2 && Number.isFinite(point.coords[0]) && Number.isFinite(point.coords[1])) {
                 if (point.coords[0] >= 0 && point.coords[0] <= mapHeight && point.coords[1] >= 0 && point.coords[1] <= mapWidth) {
                     const markerLabel = getPoiMarkerAccessibleName(point);
                     const marker = L.marker(point.coords, {
@@ -9603,6 +9604,7 @@ function setupKeyboardAndModalLogic() {
         const activeElement = document.activeElement;
         return activeElement && (activeElement.tagName === 'INPUT' ||
             activeElement.tagName === 'TEXTAREA' ||
+            activeElement.tagName === 'SELECT' ||
             activeElement.isContentEditable);
     }
 
@@ -9719,6 +9721,9 @@ function setupKeyboardAndModalLogic() {
     }
 
     document.addEventListener('keydown', function (e) {
+        if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return;
+        const isMapFindShortcut = (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'f';
+        if ((e.ctrlKey || e.metaKey || e.altKey) && !isMapFindShortcut) return;
         if (handleEscapeShortcut(e)) return;
         if (featureDetailSheetExpanded) return;
         if (handleHelpShortcut(e)) return;

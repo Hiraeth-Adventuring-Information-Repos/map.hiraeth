@@ -12,6 +12,31 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
 
+test('malformed POI coordinates do not create origin markers', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const data = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/Fair-Content.json'), 'utf8'));
+    data.pointsOfInterest = [
+        { name: 'Null and empty', coords: [null, ''] },
+        { name: 'Numeric strings', coords: ['0', '0'] },
+        { name: 'Booleans', coords: [false, true] },
+        { name: 'Wrong shape', coords: { 0: 0, 1: 0, length: 2 } },
+        { name: 'Missing component', coords: [0] },
+        { name: 'Origin', coords: [0, 0] },
+        { name: 'Fractional', coords: [12.5, 24.75] }
+    ].map(point => ({ ...point, type: 'Landmark' }));
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
+    await page.goto(base + '/index.html#main_continent-s=c');
+    await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
+    expect(await page.evaluate(() => allMapMarkers.map(marker => ({
+        name: marker.poiData.name, coords: [marker.getLatLng().lat, marker.getLatLng().lng]
+    })))).toEqual([
+        { name: 'Origin', coords: [0, 0] },
+        { name: 'Fractional', coords: [12.5, 24.75] }
+    ]);
+    expect(errors).toEqual([]);
+});
+
 test('generated markers load at the original size in the viewer', async ({ page }, testInfo) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));

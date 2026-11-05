@@ -199,6 +199,52 @@ function splitPagesAtlasSearchIndex() {
     };
 }
 
+function createPagesMapPayloads(mapDocument, routingDataUrl) {
+    const base = { ...mapDocument };
+    const routing = { mapId: mapDocument.id };
+    for (const key of ['buildings', 'travelNodes']) {
+        if (Array.isArray(mapDocument[key]) && mapDocument[key].length) {
+            routing[key] = mapDocument[key];
+            delete base[key];
+        }
+    }
+    for (const key of ['roads', 'lines']) {
+        if (Array.isArray(mapDocument[key]) && mapDocument[key].some(line => line.travelMode)) {
+            // Keep full original arrays in the optional payload to restore order
+            // and anonymous feature identities without renumbering any geometry.
+            routing[key] = mapDocument[key];
+            base[key] = mapDocument[key].filter(line => !line.travelMode);
+        }
+    }
+    if (Object.keys(routing).length === 1) return { base, routing: null };
+    base.routingDataUrl = routingDataUrl;
+    base.routingDataFields = Object.keys(routing).filter(key => key !== 'mapId');
+    return { base, routing };
+}
+
+function splitPagesRoutingData() {
+    const atlas = JSON.parse(fs.readFileSync(resolveOutputPath('maps/atlas-index.json'), 'utf8'));
+    const seen = new Set();
+    function visit(node) {
+        const dataUrl = normalizePublicAssetPath(node.dataUrl);
+        if (dataUrl && !seen.has(dataUrl)) {
+            seen.add(dataUrl);
+            const dataPath = resolveOutputPath(dataUrl);
+            const mapDocument = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+            const routingUrl = `maps/routing/${dataUrl.replace(/^maps\//, '')}`;
+            const { base, routing } = createPagesMapPayloads(mapDocument, routingUrl);
+            if (routing) {
+                const routingPath = resolveOutputPath(routingUrl);
+                fs.mkdirSync(path.dirname(routingPath), { recursive: true });
+                fs.writeFileSync(dataPath, JSON.stringify(base));
+                fs.writeFileSync(routingPath, JSON.stringify(routing));
+            }
+        }
+        if (Array.isArray(node.children)) node.children.forEach(visit);
+    }
+    atlas.tree.forEach(visit);
+}
+
 function minifyPagesRuntimeSource(source, { loader, target }) {
     return transformSync(String(source || ''), {
         charset: 'utf8',
@@ -626,6 +672,7 @@ function buildPagesBundle() {
     console.log(`Generated previews for ${sharePageCount} maps.`);
     const tileManifest = populatePagesTiles();
     const tileCacheVersions = applyPagesTileCacheVersions(tileManifest);
+    splitPagesRoutingData();
     const atlasSearchSplit = splitPagesAtlasSearchIndex();
     const runtimeOptimization = optimizePagesRuntimeAssets();
     const jsonOptimization = compactPagesJsonAssets();
@@ -701,6 +748,7 @@ module.exports = {
     collectPublicMapAssetFiles,
     countFiles,
     createPagesAtlasPayloads,
+    createPagesMapPayloads,
     createPagesSiteConfig,
     defaultTileCachePath,
     embedPagesSiteConfig,

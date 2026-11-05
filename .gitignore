@@ -5,4 +5,5 @@ dist/
 .secrets/
 .env
 playwright-report/
+playwright-pages-report/
 test-results/

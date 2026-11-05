@@ -17,6 +17,60 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
 
+test('keyboard shortcuts preserve select input and browser commands', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: makeMap() }));
+    await page.goto(base + '/index.html?routing=1#main_continent-s=o');
+    await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
+    await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
+    await page.locator('#directions-btn').click();
+    await page.locator('.travel-options > summary').click();
+    const preference = page.locator('#travel-preference');
+    await expect(preference).toBeVisible();
+    await preference.focus();
+    const sidebarState = () => page.locator('.container').evaluate(el => el.classList.contains('sidebar-collapsed'));
+    const initialState = await sidebarState();
+    // Real native type-to-select input must reach the expanded route-options control.
+    await preference.press('s');
+    await expect(preference).toHaveValue('shortest');
+    await expect(preference).toBeFocused();
+    expect(await sidebarState()).toBe(initialState);
+    await expect(page.locator('#travel-panel')).toBeVisible();
+    await preference.press('?');
+    await expect(page.locator('#about-modal')).not.toHaveClass(/visible/);
+    await page.getByRole('button', { name: 'Close directions', exact: true }).click();
+
+    await page.evaluate(() => document.activeElement.blur());
+    const before = await sidebarState();
+    for (const options of [
+        { ctrlKey: true }, { metaKey: true }, { altKey: true },
+        { isComposing: true }, { handledLocally: true }
+    ]) {
+        const prevented = await page.evaluate(options => {
+            if (options.handledLocally) {
+                document.body.addEventListener('keydown', event => event.preventDefault(), { once: true });
+            }
+            const event = new KeyboardEvent('keydown', { key: 's', bubbles: true, cancelable: true, ...options });
+            document.body.dispatchEvent(event);
+            return event.defaultPrevented;
+        }, options);
+        expect(prevented).toBe(options.handledLocally === true);
+        expect(await sidebarState()).toBe(before);
+    }
+    await page.keyboard.press('s');
+    expect(await sidebarState()).toBe(!before);
+    for (const key of ['Control+f', 'Meta+f']) {
+        await page.evaluate(() => document.activeElement.blur());
+        await page.keyboard.press(key);
+        await expect(page.locator('#poi-search-input')).toBeFocused();
+    }
+    await page.evaluate(() => document.activeElement.blur());
+    await page.keyboard.press('?');
+    await expect(page.locator('#about-modal')).toHaveClass(/visible/);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#about-modal')).not.toHaveClass(/visible/);
+});
+
 async function expectEndpointConnector(page) {
     const geometry = await page.locator('.travel-inputs').evaluate(inputs => {
         const labels = [...inputs.querySelectorAll('.travel-address-field')];

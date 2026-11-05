@@ -60,11 +60,24 @@ jobs:
           MAP_HIRAETH_TILE_CACHE_DIR: .cache/pages-tiles
         run: npm run build:pages
 
-      - name: Install Firefox test browser
-        run: npx playwright install --with-deps firefox
+      - name: Validate generated Pages artifact
+        run: npm run validate:dist
 
-      - name: Verify Firefox map rendering
-        run: npm run test:firefox
+      - name: Install production test browsers
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Verify produced Pages bundle in Chromium and Firefox
+        run: npm run test:pages
+
+      - name: Upload browser failure details
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pages-browser-failures
+          path: |
+            playwright-pages-report
+            test-results/pages
+          if-no-files-found: ignore
 
       - name: Upload Pages bundle artifact
         uses: actions/upload-artifact@v6

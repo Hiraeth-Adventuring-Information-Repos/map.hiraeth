@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { buildManifestTreeFromDocument, collectManifestHierarchy, assertManifestCoverage } = require('./manifest_hierarchy.js');
 
 const defaultTileSize = 256;
 const generatedTileMinImageSize = 2048;
@@ -72,76 +73,6 @@ function hasInlineChildObjects(item) {
         Array.isArray(item.children) &&
         item.children.some((child) => child && typeof child === 'object')
     );
-}
-
-function getManifestEntries(manifestDocument) {
-    if (Array.isArray(manifestDocument)) return cloneJson(manifestDocument);
-    if (manifestDocument && Array.isArray(manifestDocument.maps)) {
-        return cloneJson(manifestDocument.maps);
-    }
-    return null;
-}
-
-function isFlatManifestEntry(entry) {
-    if (!entry || typeof entry !== 'object') return false;
-    return Object.prototype.hasOwnProperty.call(entry, 'parentId') ||
-        Object.prototype.hasOwnProperty.call(entry, 'order');
-}
-
-function buildManifestTreeFromFlatEntries(entries) {
-    if (!Array.isArray(entries)) return [];
-
-    const normalizedEntries = cloneJson(entries)
-        .filter((entry) => entry && typeof entry === 'object' && String(entry.id || '').trim());
-    const knownIds = new Set(normalizedEntries.map((entry) => String(entry.id || '').trim()));
-    const childrenByParentId = new Map();
-
-    normalizedEntries.forEach((entry, index) => {
-        const normalizedId = String(entry.id || '').trim();
-        const rawParentId = String(entry.parentId || '').trim();
-        const normalizedParentId = rawParentId && knownIds.has(rawParentId) ? rawParentId : '';
-        if (!childrenByParentId.has(normalizedParentId)) {
-            childrenByParentId.set(normalizedParentId, []);
-        }
-        childrenByParentId.get(normalizedParentId).push({ entry, index, normalizedId });
-    });
-
-    function buildNodes(parentId = '') {
-        const groupedEntries = childrenByParentId.get(parentId) || [];
-        groupedEntries.sort((left, right) => {
-            const leftOrder = Number.isFinite(Number(left.entry.order))
-                ? Number(left.entry.order)
-                : Number.MAX_SAFE_INTEGER;
-            const rightOrder = Number.isFinite(Number(right.entry.order))
-                ? Number(right.entry.order)
-                : Number.MAX_SAFE_INTEGER;
-            if (leftOrder !== rightOrder) return leftOrder - rightOrder;
-            return left.index - right.index;
-        });
-
-        return groupedEntries.map(({ entry, normalizedId }) => {
-            const node = cloneJson(entry);
-            delete node.parentId;
-            delete node.order;
-
-            const children = buildNodes(normalizedId);
-            if (children.length > 0) node.children = children;
-            else delete node.children;
-
-            return node;
-        });
-    }
-
-    return buildNodes('');
-}
-
-function buildManifestTreeFromDocument(manifestDocument) {
-    const manifestEntries = getManifestEntries(manifestDocument);
-    if (!Array.isArray(manifestEntries)) return [];
-    if (!manifestEntries.some(isFlatManifestEntry)) {
-        return manifestEntries;
-    }
-    return buildManifestTreeFromFlatEntries(manifestEntries);
 }
 
 function buildGeneratorContext(repoRoot) {
@@ -402,7 +333,7 @@ function loadFileBackedMap(context, relativePath, indexItem) {
     };
 }
 
-function resolveMapSource(context, item, origin) {
+function resolveMapSource(context, item, origin, writeGenerated = true) {
     if (origin.kind === 'file') {
         return {
             sourceItem: cloneJson(item),
@@ -432,7 +363,7 @@ function resolveMapSource(context, item, origin) {
     if (hasInlineChildObjects(item) || hasInlinePayload(item)) {
         return {
             sourceItem: cloneJson(item),
-            dataUrl: writeGeneratedMapData(context, item, hasInlineChildObjects(item))
+            dataUrl: writeGenerated ? writeGeneratedMapData(context, item, hasInlineChildObjects(item)) : ''
         };
     }
 
@@ -512,6 +443,15 @@ function toManifestItem(context, item, origin) {
     return manifestItem;
 }
 
+function getManifestHierarchy(options = {}) {
+    const repoRoot = path.resolve(options.repoRoot || path.resolve(__dirname, '..'));
+    const context = buildGeneratorContext(repoRoot);
+    const tree = options.tree || buildManifestTreeFromDocument(readJsonFile(context.sourceIndexPath));
+    return collectManifestHierarchy(tree,
+        id => readJsonFile(path.join(context.mapsDir, `${id}.json`)),
+        node => resolveMapSource(context, node, { kind: 'inline' }, false).sourceItem);
+}
+
 function generateAtlasIndex(options = {}) {
     const repoRoot = path.resolve(options.repoRoot || path.resolve(__dirname, '..'));
     const context = buildGeneratorContext(repoRoot);
@@ -520,7 +460,9 @@ function generateAtlasIndex(options = {}) {
     if (!Array.isArray(rawIndex) || rawIndex.length === 0) {
         throw new Error('maps/maps.json must contain manifest entries.');
     }
+    const expectedHierarchy = getManifestHierarchy({ repoRoot, tree: rawIndex });
     const atlasTree = rawIndex.map((item) => toManifestItem(context, item, { kind: 'inline' }));
+    assertManifestCoverage(expectedHierarchy, atlasTree);
     const comparablePayload = {
         tree: atlasTree,
         searchIndex: context.searchEntries
@@ -551,5 +493,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-    generateAtlasIndex
+    generateAtlasIndex,
+    getManifestHierarchy
 };

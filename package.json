@@ -9,10 +9,12 @@
     "benchmark:secondary-search": "node scripts/benchmark_secondary_search.js",
     "test:unit": "node --test tests/*.test.js",
     "build:pages": "node scripts/build_pages.js",
+    "validate:dist": "node scripts/validate_dist.js",
     "publish:check": "node scripts/publish_check.js",
-    "validate:pages": "npm run generate:atlas && npm run validate:data && npm run test:unit && npm run build:pages",
+    "validate:pages": "npm run generate:atlas && npm run validate:data && npm run test:unit && npm run build:pages && npm run validate:dist",
     "test": "npm run validate:pages",
-    "test:firefox": "node scripts/firefox_render_smoke.cjs"
+    "test:firefox": "node scripts/firefox_render_smoke.cjs",
+    "test:pages": "playwright test --config=playwright.pages.config.mjs"
   },
   "dependencies": {
     "jsdom": "^29.1.1"

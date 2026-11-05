@@ -146,14 +146,15 @@ function zoomMapBy(delta) {
 eval(block + "\nsetupKeyboardAndModalLogic();");
 
 // Create test events
-const createEvent = (key, ctrlKey = false, metaKey = false) => {
+const createEvent = (key, ctrlKey = false, metaKey = false, options = {}) => {
     let prevented = false;
     return {
         key,
         ctrlKey,
         metaKey,
         preventDefault: () => { prevented = true; },
-        isPrevented: () => prevented
+        isPrevented: () => prevented,
+        ...options
     };
 };
 
@@ -247,6 +248,64 @@ evt = createEvent('t');
 addedListener(evt);
 assert.ok(!evt.isPrevented());
 assert.ok(!global.themeToggled);
+
+// Native controls retain text entry and type-to-select keys.
+for (const activeElement of [
+    { tagName: 'INPUT' }, { tagName: 'TEXTAREA' }, { tagName: 'SELECT' },
+    { tagName: 'DIV', isContentEditable: true }
+]) {
+    document.activeElement = activeElement;
+    global.sidebarToggled = false;
+    global.searchFocused = false;
+    for (const key of ['s', '/', '?']) {
+        evt = createEvent(key);
+        addedListener(evt);
+        assert.equal(evt.isPrevented(), false, `${activeElement.tagName} should retain ${key}`);
+    }
+    assert.equal(global.sidebarToggled, false);
+    assert.equal(global.searchFocused, false);
+    assert.equal(global.aboutModalVisible, false);
+}
+
+document.activeElement = { tagName: 'BODY' };
+const shortcutState = () => JSON.stringify({
+    sidebar: global.sidebarToggled, theme: global.themeToggled,
+    measure: global.measureToggled, markers: global.markersToggled,
+    filters: global.filtersToggled, search: global.searchFocused,
+    help: global.aboutModalVisible, zoom: global.zoomMapDeltas
+});
+for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true },
+    { ctrlKey: true, altKey: true }, { metaKey: true, shiftKey: true }]) {
+    for (const key of ['s', 't', 'm', 'h', 'f', '+', '=', '-', '/', '?']) {
+        if (key === 'f' && !modifier.altKey && !modifier.shiftKey) continue;
+        const before = shortcutState();
+        evt = createEvent(key, false, false, modifier);
+        addedListener(evt);
+        assert.equal(evt.isPrevented(), false, `browser command ${JSON.stringify(modifier)} ${key} must remain available`);
+        assert.equal(shortcutState(), before);
+    }
+}
+for (const modifier of [{ ctrlKey: true }, { metaKey: true }]) {
+    global.searchFocused = false;
+    evt = createEvent('f', false, false, modifier);
+    addedListener(evt);
+    assert.equal(evt.isPrevented(), true);
+    assert.equal(global.searchFocused, true, 'Ctrl/Cmd+F must still focus map search');
+}
+
+// Local widgets and IME composition take precedence, including for Escape.
+for (const options of [{ defaultPrevented: true }, { isComposing: true }, { keyCode: 229 }]) {
+    global.featureDetailSheetOpen = true;
+    global.featureDetailsClosed = false;
+    for (const key of ['s', '?', '/', 'Escape']) {
+        const before = shortcutState();
+        evt = createEvent(key, false, false, options);
+        addedListener(evt);
+        assert.equal(evt.isPrevented(), false);
+        assert.equal(shortcutState(), before);
+        assert.equal(global.featureDetailsClosed, false);
+    }
+}
 
 console.log('All shortcut tests passed!');
 global.setTimeout = origSetTimeout;

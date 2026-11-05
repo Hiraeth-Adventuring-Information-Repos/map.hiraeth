@@ -52,6 +52,33 @@
         return response.json();
     }
 
+    const routingPayloadPromises = new Map();
+    async function fetchMapAsset(url, routingEnabled = false) {
+        const base = await fetchJsonAsset(url);
+        if (!routingEnabled || !base.routingDataUrl) return base;
+        const routingUrl = base.routingDataUrl;
+        const cacheKey = withAssetVersion(routingUrl);
+        if (!routingPayloadPromises.has(cacheKey)) {
+            const promise = fetchJsonAsset(routingUrl).then(payload => {
+                const keys = Object.keys(payload || {}).filter(key => key !== 'mapId');
+                const expected = base.routingDataFields;
+                if (!payload || payload.mapId !== base.id || !keys.length || keys.some(key =>
+                    !['buildings', 'travelNodes', 'roads', 'lines'].includes(key) || !Array.isArray(payload[key])) ||
+                    !Array.isArray(expected) || keys.length !== expected.length || expected.some(key => !keys.includes(key))) {
+                    throw new Error(`Invalid routing data for ${base.id}`);
+                }
+                return payload;
+            }).catch(error => {
+                routingPayloadPromises.delete(cacheKey);
+                throw error;
+            });
+            routingPayloadPromises.set(cacheKey, promise);
+        }
+        const { mapId, ...routing } = await routingPayloadPromises.get(cacheKey);
+        if (mapId !== base.id) throw new Error(`Routing map mismatch for ${base.id}`);
+        return { ...base, ...routing };
+    }
+
 
     function debounce(func, wait) {
         let timeout;
@@ -70,6 +97,7 @@
         preserveRoutingExperimentLinks,
         debounce,
         withAssetVersion,
-        fetchJsonAsset
+        fetchJsonAsset,
+        fetchMapAsset
     };
 }));

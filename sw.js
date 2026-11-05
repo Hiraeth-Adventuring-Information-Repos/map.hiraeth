@@ -82,12 +82,19 @@ self.addEventListener('install', (event) => {
     event.waitUntil((async () => {
         const configuredAssets = await loadShellAssetConfig();
         const versionedShellAssets = configuredAssets.versioned
-            .filter((asset) => asset !== 'site.config.json')
+            .filter((asset) => !configuredAssets.configAsset || asset !== 'site.config.json')
             .map(versionAsset);
-        const cache = await caches.open(SHELL_CACHE);
-        await cache.addAll([...configuredAssets.static, ...versionedShellAssets]);
+        const shellAssets = [];
+        const dataAssets = [];
+        for (const asset of [...configuredAssets.static, ...versionedShellAssets]) {
+            const url = new URL(asset, self.location.href);
+            (url.pathname.endsWith('.json') ? dataAssets : shellAssets).push(asset);
+        }
+        const shellCache = await caches.open(SHELL_CACHE);
+        const dataCache = await caches.open(DATA_CACHE);
+        await Promise.all([shellCache.addAll(shellAssets), dataCache.addAll(dataAssets)]);
         if (configuredAssets.configAsset) {
-            await cache.put(configuredAssets.configAsset.url, configuredAssets.configAsset.response);
+            await dataCache.put(configuredAssets.configAsset.url, configuredAssets.configAsset.response);
         }
         await self.skipWaiting();
     })());
@@ -119,7 +126,7 @@ async function networkFirstTask(request, cacheName, fallbackRequest = null) {
         const cached = await cache.match(request);
         if (cached) return { response: cached, cacheDone: Promise.resolve() };
         if (fallbackRequest) {
-            const fallback = await caches.match(fallbackRequest);
+            const fallback = await cache.match(fallbackRequest);
             if (fallback) return { response: fallback, cacheDone: Promise.resolve() };
         }
         throw error;
@@ -209,9 +216,15 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (url.pathname.endsWith('.json')) {
+        // Source pages discover the active asset version through an unversioned
+        // config request. Offline, use only this release's installed config.
+        const configUrl = new URL('site.config.json', self.location.href);
+        const configFallback = url.href === configUrl.href
+            ? versionAsset(configUrl.href)
+            : null;
         respondWithCacheTask(event, isVersionedShellRequest(url)
             ? cacheFirstTask(request, DATA_CACHE)
-            : networkFirstTask(request, DATA_CACHE));
+            : networkFirstTask(request, DATA_CACHE, configFallback));
         return;
     }
 

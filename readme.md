@@ -55,6 +55,10 @@ npm run publish:check
 
 The publish check regenerates the atlas index, validates map data, runs the unit suite, and builds the optimized GitHub Pages artifact in `dist/`. The Pages build minifies owned JS/CSS, compacts JSON, and moves cross-map search data into a lazy payload while preserving native-resolution map tiles. Generated tiles are reused from `.cache/pages-tiles` and only stale map fingerprints are rebuilt. Both directories are generated and ignored by Git for new files; existing legacy files in `dist/` remain tracked.
 
+Run `npm run validate:dist` to check an existing `dist/` artifact without rebuilding or changing files. To check another build, use `npm run validate:dist -- /path/to/dist`. This checks required and forbidden files, tile fingerprints and native detail, runtime budgets, compact JSON, deferred search, and routing payload integrity. Both Pages workflows run this check before uploading their artifacts.
+
+Run `npx playwright install chromium firefox` once, then `npm run test:pages` to exercise the built artifact in both browsers. For an isolated build, use `PAGES_TEST_ROOT=/path/to/dist npm run test:pages`. The command requires an existing artifact and never rebuilds it. It checks map artwork and the Firefox canvas path, search, sharing, navigation, routing opt-in, failed-load recovery, and map-switch races. Both workflows require these checks before upload and retain failure traces and screenshots.
+
 Pushes to `main` are deployed by `.github/workflows/pages-deploy.yml`. The workflow restores map tiles by source fingerprint, regenerates only changed maps, uploads `dist/` as the Pages artifact, and deploys it through GitHub Actions. The repository's Pages source must be set to **GitHub Actions** rather than branch publishing.
 
 When changing browser-delivered JavaScript, CSS, map data, or tiles, bump `assets.version` in `site.config.json` and the matching default version in `js/app-config.js` so versioned URLs and service-worker caches advance together.
