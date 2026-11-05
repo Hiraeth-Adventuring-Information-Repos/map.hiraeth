@@ -75,6 +75,49 @@ test.describe('built routing payloads', () => {
         expect(requests).toEqual([]);
     });
 
+    for (const mobile of [false, true]) {
+        test(`address suggestions close during pointer activation without moving submit (${mobile ? 'mobile' : 'desktop'})`, async ({ page }, testInfo) => {
+            await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 });
+            await page.goto(`${builtBase}/index.html?routing=1#The-Port-City-of-Stomion-s=c`);
+            await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion');
+            const authored = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/The-Port-City-of-Stomion.json'), 'utf8'));
+            const from = authored.buildings.find(building => building.aliases?.includes('TBD (The Best Drink)'));
+            const to = authored.buildings.find(building => building.aliases?.includes("Governor's Castle"));
+            await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
+            await page.locator('#directions-btn').click();
+            // Selecting a real suggestion must remain usable in the mobile sheet.
+            await page.locator('#travel-from').fill('TBD');
+            await page.locator('#travel-from-suggestions [role="option"]').filter({ hasText: from.address }).click();
+            await expect(page.locator('#travel-from')).toHaveValue(from.address);
+            const destination = page.locator('#travel-to');
+            await destination.fill('1');
+            for (let index = 0; index < 12; index++) await destination.press('ArrowDown');
+            const listScroll = await page.locator('#travel-to-suggestions').evaluate(list => {
+                const selected = list.querySelector('[aria-selected="true"]');
+                const bounds = list.getBoundingClientRect(), option = selected.getBoundingClientRect();
+                return { scrollTop: list.scrollTop, visible: option.top >= bounds.top && option.bottom <= bounds.bottom };
+            });
+            expect(listScroll.scrollTop).toBeGreaterThan(0);
+            expect(listScroll.visible).toBe(true);
+            await expect(page.locator('#travel-to-suggestions [aria-selected="true"]')).toBeInViewport();
+            await page.screenshot({ path: testInfo.outputPath('address-keyboard-suggestions.png') });
+            await destination.fill(to.address);
+            await expect(page.locator('#travel-from-suggestions')).toBeHidden();
+            await expect(page.locator('#travel-to-suggestions')).toBeVisible();
+            const submit = page.getByRole('button', { name: 'Find route', exact: true });
+            await submit.scrollIntoViewIfNeeded();
+            const before = await submit.boundingBox();
+            await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+            await page.mouse.down();
+            // Wait for the real delayed blur handler between pointer down/up.
+            await expect(page.locator('#travel-to-suggestions')).toBeHidden();
+            const after = await submit.boundingBox();
+            expect(after.y).toBeCloseTo(before.y, 1);
+            await page.mouse.up();
+            await expect(page.locator('.travel-total')).toBeVisible();
+        });
+    }
+
     test('enabled built city restores authored geometry and produces equivalent address directions', async ({ page }) => {
         const requests = [];
         page.on('request', request => { if (request.url().includes('/maps/routing/')) requests.push(request.url()); });
