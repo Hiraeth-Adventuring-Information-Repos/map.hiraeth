@@ -19,18 +19,13 @@
 
     function getDefaultAssetsConfig() {
         return {
-                version: '0.1.81',
+                version: '0.1.82',
                 stylesheets: [
                     'css/leaflet.css',
                     'css/style.css',
                     'css/city-addresses.css',
                     'css/stars.css',
                     'css/Control.MiniMap.min.css'
-                ],
-                editorStylesheets: [
-                    'css/style.css',
-                    'css/city-addresses.css',
-                    'css/map-editor.css'
                 ],
                 scripts: [
                     'js/libs/leaflet.js',
@@ -42,15 +37,6 @@
                     'js/travel-network.js',
                     'js/city-addresses.js',
                     'js/app.js'
-                ],
-                editorScripts: [
-                    'js/editor-shared.js',
-                    'js/shared-utils.js',
-                    'js/campaign-journeys.js',
-                    'js/travel-network.js',
-                    'js/map-editor-fields.js',
-                    'js/map-editor-history.js',
-                    'js/map-editor.js'
                 ],
                 cloudTexture: 'images/clouds.webp',
                 previewImage: 'images/hiraeth-maps-preview.png',
@@ -253,7 +239,6 @@
                 coordinates: true,
                 sessionToolkit: false,
                 gmMode: false,
-                editor: true,
                 onboarding: true,
                 wipNotice: true,
                 embeddedMode: true
@@ -421,7 +406,6 @@
                     { label: 'Wiki', href: 'https://jsnj.link/maps-to-wiki' },
                     { label: 'Blog', href: 'https://jsnj.link/maps-blog-post' },
                     { label: 'About', href: '#', id: 'about-link' },
-                    { label: 'Editor', href: 'map-editor.html', id: 'map-editor-link' },
                     { label: 'Source', href: 'https://jsnj.link/map-hiraeth-source' }
                 ],
                 help: {
@@ -442,17 +426,6 @@
                             html: '<div class="changelog-entry"><div class="changelog-header"><h3>Map Loading Stabilization</h3><span class="version-pill" title="Current release">v0.1.32</span></div><ul class="changelog-list"><li>Faded the low-resolution map preview once detailed tiles cover most of the viewport.</li><li>Preloaded direct map definitions during startup so GitHub Pages can fetch map data sooner.</li><li>Bumped the shell asset version so service-worker caches pick up the deployment.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Current Atlas Stabilization</h3><span class="version-pill" title="June 2026">v0.1.7</span></div><ul class="changelog-list"><li>Fixed map-view share URL handling and expanded regression coverage around shared map views.</li><li>Added Astrousia archive maps, IceBeach lore summaries, and updated atlas accessibility notes.</li><li>Hardened GitHub Pages validation, local-only editor access, atlas generation, and map-editor save flows.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Security, Tests, and Performance Sweep</h3><span class="version-pill" title="May 2026 to June 2026">v0.1.6</span></div><ul class="changelog-list"><li>Closed multiple DOM XSS risks in popups, map editor controls, app config rendering, help modals, search highlights, and encounter tables.</li><li>Added broad unit coverage for search, filters, storage helpers, popup builders, mobile layout, map loading, and share-link behavior.</li><li>Improved atlas search, filter loops, hydration, DOM traversal, and Leaflet line lookups for smoother large-map browsing.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Mobile Atlas and Editor Rebuild</h3><span class="version-pill" title="April 2026">v0.1.5</span></div><ul class="changelog-list"><li>Reworked mobile map navigation into focused search, maps, drawer, and bottom-sheet surfaces.</li><li>Migrated the atlas to file-backed map JSON manifests with generated runtime indexes and preserved metadata.</li><li>Added the map editor, map chooser UI, responsive minimap thumbnails, preset grouping, runtime guards, and configurable site bootstrap.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Smart Sharing and Atlas Polish</h3><span class="version-pill" title="March 2026">v0.1.4</span></div><ul class="changelog-list"><li>Introduced Smart Share Links, shared-view coachmarks, popup opacity tuning, and mobile layout refinements.</li><li>Added POI hover tooltips, reset-view improvements, compact search controls, and search highlight fixes.</li><li>Started the atlas manifest performance pass and refreshed Fair map artwork, boundaries, and Apsley content.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Deep Links, Embeds, and Safe Popups</h3><span class="version-pill" title="February 2026">v0.1.3</span></div><ul class="changelog-list"><li>Added custom icons, local-only GM/editor gating, UI refinements, and background polish.</li><li>Fixed URL history, hash generation, invalid-map startup fallback, coordinate labels, and sidebar state restoration.</li><li>Sanitized popup content, popup headers, custom properties, and wiki links while improving embed-first loading.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Sharing, Minimap, and Site Shell</h3><span class="version-pill" title="December 2025 to January 2026">v0.1.2</span></div><ul class="changelog-list"><li>Added feature sharing, map-view deep links, MiniMap support, and refined viewport indicator behavior.</li><li>Redesigned the about page, embed link generator, loading state, starfield, and point-finder map selection.</li><li>Added Stomion updates, dynamic controls, accessibility improvements, search bar fixes, and map-content polish.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>World Expansion and Richer Map Tools</h3><span class="version-pill" title="May 2025 to October 2025">v0.1.1</span></div><ul class="changelog-list"><li>Expanded Hiraeth with Old-Lin, Southern Thalassia, Gelwood, Arfordir, Krasnogory Krai, Zafra, Pyralis, and many Fair map revisions.</li><li>Added map lines, hierarchical filters, map-specific filter groups, custom feature properties, collapsible popups, pronunciation guides, and summaries.</li><li>Improved point-finder workflows, scale export, recursive map listings, region visibility tools, mobile controls, and README documentation.</li></ul></div><div class="changelog-entry"><div class="changelog-header"><h3>Origin Launch</h3><span class="version-pill" title="April 2025">v0.1.0</span></div><ul class="changelog-list"><li>Created the first Leaflet-based Hiraeth map viewer with Icebeach and Fair maps.</li><li>Added the sidebar, dark and light themes, EB Garamond styling, glassy UI, bottom links, about page, favicons, and wiki/blog/source links.</li><li>Introduced POI imports, marker types, region overlays, the measurement tool, ambient audio, embed mode, and early map data structure.</li></ul></div>'
                         }
                     ]
-                },
-                editor: {
-                    title: 'Map Editor',
-                    eyebrow: 'Map Library',
-                    reload: 'Refresh maps',
-                    searchLabel: 'Search maps',
-                    searchPlaceholder: 'Find a map by name or group',
-                    loading: 'Loading atlas data...',
-                    toolbarHint: 'Click a feature to select it. Drag POI markers to move them, and drag orange vertex handles to reshape regions and lines.',
-                    emptyTitle: 'No Renderable Map Selected',
-                    emptyCopy: 'Select a map with image data to edit points, regions, and lines.'
                 }
             };
     }
@@ -862,21 +835,6 @@
         if (darkSource) darkSource.dataset.src = get('assets.audio.dark', '');
     }
 
-    function hydrateEditorDom(documentRef = root.document) {
-        if (!documentRef) return;
-        documentRef.title = `${get('brand.shortName', 'Atlas')} ${get('copy.editor.title', 'Map Editor')}`;
-        setText(documentRef, '.map-editor-eyebrow', get('copy.editor.eyebrow'));
-        setText(documentRef, '.map-editor-panel-header h1', get('copy.editor.title'));
-        setText(documentRef, '#reload-editor-btn', get('copy.editor.reload'));
-        setText(documentRef, '.map-editor-search-label', get('copy.editor.searchLabel'));
-        const search = documentRef.getElementById('editor-tree-search');
-        if (search) search.placeholder = get('copy.editor.searchPlaceholder', search.placeholder);
-        setText(documentRef, '#editor-selection-status', get('copy.editor.loading'));
-        setText(documentRef, '.map-editor-toolbar-hint', get('copy.editor.toolbarHint'));
-        setText(documentRef, '#editor-map-empty-title', get('copy.editor.emptyTitle'));
-        setText(documentRef, '#editor-map-empty-copy', get('copy.editor.emptyCopy'));
-    }
-
     function get(path, fallbackValue = undefined) {
         return getPathValue(activeConfig, path, fallbackValue);
     }
@@ -897,7 +855,6 @@
         applyThemeTokens,
         injectFont,
         hydrateStaticDom,
-        hydrateEditorDom,
         get ready() {
             return readyPromise || Promise.resolve(activeConfig);
         }

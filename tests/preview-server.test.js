@@ -11,6 +11,7 @@ test('source preview refreshes edits, serves cached tiles and keeps repository f
     const server = createPreviewServer({ repoRoot: root });
     try {
         fs.writeFileSync(path.join(root, 'index.html'), 'First version');
+        fs.writeFileSync(path.join(root, 'map-editor.html'), 'Archived editor');
         fs.writeFileSync(path.join(root, 'site.config.json'), JSON.stringify({ performance: { serviceWorker: true } }));
         fs.mkdirSync(path.join(root, 'maps')); fs.writeFileSync(path.join(outside, 'secret.json'), 'secret');
         fs.symlinkSync(path.join(outside, 'secret.json'), path.join(root, 'maps/private.json'));
@@ -30,7 +31,7 @@ test('source preview refreshes edits, serves cached tiles and keeps repository f
         assert.equal((await (await fetch(base + '/site.config.json')).json()).performance.serviceWorker, false);
         assert.equal(JSON.parse(fs.readFileSync(path.join(root, 'site.config.json'))).performance.serviceWorker, true);
         assert.equal((await fetch(base + '/index.html', { method: 'HEAD' })).headers.get('content-length'), String('Current version'.length));
-        for (const resource of ['/package.json', '/.git/config', '/maps/private.json', '/maps/%2e%2e/package.json', '/maps/.secret']) assert.equal((await fetch(base + resource)).status, 404, resource);
+        for (const resource of ['/map-editor.html', '/file-studio.html', '/studio/editor', '/archive/editor/map-editor.html', '/.env', '/editor-guide.html', '/js/map-editor.js', '/package.json', '/.git/config', '/maps/private.json', '/maps/%2e%2e/package.json', '/maps/.secret']) assert.equal((await fetch(base + resource)).status, 404, resource);
         assert.equal((await fetch(base + '/', { method: 'POST', body: 'replace' })).status, 405);
         assert.equal(fs.readFileSync(path.join(root, 'index.html'), 'utf8'), 'Current version');
     } finally {

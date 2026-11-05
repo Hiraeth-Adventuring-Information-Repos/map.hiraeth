@@ -55,11 +55,13 @@
 
     function debounce(func, wait) {
         let timeout;
-        return function(...args) {
+        function debounced(...args) {
             const context = this;
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(context, args), wait);
-        };
+        }
+        debounced.cancel = () => clearTimeout(timeout);
+        return debounced;
     }
 
     return {

@@ -7,10 +7,16 @@ const listeners = new Map();
 const fetchCalls = [];
 const addAllCalls = [];
 const putCalls = [];
+const cacheNames = new Set(['hag-shell-old', 'hag-data-old', 'hag-assets-old',
+    'hag-shell-0.1.39', 'hag-data-0.1.39', 'hag-assets-0.1.39', 'hag-tiles-v1',
+    'other-app-cache', 'hag-unrelated-cache']);
+const deletedCaches = [];
+let claims = 0;
 const cache = {
     async addAll(assets) {
         addAllCalls.push([...assets]);
     },
+    async keys() { return []; },
     async put(request, response) {
         putCalls.push({ request: String(request), response });
     }
@@ -21,7 +27,7 @@ const self = {
         listeners.set(type, listener);
     },
     async skipWaiting() {},
-    clients: { async claim() {} }
+    clients: { async claim() { claims++; } }
 };
 
 vm.runInNewContext(source, {
@@ -32,8 +38,8 @@ vm.runInNewContext(source, {
     self,
     caches: {
         async open() { return cache; },
-        async keys() { return []; },
-        async delete() { return true; }
+        async keys() { return [...cacheNames]; },
+        async delete(name) { deletedCaches.push(name); return cacheNames.delete(name); }
     },
     async fetch(url) {
         fetchCalls.push(String(url));
@@ -62,7 +68,15 @@ async function main() {
     assert.equal(putCalls[0].request, 'site.config.json?v=0.1.39');
     assert.equal(putCalls[0].response.ok, true);
 
-    console.log('service worker install checks passed');
+    let activatePromise;
+    listeners.get('activate')({ waitUntil(promise) { activatePromise = promise; } });
+    await activatePromise;
+    assert.deepEqual(deletedCaches.sort(), ['hag-assets-old', 'hag-data-old', 'hag-shell-old']);
+    assert.deepEqual([...cacheNames].sort(), ['hag-assets-0.1.39', 'hag-data-0.1.39', 'hag-shell-0.1.39',
+        'hag-tiles-v1', 'hag-unrelated-cache', 'other-app-cache'].sort());
+    assert.equal(claims, 1);
+
+    console.log('service worker install and activation checks passed');
 }
 
 main().catch((error) => {

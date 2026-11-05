@@ -136,13 +136,11 @@ resolved.assets.scripts.forEach((script) => assertLocalFileExists(script, `asset
 
 const engineFiles = [
     'index.html',
-    'map-editor.html',
     'js/app.js',
     'js/app-config.js',
     'js/starfield.js',
     'sw.js',
     'css/style.css',
-    'css/map-editor.css'
 ];
 const projectSpecificPattern = /Hiraeth|maps\.hiraeth|hiraeth|jsnj\.link|Jax SN Johnson|HAG/;
 engineFiles.forEach((file) => {

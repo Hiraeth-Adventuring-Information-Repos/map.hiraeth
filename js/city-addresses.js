@@ -6,7 +6,9 @@
     const pair = value => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite);
     function boundsOf(building) {
         const points = Array.isArray(building.footprint) && building.footprint.length >= 3
-            ? building.footprint.filter(pair) : [building.coordinates].filter(pair);
+            ? building.footprint.filter(pair) : pair(building.coordinates) ? [
+                building.coordinates.map(value => value - 3), building.coordinates.map(value => value + 3)
+            ] : [];
         if (!points.length) return null;
         return [[Math.min(...points.map(p => p[0])), Math.min(...points.map(p => p[1]))],
             [Math.max(...points.map(p => p[0])), Math.max(...points.map(p => p[1]))]];

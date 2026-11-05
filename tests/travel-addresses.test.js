@@ -147,3 +147,27 @@ test('thousands of addresses route with the heap without charging a toll per int
     assert.deepEqual(graph.errors, []); near(trip.km, 5.005); near(trip.cost, 1); assert.equal(trip.legs.length, 3);
     assert.ok(performance.now() - start < 5000, '5000-address build and route must complete within five seconds');
 });
+
+test('closing one street isolates its attached address without breaking a disconnected route', () => {
+    const data = {
+        scalePixels: 1000, scaleKilometers: 1,
+        lines: [road('AB', 'A', 'B', [[0, 0], [0, 100]]), road('CD', 'C', 'D', [[10, 0], [10, 100]])],
+        buildings: [building('house', '1 AB', [1, 50], 'AB', [0, 50])]
+    };
+    let graph = T.build(data);
+    assert.deepEqual(graph.errors, []);
+    assert.ok(T.route(graph, 'house', 'A'));
+    assert.ok(T.route(graph, 'C', 'D'));
+    data.lines[0].travelServiceStatus = 'closed';
+    graph = T.build(data);
+    assert.deepEqual(graph.errors, []);
+    assert.ok(T.route(graph, 'C', 'D'));
+    assert.equal(T.route(graph, 'house', 'C'), null, 'the address must not snap to the nearby unrelated road');
+    assert.equal(T.route(graph, 'house', 'A'), null);
+    const invalid = structuredClone(data);
+    invalid.buildings[0].access.lineId = 'missing';
+    assert.match(T.validate(invalid).join('\n'), /access must reference/);
+    const invalidGraph = T.build(invalid);
+    assert.ok(invalidGraph.errors.length);
+    assert.equal(T.route(invalidGraph, 'C', 'D'), null, 'malformed attachments still block routing');
+});

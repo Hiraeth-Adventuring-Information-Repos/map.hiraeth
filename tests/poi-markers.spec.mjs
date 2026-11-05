@@ -3,39 +3,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { createMapFileServer } = require('../scripts/map_file_server.js');
+const { createPreviewServer } = require('../scripts/preview_server.js');
 let server, base;
 test.beforeAll(async () => {
-    server = createMapFileServer({ repoRoot: path.resolve(import.meta.dirname, '..'), allowedHosts: '127.0.0.1' });
+    server = createPreviewServer({ repoRoot: path.resolve(import.meta.dirname, '..') });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     base = `http://127.0.0.1:${server.address().port}`;
 });
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
 
-test('generated markers load at the original size in editor and viewer, including new and custom types', async ({ page }, testInfo) => {
+test('generated markers load at the original size in the viewer', async ({ page }, testInfo) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto(base + '/studio/editor');
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.locator('[data-map-id="main_continent"]').first().click();
-    const marker = page.locator('#editor-map img.poi-custom-icon').first();
-    await expect(marker).toBeAttached();
-    expect(await marker.evaluate(img => [img.width, img.height, img.style.marginLeft, img.style.marginTop])).toEqual([36, 48, '-18px', '-47px']);
-    await page.getByRole('button', { name: 'Features', exact: true }).click();
-    await page.locator('#editor-unified-feature-list button').first().click();
-    const type = page.locator('#feature-points-type');
-    await expect(type).toBeVisible();
-    await expect(page.locator('#feature-points-type-options option[value="Waterfall"]')).toHaveCount(1);
-    await type.fill('Waterfall');
-    await type.press('Tab');
-    const waterfall = page.locator('#editor-map img.poi-custom-icon[src$="waterfall.webp"]');
-    await expect(waterfall).toHaveCount(1);
-    await expect(waterfall).toHaveJSProperty('naturalWidth', 72);
-    await type.fill('Custom mysterious site');
-    await type.press('Tab');
-    await expect(type).toHaveValue('Custom mysterious site');
-    await expect(page.locator('#editor-map img.poi-custom-icon[src$="unknown.webp"]')).toHaveCount(1);
-
     const data = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/Fair-Content.json'), 'utf8'));
     data.pointsOfInterest = [{ name: 'Falls', type: 'Waterfall', coords: [2000, 3000] }];
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
@@ -105,7 +84,7 @@ test('generated markers load at the original size in editor and viewer, includin
         expect(components, `${src} has no detached speckles`).toBe(1);
         expect(corners, `${src} has a transparent exterior`).toEqual([0, 0, 0, 0]);
     });
-    // The read-only editor server intentionally does not expose design source files.
+    // The preview server intentionally does not expose design source files.
     await page.route('**/design/poi-markers/index.html', route => route.fulfill({
         contentType: 'text/html', body: fs.readFileSync(path.join(import.meta.dirname, '../design/poi-markers/index.html'), 'utf8')
     }));
@@ -115,4 +94,88 @@ test('generated markers load at the original size in editor and viewer, includin
     await expect(page.locator('article')).toHaveCount(70);
     await page.screenshot({ path: testInfo.outputPath('poi-marker-catalog.png'), fullPage: true });
     expect(errors).toEqual([]);
+});
+
+test('rapid search Enter uses the current query and Escape cancels pending results', async ({ page }) => {
+    await page.goto(base + '/index.html#The-Port-City-of-Stomion-s=c');
+    await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion');
+    await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
+    const entered = await page.evaluate(() => {
+        poiSearchInput.value = 'Breads and Dregs';
+        updateVisibleMarkersAndSearch();
+        const previous = renderedSearchResults[0]?.title;
+        poiSearchInput.value = 'Baths of the Devine Mother';
+        poiSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        poiSearchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        return { previous, selected: map._popup?._source?.poiData?.name, query: poiSearchInput.value };
+    });
+    expect(entered.previous).toBe('Breads and Dregs');
+    expect(entered.selected).toBe('Baths of the Devine Mother');
+    expect(entered.query).toBe('');
+    await page.evaluate(() => {
+        poiSearchInput.value = 'Northgate';
+        poiSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        poiSearchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    await page.waitForTimeout(450);
+    await expect(page.locator('#search-results-container')).toBeHidden();
+    await expect(page.locator('#poi-search-input')).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('failed startup script shows retry and reload recovers', async ({ page }) => {
+    let blockScript = true;
+    await page.route('**/js/libs/lucide.min.js*', route => blockScript ? route.abort() : route.continue());
+    await page.goto(base + '/index.html#The-Port-City-of-Stomion-s=c');
+    await expect(page.locator('#loading-indicator .loading-text')).toContainText(/unable|could not|failed|error/i);
+    await expect(page.locator('#loading-retry-btn')).toBeVisible();
+    blockScript = false;
+    await page.locator('#loading-retry-btn').click();
+    await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion');
+    await expect(page.locator('#loading-indicator')).toBeHidden();
+});
+
+test('feature shares and atlas links distinguish same-name features by stable ID', async ({ page }) => {
+    const data = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/The-Port-City-of-Stomion.json'), 'utf8'));
+    const template = [...(data.roads || []), ...(data.lines || [])].find(line => line.coordinates?.length > 1);
+    data.lines = [...(data.lines || []),
+        { id: 'test-line-1', name: 'Repeated test line', coordinates: template.coordinates },
+        { id: 'test-line-2', name: 'Repeated test line', coordinates: template.coordinates.map(([y, x]) => [y + 20, x + 20]) }
+    ];
+    await page.route('**/maps/The-Port-City-of-Stomion.json*', route => route.fulfill({ json: data }));
+    await page.goto(base + '/index.html#The-Port-City-of-Stomion-s=c');
+    await page.waitForFunction(() => typeof allMapLines !== 'undefined' && allMapLines.some(line => line.roadData.id === 'test-line-2'));
+    const result = await page.evaluate(() => {
+        const share = new URL(buildFeatureShareUrl('line', 'Repeated test line', 'test-line-2'));
+        const atlas = buildScopedSearchParams({ kind: 'line', name: 'Repeated test line', itemId: 'test-line-2' });
+        const focus = params => {
+            history.replaceState({}, '', `?${params}#The-Port-City-of-Stomion-s=c`);
+            checkAndFocusFeature();
+            return map._popup?._source?.roadData?.id;
+        };
+        const poi = currentMapData.pointsOfInterest.find(point => !point.id && point.name);
+        const poiShare = new URL(buildFeatureShareUrl('poi', poi.name, poi.id));
+        return { share: share.searchParams.get('line'), shareFocus: focus(share.searchParams),
+            atlas: atlas.get('line'), atlasFocus: focus(atlas), legacyFocus: focus('line=Repeated%20test%20line'),
+            poiName: poi.name, poiTarget: poiShare.searchParams.get('poi') };
+    });
+    expect(result.share).toBe('test-line-2');
+    expect(result.shareFocus).toBe('test-line-2');
+    expect(result.atlas).toBe('test-line-2');
+    expect(result.atlasFocus).toBe('test-line-2');
+    expect(result.legacyFocus).toBe('test-line-1');
+    expect(result.poiTarget).toBe(result.poiName);
+    const popupAndRelay = await page.evaluate(async () => {
+        const captured = [];
+        executeShareAction = async ({ shareUrl }) => { captured.push(new URL(shareUrl).searchParams.get('line')); };
+        focusLine('test-line-2');
+        const button = document.querySelector('.leaflet-popup [data-popup-action="share-feature"]');
+        const popupId = button?.dataset.featureId;
+        button?.click();
+        history.replaceState({}, '', '?line=test-line-2&src=share&stype=line#The-Port-City-of-Stomion-s=c');
+        checkAndFocusFeature();
+        await relaySharedContext(document.getElementById('share-relay-action-btn'));
+        return { popupId, captured };
+    });
+    expect(popupAndRelay.popupId).toBe('test-line-2');
+    expect(popupAndRelay.captured).toEqual(['test-line-2', 'test-line-2']);
 });

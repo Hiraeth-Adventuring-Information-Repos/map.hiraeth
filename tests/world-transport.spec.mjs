@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { createMapFileServer } = require('../scripts/map_file_server.js');
+const { createPreviewServer } = require('../scripts/preview_server.js');
 const T = require('../js/travel-network.js');
 const root = path.resolve(import.meta.dirname, '..');
 let server, base;
 test.beforeAll(async () => {
-    server = createMapFileServer({ repoRoot: root, allowedHosts: '127.0.0.1' });
+    server = createPreviewServer({ repoRoot: root });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); base = `http://127.0.0.1:${server.address().port}`;
 });
 test.afterAll(async () => new Promise(resolve => server.close(resolve)));
@@ -86,29 +86,4 @@ test('Firefox keeps a calculated city route when the destination loses focus', a
         await expect(page.locator('.travel-total')).toBeVisible();
         await page.screenshot({ path: path.join(root, 'design/transport-ux/castgate-viewer-firefox.png') });
     } finally { await browser.close(); }
-});
-test('real city draft restores, mode filtering is display-only and export retains geometry and custom review metadata', async ({ page }, testInfo) => {
-    const errors = []; page.on('pageerror', error => errors.push(error.message));
-    await page.goto(`${base}/studio/editor?routing=1&map=castgate`);
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.getByRole('button', { name: 'Travel network', exact: true }).click();
-    const panel = page.locator('#editor-network-panel'), city = data('castgate'), building = city.buildings.find(b => b.aliases?.includes("Chai en' Steep Inn"));
-    await panel.locator('.network-address-list > summary').click(); await panel.getByLabel('Find a building address').fill("Chai en' Steep Inn");
-    await panel.getByRole('button', { name: `${building.address} · ${building.name}`, exact: true }).click();
-    await panel.getByLabel('Building name', { exact: true }).fill('Castgate draft review'); await panel.getByLabel('Building name', { exact: true }).press('Tab');
-    expect(await page.evaluate(() => Object.keys(sessionStorage).some(key => key.startsWith('mapEditorRecovery:')))).toBe(true);
-    await page.reload(); await expect(panel).toBeVisible();
-    await panel.locator('.network-address-list > summary').click(); await panel.getByLabel('Find a building address').fill('Castgate draft review');
-    await panel.getByRole('button', { name: `${building.address} · Castgate draft review`, exact: true }).click();
-    await expect(panel.getByLabel('Building name', { exact: true })).toHaveValue('Castgate draft review');
-    await panel.locator('.network-mode-filters').getByRole('button', { name: /^Road/ }).click();
-    await expect(page.locator('.editor-network-link')).toHaveCount(city.lines.filter(line => line.travelMode === 'road').length);
-    await page.screenshot({ path: path.join(root, 'design/transport-ux/castgate-editor-desktop.png') });
-    const pending = page.waitForEvent('download'); await page.locator('#save-current-map-btn').click();
-    const download = await pending, file = testInfo.outputPath('castgate-export.json'); await download.saveAs(file); const saved = JSON.parse(fs.readFileSync(file));
-    expect(saved.buildings.length).toBe(city.buildings.length); expect(saved.lines).toEqual(city.lines); expect(saved.addressReview).toEqual(city.addressReview);
-    expect(saved.buildings.find(b => b.id === building.id).name).toBe('Castgate draft review'); expect(T.validate(saved)).toEqual([]);
-    expect(T.route(T.build(saved), building.address, 'School for Adventures')).toBeTruthy();
-    await page.setViewportSize({ width: 390, height: 844 }); expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
-    await page.screenshot({ path: path.join(root, 'design/transport-ux/castgate-editor-mobile.png') }); expect(errors).toEqual([]);
 });

@@ -1,8 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const travel = require('../js/travel-network');
-const files = require('../js/map-file-document');
-const shared = require('../js/editor-shared');
 const segment = (name, from, to, coordinates, extra = {}) => ({ id: name, name, coordinates, travelMode: 'road', travelFrom: from, travelTo: to, travelSpeedKph: 5, travelFareGp: 0, ...extra });
 const fixture = () => ({ scalePixels: 10, scaleKilometers: 1, lines: [
     segment('Hill road', 'A', 'B', [[0, 0], [30, 0], [30, 40]], { travelFareGp: 1, travelCostPerKmGp: .5 }),
@@ -88,21 +86,6 @@ test('named endpoints snap to existing junctions; crossing geometry alone does n
     ] };
     assert.equal(travel.route(travel.build(crossing), 'W', 'N'), null);
 });
-test('editor normalization and lossless export preserve routing and unrelated fields', () => {
-    const raw = fixture(); raw.custom = { untouched: true }; raw.lines[0].custom = ['preserve'];
-    raw.lines[0].travelOcclusions = [[[20, -5], [20, 5], [25, 5], [25, -5]]];
-    raw.lines[0].travelBridgeIds = ['river-bridge'];
-    const normalized = { ...raw, lines: raw.lines.map(shared.normalizeLine) };
-    const session = files.createSession(raw, normalized);
-    session.editableDocument.lines[0].travelFareGp = 8;
-    const result = files.buildDocument(session.snapshot, session.editableDocument);
-    assert.equal(result.lines[0].travelFareGp, 8);
-    assert.deepEqual(result.lines[0].custom, ['preserve']); assert.deepEqual(result.custom, raw.custom);
-    assert.deepEqual(result.lines[0].coordinates, raw.lines[0].coordinates);
-    assert.deepEqual(result.lines[0].travelOcclusions, raw.lines[0].travelOcclusions);
-    assert.deepEqual(result.lines[0].travelBridgeIds, raw.lines[0].travelBridgeIds);
-});
-
 test('covered passages clip drawing in both directions while full geometry determines distance and time', () => {
     const line = segment('Train', 'A', 'B', [[0, 0], [0, 5], [0, 10]], {
         travelMode: 'rail', travelSpeedKph: 40, travelOcclusions: [[[-1, 3], [1, 3], [1, 7], [-1, 7]]]
@@ -131,25 +114,13 @@ test('overlapping and concave covers handle hidden vertices, complete cover and 
         assert.ok(travel.validate(data).some(error => /covered passages/.test(error)));
     }
 });
-test('connecting curved routes preserves editable handles when resampled by the editor', () => {
-    const anchors = [[0, 0], [10, 10], [20, 0]], handles = [null, { in: [5, 10], out: [15, 10] }, { in: [18, 2] }];
-    const line = segment('Curve', 'A', 'B', shared.sampleBezierPath(anchors, handles, false));
-    line.bezier = { version: 1, anchors, handles };
-    const other = segment('Join', 'B', 'C', [[50, 10], [60, 10]]);
-    assert.equal(travel.connectEndpoint(line, 'travelTo', 'B', [other]), true);
-    line.coordinates = shared.sampleBezierPath(line.bezier.anchors, line.bezier.handles, false);
-    assert.deepEqual(line.coordinates.at(-1), [50, 10]);
-    assert.deepEqual(line.bezier.handles[2].in, [48, 12]);
-    assert.ok(shared.getFeatureBezierGeometry(line, false));
-});
-
 test('visual connection points migrate legacy links only on edit and keep stable connections after rename/move', () => {
     const data = fixture(), original = structuredClone(data);
     const points = travel.connectionPoints(data);
     assert.equal(points.length, 4); assert.deepEqual(data, original);
     travel.ensureNodes(data);
     const b = data.travelNodes.find(node => node.name === 'B'), c = data.travelNodes.find(node => node.name === 'C');
-    travel.updateNode(data, b.id, { name: 'Central station', kind: 'station', coordinates: [40, 50] }, data.lines, shared.sampleBezierPath);
+    travel.updateNode(data, b.id, { name: 'Central station', kind: 'station', coordinates: [40, 50] }, data.lines);
     assert.deepEqual(data.lines[0].coordinates.at(-1), [40, 50]);
     assert.deepEqual(data.lines[1].coordinates[0], [40, 50]);
     assert.equal(data.lines[0].travelToNode, b.id); assert.equal(data.lines[1].travelFrom, 'Central station');
@@ -177,40 +148,4 @@ test('inserting a junction preserves total distance, fare, delay, one-way restri
     data.lines.push(travel.createLink(junction, port, [junction.coordinates, port.coordinates], 'rail'));
     assert.equal(travel.route(travel.build(data), 'A', port.name).legs.length, 2);
     assert.equal(travel.route(travel.build(data), 'A', port.name).cost, null);
-});
-
-test('new network data survives lossless export and unknown fields on nodes are preserved', () => {
-    const raw = fixture(), normalized = structuredClone(raw), session = files.createSession(raw, normalized);
-    const data = session.editableDocument;
-    travel.ensureNodes(data); data.travelNodes[0].custom = { note: 'retain' };
-    const split = travel.splitLink(data, data.lines[0], 1, [30, 20], data.lines);
-    travel.updateNode(data, split.id, { name: 'Crossroads' });
-    const saved = files.buildDocument(session.snapshot, data);
-    assert.equal(saved.travelNodes.length, 5); assert.deepEqual(saved.travelNodes[0].custom, { note: 'retain' });
-    assert.deepEqual(travel.validate(saved), []);
-    assert.equal(JSON.stringify(saved).includes('__hiraethFileIdentity'), false);
-    assert.equal(travel.route(travel.build(saved), 'A', 'D').legs.length, 4);
-});
-
-test('editor serialization keeps fractional network coordinates aligned with connection points', () => {
-    const data = { id: 'precision', scalePixels: 100, scaleKilometers: 1, lines: [] };
-    const a = travel.addNode(data, [100.25, 200.15], 'town');
-    const b = travel.addNode(data, [550.3333, 240.8765], 'station');
-    data.lines.push(travel.createLink(a, b, [a.coordinates, b.coordinates]));
-    const result = shared.serializeMapDocumentState({ masterMapData: [data], currentMapId: data.id, collectedLines: data.lines, collectedPoints: [], collectedRegions: [], mapSettings: {} });
-    assert.deepEqual(travel.validate(result), []);
-    assert.deepEqual(result.lines[0].coordinates, [a.coordinates, b.coordinates]);
-});
-
-test('moving a shared curved endpoint retains exact fractional connections and editable handles', () => {
-    const data = fixture(), line = data.lines[0];
-    line.bezier = { version: 1, anchors: structuredClone(line.coordinates), handles: [null, null, { in: [25, 35] }] };
-    line.coordinates = shared.sampleBezierPath(line.bezier.anchors, line.bezier.handles);
-    travel.ensureNodes(data);
-    const b = data.travelNodes.find(node => node.name === 'B');
-    travel.updateNode(data, b.id, { coordinates: [40.25, 50.75] }, data.lines, shared.sampleBezierPath);
-    assert.deepEqual(travel.validate(data), []);
-    assert.deepEqual(line.coordinates.at(-1), [40.25, 50.75]);
-    assert.deepEqual(line.bezier.handles.at(-1).in, [35.25, 45.75]);
-    assert.ok(shared.getFeatureBezierGeometry(line, false));
 });

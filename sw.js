@@ -97,7 +97,7 @@ self.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
         const keys = await caches.keys();
         await Promise.all(keys.map((key) => {
-            if (!ALL_CACHES.includes(key)) {
+            if (['hag-shell-', 'hag-data-', 'hag-assets-'].some(prefix => key.startsWith(prefix)) && !ALL_CACHES.includes(key)) {
                 return caches.delete(key);
             }
             return Promise.resolve(false);

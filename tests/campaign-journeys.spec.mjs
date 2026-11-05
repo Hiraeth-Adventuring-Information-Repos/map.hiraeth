@@ -3,93 +3,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { createMapFileServer } = require('../scripts/map_file_server.js');
+const { createPreviewServer } = require('../scripts/preview_server.js');
 let server, base;
 test.beforeAll(async () => {
-    server = createMapFileServer({ repoRoot: path.resolve(import.meta.dirname, '..'), allowedHosts: '127.0.0.1' });
+    server = createPreviewServer({ repoRoot: path.resolve(import.meta.dirname, '..') });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     base = `http://127.0.0.1:${server.address().port}`;
 });
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
 
-test('record, reorder, recover and download a journey; display it as an independent viewer layer', async ({ page }, testInfo) => {
+test('viewer displays a journey and preserves its filters', async ({ page }, testInfo) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.addInitScript(() => Object.defineProperty(crypto, 'randomUUID', { value: undefined }));
-    await page.goto(base + '/studio/editor');
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.locator('[data-map-id="main_continent"]').first().click();
-    await page.locator('#editor-journeys-btn').click();
-    await page.getByRole('button', { name: 'New journey', exact: true }).click();
-    await page.getByLabel('Journey name', { exact: true }).fill('A road remembered');
-    await page.getByLabel('Campaign', { exact: true }).fill('Test campaign');
-    await page.getByLabel('Campaign wiki link', { exact: true }).fill('https://example.org/campaign');
-    await page.locator('#editor-add-journey-stop-btn').click();
-    await page.getByRole('button', { name: 'Cancel stop', exact: true }).click();
-    await expect(page.locator('.campaign-journey-pin')).toHaveCount(0);
-    const place = async (name, x, y) => {
-        await page.locator('#editor-add-journey-stop-btn').click();
-        await page.locator('#editor-map').click({ position: { x, y } });
-        const row = page.locator('.journey-stop-editor').last();
-        await row.getByLabel('Stop name', { exact: true }).fill(name);
-        await row.getByLabel('In-universe date').fill('Late autumn, 58 BEC');
-        await row.getByLabel('Stop wiki link').fill('https://example.org/arrival');
-        await row.getByLabel('Stop wiki link').press('Tab');
-    };
-    await place('Arrival', 310, 270);
-    await place('The crossing', 410, 340);
-    await expect(page.locator('.campaign-journey-pin')).toHaveCount(2);
-    await expect(page.locator('.campaign-journey-route')).toHaveCount(1);
-    await page.locator('.journey-stop-editor').last().getByRole('button', { name: 'Move earlier' }).click();
-    await expect(page.locator('.journey-stop-editor summary').first()).toContainText('The crossing');
-    await page.locator('#editor-undo-btn').click();
-    await expect(page.locator('.journey-stop-editor summary').first()).toContainText('Arrival');
-    await page.locator('#editor-redo-btn').click();
-    await expect(page.locator('.journey-stop-editor summary').first()).toContainText('The crossing');
-    // Removal is reversible, and dragging a stop changes its downloaded position.
-    await page.locator('.journey-stop-editor summary').first().click();
-    await page.locator('.journey-stop-editor').first().getByRole('button', { name: 'Remove stop' }).click();
-    await expect(page.locator('.campaign-journey-pin')).toHaveCount(1);
-    await page.locator('#editor-undo-btn').click();
-    await expect(page.locator('.campaign-journey-pin')).toHaveCount(2);
-    await page.locator('#editor-collapse-inspector-btn').click();
-    const pin = page.locator('.campaign-journey-pin').first();
-    const box = await pin.boundingBox();
-    await page.mouse.move(box.x + 14, box.y + 14);
-    await page.mouse.down();
-    await page.mouse.move(box.x + 64, box.y + 34, { steps: 10 });
-    await page.mouse.up();
-    await expect(pin).toBeVisible();
-    await expect.poll(async () => (await pin.boundingBox()).x).toBeGreaterThan(box.x + 30);
-    await page.getByRole('button', { name: 'Edit details', exact: true }).click();
-    await page.locator('[data-feature-section="journey"] > summary').click();
-    await page.getByLabel('Show by default in viewer').check();
-    await page.reload();
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await expect(page.locator('.journey-stop-editor summary').first()).toContainText('The crossing');
-    await page.locator('[data-feature-section="journey"] > summary').click();
-    await expect(page.getByLabel('Show by default in viewer')).toBeChecked();
-    await page.getByLabel('Show by default in viewer').uncheck();
-    await page.locator('[data-feature-section="journey"] > summary').click();
-    const downloadEvent = page.waitForEvent('download');
-    await page.locator('#save-current-map-btn').click();
-    const download = await downloadEvent;
-    const downloadPath = testInfo.outputPath('journey-map.json');
-    await download.saveAs(downloadPath);
-    const document = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
-    expect(document.journeys[0].stops.map(stop => stop.name)).toEqual(['The crossing', 'Arrival']);
-    expect(document.journeys[0].visibleByDefault).toBe(false);
-    expect(document.journeys[0].stops[0].date).toBe('Late autumn, 58 BEC');
-    const original = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/Fair-Content.json'), 'utf8'));
-    const { journeys, ...unchanged } = document;
-    expect(unchanged).toEqual(original);
-    await page.screenshot({ path: testInfo.outputPath('journey-editor-desktop.png') });
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.locator('#editor-add-journey-stop-btn')).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
-    await page.screenshot({ path: testInfo.outputPath('journey-editor-mobile.png') });
-
-    // Read the exported file through the real viewer without changing server files.
+    const document = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/Fair-Content.json'), 'utf8'));
+    document.journeys = [{ id: 'road', name: 'A road remembered', campaign: 'Test campaign', wikiLink: 'https://example.org/campaign', stops: [
+        { id: 'arrival', name: 'Arrival', coords: [1000, 2000], date: 'Late autumn, 58 BEC', wikiLink: 'https://example.org/arrival' },
+        { id: 'crossing', name: 'The crossing', coords: [2000, 3000] }
+    ] }];
+    // Supply journey data without changing server files.
     await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: document }));
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(base + '/index.html#main_continent-s=c');

@@ -13,7 +13,7 @@ test('routing requires an explicit URL opt-in on every page load', () => {
 });
 
 test('routing opt-in follows internal pages while preserving their own query and hash', () => {
-    for (const target of ['index.html#Astrousia-s=o', 'map-editor.html?map=castgate', 'file-studio.html?help=1', 'file-studio.html?new-map=1', 'editor-guide.html', '/studio/editor?mode=review']) {
+    for (const target of ['index.html#Astrousia-s=o', 'index.html?map=castgate']) {
         const result = new URL(withRoutingExperiment(target, '?routing=1'), 'https://maps.example.com/atlas/');
         const original = new URL(target, 'https://maps.example.com/atlas/');
         assert.equal(result.searchParams.get('routing'), '1');
@@ -27,10 +27,10 @@ test('routing opt-in follows internal pages while preserving their own query and
 });
 
 test('page navigation preserves opt-in without changing unrelated links or enabling it by default', () => {
-    const document = new JSDOM('<a data-routing-link href="map-editor.html?map=castgate">Editor</a><a href="https://example.com">Wiki</a>').window.document;
+    const document = new JSDOM('<a data-routing-link href="index.html?map=castgate">Map</a><a href="https://example.com">Wiki</a>').window.document;
     preserveRoutingExperimentLinks(document);
-    assert.equal(document.querySelector('[data-routing-link]').getAttribute('href'), 'map-editor.html?map=castgate');
+    assert.equal(document.querySelector('[data-routing-link]').getAttribute('href'), 'index.html?map=castgate');
     preserveRoutingExperimentLinks(document, '?routing=1');
-    assert.equal(document.querySelector('[data-routing-link]').getAttribute('href'), 'map-editor.html?map=castgate&routing=1');
+    assert.equal(document.querySelector('[data-routing-link]').getAttribute('href'), 'index.html?map=castgate&routing=1');
     assert.equal(document.querySelector('a:not([data-routing-link])').getAttribute('href'), 'https://example.com');
 });

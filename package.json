@@ -1,8 +1,6 @@
 {
   "scripts": {
     "preview": "node scripts/preview_server.js",
-    "editor": "node scripts/map_file_server.js",
-    "studio": "node scripts/map_file_server.js",
     "generate:atlas": "node scripts/generate_atlas_index.js",
     "generate:tiles": "node scripts/generate_tiles.js",
     "validate:data": "node scripts/validate_map_data.js",
@@ -10,17 +8,10 @@
     "benchmark:region-filters": "node scripts/benchmark_region_filter_groups.js",
     "benchmark:secondary-search": "node scripts/benchmark_secondary_search.js",
     "test:unit": "node --test tests/*.test.js",
-    "test:editor-local-access": "node tests/map-editor-local-access.test.js",
-    "test:editor-server": "node tests/editor-server.test.js",
-    "test:editor-shell": "node tests/map-editor-shell.test.js",
-    "test:studio:e2e": "playwright test tests/map-studio-workflow.spec.mjs",
     "build:pages": "node scripts/build_pages.js",
     "publish:check": "node scripts/publish_check.js",
     "validate:pages": "npm run generate:atlas && npm run validate:data && npm run test:unit && npm run build:pages",
     "test": "npm run validate:pages",
-    "studio:legacy": "node scripts/map_studio_server.js",
-    "editor:legacy": "node scripts/editor_server.js",
-    "test:files:e2e": "playwright test tests/map-file-workflow.spec.mjs",
     "test:firefox": "node scripts/firefox_render_smoke.cjs"
   },
   "dependencies": {

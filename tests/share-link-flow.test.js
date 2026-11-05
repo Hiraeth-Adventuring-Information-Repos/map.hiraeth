@@ -3,10 +3,10 @@ const fs = require('node:fs');
 
 const appSource = fs.readFileSync('js/app.js', 'utf8');
 
-const buildUrlStart = appSource.indexOf('function buildFeatureShareUrl(type, name) {');
+const buildUrlStart = appSource.indexOf('function buildFeatureShareUrl(type, name, id) {');
 const buildUrlEnd = appSource.indexOf('function canUseNativeShare(shareUrl) {');
 const shareTrackingStart = appSource.indexOf('const sharedLinkOpenSessionKeys = new Set();');
-const shareTrackingEnd = appSource.indexOf('function buildFeatureShareUrl(type, name) {');
+const shareTrackingEnd = appSource.indexOf('function buildFeatureShareUrl(type, name, id) {');
 const relaySourceStart = appSource.indexOf('async function executeShareAction({');
 const relaySourceEnd = appSource.indexOf('window.openLinkedMapFromPopup = function(event, mapId) {');
 

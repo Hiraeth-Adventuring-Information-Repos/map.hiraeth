@@ -445,6 +445,7 @@
         for (const building of addresses.entries) {
             if (building.accessReview?.status === 'unmapped') continue;
             const projection = projectAddress(data, building, lines, lineIndex);
+            if (projection?.line.travelServiceStatus === 'closed') continue;
             if (!projection || !prepared.has(projection.line)) { errors.push(`${building.address}: no road or trail reaches this address.`); continue; }
             const street = prepared.get(projection.line), same = street.points.find(point => Math.abs(point.offset - projection.offset) < 1e-8);
             const accessId = same?.id || `street:${street.routeKey}:${projection.offset.toFixed(8)}`;

@@ -23,6 +23,9 @@ const path = require('path');
 
     // Global mocks
     global.allMapMarkers = [];
+    global.allMapMarkersById = new Map();
+    global.allMapRegionsById = new Map();
+    global.allMapLinesById = new Map();
     global.allMapMarkersByName = new Map();
     global.allMapRegionsByName = new Map();
     global.allMapLinesByName = new Map();
@@ -77,6 +80,9 @@ const path = require('path');
 
     // Reset state between tests
     function resetMocks() {
+        global.allMapMarkersById.clear();
+        global.allMapRegionsById.clear();
+        global.allMapLinesById.clear();
         global.allMapLinesByName.clear();
         global.allMapMarkers = [];
         global.allMapMarkersByName.clear();

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const { createMapFileServer } = require('../scripts/map_file_server.js');
+const { createPreviewServer } = require('../scripts/preview_server.js');
 let server, base;
 const segment = (name, from, to, coordinates, extra = {}) => ({ id: name, name, type: 'Travel', coordinates, travelMode: 'road', travelFrom: from, travelTo: to, travelSpeedKph: 5, travelFareGp: 0, ...extra });
 const makeMap = () => ({ ...JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '../maps/Fair-Content.json'))), scalePixels: 100, scaleKilometers: 1, travelNodes: [], transportReview: undefined, pointsOfInterest: [], lines: [
@@ -12,7 +12,7 @@ const makeMap = () => ({ ...JSON.parse(fs.readFileSync(path.join(import.meta.dir
     segment('Ridge trail', 'Town', 'Island', [[1000, 1000], [2000, 1000], [2000, 2000]], { travelMode: 'trail', travelSpeedKph: 3 })
 ] });
 test.beforeAll(async () => {
-    server = createMapFileServer({ repoRoot: path.resolve(import.meta.dirname, '..'), allowedHosts: '127.0.0.1' });
+    server = createPreviewServer({ repoRoot: path.resolve(import.meta.dirname, '..') });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); base = `http://127.0.0.1:${server.address().port}`;
 });
 test.afterAll(async () => { await new Promise(resolve => server.close(resolve)); });
@@ -55,7 +55,6 @@ test('routing is absent by default, requires the URL flag and does not persist a
     await expect(page.locator('.travel-network-line')).toHaveCount(1);
     expect(await page.evaluate(() => travelPlanner !== null && cityAddresses !== null)).toBe(true);
     expect(await page.evaluate(() => buildPopupHeader(currentMapData.pointsOfInterest[0], 'poi', ''))).toContain('address-directions');
-    expect(await page.locator('#map-editor-link').getAttribute('href')).toContain('routing=1');
     expect(new URL(await page.evaluate(() => buildCurrentViewShareUrl())).searchParams.get('routing')).toBe('1');
     await page.evaluate(() => setSidebarState('c', true));
     expect(new URL(page.url()).searchParams.get('routing')).toBe('1');
@@ -65,39 +64,12 @@ test('routing is absent by default, requires the URL flag and does not persist a
     await load('');
     await expect(page.locator('#directions-btn')).toBeHidden();
     await expect(page.locator('#travel-panel')).toHaveCount(0);
-    expect(await page.locator('#map-editor-link').getAttribute('href')).not.toContain('routing=1');
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForFunction(() => isMobileLayoutActive);
     await page.locator('#mobile-tools-launcher-btn').click();
     await expect(page.locator('#mobile-directions-btn')).toBeHidden();
     await expect(page.locator('#travel-panel')).toHaveCount(0);
     expect(errors).toEqual([]);
-});
-
-test('editor routing tools require opt-in and ordinary downloads retain routing data', async ({ page }, testInfo) => {
-    const data = makeMap();
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(`${base}/studio/editor?map=main_continent`);
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await expect(page.getByRole('button', { name: 'Travel network', exact: true })).toHaveCount(0);
-    await page.getByRole('button', { name: 'Features', exact: true }).click();
-    await page.locator('#editor-feature-type-select').selectOption('lines');
-    await page.getByRole('button', { name: /Harbor road/ }).first().click();
-    await expect(page.locator('[data-feature-section="travel-routing"]')).toHaveCount(0);
-    await page.locator('#feature-lines-name').fill('Reviewed harbor road');
-    await page.locator('#feature-lines-name').press('Tab');
-    const pending = page.waitForEvent('download'); await page.locator('#save-current-map-btn').click();
-    const download = await pending, output = testInfo.outputPath('normal-editor-routing-preserved.json');
-    await download.saveAs(output); const saved = JSON.parse(fs.readFileSync(output));
-    expect(saved.lines[0]).toEqual({ ...data.lines[0], name: 'Reviewed harbor road' });
-    await page.goto(`${base}/studio/editor?routing=1&map=main_continent`);
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.getByRole('button', { name: 'Travel network', exact: true }).click();
-    await expect(page.locator('#editor-network-panel')).toBeVisible();
-    await page.goto(`${base}/studio/editor?map=main_continent`);
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await expect(page.getByRole('button', { name: 'Travel network', exact: true })).toHaveCount(0);
-    await expect(page.locator('#editor-network-panel')).toBeHidden();
 });
 
 test('directions docks beside the canvas, restores the Atlas and becomes a mobile sheet', async ({ page }) => {
@@ -309,76 +281,5 @@ test('left toolbar offers A to B on supported maps in both layouts and updates a
     await page.goto(base + '/index.html?embed=true&routing=1#main_continent-s=c');
     await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'main_continent');
     await expect(page.locator('#directions-btn')).toBeHidden();
-    expect(errors).toEqual([]);
-});
-
-test('editor configures, connects, recovers and downloads routing without changing unrelated map data', async ({ page }, testInfo) => {
-    const errors = []; page.on('pageerror', error => errors.push(error.message));
-    const data = makeMap();
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/studio/editor?routing=1');
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.locator('[data-map-id="main_continent"]').first().click();
-    await page.getByRole('button', { name: 'Features', exact: true }).click();
-    await page.locator('#editor-feature-type-select').selectOption('lines');
-    await page.getByRole('button', { name: /Harbor road/ }).first().click();
-    await page.locator('[data-feature-section="travel-routing"] > summary').click();
-    await expect(page.locator('[data-field="travelMode"]')).toHaveValue('road');
-    await page.locator('[data-field="travelSpeedKph"]').fill('6');
-    await page.locator('[data-field="travelFareGp"]').fill('1.5');
-    await page.getByLabel('Show route on map by default').check();
-    await page.locator('[data-field="travelFareGp"]').press('Tab');
-    await page.reload();
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.locator('[data-feature-section="travel-routing"] > summary').click();
-    await expect(page.locator('[data-field="travelSpeedKph"]')).toHaveValue('6');
-    const pending = page.waitForEvent('download'); await page.locator('#save-current-map-btn').click();
-    const download = await pending, output = testInfo.outputPath('travel-map.json'); await download.saveAs(output);
-    const result = JSON.parse(fs.readFileSync(output));
-    const expected = structuredClone(data); Object.assign(expected.lines[0], { travelSpeedKph: 6, travelFareGp: 1.5, travelVisible: true, travelOneWay: false });
-    expect(result).toEqual(expected);
-    await page.screenshot({ path: testInfo.outputPath('travel-editor.png') });
-    expect(errors).toEqual([]);
-});
-
-test('draw and connect a new route, validate missing settings, and show default-visible routes', async ({ page }, testInfo) => {
-    const errors = []; page.on('pageerror', error => errors.push(error.message));
-    const data = makeMap(); data.lines[0].travelVisible = true;
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: data }));
-    await page.goto(base + '/studio/editor?routing=1');
-    await expect(page.locator('#map-editor-app')).toHaveAttribute('data-loading', 'false');
-    await page.locator('[data-map-id="main_continent"]').first().click();
-    await page.locator('#editor-add-line-btn').click();
-    await page.locator('#editor-map').click({ position: { x: 340, y: 270 } });
-    await page.locator('#editor-map').click({ position: { x: 460, y: 320 } });
-    await page.locator('#editor-finish-draw-btn').click();
-    await page.locator('#editor-feature-form [data-field="name"]').fill('Station approach');
-    await page.locator('[data-feature-section="travel-routing"] > summary').click();
-    await page.locator('[data-field="travelMode"]').selectOption('rail');
-    await expect(page.locator('[data-field="travelSpeedKph"]')).toHaveValue('40');
-    await page.locator('#save-current-map-btn').click();
-    await expect(page.locator('#editor-export-status')).toContainText('name both endpoints');
-    await page.locator('[data-field="travelFrom"]').fill('Town');
-    await page.locator('[data-field="travelTo"]').fill('Station');
-    await page.locator('[data-field="travelFareGp"]').fill('3');
-    await page.getByLabel('One way: start to end').check();
-    await page.locator('[data-field="travelFareGp"]').press('Tab');
-    const pending = page.waitForEvent('download'); await page.locator('#save-current-map-btn').click();
-    const download = await pending, output = testInfo.outputPath('new-travel-map.json'); await download.saveAs(output);
-    const saved = JSON.parse(fs.readFileSync(output)), line = saved.lines.find(line => line.name === 'Station approach');
-    expect(line.coordinates[0]).toEqual([1000, 1000]);
-    expect(line.travelMode).toBe('rail'); expect(line.travelOneWay).toBe(true); expect(line.travelFareGp).toBe(3);
-    await page.route('**/maps/Fair-Content.json*', route => route.fulfill({ json: saved }));
-    await page.goto(base + '/index.html?routing=1#main_continent-s=c');
-    await expect(page.locator('.travel-network-line')).toHaveCount(1);
-    await page.waitForFunction(() => !document.getElementById('loading-overlay') || getComputedStyle(document.getElementById('loading-overlay')).display === 'none');
-    await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
-    await page.locator('#directions-btn').click();
-    await page.locator('#travel-from').fill('Town'); await page.locator('#travel-to').fill('Station');
-    await page.getByRole('button', { name: 'Find route' }).click();
-    await expect(page.locator('.travel-results')).toContainText('Station approach');
-    await page.getByRole('button', { name: 'Swap start and destination' }).click();
-    await page.getByRole('button', { name: 'Find route' }).click();
-    await expect(page.locator('.travel-results')).toContainText('No connected route');
     expect(errors).toEqual([]);
 });

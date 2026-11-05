@@ -2,7 +2,7 @@
 
 An interactive map viewer for the world of Hiraeth, built with Leaflet.js.
 
-**[Live maps](https://maps.hiraeth.wiki) · [Web editor](https://maps.hiraeth.wiki/map-editor.html)**
+**[Live maps](https://maps.hiraeth.wiki)**
 
 ## About The Project
 
@@ -42,9 +42,9 @@ You need a modern web browser, Node.js 22 or newer, and a local web server. Imag
 
 ## Validation And Deployment
 
-Routing is an experimental URL opt-in. Add `?routing=1` before the map hash, for example `/index.html?routing=1#Astrousia-s=o`. Normal URLs hide Directions, building address hit areas and routing shortcuts. The flag is retained during map navigation and sharing, and is passed to the Editor link; it is never saved as a browser preference. The editor's Travel network tools and routing fields also require `routing=1`. Existing map data and ordinary map editing remain available with the experiment off.
+Routing is an experimental URL opt-in. Add `?routing=1` before the map hash, for example `/index.html?routing=1#Astrousia-s=o`. Normal URLs hide Directions, building address hit areas and routing shortcuts. The flag is retained during map navigation and sharing; it is never saved as a browser preference.
 
-Maintainers who want an authenticated LAN editor with guided map creation, persistent previews, and draft pull-request automation can run **Hiraeth Map Studio**. See [MAP_STUDIO.md](MAP_STUDIO.md) for Docker Compose setup and security guidance.
+The editor is archived for now. Its source and restoration notes are in [archive/editor](archive/editor/README.md).
 
 Install dependencies and run the complete local release check:
 
@@ -53,7 +53,7 @@ npm ci
 npm run publish:check
 ```
 
-The publish check regenerates the atlas index, validates map data, runs the unit suite, and builds the optimized GitHub Pages artifact in `dist/`. The Pages build minifies owned JS/CSS, compacts JSON, and moves cross-map search data into a lazy payload while preserving native-resolution map tiles. Generated tiles are reused from `.cache/pages-tiles` and only stale map fingerprints are rebuilt. Both directories are generated and ignored by Git; do not commit them.
+The publish check regenerates the atlas index, validates map data, runs the unit suite, and builds the optimized GitHub Pages artifact in `dist/`. The Pages build minifies owned JS/CSS, compacts JSON, and moves cross-map search data into a lazy payload while preserving native-resolution map tiles. Generated tiles are reused from `.cache/pages-tiles` and only stale map fingerprints are rebuilt. Both directories are generated and ignored by Git for new files; existing legacy files in `dist/` remain tracked.
 
 Pushes to `main` are deployed by `.github/workflows/pages-deploy.yml`. The workflow restores map tiles by source fingerprint, regenerates only changed maps, uploads `dist/` as the Pages artifact, and deploys it through GitHub Actions. The repository's Pages source must be set to **GitHub Actions** rather than branch publishing.
 
@@ -78,7 +78,7 @@ When changing browser-delivered JavaScript, CSS, map data, or tiles, bump `asset
 │   ├── [map_id].json   # Map data files (points, regions, etc.)
 │   └── [map_id].webp   # Map image files
 ├── scripts/            # Atlas, tile, validation, and Pages build tooling
-├── dist/               # Generated Pages artifact (ignored)
+├── dist/               # Generated Pages artifact; some legacy files are tracked
 ├── sounds/
 │   └── *.mp3           # Ambient sound files
 └── images/

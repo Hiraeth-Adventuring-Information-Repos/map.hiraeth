@@ -2,8 +2,6 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { JSDOM } = require('jsdom');
 const journeys = require('../js/campaign-journeys.js');
-const files = require('../js/map-file-document.js');
-const editor = require('../js/editor-shared.js');
 
 const journey = () => ({
     id: 'campaign-trail', name: 'The long road', campaign: 'Test campaign', color: '#d97706', visibleByDefault: false,
@@ -23,24 +21,6 @@ test('journeys accept free-text dates and reject malformed geometry, unsafe link
     invalid.visibleByDefault = 'false';
     assert.equal(journeys.validate([invalid]).length, 4);
     assert.match(journeys.validate([{ ...journey(), stops: [] }])[0], /at least one stop/);
-});
-
-test('editor serialization and download preserve journey order, custom metadata and precise coordinates', () => {
-    const raw = { id: 'map', name: 'Map', pointsOfInterest: [], journeys: [journey()], custom: { untouched: true } };
-    const serialized = editor.serializeMapDocumentState({ masterMapData: [raw], currentMapId: 'map' });
-    const session = files.createSession(raw, serialized);
-    assert.deepEqual(files.buildDocument(session.snapshot, session.editableDocument), raw);
-    const edited = session.editableDocument;
-    edited.journeys[0].stops.reverse();
-    edited.journeys[0].stops[1].description = 'Recorded later';
-    const download = files.buildDocument(session.snapshot, edited);
-    assert.deepEqual(download.journeys[0].stops.map(stop => stop.id), ['return', 'arrival']);
-    assert.deepEqual(download.journeys[0].stops[1].custom, raw.journeys[0].stops[0].custom);
-    assert.deepEqual(download.journeys[0].stops[1].coords, raw.journeys[0].stops[0].coords);
-    assert.deepEqual(download.custom, raw.custom);
-    assert.doesNotMatch(JSON.stringify(download), /__hiraethFileIdentity/);
-    edited.journeys = [];
-    assert.deepEqual(files.buildDocument(session.snapshot, edited).journeys, []);
 });
 
 test('stop popup treats notes as text and only makes safe wiki URLs clickable', () => {

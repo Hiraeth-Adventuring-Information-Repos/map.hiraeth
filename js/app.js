@@ -725,7 +725,8 @@ function handleMapPopupAction(event) {
         window.copyFeatureLink(
             actionElement,
             actionElement.dataset.featureType,
-            actionElement.dataset.featureName
+            actionElement.dataset.featureName,
+            actionElement.dataset.featureId
         );
     } else if (action === 'open-linked-map') {
         window.openLinkedMapFromPopup(event, actionElement.dataset.linkedMapId);
@@ -767,7 +768,7 @@ function buildPopupHeader(data, type, safePronunciation) {
             const detailsIcon = '<i class="ui-icon" data-lucide="maximize-2" aria-hidden="true"></i>';
             actionButtons.push(`<button class="popup-detail-expand" type="button" data-popup-action="open-details" title="Open details" aria-label="Open details for ${safeName}" aria-haspopup="dialog">${detailsIcon}<span>Details</span></button>`);
             const linkIcon = `<i class="ui-icon" data-lucide="link-2" aria-hidden="true"></i>`;
-            actionButtons.push(`<button class="share-btn" type="button" data-popup-action="share-feature" data-feature-type="${escapeHtml(type)}" data-feature-name="${safeName}" title="Share this location" aria-label="Share this location">${linkIcon}</button>`);
+            actionButtons.push(`<button class="share-btn" type="button" data-popup-action="share-feature" data-feature-type="${escapeHtml(type)}" data-feature-name="${safeName}" data-feature-id="${escapeHtml(data.id || '')}" title="Share this location" aria-label="Share this location">${linkIcon}</button>`);
         }
         const actionButtonsHtml = actionButtons.length > 0
             ? `<div class="popup-header-actions">${actionButtons.join('')}</div>`
@@ -5546,13 +5547,13 @@ function buildScopedSearchParams(entry) {
 
     switch (entry.kind) {
         case 'poi':
-            params.set('poi', entry.name);
+            params.set('poi', entry.itemId || entry.name);
             break;
         case 'region':
-            params.set('region', entry.name);
+            params.set('region', entry.itemId || entry.name);
             break;
         case 'line':
-            params.set('line', entry.name);
+            params.set('line', entry.itemId || entry.name);
             break;
         default:
             break;
@@ -6667,7 +6668,7 @@ function trackShareViewOpenFromParams(params, viewParam) {
     });
 }
 
-function buildFeatureShareUrl(type, name) {
+function buildFeatureShareUrl(type, name, id) {
     const normalizedType = String(type || '').trim().toLowerCase();
     const normalizedName = String(name || '').trim();
 
@@ -6676,7 +6677,7 @@ function buildFeatureShareUrl(type, name) {
 
     const url = buildMapPreviewShareUrl();
     clearShareTargetSearchParams(url.searchParams);
-    url.searchParams.set(normalizedType, normalizedName);
+    url.searchParams.set(normalizedType, id || normalizedName);
     url.searchParams.set('src', 'share');
     url.searchParams.set('stype', normalizedType);
     return url.toString();
@@ -6830,10 +6831,10 @@ async function executeShareAction({
 }
 
 // Global function for onclick
-window.copyFeatureLink = async function(btn, type, name) {
+window.copyFeatureLink = async function(btn, type, name, id) {
     const featureType = String(type || '').trim().toLowerCase();
     const featureName = String(name || '').trim();
-    const shareUrl = buildFeatureShareUrl(featureType, featureName);
+    const shareUrl = buildFeatureShareUrl(featureType, featureName, id);
 
     if (!shareUrl) return;
 
@@ -6892,7 +6893,7 @@ async function relaySharedContext(btn) {
     const featureName = String(context.featureName || '').trim();
     const shareUrl = sharedType === 'view'
         ? buildCurrentViewShareUrl()
-        : buildFeatureShareUrl(featureType, featureName);
+        : buildFeatureShareUrl(featureType, featureName, context.featureId);
 
     if (!shareUrl) return;
 
@@ -6956,7 +6957,7 @@ window.openLinkedMapFromPopup = function(event, mapId) {
 
 function focusPOI(poiName) {
     // ⚡ Bolt: Use O(1) Map lookup instead of O(N) Array.find
-    const marker = allMapMarkersByName.get(poiName);
+    const marker = allMapMarkersById.get(poiName) || allMapMarkersByName.get(poiName);
     if (marker) {
         // Ensure marker is visible (add to group if not)
         if (!currentMarkerGroup.hasLayer(marker)) {
@@ -6977,7 +6978,7 @@ function focusPOI(poiName) {
 
 function focusRegion(regionName) {
     // ⚡ Bolt: Use O(1) Map lookup instead of O(N) LayerGroup iteration
-    const targetLayer = allMapRegionsByName.get(regionName);
+    const targetLayer = allMapRegionsById.get(regionName) || allMapRegionsByName.get(regionName);
 
     if (targetLayer) {
         map.fitBounds(targetLayer.getBounds(), { animate: false });
@@ -6990,7 +6991,7 @@ function focusRegion(regionName) {
 
 function focusLine(lineName) {
     // ⚡ Bolt: Optimized from O(N) LayerGroup iteration to O(1) Map lookup (measured ~1000x speedup)
-    const targetLayer = allMapLinesByName.get(lineName);
+    const targetLayer = allMapLinesById.get(lineName) || allMapLinesByName.get(lineName);
 
     if (targetLayer) {
         map.fitBounds(targetLayer.getBounds(), { animate: false });
@@ -7034,6 +7035,8 @@ function checkAndFocusFeature() {
         trackShareLinkOpenFromParams(params, focusedType, focusedName);
         const shareContext = getShareContextFromParams(params);
         if (shareContext) {
+            shareContext.featureId = focusedName;
+            shareContext.featureName = selectedSidebarFeature?.name || focusedName;
             showShareRelayPrompt(shareContext);
         }
     } else {
@@ -7295,8 +7298,6 @@ function finalizeMapUI(requestedMapId, selectedMap) {
     }
 
     currentlyLoadedMapId = requestedMapId;
-    const editorLink = document.getElementById('map-editor-link');
-    if (editorLink) editorLink.href = `map-editor.html?map=${encodeURIComponent(requestedMapId)}${routingExperimentEnabled ? '&routing=1' : ''}`;
     safeSetStorage(UX_STORAGE_KEYS.lastMapId, requestedMapId);
     loadingMapId = null;
     schedulePostLoadPrefetch(selectedMap);
@@ -8946,8 +8947,16 @@ toggleFiltersBtn.addEventListener('click', (e) => {
 });
 
 // --- Search Input Logic ---
-const debouncedUpdateVisibleMarkersAndSearch = debounce(updateVisibleMarkersAndSearch, 300);
-poiSearchInput.addEventListener('input', debouncedUpdateVisibleMarkersAndSearch);
+let searchUpdatePending = false;
+const debouncedUpdateVisibleMarkersAndSearch = debounce(() => {
+    searchUpdatePending = false;
+    updateVisibleMarkersAndSearch();
+}, 300);
+poiSearchInput.addEventListener('input', () => {
+    closeSearchResults({ preserveScope: true });
+    searchUpdatePending = true;
+    debouncedUpdateVisibleMarkersAndSearch();
+});
 poiSearchInput.addEventListener('focus', () => {
     if (!isMobileLayoutActive) {
         unlockAdvancedControls('search_focus');
@@ -8967,6 +8976,11 @@ poiSearchInput.addEventListener('keydown', (event) => {
         moveSearchResultSelection(-1);
         return;
     }
+    if (event.key === 'Enter' && searchUpdatePending) {
+        debouncedUpdateVisibleMarkersAndSearch.cancel();
+        searchUpdatePending = false;
+        updateVisibleMarkersAndSearch();
+    }
     if (event.key === 'Enter' && activeSearchResultIndex >= 0) {
         event.preventDefault();
         selectSearchResult(activeSearchResultIndex);
@@ -8974,6 +8988,8 @@ poiSearchInput.addEventListener('keydown', (event) => {
     }
     if (event.key === 'Escape') {
         event.preventDefault();
+        debouncedUpdateVisibleMarkersAndSearch.cancel();
+        searchUpdatePending = false;
         closeSearchResults();
         poiSearchInput.blur();
     }

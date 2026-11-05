@@ -6,10 +6,7 @@ const path = require('node:path');
 const VERSIONED_FILES = [
     'site.config.json',
     'js/app-config.js',
-    'index.html',
-    'map-editor.html',
-    'file-studio.html',
-    'editor-guide.html'
+    'index.html'
 ];
 
 function nextPatchVersion(version) {
