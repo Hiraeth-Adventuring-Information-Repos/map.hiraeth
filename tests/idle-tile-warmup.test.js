@@ -96,3 +96,16 @@ assert.match(appSource, /beginMapInteraction[\s\S]*cancelIdleTileWarmup\(\{ remo
 assert.match(appSource, /detailLayer\.setOpacity\(1\)/, 'a fully warmed visible area should fade to the forced high-detail layer');
 
 console.log('idle tile warmup checks passed');
+
+// Oversized views must stop generating URLs as soon as the budget is exceeded.
+const originalBuildGeneratedTileUrl = buildGeneratedTileUrl;
+let generatedUrlCount = 0;
+buildGeneratedTileUrl = (...args) => { generatedUrlCount++; return originalBuildGeneratedTileUrl(...args); };
+assert.deepEqual(getIdleTileWarmupCandidates({ width: 8192, height: 6144 }, tileLayer, tileSource, 3), []);
+assert.equal(generatedUrlCount, 3);
+generatedUrlCount = 0;
+assert.deepEqual(getIdleTileWarmupCandidates({ width: 8192, height: 6144 }, tileLayer, tileSource, 8), candidates);
+assert.equal(generatedUrlCount, 8, 'a view exactly at its budget retains all tiles and their order');
+generatedUrlCount = 0;
+assert.deepEqual(getIdleTileWarmupCandidates({ width: 8192, height: 6144 }, tileLayer, tileSource, 0), []);
+assert.equal(generatedUrlCount, 0);

@@ -123,7 +123,7 @@
             pin.style.backgroundColor = routeColor;
             pin.textContent = String(index + 1);
             const marker = L.marker(stop.coords, {
-                icon: L.divIcon({ className: 'campaign-journey-pin', html: pin, iconSize: [28, 28], iconAnchor: [14, 14] }),
+                icon: L.divIcon({ className: 'campaign-journey-pin', html: pin, iconSize: [44, 44], iconAnchor: [22, 22] }),
                 title: `${journey.name}: ${index + 1}. ${stop.name}`,
                 alt: `${journey.name}: ${index + 1}. ${stop.name}`,
                 draggable: Boolean(options.draggable), bubblingMouseEvents: false

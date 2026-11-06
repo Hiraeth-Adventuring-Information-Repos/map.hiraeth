@@ -3339,7 +3339,8 @@ function getVisibleSourceTileCoordinates(tileLayer, tileSource) {
     }, []);
 }
 
-function getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource) {
+function getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource, maxCandidates = Infinity) {
+    if (maxCandidates <= 0) return [];
     const visibleTiles = getVisibleSourceTileCoordinates(tileLayer, tileSource);
     const sourceWidth = Number(mapInfo?.width);
     const sourceHeight = Number(mapInfo?.height);
@@ -3371,7 +3372,7 @@ function getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource) {
     const centerY = ((minVisibleY + maxVisibleY) * descendantScale) / 2;
     const candidates = new Map();
 
-    visibleTiles.forEach((tile) => {
+    for (const tile of visibleTiles) {
         const startX = Math.max(0, tile.x * descendantScale);
         const endX = Math.min(maxColumns, (tile.x + 1) * descendantScale);
         const startY = Math.max(0, tile.y * descendantScale);
@@ -3380,6 +3381,9 @@ function getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource) {
             for (let x = startX; x < endX; x += 1) {
                 const key = `${targetZoom}:${x}:${y}`;
                 if (candidates.has(key)) continue;
+                // An oversized view cannot display a detail upgrade. Stop before
+                // allocating more URLs or sorting candidates we will discard.
+                if (candidates.size >= maxCandidates) return [];
                 const coords = { z: targetZoom, x, y };
                 candidates.set(key, {
                     ...coords,
@@ -3388,7 +3392,7 @@ function getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource) {
                 });
             }
         }
-    });
+    }
 
     return Array.from(candidates.values())
         .sort((left, right) => left.distance - right.distance)
@@ -3504,9 +3508,6 @@ async function runIdleTileWarmup(generation) {
     const tileSource = getMapTileSource(mapInfo);
     if (!tileSource) return;
 
-    const candidates = getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource);
-    if (candidates.length === 0) return;
-
     const mobile = typeof isMobileLayoutActive !== 'undefined' && isMobileLayoutActive;
     const configuredMaxTiles = Math.floor(getPerformanceNumber(
         mobile ? 'idleTileWarmupMobileMaxTiles' : 'idleTileWarmupMaxTiles',
@@ -3520,7 +3521,8 @@ async function runIdleTileWarmup(generation) {
         mobile ? 72 : 160
     )));
     // Partial overview warmups cannot produce a visible detail upgrade.
-    if (candidates.length > displayLimit || candidates.length > maxTiles) return;
+    const candidates = getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource, Math.min(displayLimit, maxTiles));
+    if (candidates.length === 0 || candidates.length > displayLimit || candidates.length > maxTiles) return;
     const warmupCandidates = candidates;
     let allTilesCached = true;
 
@@ -5900,6 +5902,25 @@ function searchMapMarkers(searchTerm, results, allPoiGroupsChecked, activeSpecif
     });
 }
 
+// Geometry is immutable for the lifetime of a viewer layer. Cache its search
+// text and bounded secondary matches, just as marker and atlas searches do.
+function computeGeometrySearchMatch(term, layer, feature, primaryText, secondaryText) {
+    if (!term) return { matched: false, score: -1, matchedByContent: false };
+    let context = layer._geometrySearchContext;
+    if (!context || context.feature !== feature) {
+        context = { feature, normalizedPrimary: normalizeSearchValue(primaryText), normalizedSecondary: null };
+        layer._geometrySearchContext = context;
+    }
+    if (!context.normalizedPrimary) return { matched: false, score: -1, matchedByContent: false };
+    const primaryMatch = checkPrimarySearchMatch(term, context.normalizedPrimary);
+    if (primaryMatch) return primaryMatch;
+    if (context.normalizedSecondary === null) {
+        context.normalizedSecondary = normalizeSearchValue(secondaryText());
+    }
+    return (context.normalizedSecondary && checkSecondarySearchMatch(term, context.normalizedSecondary, context))
+        || { matched: false, score: -1, matchedByContent: false };
+}
+
 function searchMapRegions(searchTerm, results, searchFiltersCurrentMap) {
     if (!searchFiltersCurrentMap || !currentRegionGroup) return;
 
@@ -5928,7 +5949,7 @@ function searchMapRegions(searchTerm, results, searchFiltersCurrentMap) {
 
             // ⚡ Bolt: Skip expensive string concatenation and fuzzy matching when the user is only filtering (search is empty).
             if (typeMatch) {
-                const match = computeSearchMatch(searchTerm, region.name, () => `${region.summary || ''} ${region.description || ''}`);
+                const match = computeGeometrySearchMatch(searchTerm, layer, region, region.name, () => `${region.summary || ''} ${region.description || ''}`);
 
                 if (match.matched) {
                     results.push({
@@ -5976,7 +5997,7 @@ function searchMapLines(searchTerm, results, searchFiltersCurrentMap) {
 
             // ⚡ Bolt: Skip expensive string concatenation and fuzzy matching when the user is only filtering (search is empty).
             if (typeMatch) {
-                const match = computeSearchMatch(searchTerm, lineName, () => `${lineType} ${line.summary || ''} ${line.description || ''}`);
+                const match = computeGeometrySearchMatch(searchTerm, layer, line, lineName, () => `${lineType} ${line.summary || ''} ${line.description || ''}`);
 
                 if (match.matched) {
                     results.push({
@@ -6487,9 +6508,6 @@ function createRegionFilterGroupDOM(groupName, values) {
 
     const header = document.createElement('div');
     header.className = 'filter-group-header';
-    header.setAttribute('role', 'button');
-    header.tabIndex = 0;
-    header.setAttribute('aria-expanded', 'false');
 
     const chevron = document.createElement('span');
     chevron.className = 'filter-chevron-icon';
@@ -6498,6 +6516,13 @@ function createRegionFilterGroupDOM(groupName, values) {
     chevronIcon.className = 'ui-icon';
     chevronIcon.dataset.lucide = 'chevron-right';
     chevron.appendChild(chevronIcon);
+    const disclosure = document.createElement('button');
+    disclosure.type = 'button';
+    disclosure.className = 'filter-group-disclosure';
+    disclosure.setAttribute('aria-label', `Toggle ${normalizedGroupName} filters`);
+    disclosure.setAttribute('aria-expanded', 'false');
+    disclosure.setAttribute('aria-controls', `${groupFilterId}-children`);
+    disclosure.appendChild(chevron);
 
     const groupFilterItem = document.createElement('div');
     groupFilterItem.className = 'filter-item';
@@ -6512,11 +6537,14 @@ function createRegionFilterGroupDOM(groupName, values) {
     groupLabel.textContent = normalizedGroupName;
     groupFilterItem.append(groupCheckbox, groupLabel);
 
-    header.append(chevron, groupFilterItem);
+    header.append(disclosure, groupFilterItem);
     groupContainer.appendChild(header);
 
     const nestedList = document.createElement('div');
     nestedList.className = 'nested-filter-list';
+    nestedList.id = `${groupFilterId}-children`;
+    nestedList.inert = true;
+    nestedList.setAttribute('aria-hidden', 'true');
     const nestedCheckboxes = [];
 
     for (let i = 0; i < values.length; i++) {
@@ -9250,32 +9278,18 @@ poiFilterContainer.addEventListener('change', (e) => {
         checked: target.checked
     });
 });
-// Prevent map click when clicking inside filter panel
+// Native disclosure buttons handle Enter/Space without intercepting checkboxes.
 poiFilterContainer.addEventListener('click', (e) => {
-    const header = e.target.closest('.filter-group-header');
-    if (header) {
-        const group = header.closest('.filter-group');
-        if (group) {
-            const isClosed = group.classList.toggle('closed');
-            header.setAttribute('aria-expanded', !isClosed);
-        }
+    const disclosure = e.target.closest('.filter-group-disclosure');
+    if (disclosure) {
+        const group = disclosure.closest('.filter-group');
+        const isClosed = group.classList.toggle('closed');
+        disclosure.setAttribute('aria-expanded', String(!isClosed));
+        const nestedList = group.querySelector('.nested-filter-list');
+        nestedList.inert = isClosed;
+        nestedList.setAttribute('aria-hidden', String(isClosed));
     }
     e.stopPropagation();
-});
-
-// Allow keyboard toggling of filter groups
-poiFilterContainer.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-        const header = e.target.closest('.filter-group-header');
-        if (header) {
-            e.preventDefault();
-            const group = header.closest('.filter-group');
-            if (group) {
-                const isClosed = group.classList.toggle('closed');
-                header.setAttribute('aria-expanded', !isClosed);
-            }
-        }
-    }
 });
 
 // --- Measurement Tool Logic ---

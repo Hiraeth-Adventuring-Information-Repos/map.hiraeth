@@ -36,7 +36,7 @@ function createNavigation(reducedMotion, zoom = -1) {
         markersVisible: true, filterToggleAllCheckbox: { checked: true, indeterminate: false },
         getPoiGroup: type => type, normalizeSearchValue: value => value,
         getFeatureSearchDetailText: () => '',
-        computeSearchMatch: () => ({ matched: true, score: 1 }),
+        checkPrimarySearchMatch: () => ({ matched: true, score: 1 }),
         computePrecomputedSearchMatch: () => ({ matched: true, score: 1 }),
         findSidebarFeatureLayer: (_feature, type) => ({ poi: marker, region, line })[type],
         selectedSidebarFeature: {}, selectedSidebarFeatureType: 'poi'

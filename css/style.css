@@ -2370,18 +2370,31 @@ body.embedded-view #share-relay-coachmark {
     border-radius: 4px;
     transition: background-color 0.2s ease;
 }
-.filter-group-header:focus-visible {
+.filter-group-disclosure:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
 }
 .filter-group-header:hover {
     background-color: var(--highlight-bg, rgba(212, 163, 106, 0.15));
 }
+.filter-group-disclosure {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
 .filter-chevron-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-right: 5px;
     transition: transform 0.2s ease-in-out;
 }
 .filter-chevron-icon .ui-icon {
@@ -3763,8 +3776,8 @@ html.mobile-layout-v2.map-interacting #map-blurb {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        width: 34px !important;
-        height: 34px !important;
+        width: 44px !important;
+        height: 44px !important;
         border: 1px solid var(--mobile-card-border) !important;
         border-radius: 6px !important;
         background: color-mix(in srgb, var(--bg-secondary) 88%, transparent) !important;
@@ -3850,8 +3863,8 @@ html.mobile-layout-v2.map-interacting #map-blurb {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        min-height: 34px !important;
-        min-width: 0 !important;
+        min-height: 44px !important;
+        min-width: 44px !important;
         padding: 0 10px !important;
         border-radius: 6px !important;
         font-size: 0.82rem !important;
@@ -4189,6 +4202,20 @@ html.mobile-layout-v2.map-interacting #map-blurb {
     outline: 3px solid #ff7800;
     outline-offset: 3px;
 }
+@media (prefers-reduced-motion: reduce) {
+    html.mobile-layout-v2.is-mobile-layout #sidebar,
+    html.mobile-layout-v2.is-mobile-layout #mobile-search-card,
+    html.mobile-layout-v2.is-mobile-layout #mobile-tools-card {
+        transition: none !important;
+    }
+}
+
+/* Keep the numbered artwork centered inside a larger transparent hit area. */
+.campaign-journey-pin {
+    display: grid;
+    place-items: center;
+}
+
 /* Campaign routes share their numbered pin design with the editor. */
 .campaign-journey-pin .journey-pin-number {
     display: grid;

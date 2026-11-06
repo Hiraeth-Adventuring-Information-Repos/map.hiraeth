@@ -17,6 +17,80 @@ test.describe('built routing payloads', () => {
     });
     test.afterAll(async () => { if (builtServer) await new Promise(resolve => builtServer.close(resolve)); });
 
+    test('group filters support independent checkbox and disclosure keyboard input', async ({ page }) => {
+        await page.goto(`${builtBase}/index.html#The-Port-City-of-Stomion-s=c`);
+        await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion');
+        await expect(page.locator('#loading-indicator')).toBeHidden();
+        await page.evaluate(() => { unlockAdvancedControls('test'); setMapBlurbVisible(false); });
+        await page.locator('#toggle-filters-btn').click();
+        const group = page.locator('.filter-group').first();
+        const disclosure = group.locator('.filter-group-disclosure');
+        const checkbox = group.locator('.region-group-filter');
+        const children = group.locator('.nested-filter-list');
+        await expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+        await checkbox.focus();
+        await page.keyboard.press('Space');
+        await expect(checkbox).not.toBeChecked();
+        await expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+        await page.keyboard.press('Space');
+        await expect(checkbox).toBeChecked();
+        await page.keyboard.press('Tab');
+        expect(await page.evaluate(() => !!document.activeElement.closest('.filter-group.closed .nested-filter-list'))).toBe(false);
+        await disclosure.focus();
+        await page.keyboard.press('Enter');
+        await expect(disclosure).toHaveAttribute('aria-expanded', 'true');
+        await expect(children).toHaveJSProperty('inert', false);
+        await expect(children).toHaveAttribute('aria-hidden', 'false');
+        await checkbox.focus();
+        await page.keyboard.press('Tab');
+        await expect(children.locator('input').first()).toBeFocused();
+        await disclosure.focus();
+        await page.keyboard.press('Space');
+        await expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+        await expect(children).toHaveJSProperty('inert', true);
+        await expect(children).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    test('mobile panels honor reduced motion and keep generous touch targets', async ({ page }, testInfo) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.goto(`${builtBase}/index.html#The-Port-City-of-Stomion-s=c`);
+        await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion' && isMobileLayoutActive);
+        await expect(page.locator('#loading-indicator')).toBeHidden();
+        await page.locator('#mobile-search-launcher-btn').click();
+        for (const id of ['sidebar', 'mobile-search-card', 'mobile-tools-card']) {
+            expect(await page.locator(`#${id}`).evaluate(el => getComputedStyle(el).transitionDuration)).toBe('0s');
+        }
+        for (const id of ['mobile-search-card-close-btn', 'search-refine-filters-btn', 'search-scope-atlas-btn']) {
+            const box = await page.locator(`#${id}`).boundingBox();
+            expect(box.width).toBeGreaterThanOrEqual(44);
+            expect(box.height).toBeGreaterThanOrEqual(44);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+        await page.screenshot({ path: testInfo.outputPath('mobile-search-refinements.png') });
+        await page.locator('#mobile-search-card-close-btn').click();
+        await page.locator('#mobile-tools-launcher-btn').click();
+        const toolsClose = await page.locator('#mobile-tools-card-close-btn').boundingBox();
+        expect(toolsClose.width).toBeGreaterThanOrEqual(44);
+        expect(toolsClose.height).toBeGreaterThanOrEqual(44);
+        await page.locator('#mobile-tools-card-close-btn').click();
+        await page.evaluate(() => {
+            // Isolate the target from existing city POIs at the viewport center.
+            map.removeLayer(currentMarkerGroup);
+            const center = map.getCenter();
+            CampaignJourneys.createLayer(L, document, { name: 'Target check', stops: [{ name: 'Camp', coords: [center.lat, center.lng] }] }).addTo(map);
+        });
+        const pin = page.locator('.campaign-journey-pin').last();
+        const hit = await pin.boundingBox();
+        const artwork = await pin.locator('.journey-pin-number').boundingBox();
+        expect(hit.width).toBe(44); expect(hit.height).toBe(44);
+        expect(artwork.width).toBe(28); expect(artwork.height).toBe(28);
+        expect(artwork.x - hit.x).toBeCloseTo(8); expect(artwork.y - hit.y).toBeCloseTo(8);
+        // Click within the transparent padding, outside the numbered artwork.
+        await pin.click({ position: { x: 2, y: 22 } });
+        await expect(page.locator('.journey-popup')).toContainText('Camp');
+    });
+
     test('built viewer renders tiles, searches, shares and navigates', async ({ page, browserName }) => {
         const errors = [];
         page.on('pageerror', error => errors.push(error.stack || error.message));
