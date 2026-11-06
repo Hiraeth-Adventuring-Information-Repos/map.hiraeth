@@ -174,10 +174,42 @@ assert.ok(!global.aboutModalVisible);
 
 // Escape should leave the full-screen map chooser without requiring a selection.
 global.mapChooserElement.hidden = false;
+const galleryShortcutState = () => JSON.stringify({
+    measure: global.measureToggled, filters: global.filtersToggled,
+    markers: global.markersToggled, sidebar: global.sidebarToggled,
+    theme: global.themeToggled, search: global.searchFocused,
+    help: global.aboutModalVisible, zoom: global.zoomMapDeltas
+});
+const galleryStateBefore = galleryShortcutState();
+for (const key of ['m', 'M', 'f', 'F', '+', '=', '-', 's', 'S', 'h', 'H', 't', '/', '?']) {
+    evt = createEvent(key);
+    addedListener(evt);
+    assert.equal(galleryShortcutState(), galleryStateBefore, `${key} must not change the map behind the gallery`);
+    assert.equal(evt.isPrevented(), false, `gallery should retain ${key}`);
+}
+for (const modifier of [{ ctrlKey: true }, { metaKey: true }]) {
+    evt = createEvent('f', false, false, modifier);
+    addedListener(evt);
+    assert.equal(galleryShortcutState(), galleryStateBefore, 'gallery must retain Ctrl/Cmd+F');
+    assert.equal(evt.isPrevented(), false);
+}
+document.activeElement = { tagName: 'BUTTON' };
+for (const key of ['Enter', ' ', 'Tab', 'ArrowDown']) {
+    evt = createEvent(key);
+    addedListener(evt);
+    assert.equal(evt.isPrevented(), false, `gallery buttons should retain ${key}`);
+}
 evt = createEvent('Escape');
 addedListener(evt);
 assert.ok(evt.isPrevented());
 assert.ok(global.mapChooserClosed);
+assert.equal(global.measureToggled, false, 'Escape must not leave a measurement started behind the gallery');
+evt = createEvent('m');
+addedListener(evt);
+assert.ok(evt.isPrevented());
+assert.ok(global.measureToggled, 'map shortcuts must resume after leaving the gallery');
+global.measureToggled = false;
+document.activeElement = { tagName: 'BODY' };
 
 // Escape should close any open mobile surface and return control to its launcher.
 global.isMobileLayoutActive = true;

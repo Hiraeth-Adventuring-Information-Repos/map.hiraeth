@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const vm = require('node:vm');
 
 const appSource = fs.readFileSync('js/app.js', 'utf8');
 const fnStart = appSource.indexOf('function updateCoordinateDisplay(');
-const fnEnd = appSource.indexOf('function getUrlParameters(');
+const fnEnd = appSource.indexOf('const DEFAULT_POI_TYPE_GROUPS', fnStart);
 
 if (fnStart === -1 || fnEnd === -1 || fnEnd <= fnStart) {
     throw new Error('Could not locate updateCoordinateDisplay function in js/app.js');
@@ -11,31 +12,41 @@ if (fnStart === -1 || fnEnd === -1 || fnEnd <= fnStart) {
 
 const fnSource = appSource.slice(fnStart, fnEnd);
 
-// Provide a minimal DOM stub so the function can write into it.
-const spanEl = { innerHTML: '' };
-global.coordinateDisplay = {
-    querySelector(selector) {
-        if (selector === 'span') return spanEl;
-        return null;
-    }
+let text = '';
+let mutations = 0;
+const spanEl = {
+    get textContent() { return text; },
+    set textContent(value) { text = value; mutations++; },
+    set innerHTML(value) { assert.fail('Coordinate text must not replace HTML'); }
 };
+let queries = 0;
+const sandbox = { document: { getElementById: () => ({ querySelector(selector) {
+    assert.equal(selector, 'span');
+    queries++;
+    return spanEl;
+} }) } };
+const refsStart = appSource.indexOf('const coordinateDisplay =');
+const refsEnd = appSource.indexOf('const copyCoordsBtn =', refsStart);
+vm.createContext(sandbox);
+vm.runInContext(appSource.slice(refsStart, refsEnd) + fnSource, sandbox);
 
-// Evaluate the production function source.
-// eslint-disable-next-line no-eval
-eval(fnSource);
+sandbox.updateCoordinateDisplay(10, 20);
+assert.equal(spanEl.textContent, '10.00° N, 20.00° E');
+assert.equal(mutations, 1);
 
-updateCoordinateDisplay(10, 20);
-assert.equal(spanEl.innerHTML, '10.00° N, 20.00° E');
+// Identical formatted values must not mutate the DOM, including rounded changes.
+for (let index = 0; index < 100; index++) sandbox.updateCoordinateDisplay(10.001, 20.001);
+assert.equal(mutations, 1);
+assert.equal(queries, 1, 'the span is cached instead of queried on mousemove');
 
-updateCoordinateDisplay(-5, -122.5);
-assert.equal(spanEl.innerHTML, '5.00° S, 122.50° W');
+sandbox.updateCoordinateDisplay(-5, -122.5);
+assert.equal(spanEl.textContent, '5.00° S, 122.50° W');
+assert.equal(mutations, 2);
 
 // Missing DOM node should not crash coordinate updates.
-global.coordinateDisplay = {
-    querySelector() {
-        return null;
-    }
-};
-assert.doesNotThrow(() => updateCoordinateDisplay(0, 0));
+const missingSpan = { coordinateDisplaySpan: null };
+vm.createContext(missingSpan);
+vm.runInContext(fnSource, missingSpan);
+assert.doesNotThrow(() => missingSpan.updateCoordinateDisplay(0, 0));
 
 console.log('updateCoordinateDisplay regression checks passed');

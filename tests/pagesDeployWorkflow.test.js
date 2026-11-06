@@ -24,6 +24,16 @@ assert.match(deployWorkflow, /uses: actions\/deploy-pages@v5/);
     assert.match(workflow, /name: Install tile and share preview generation tools\n\s+run: .*imagemagick webp/);
     assert.match(workflow, /node scripts\/generate_tiles\.js --print-cache-key/);
     assert.match(workflow, /restore-keys: \|\s*\n\s*pages-tiles-\$\{\{ runner\.os \}\}-/);
+    const thumbnailCache = workflow.slice(workflow.indexOf('      - name: Restore generated share thumbnails'))
+        .split('\n      - name: ')[0];
+    assert.match(thumbnailCache, /id: share-thumbnail-cache\s*\n\s*uses: actions\/cache@v6/);
+    assert.match(thumbnailCache, /path: \.cache\/pages-share-thumbnails/);
+    assert.match(thumbnailCache, /key: pages-share-thumbnails-\$\{\{ runner\.os \}\}-\$\{\{ hashFiles\(/);
+    for (const source of ['scripts/generate_share_pages.js', 'maps/**/*.webp', 'maps/**/*.png', 'maps/**/*.jpg', 'maps/**/*.jpeg']) {
+        assert.ok(thumbnailCache.includes(`'${source}'`), `thumbnail cache key must include ${source}`);
+    }
+    assert.match(thumbnailCache, /restore-keys: \|\s*\n\s*pages-share-thumbnails-\$\{\{ runner\.os \}\}-/);
+    assert.ok(workflow.indexOf('      - name: Restore generated share thumbnails') < workflow.indexOf('      - name: Build Pages bundle'));
     assert.match(workflow, /MAP_HIRAETH_TILE_CACHE_DIR: \.cache\/pages-tiles/);
     assert.match(workflow, /npm ci --no-audit --no-fund/);
     assert.match(workflow, /npm run validate:data && npm run test:unit/);

@@ -6,6 +6,9 @@ const appSource = fs.readFileSync('js/app.js', 'utf8');
 
 const sandbox = {
     coordsLocked: false,
+    coordsDisplayEnabled: true,
+    isMobileLayoutActive: false,
+    latestCoordinatePoint: null,
     currentLatLonBounds: {
         north: 73,
         south: 1.24,
@@ -14,6 +17,12 @@ const sandbox = {
     },
     currentBounds: [[0, 0], [6144, 8192]],
     updateCoordinateDisplay: () => {}, // Mocked below
+    coordinateDisplay: { hidden: false, style: { display: 'block' } },
+    toggleCoordsBtn: null,
+    mobileCoordsBtn: null,
+    safeSetStorage() {},
+    UX_STORAGE_KEYS: { coordsVisible: 'coords' },
+    trackAnalytics() {},
     console,
     Math,
     Object,
@@ -27,7 +36,9 @@ const sandbox = {
 const functionNames = [
     'getMapPixelDimensions',
     'projectMapPointToLatLon',
-    'updateCoordinates'
+    'renderLatestCoordinates',
+    'updateCoordinates',
+    'setCoordsDisplayVisible'
 ];
 
 let extractedCode = '';
@@ -102,10 +113,117 @@ const projected = sandbox.projectMapPointToLatLon(
 assertClose(projected.lat, 19.18);
 assertClose(projected.lon, 41.65625);
 
+let projectionCount = 0;
+const project = sandbox.projectMapPointToLatLon;
+sandbox.projectMapPointToLatLon = (...args) => {
+    projectionCount++;
+    return project(...args);
+};
+
+// Hidden hover only remembers the latest point; it does no projection or rendering.
+sandbox.setCoordsDisplayVisible(false);
+lastLatLon = null;
+for (let index = 0; index < 100; index++) {
+    sandbox.updateCoordinates({ latlng: { lat: 1000 + index, lng: 2000 + index } });
+}
+assert.equal(lastLatLon, null);
+assert.equal(projectionCount, 0);
+sandbox.setCoordsDisplayVisible(true);
+const latestProjected = project({ lat: 1099, lng: 2099 }, sandbox.currentLatLonBounds, sandbox.currentBounds);
+assertClose(lastLatLon.lat, latestProjected.lat);
+assertClose(lastLatLon.lon, latestProjected.lon);
+assert.equal(projectionCount, 1, 'revealing coordinates renders the latest hidden point');
+
+// Advanced-control visibility can hide the display while the preference stays enabled.
+for (const hiddenBy of ['style', 'hidden']) {
+    if (hiddenBy === 'style') sandbox.coordinateDisplay.style.display = 'none';
+    else sandbox.coordinateDisplay.hidden = true;
+    assert.equal(sandbox.coordsDisplayEnabled, true);
+    lastLatLon = null;
+    projectionCount = 0;
+    for (let index = 0; index < 100; index++) {
+        sandbox.updateCoordinates({ latlng: { lat: 1700 + index, lng: 2700 + index } });
+    }
+    assert.equal(projectionCount, 0, `${hiddenBy}-hidden coordinates must not project`);
+    assert.equal(lastLatLon, null, `${hiddenBy}-hidden coordinates must not render`);
+    sandbox.coordinateDisplay.hidden = false;
+    sandbox.setCoordsDisplayVisible(true);
+    const revealed = project({ lat: 1799, lng: 2799 }, sandbox.currentLatLonBounds, sandbox.currentBounds);
+    assertClose(lastLatLon.lat, revealed.lat);
+    assertClose(lastLatLon.lon, revealed.lon);
+    assert.equal(projectionCount, 1, `${hiddenBy}-hidden coordinates reveal the latest point`);
+}
+
+// Mobile layout keeps the desktop coordinate display hidden even when enabled.
+sandbox.isMobileLayoutActive = true;
+lastLatLon = null;
+projectionCount = 0;
+sandbox.updateCoordinates({ latlng: { lat: 1400, lng: 2400 } });
+sandbox.setCoordsDisplayVisible(true);
+assert.equal(lastLatLon, null);
+assert.equal(projectionCount, 0);
+sandbox.isMobileLayoutActive = false;
+sandbox.setCoordsDisplayVisible(true);
+
 // Locked coordinates should prevent hover updates from mutating state.
 sandbox.coordsLocked = true;
+const savedPoint = sandbox.latestCoordinatePoint;
 lastLatLon = null;
 sandbox.updateCoordinates({ latlng: { lat: 0, lng: 0 } });
+assert.equal(lastLatLon, null);
+assert.equal(sandbox.latestCoordinatePoint, savedPoint);
+
+// Exercise the actual double-click handler: capture the event point before locking.
+let doubleClick;
+sandbox.map = { on(name, callback) { assert.equal(name, 'dblclick'); doubleClick = callback; } };
+sandbox.isMeasuringMultiPoint = false;
+sandbox.filtersPanelVisible = false;
+sandbox.searchResultsContainer = { style: { display: 'none' } };
+sandbox.setMapBlurbVisible = () => {};
+const handlerStart = appSource.indexOf("map.on('dblclick', function (e) {");
+const handlerEnd = appSource.indexOf('// --- Blurb Element Click Stop ---', handlerStart);
+vm.runInContext(appSource.slice(handlerStart, handlerEnd), sandbox);
+sandbox.coordsLocked = false;
+sandbox.updateCoordinates({ latlng: { lat: 3072, lng: 4096 } });
+doubleClick({ latlng: { lat: 6144, lng: 0 } });
+assert.equal(sandbox.coordsLocked, true);
+assertClose(lastLatLon.lat, 73);
+assertClose(lastLatLon.lon, 71.65625);
+sandbox.updateCoordinates({ latlng: { lat: 0, lng: 8192 } });
+assertClose(lastLatLon.lat, 73);
+assertClose(lastLatLon.lon, 71.65625);
+
+// Hiding and revealing a locked point preserves the lock and its captured value.
+sandbox.setCoordsDisplayVisible(false);
+lastLatLon = null;
+sandbox.updateCoordinates({ latlng: { lat: 0, lng: 8192 } });
+sandbox.setCoordsDisplayVisible(true);
+assert.equal(sandbox.coordsLocked, true);
+assertClose(lastLatLon.lat, 73);
+assertClose(lastLatLon.lon, 71.65625);
+
+doubleClick({ latlng: { lat: 0, lng: 8192 } });
+assert.equal(sandbox.coordsLocked, false);
+sandbox.updateCoordinates({ latlng: { lat: 0, lng: 8192 } });
+assertClose(lastLatLon.lat, 1.24);
+assertClose(lastLatLon.lon, -48.34375);
+
+// Locking while hidden captures the double-click point without projecting it.
+sandbox.setCoordsDisplayVisible(false);
+projectionCount = 0;
+lastLatLon = null;
+doubleClick({ latlng: { lat: 3072, lng: 4096 } });
+assert.equal(sandbox.coordsLocked, true);
+assert.equal(lastLatLon, null);
+assert.equal(projectionCount, 0);
+sandbox.setCoordsDisplayVisible(true);
+assertClose(lastLatLon.lat, 37.120000000000005);
+assertClose(lastLatLon.lon, 11.65625);
+
+// A different map must not reuse a remembered point against its new bounds.
+sandbox.currentBounds = [[0, 0], [1024, 1024]];
+lastLatLon = null;
+sandbox.setCoordsDisplayVisible(true);
 assert.equal(lastLatLon, null);
 
 // Missing bounds should no-op instead of throwing.

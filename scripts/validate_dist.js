@@ -15,9 +15,9 @@ const requiredPagesFiles = [
     'tile/manifest.json'
 ];
 const optimizedAssetBudgets = {
-    // Map sharing plus city-address and journey lifecycle hooks use about
-    // 226.5 KiB minified; the routing and parcel renderers remain separate.
-    appBytes: 228 * 1024,
+    // Keep a small margin over the 232.1 KiB viewer with accessibility refinements;
+    // routing and parcel renderers remain separate.
+    appBytes: 233 * 1024,
     // Directions cards, route suggestions and the mobile sheet add about 5 KiB.
     styleBytes: 108 * 1024,
     atlasShellBytes: 32 * 1024

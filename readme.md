@@ -53,7 +53,7 @@ npm ci
 npm run publish:check
 ```
 
-The publish check regenerates the atlas index, validates map data, runs the unit suite, and builds the optimized GitHub Pages artifact in `dist/`. The Pages build minifies owned JS/CSS, compacts JSON, and moves cross-map search data into a lazy payload while preserving native-resolution map tiles. Generated tiles are reused from `.cache/pages-tiles` and only stale map fingerprints are rebuilt. Both directories are generated and ignored by Git for new files; existing legacy files in `dist/` remain tracked.
+The publish check regenerates the atlas index, validates map data, runs the unit suite, and builds the optimized GitHub Pages artifact in `dist/`. The Pages build minifies owned JS/CSS, compacts JSON, and moves cross-map search data into a lazy payload while preserving native-resolution map tiles. Generated tiles are reused from `.cache/pages-tiles` and only stale map fingerprints are rebuilt. Share JPEGs are reused from `.cache/pages-share-thumbnails` when source bytes and rendering settings match; cached bytes are checked for damage, and metadata HTML is regenerated every run. Both Pages workflows persist these caches separately. Both directories are generated and ignored by Git for new files; existing legacy files in `dist/` remain tracked.
 
 Run `npm run validate:dist` to check an existing `dist/` artifact without rebuilding or changing files. To check another build, use `npm run validate:dist -- /path/to/dist`. This checks required and forbidden files, tile fingerprints and native detail, runtime budgets, compact JSON, deferred search, and routing payload integrity. Both Pages workflows run this check before uploading their artifacts.
 

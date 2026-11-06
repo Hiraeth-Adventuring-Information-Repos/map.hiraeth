@@ -102,6 +102,69 @@ function createWorker({ basePath = '/', config = { assets: {} }, failConfigOnce 
 }
 
 for (const basePath of ['/', '/atlas/']) {
+    test(`default installed images are available on their first offline fetch at ${basePath}`, async () => {
+        const worker = createWorker({ basePath });
+        const images = [
+            'favicon-16x16.png', 'favicon-32x32.png', 'favicon.png', 'apple-touch-icon.png',
+            'images/clouds.webp', 'images/toggle.svg',
+            'css/images/marker-icon.png', 'css/images/marker-icon-2x.png', 'css/images/marker-shadow.png',
+            'images/poi-icons/settlements.webp', 'images/poi-icons/structures.webp',
+            'images/poi-icons/natural-features.webp', 'images/poi-icons/other.webp', 'images/poi-icons/unknown.webp'
+        ];
+        const gate = worker.gateWrite('images/clouds.webp');
+        let installed = false;
+        const install = worker.lifecycle('install').then(() => { installed = true; });
+        await gate.started;
+        assert.equal(installed, false, 'install must wait for image writes');
+        assert.equal(worker.skips, 0);
+        gate.release();
+        await install;
+        worker.setOffline();
+        const media = worker.stores.get(`hag-assets-${VERSION}`);
+        const shell = worker.stores.get(`hag-shell-${VERSION}`);
+        for (const image of images) {
+            assert.equal(media?.has(worker.keyFor(image)), true, `${image} must use its runtime cache`);
+            assert.equal(shell.has(worker.keyFor(image)), false);
+            const task = worker.fetch(image);
+            assert.deepEqual(await (await task.response).json(), { url: worker.keyFor(image) });
+            await task.lifetime;
+        }
+    });
+
+    test(`configured media preserve static and versioned offline routes at ${basePath}`, async () => {
+        const staticMedia = ['images/custom.webp', 'images/custom.png', 'images/custom.jpeg',
+            'images/custom.jpg', 'images/custom.svg', 'audio/custom.mp3', 'tile/custom/0/0/0.webp'];
+        const versionedMedia = ['images/release.webp', 'images/release.png', 'images/release.jpeg',
+            'images/release.jpg', 'images/release.svg', 'audio/release.mp3'];
+        const tile = `tile/custom/1/0/0.webp?v=${VERSION}`;
+        const worker = createWorker({ basePath, config: { assets: { serviceWorker: {
+            staticShellAssets: ['index.html', ...staticMedia],
+            versionedShellAssets: ['js/app.js', ...versionedMedia, 'tile/custom/1/0/0.webp']
+        } } } });
+        worker.stores.set('hag-assets-old', new Map([
+            [worker.keyFor(`images/release.webp?v=old`), new Response('obsolete image')]
+        ]));
+        await worker.lifecycle('install');
+        worker.setOffline();
+        const media = worker.stores.get(`hag-assets-${VERSION}`);
+        for (const asset of [...staticMedia, ...versionedMedia.map((asset) => `${asset}?v=${VERSION}`), tile]) {
+            const destination = asset === tile ? worker.stores.get('hag-tiles-v1') : media;
+            assert.equal(destination?.has(worker.keyFor(asset)), true, `${asset} must use its runtime cache`);
+            assert.equal(worker.stores.get(`hag-shell-${VERSION}`).has(worker.keyFor(asset)), false);
+            const fetchCount = worker.fetchCalls.length;
+            const task = worker.fetch(asset);
+            assert.deepEqual(await (await task.response).json(), { url: worker.keyFor(asset) });
+            await task.lifetime;
+            assert.equal(worker.fetchCalls.length, fetchCount + (asset.includes('?v=') ? 0 : 1),
+                'only static media should attempt a background refresh');
+        }
+        for (const asset of ['images/release.webp', 'images/release.webp?v=old']) {
+            const missing = worker.fetch(asset);
+            await assert.rejects(missing.response, /offline/, 'media keys must preserve version boundaries');
+            await missing.lifetime;
+        }
+    });
+
     test(`installed config and atlas are available offline at ${basePath}`, async () => {
         const worker = createWorker({ basePath });
         const atlasAsset = `maps/atlas-index.json?v=${VERSION}`;

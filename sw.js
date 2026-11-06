@@ -53,6 +53,14 @@ function versionAsset(asset) {
     return asset.includes('?') ? `${asset}&v=${VERSION}` : `${asset}?v=${VERSION}`;
 }
 
+function isVersionedTileRequest(url) {
+    return url.pathname.includes('/tile/') && url.pathname.endsWith('.webp') && isVersionedShellRequest(url);
+}
+
+function isMediaRequest(url) {
+    return ['.webp', '.png', '.jpeg', '.jpg', '.svg', '.mp3'].some((extension) => url.pathname.endsWith(extension));
+}
+
 async function loadShellAssetConfig() {
     try {
         const configUrl = `site.config.json?v=${VERSION}`;
@@ -84,16 +92,22 @@ self.addEventListener('install', (event) => {
         const versionedShellAssets = configuredAssets.versioned
             .filter((asset) => !configuredAssets.configAsset || asset !== 'site.config.json')
             .map(versionAsset);
-        const shellAssets = [];
-        const dataAssets = [];
+        const assetsByCache = new Map();
         for (const asset of [...configuredAssets.static, ...versionedShellAssets]) {
             const url = new URL(asset, self.location.href);
-            (url.pathname.endsWith('.json') ? dataAssets : shellAssets).push(asset);
+            const cacheName = url.pathname.endsWith('.json') ? DATA_CACHE
+                : isVersionedTileRequest(url) ? TILE_CACHE
+                : isMediaRequest(url) ? ASSET_CACHE
+                : SHELL_CACHE;
+            if (!assetsByCache.has(cacheName)) assetsByCache.set(cacheName, []);
+            assetsByCache.get(cacheName).push(asset);
         }
-        const shellCache = await caches.open(SHELL_CACHE);
-        const dataCache = await caches.open(DATA_CACHE);
-        await Promise.all([shellCache.addAll(shellAssets), dataCache.addAll(dataAssets)]);
+        await Promise.all([...assetsByCache].map(async ([cacheName, assets]) => {
+            const cache = await caches.open(cacheName);
+            await cache.addAll(assets);
+        }));
         if (configuredAssets.configAsset) {
+            const dataCache = await caches.open(DATA_CACHE);
             await dataCache.put(configuredAssets.configAsset.url, configuredAssets.configAsset.response);
         }
         await self.skipWaiting();
@@ -114,7 +128,7 @@ self.addEventListener('activate', (event) => {
     })());
 });
 
-async function networkFirstTask(request, cacheName, fallbackRequest = null) {
+async function networkFirstTask(request, cacheName, fallbackRequest = null, transformFallback = null) {
     const cache = await caches.open(cacheName);
     try {
         const response = await fetch(request);
@@ -127,7 +141,10 @@ async function networkFirstTask(request, cacheName, fallbackRequest = null) {
         if (cached) return { response: cached, cacheDone: Promise.resolve() };
         if (fallbackRequest) {
             const fallback = await cache.match(fallbackRequest);
-            if (fallback) return { response: fallback, cacheDone: Promise.resolve() };
+            if (fallback) return {
+                response: transformFallback ? transformFallback(fallback) : fallback,
+                cacheDone: Promise.resolve()
+            };
         }
         throw error;
     }
@@ -203,6 +220,26 @@ function isVersionedShellRequest(url) {
     return url.searchParams.has('v');
 }
 
+function navigationFallbackResponse(url, shellResponse) {
+    const viewer = new URL('./', self.location.href);
+    if (!url.pathname.startsWith(viewer.pathname)) return shellResponse;
+    const share = /^share\/([A-Za-z0-9_-]+)(?:\/(?:index\.html)?)?$/.exec(url.pathname.slice(viewer.pathname.length));
+    if (!share) return shellResponse;
+
+    viewer.hash = share[1];
+    // Navigation requests omit fragments. Read the document's URL so a first
+    // offline share visit preserves sidebar state as well as query targets.
+    const target = JSON.stringify(viewer.pathname + viewer.hash).replace(/</g, '\\u003c');
+    return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Open map</title></head>
+<body><a id="open-map">Open interactive map</a><script>
+const target = new URL(${target}, window.location.href);
+target.search = window.location.search;
+if (window.location.hash.endsWith('-s=c')) target.hash += '-s=c';
+document.getElementById('open-map').href = target.href;
+window.location.replace(target.href);
+</script></body></html>`, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+}
+
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     if (request.method !== 'GET') return;
@@ -211,7 +248,8 @@ self.addEventListener('fetch', (event) => {
     if (url.origin !== self.location.origin) return;
 
     if (request.mode === 'navigate') {
-        respondWithCacheTask(event, networkFirstTask(request, SHELL_CACHE, 'index.html'));
+        respondWithCacheTask(event, networkFirstTask(request, SHELL_CACHE, 'index.html',
+            (response) => navigationFallbackResponse(url, response)));
         return;
     }
 
@@ -228,19 +266,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    if (url.pathname.includes('/tile/') && url.pathname.endsWith('.webp') && isVersionedShellRequest(url)) {
+    if (isVersionedTileRequest(url)) {
         respondWithCacheTask(event, persistentTileCacheTask(request));
         return;
     }
 
-    if (
-        url.pathname.endsWith('.webp') ||
-        url.pathname.endsWith('.png') ||
-        url.pathname.endsWith('.jpeg') ||
-        url.pathname.endsWith('.jpg') ||
-        url.pathname.endsWith('.svg') ||
-        url.pathname.endsWith('.mp3')
-    ) {
+    if (isMediaRequest(url)) {
         respondWithCacheTask(event, isVersionedShellRequest(url)
             ? cacheFirstTask(request, ASSET_CACHE)
             : staleWhileRevalidateTask(request, ASSET_CACHE));

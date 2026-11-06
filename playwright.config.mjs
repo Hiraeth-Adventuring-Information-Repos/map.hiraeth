@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
     testDir: './tests',
-    testMatch: ['campaign-journeys.spec.mjs', 'travel-network.spec.mjs', 'travel-addresses.spec.mjs', 'stomion-addresses.spec.mjs', 'poi-markers.spec.mjs', 'world-transport.spec.mjs'],
+    testMatch: ['campaign-journeys.spec.mjs', 'travel-network.spec.mjs', 'travel-addresses.spec.mjs', 'stomion-addresses.spec.mjs', 'poi-markers.spec.mjs', 'world-transport.spec.mjs', 'viewer-refinements.spec.mjs'],
     fullyParallel: false,
     workers: 1,
     timeout: 90_000,

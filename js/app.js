@@ -339,6 +339,7 @@ let toolkitPanelVisible = false;
 
 // --- Coordinate Display Logic ---
 const coordinateDisplay = document.getElementById('coordinate-display');
+const coordinateDisplaySpan = coordinateDisplay.querySelector('span');
 const copyCoordsBtn = coordinateDisplay.querySelector('.copy-coords-btn');
 
 if (copyCoordsBtn) {
@@ -372,12 +373,11 @@ if (copyCoordsBtn) {
 }
 
 function updateCoordinateDisplay(lat, lon) {
-    if (!coordinateDisplay) return;
-    const displaySpan = coordinateDisplay.querySelector('span');
-    if (!displaySpan) return;
+    if (!coordinateDisplaySpan) return;
     const latString = `${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? 'N' : 'S'}`;
     const lonString = `${Math.abs(lon).toFixed(2)}° ${lon >= 0 ? 'E' : 'W'}`;
-    displaySpan.innerHTML = `${latString}, ${lonString}`;
+    const text = `${latString}, ${lonString}`;
+    if (coordinateDisplaySpan.textContent !== text) coordinateDisplaySpan.textContent = text;
 }
 
 const DEFAULT_POI_TYPE_GROUPS = {
@@ -1003,6 +1003,7 @@ let currentSidebarState = 'o';
 let markersVisible = true; // <--- THIS SHOULD BE TRUE FOR VISIBLE BY DEFAULT
 let currentLatLonBounds = null;
 let coordsLocked = false;
+let latestCoordinatePoint = null;
 const transitionDuration = 300; // ms for sidebar animation
 let filtersPanelVisible = false; // State for combined filter panel visibility
 
@@ -1127,9 +1128,52 @@ const toggleMarkersBtn = document.getElementById('toggle-markers-btn');
 const searchControlContainer = document.getElementById('search-control-container');
 const dynamicFiltersContainer = document.getElementById('dynamic-filters-container');
 const poiSearchInput = document.getElementById('poi-search-input');
+const skipMapToSearchLink = document.getElementById('skip-map-to-search');
 const searchScopeAtlasBtn = document.getElementById('search-scope-atlas-btn');
 const searchResultsContainer = document.getElementById('search-results-container');
 const poiFilterContainer = document.getElementById('poi-filter-container');
+
+function canSkipMapToSearch() {
+    if (isEmbeddedView || (mapChooserElement && !mapChooserElement.hidden) ||
+        !searchControlContainer?.isConnected || !poiSearchInput?.isConnected ||
+        poiSearchInput.matches(':disabled') || poiSearchInput.readOnly) return false;
+    // The closed mobile card is intentionally hidden until the link opens it.
+    for (let element = poiSearchInput; element; element = element.parentElement) {
+        if (element.hidden || element.inert || element.hasAttribute('inert') ||
+            element.getAttribute('aria-hidden') === 'true' ||
+            window.getComputedStyle(element).display === 'none' ||
+            element.style.visibility === 'hidden') return false;
+        if (element === searchControlContainer) return true;
+    }
+    return false;
+}
+
+function syncSkipMapToSearchLink() {
+    if (skipMapToSearchLink) skipMapToSearchLink.hidden = !canSkipMapToSearch();
+}
+
+function skipMapToSearch(event) {
+    // The map ID lives in the hash, so never allow an anchor navigation.
+    event.preventDefault();
+    if (!canSkipMapToSearch()) return;
+    if (featureDetailSheetOpen) closeFeatureDetailSheet({ restoreFocus: false });
+    if (isMobileLayoutActive) {
+        openMobileSheet({ mode: MOBILE_SURFACE_MODE_SEARCH, triggerButton: skipMapToSearchLink });
+    }
+    poiSearchInput.focus({ preventScroll: true });
+}
+
+if (skipMapToSearchLink) {
+    skipMapToSearchLink.addEventListener('click', skipMapToSearch);
+    const skipSearchObserver = new MutationObserver(syncSkipMapToSearchLink);
+    if (searchControlContainer) skipSearchObserver.observe(searchControlContainer, {
+        attributes: true, subtree: true,
+        attributeFilter: ['style', 'hidden', 'inert', 'aria-hidden', 'disabled', 'readonly']
+    });
+    if (mapChooserElement) skipSearchObserver.observe(mapChooserElement, { attributes: true, attributeFilter: ['hidden'] });
+    if (bodyElement) skipSearchObserver.observe(bodyElement, { attributes: true, attributeFilter: ['class'] });
+    syncSkipMapToSearchLink();
+}
 // Cached live collection of all filter checkboxes for performance
 const poiFilterCheckboxesLive = poiFilterContainer ? poiFilterContainer.getElementsByTagName('input') : null;
 
@@ -2478,9 +2522,9 @@ function focusSidebarSelectedFeature() {
     if (!layer || !map) return;
 
     if (typeof layer.getLatLng === 'function') {
-        map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 1));
+        map.flyTo(layer.getLatLng(), Math.max(map.getZoom(), 1), getZoomAnimationOptions());
     } else if (typeof layer.getBounds === 'function') {
-        map.fitBounds(layer.getBounds(), { maxZoom: Math.max(map.getZoom(), 1) });
+        map.fitBounds(layer.getBounds(), { maxZoom: Math.max(map.getZoom(), 1), ...getZoomAnimationOptions() });
     }
     if (typeof layer.openPopup === 'function' && layer.getPopup && layer.getPopup()) {
         layer.openPopup();
@@ -5143,6 +5187,7 @@ function setCoordsDisplayVisible(visible) {
     if (isMobileLayoutActive) {
         coordinateDisplay.style.display = 'none';
     }
+    renderLatestCoordinates();
     if (mobileCoordsBtn) {
         mobileCoordsBtn.classList.toggle('active', coordsDisplayEnabled);
         mobileCoordsBtn.setAttribute('aria-pressed', coordsDisplayEnabled ? 'true' : 'false');
@@ -5530,16 +5575,79 @@ function moveSearchResultSelection(direction) {
     }
 }
 
+let cancelPendingSearchResultFocus = null;
+
+function isSearchResultFocusTarget(element) {
+    if (!element?.isConnected || typeof element.focus !== 'function' || element.matches(':disabled')) return false;
+    for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
+        if (ancestor.hidden || ancestor.inert || ancestor.hasAttribute('inert') || ancestor.getAttribute('aria-hidden') === 'true') return false;
+        const style = window.getComputedStyle(ancestor);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse' || style.contentVisibility === 'hidden') return false;
+    }
+    return element.getClientRects().length > 0;
+}
+
+function beginSearchResultFocusHandoff() {
+    cancelPendingSearchResultFocus?.();
+    if (!isMobileLayoutActive || !isMobileSurfaceMode(MOBILE_SURFACE_MODE_SEARCH)) return null;
+    const previousActiveElement = document.activeElement;
+    if (previousActiveElement !== document.body &&
+        !mobileSearchPanel?.contains(previousActiveElement) &&
+        !searchResultsContainer.contains(previousActiveElement)) return null;
+
+    let cancelled = false;
+    const intentEvents = ['pointerdown', 'keydown', 'focusin'];
+    const cancel = () => {
+        cancelled = true;
+        intentEvents.forEach(type => document.removeEventListener(type, cancel, true));
+        if (cancelPendingSearchResultFocus === cancel) cancelPendingSearchResultFocus = null;
+    };
+    cancelPendingSearchResultFocus = cancel;
+    intentEvents.forEach(type => document.addEventListener(type, cancel, true));
+
+    return (selection, requestToken = loadRequestToken, selectedUrl = window.location.href) => {
+        const finish = (layer) => {
+            const stillOwnsFocus = !cancelled && isMobileLayoutActive && !hasOpenMobileSurface() &&
+                requestToken === loadRequestToken && selectedUrl === window.location.href &&
+                (document.activeElement === previousActiveElement || document.activeElement === document.body);
+            cancel();
+            if (!stillOwnsFocus) return;
+            const popup = layer?.getPopup?.()?.getElement?.();
+            const targets = [
+                popup?.querySelector('[data-popup-action="open-details"]'),
+                layer?.getElement?.(),
+                mapElement,
+                mobileSearchLauncherBtn
+            ];
+            for (const target of targets) {
+                if (!isSearchResultFocusTarget(target)) continue;
+                target.focus({ preventScroll: true });
+                if (document.activeElement === target) break;
+            }
+        };
+        if (selection && typeof selection.then === 'function') {
+            // A map definition may arrive after the user has opened another surface.
+            selection.then(finish, () => finish(null));
+        } else {
+            finish(selection);
+        }
+    };
+}
+
 function selectSearchResult(index = activeSearchResultIndex) {
     const result = renderedSearchResults[index];
     if (!result || typeof result.onSelect !== 'function') return;
-    result.onSelect();
+    const handoffFocus = beginSearchResultFocusHandoff();
     poiSearchInput.value = '';
     setSearchScope(SEARCH_SCOPE_MAP);
     closeSearchResults();
     closeMobileSheet({ restoreFocus: false });
+    // Restore filtered markers before focusing the result, so its popup stays open.
+    updateVisibleMarkersAndSearch();
+    const selection = result.onSelect();
     updateActiveFilterChips();
     syncMobileExploreVisibility();
+    handoffFocus?.(selection);
 }
 
 function buildScopedSearchParams(entry) {
@@ -5582,11 +5690,20 @@ function openAtlasSearchResult(entry) {
         nextUrl
     );
     setSearchScope(SEARCH_SCOPE_MAP);
-    loadMap(entry.mapId, false, targetMap);
+    const selection = loadMap(entry.mapId, false, targetMap);
     trackAnalytics('search_result_opened', {
         scope: SEARCH_SCOPE_ATLAS,
         kind: entry.kind,
         targetMapId: entry.mapId
+    });
+    return selection.then(() => {
+        if (currentlyLoadedMapId !== entry.mapId) return null;
+        const [byId, byName] = entry.kind === 'poi'
+            ? [allMapMarkersById, allMapMarkersByName]
+            : entry.kind === 'region'
+                ? [allMapRegionsById, allMapRegionsByName]
+                : entry.kind === 'line' ? [allMapLinesById, allMapLinesByName] : [];
+        return byId?.get(entry.itemId) || byName?.get(entry.name) || null;
     });
 }
 
@@ -5774,8 +5891,9 @@ function searchMapMarkers(searchTerm, results, allPoiGroupsChecked, activeSpecif
                 subtitle: match.matchedByContent ? `Matched in ${poiGroup.toLowerCase()} details` : poiGroup,
                 score: match.score,
                 onSelect: () => {
-                    map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 1));
+                    map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 1), getZoomAnimationOptions());
                     marker.openPopup();
+                    return marker;
                 }
             });
         }
@@ -5820,8 +5938,9 @@ function searchMapRegions(searchTerm, results, searchFiltersCurrentMap) {
                         subtitle: match.matchedByContent ? `Matched in ${region.type || 'region'} description` : (region.value || region.type || 'Region'),
                         score: match.score,
                         onSelect: () => {
-                            map.fitBounds(layer.getBounds(), { maxZoom: Math.max(map.getZoom(), 1) });
+                            map.fitBounds(layer.getBounds(), { maxZoom: Math.max(map.getZoom(), 1), ...getZoomAnimationOptions() });
                             layer.openPopup();
+                            return layer;
                         }
                     });
                 }
@@ -5867,8 +5986,9 @@ function searchMapLines(searchTerm, results, searchFiltersCurrentMap) {
                         subtitle: match.matchedByContent ? `Matched in ${lineType.toLowerCase()} details` : lineType,
                         score: match.score,
                         onSelect: () => {
-                            map.fitBounds(layer.getBounds(), { maxZoom: Math.max(map.getZoom(), 1) });
+                            map.fitBounds(layer.getBounds(), { maxZoom: Math.max(map.getZoom(), 1), ...getZoomAnimationOptions() });
                             if (layer.getPopup()) layer.openPopup();
+                            return layer;
                         }
                     });
                 }
@@ -7511,12 +7631,9 @@ function handleMapUnavailable(manifestEntry, requestedMapId, mapId, updateHash) 
 
 function handleRedundantLoad(requestedMapId, updateHash) {
     if (requestedMapId === currentlyLoadedMapId && currentImageLayer) {
-        loadingMapId = null;
+        hideShareRelayPrompt('map_loading');
+        setMapChooserVisible(false);
         replaceMapHistoryState(requestedMapId, updateHash);
-        if (loadingIndicator) {
-            if (loadingProgressInterval) clearInterval(loadingProgressInterval);
-            loadingIndicator.style.display = 'none';
-        }
         applySearchParamsToCurrentMap(new URLSearchParams(window.location.search));
         return true;
     }
@@ -7769,13 +7886,19 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
 
 async function loadMap(mapId, updateHash = true, preResolvedMap = null) {
     const loadStartedAt = performance.now();
-    const { requestedMapId, manifestEntry, requestToken } = initMapLoadContext(mapId, preResolvedMap);
+    const requestedMapId = String(mapId || '').trim();
+    const manifestEntry = preResolvedMap || findMapRecursive(mapData, requestedMapId);
+
+    // Preserve the active layers and their pending image callbacks when reselecting
+    // this map. Starting a new context would invalidate their request token.
+    if (manifestEntry && manifestEntry.status !== 'coming-soon' && handleRedundantLoad(requestedMapId, updateHash)) return;
+
+    const { requestToken } = initMapLoadContext(requestedMapId, manifestEntry);
 
     startMapLoadingProgress(manifestEntry);
     resetMapState();
 
     if (handleMapUnavailable(manifestEntry, requestedMapId, mapId, updateHash)) return;
-    if (handleRedundantLoad(requestedMapId, updateHash)) return;
 
     let selectedMap = await fetchMapDefinitionOrAbort(requestedMapId, manifestEntry, requestToken, updateHash);
     if (!selectedMap || requestToken !== loadRequestToken) return;
@@ -8695,12 +8818,24 @@ function projectMapPointToLatLon(point, latLonBounds, imageBounds) {
     return { lat, lon };
 }
 
+function renderLatestCoordinates() {
+    if (!coordsDisplayEnabled || isMobileLayoutActive || !latestCoordinatePoint) return;
+    if (coordinateDisplay.hidden || coordinateDisplay.style.display === 'none') return;
+    // A point from a previous map must not be projected onto the current map.
+    if (latestCoordinatePoint.bounds !== currentBounds || latestCoordinatePoint.latLonBounds !== currentLatLonBounds) return;
+    const { lat, lon } = projectMapPointToLatLon(latestCoordinatePoint.latlng, currentLatLonBounds, currentBounds);
+    updateCoordinateDisplay(lat, lon);
+}
+
 function updateCoordinates(e) {
     if (coordsLocked) return;
     if (!currentLatLonBounds || !currentBounds) return;
-
-    const { lat, lon } = projectMapPointToLatLon(e.latlng, currentLatLonBounds, currentBounds);
-    updateCoordinateDisplay(lat, lon);
+    latestCoordinatePoint = {
+        latlng: { lat: e.latlng.lat, lng: e.latlng.lng },
+        bounds: currentBounds,
+        latLonBounds: currentLatLonBounds
+    };
+    renderLatestCoordinates();
 }
 
 // --- Map Click Handler ---
@@ -8714,10 +8849,10 @@ map.on('click', function (e) {
 });
 map.on('dblclick', function (e) {
     if (isMeasuringMultiPoint) return;
-    coordsLocked = !coordsLocked;
-    if (coordsLocked) {
+    if (!coordsLocked) {
         updateCoordinates(e); // one last update to lock in the current coords
     }
+    coordsLocked = !coordsLocked;
     // Hide filter panel if clicking outside
     if (filtersPanelVisible && !poiFilterContainer.contains(e.originalEvent.target) && e.originalEvent.target !== toggleFiltersBtn && !toggleFiltersBtn.contains(e.originalEvent.target)) {
         toggleFilterPanel();
@@ -9725,6 +9860,7 @@ function setupKeyboardAndModalLogic() {
         const isMapFindShortcut = (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'f';
         if ((e.ctrlKey || e.metaKey || e.altKey) && !isMapFindShortcut) return;
         if (handleEscapeShortcut(e)) return;
+        if (mapChooserElement && !mapChooserElement.hidden) return;
         if (featureDetailSheetExpanded) return;
         if (handleHelpShortcut(e)) return;
 
