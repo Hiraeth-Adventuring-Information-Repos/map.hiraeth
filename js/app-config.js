@@ -19,7 +19,7 @@
 
     function getDefaultAssetsConfig() {
         return {
-                version: '0.1.87',
+                version: '0.1.88',
                 stylesheets: [
                     'css/leaflet.css',
                     'css/style.css',
@@ -127,15 +127,12 @@
                 serviceWorker: {
                     versionedShellAssets: [
                         'css/style.css',
-                    'css/city-addresses.css',
                         'css/leaflet.css',
                         'css/stars.css',
                         'css/Control.MiniMap.min.css',
                         'js/app-config.js',
                         'js/shared-utils.js',
                         'js/campaign-journeys.js',
-                        'js/travel-network.js',
-                        'js/city-addresses.js',
                         'js/libs/leaflet.js',
                         'js/libs/lucide.min.js',
                         'js/libs/purify.min.js',

@@ -382,6 +382,14 @@ function buildPagesLucideSubsetSource(iconNames, lucideModule) {
     function hasAccessibleName(attributes){
         return Object.keys(attributes).some((name)=>name.startsWith('aria-')||name==='role'||name==='title');
     }
+    // Keep render state off the DOM so caller attributes and custom nameAttr stay intact.
+    const renderedIcons=new WeakMap();
+    function readAttributes(element){
+        return Object.fromEntries(Array.from(element.attributes,(attribute)=>[attribute.name,attribute.value]));
+    }
+    function attributeSignature(attributes){
+        return JSON.stringify(Object.keys(attributes).sort().map((name)=>[name,String(attributes[name])]));
+    }
     function createIcons(options={}){
         const rootNode=options.root||document;
         const nameAttribute=options.nameAttr||'data-lucide';
@@ -393,13 +401,29 @@ function buildPagesLucideSubsetSource(iconNames, lucideModule) {
                 if(root.console&&typeof root.console.warn==='function')root.console.warn('Lucide icon not included in Pages subset:',iconName);
                 return;
             }
-            const elementAttributes={};
-            Array.from(placeholder.attributes).forEach((attribute)=>{elementAttributes[attribute.name]=attribute.value;});
+            const currentAttributes=readAttributes(placeholder);
+            const previous=renderedIcons.get(placeholder);
+            const inputAttributes=previous?{...previous.inputAttributes}:{...currentAttributes};
+            // Recover caller input before applying new options. Generated defaults must
+            // not mask changed shared attrs, while edits on an existing SVG still win.
+            if(previous){
+                new Set([...Object.keys(previous.outputAttributes),...Object.keys(currentAttributes)]).forEach((name)=>{
+                    if(currentAttributes[name]!==previous.outputAttributes[name]){
+                        if(name in currentAttributes)inputAttributes[name]=currentAttributes[name];
+                        else delete inputAttributes[name];
+                    }
+                });
+            }
+            const elementAttributes={...inputAttributes};
             if(!hasAccessibleName(elementAttributes))elementAttributes['aria-hidden']='true';
             const classes=['lucide','lucide-'+iconName,elementAttributes.class||'']
                 .join(' ').split(/\\s+/).filter((value,index,values)=>value&&values.indexOf(value)===index).join(' ');
             elementAttributes.class=classes;
-            const svg=createElement(['svg',{...defaultAttributes,...sharedAttributes,...elementAttributes},iconNode]);
+            const attributes={...defaultAttributes,...sharedAttributes,...elementAttributes};
+            const signature=attributeSignature(attributes);
+            if(previous&&previous.iconName===iconName&&signature===attributeSignature(currentAttributes))return;
+            const svg=createElement(['svg',attributes,iconNode]);
+            renderedIcons.set(svg,{iconName,inputAttributes,outputAttributes:readAttributes(svg)});
             placeholder.replaceWith(svg);
         });
     }

@@ -108,3 +108,11 @@ test('both workflows validate the artifact after building and before uploading',
         assert.ok(build >= 0 && validate > build && upload > validate, name);
     }
 });
+
+for (const asset of ['js/travel-network.js', 'js/city-addresses.js', 'css/city-addresses.css']) {
+    test(`optional routing asset remains available in artifact: ${asset}`, t => {
+        const f = fixture(t);
+        fs.rmSync(path.join(f.root, asset));
+        assert.throws(f.validate, /Required Pages files missing/);
+    });
+}

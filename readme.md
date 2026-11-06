@@ -42,7 +42,7 @@ You need a modern web browser, Node.js 22 or newer, and a local web server. Imag
 
 ## Validation And Deployment
 
-Routing is an experimental URL opt-in. Add `?routing=1` before the map hash, for example `/index.html?routing=1#Astrousia-s=o`. Normal URLs hide Directions, building address hit areas and routing shortcuts. The flag is retained during map navigation and sharing; it is never saved as a browser preference.
+Routing is an experimental URL opt-in. Add `?routing=1` before the map hash, for example `/index.html?routing=1#Astrousia-s=o`. Normal URLs hide Directions, building address hit areas and routing shortcuts, and skip loading the routing scripts and address stylesheet. Embedded views also skip these assets. Routing assets are cached for offline reuse after an opted-in visit; installation does not download them. The flag is retained during map navigation and sharing; it is never saved as a browser preference.
 
 The editor is archived for now. Its source and restoration notes are in [archive/editor](archive/editor/README.md).
 

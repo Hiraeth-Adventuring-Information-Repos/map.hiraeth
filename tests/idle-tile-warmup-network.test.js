@@ -5,7 +5,7 @@ const test = require('node:test');
 
 const source = fs.readFileSync('js/app.js', 'utf8');
 const warmupSource = source.slice(source.indexOf('function isIdleTileWarmupAllowed('),
-    source.indexOf('function scheduleIdleTileWarmup('));
+    source.indexOf('// ⚡ Bolt:', source.indexOf('function scheduleIdleTileWarmup(')));
 
 function createWarmup({ mobile = false, count = 8, performance = {}, onIdle, onFetch } = {}) {
     const requests = [];
@@ -17,6 +17,7 @@ function createWarmup({ mobile = false, count = 8, performance = {}, onIdle, onF
     const candidates = Array.from({ length: count }, (_, index) => ({ url: `tile/map/5/${index}/0.webp?v=native` }));
     const context = {
         idleTileWarmupTimer: null, idleTileWarmupGeneration: 1, idleDetailTileLayer: null,
+        idleTileWarmupController: null, AbortController,
         currentMapData: mapInfo, currentImageLayer: {}, currentMapBaseLayerMode: 'tile',
         isMobileLayoutActive: mobile,
         document: { hidden: false }, navigator: { connection: { effectiveType: '4g', saveData: false } },
@@ -105,13 +106,14 @@ for (const [label, cancel] of [
     test(`${label} during download stops subsequent batches`, async () => {
         const warmup = createWarmup({ onFetch(context, count) { if (count === 1) cancel(context); } });
         await warmup.run();
-        assert.equal(warmup.requests.length, 4, 'only the already-started batch may complete');
+        assert.equal(warmup.requests.length, label === 'generation cancellation' ? 1 : 4);
+        if (label === 'generation cancellation') assert.ok(warmup.requests[0].options.signal.aborted);
         assert.deepEqual(warmup.layers, []);
     });
     test(`${label} during the final batch prevents attaching detail`, async () => {
         const warmup = createWarmup({ count: 4, onFetch(context, count) { if (count === 1) cancel(context); } });
         await warmup.run();
-        assert.equal(warmup.requests.length, 4, 'the already-started final batch may complete');
+        assert.equal(warmup.requests.length, label === 'generation cancellation' ? 1 : 4);
         assert.deepEqual(warmup.layers, []);
     });
 }
@@ -124,4 +126,58 @@ test('cancelled generation cannot reveal a late detail-layer load', async () => 
     layer.handlers.load();
     assert.equal(layer.opacity, undefined);
     assert.equal(warmup.context.idleDetailTileLayer, null);
+});
+
+
+test('cancellation aborts every pending response body and settles without detail', async () => {
+    const warmup = createWarmup();
+    const signals = [];
+    warmup.context.fetch = async (url, { signal }) => {
+        signals.push(signal);
+        return { ok: true, blob: () => new Promise((resolve, reject) => {
+            signal.addEventListener('abort', () => reject(new DOMException('Cancelled', 'AbortError')), { once: true });
+        }) };
+    };
+    const running = warmup.run();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(signals.length, 4);
+    warmup.context.cancelIdleTileWarmup();
+    await running;
+    assert.ok(signals.every(signal => signal.aborted));
+    assert.equal(warmup.context.idleTileWarmupController, null);
+    assert.deepEqual(warmup.layers, []);
+});
+
+test('old run cleanup preserves the next generation controller', async () => {
+    const warmup = createWarmup();
+    let release;
+    warmup.context.scheduleIdleTask = resolve => { release = resolve; };
+    const running = warmup.run();
+    warmup.context.cancelIdleTileWarmup();
+    const replacement = new AbortController();
+    warmup.context.idleTileWarmupController = replacement;
+    release();
+    await running;
+    assert.equal(warmup.context.idleTileWarmupController, replacement);
+    assert.equal(replacement.signal.aborted, false);
+});
+
+
+test('rescheduling aborts active optional downloads before starting a new generation', async () => {
+    const warmup = createWarmup();
+    const signals = [];
+    warmup.context.fetch = (url, { signal }) => new Promise((resolve, reject) => {
+        signals.push(signal);
+        signal.addEventListener('abort', () => reject(new DOMException('Cancelled', 'AbortError')), { once: true });
+    });
+    const running = warmup.run();
+    await new Promise(resolve => setImmediate(resolve));
+    warmup.context.scheduleIdleTileWarmup();
+    await running;
+    assert.equal(signals.length, 4);
+    assert.ok(signals.every(signal => signal.aborted));
+    assert.equal(warmup.context.idleTileWarmupGeneration, 2);
+    assert.ok(warmup.context.idleTileWarmupTimer);
+    warmup.context.cancelIdleTileWarmup();
+    assert.deepEqual(warmup.layers, []);
 });

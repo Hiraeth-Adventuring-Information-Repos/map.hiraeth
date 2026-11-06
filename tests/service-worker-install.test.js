@@ -306,3 +306,23 @@ test('configured JSON assets share runtime data storage and runtime writes exten
         await cached.lifetime;
     }
 });
+
+for (const failConfigOnce of [false, true]) {
+    test(`routing assets are cached on demand, not installed (config failure: ${failConfigOnce})`, async () => {
+        const worker = createWorker({ failConfigOnce });
+        await worker.lifecycle('install');
+        const optional = ['js/travel-network.js', 'js/city-addresses.js', 'css/city-addresses.css'];
+        for (const asset of optional) {
+            assert.equal(worker.fetchCalls.includes(worker.keyFor(`${asset}?v=${VERSION}`)), false);
+            const task = worker.fetch(`${asset}?v=${VERSION}`);
+            await task.response;
+            await task.lifetime;
+        }
+        worker.setOffline();
+        for (const asset of optional) {
+            const task = worker.fetch(`${asset}?v=${VERSION}`);
+            assert.deepEqual(await (await task.response).json(), { url: worker.keyFor(`${asset}?v=${VERSION}`) });
+            await task.lifetime;
+        }
+    });
+}

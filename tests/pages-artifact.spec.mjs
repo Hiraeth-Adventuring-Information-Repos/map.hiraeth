@@ -137,8 +137,12 @@ test.describe('built routing payloads', () => {
 
     test('default, disabled and embedded views never request routing geometry', async ({ page }) => {
         const requests = [];
-        page.on('request', request => { if (request.url().includes('/maps/routing/')) requests.push(request.url()); });
-        for (const query of ['', '?routing=0', '?routing=1&embed=true']) {
+        page.on('request', request => {
+            if (/\/maps\/routing\/|\/js\/(?:travel-network|city-addresses)\.js|\/css\/city-addresses\.css/.test(request.url())) {
+                requests.push(request.url());
+            }
+        });
+        for (const query of ['', '?routing=0', '?routing=1&embed=true', '?routing=1&hideUI=true']) {
             await page.goto(`${builtBase}/index.html${query}#The-Port-City-of-Stomion-s=c`);
             await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion');
             expect(await page.evaluate(() => ({ buildings: currentMapData.buildings, nodes: currentMapData.travelNodes,

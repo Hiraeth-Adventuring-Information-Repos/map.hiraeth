@@ -10,6 +10,9 @@ const requiredPagesFiles = [
     'CNAME',
     'index.html',
     'site.config.json',
+    'js/travel-network.js',
+    'js/city-addresses.js',
+    'css/city-addresses.css',
     'maps/atlas-index.json',
     'maps/atlas-search-index.json',
     'tile/manifest.json'

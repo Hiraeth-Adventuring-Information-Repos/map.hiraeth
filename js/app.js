@@ -73,6 +73,7 @@ let prefetchImageInFlight = false;
 let scheduledPrefetchIdleId = null;
 let idleTileWarmupTimer = null;
 let idleTileWarmupGeneration = 0;
+let idleTileWarmupController = null;
 let idleDetailTileLayer = null;
 const SEARCH_SCOPE_MAP = 'map';
 const SEARCH_SCOPE_ATLAS = 'atlas';
@@ -3420,6 +3421,10 @@ function removeIdleDetailTileLayer() {
 
 function cancelIdleTileWarmup(options = {}) {
     idleTileWarmupGeneration += 1;
+    if (idleTileWarmupController) {
+        idleTileWarmupController.abort();
+        idleTileWarmupController = null;
+    }
     if (idleTileWarmupTimer) {
         clearTimeout(idleTileWarmupTimer);
         idleTileWarmupTimer = null;
@@ -3435,10 +3440,12 @@ function waitForIdleTileSlice() {
     });
 }
 
-async function cacheIdleTileBatch(urls) {
+async function cacheIdleTileBatch(urls, signal) {
     const results = await Promise.all(urls.map(async (url) => {
         try {
+            if (signal.aborted) return false;
             const response = await fetch(url, {
+                signal,
                 cache: 'force-cache',
                 credentials: 'same-origin'
             });
@@ -3523,34 +3530,44 @@ async function runIdleTileWarmup(generation) {
     // Partial overview warmups cannot produce a visible detail upgrade.
     const candidates = getIdleTileWarmupCandidates(mapInfo, tileLayer, tileSource, Math.min(displayLimit, maxTiles));
     if (candidates.length === 0 || candidates.length > displayLimit || candidates.length > maxTiles) return;
-    const warmupCandidates = candidates;
+    // This controller belongs only to optional warmup fetches. A service worker
+    // may finish its independent cache fill after the client request is aborted.
+    idleTileWarmupController?.abort();
+    const controller = new AbortController();
+    idleTileWarmupController = controller;
     let allTilesCached = true;
+    const isCurrent = () => generation === idleTileWarmupGeneration &&
+        isIdleTileWarmupAllowed() && currentMapData === mapInfo;
 
-    for (let index = 0; index < warmupCandidates.length; index += batchSize) {
-        if (generation !== idleTileWarmupGeneration || !isIdleTileWarmupAllowed() || currentMapData !== mapInfo) {
-            return;
+    try {
+        for (let index = 0; index < candidates.length; index += batchSize) {
+            if (!isCurrent()) {
+                return;
+            }
+            await waitForIdleTileSlice();
+            if (!isCurrent()) {
+                return;
+            }
+            const batch = candidates.slice(index, index + batchSize).map((candidate) => candidate.url);
+            const batchCached = await cacheIdleTileBatch(batch, controller.signal);
+            allTilesCached = allTilesCached && batchCached;
+            if (batchDelayMs > 0 && index + batchSize < candidates.length) {
+                await new Promise((resolve) => setTimeout(resolve, batchDelayMs));
+            }
         }
-        await waitForIdleTileSlice();
-        if (generation !== idleTileWarmupGeneration || !isIdleTileWarmupAllowed() || currentMapData !== mapInfo) {
-            return;
-        }
-        const batch = warmupCandidates.slice(index, index + batchSize).map((candidate) => candidate.url);
-        const batchCached = await cacheIdleTileBatch(batch);
-        allTilesCached = allTilesCached && batchCached;
-        if (batchDelayMs > 0 && index + batchSize < warmupCandidates.length) {
-            await new Promise((resolve) => setTimeout(resolve, batchDelayMs));
-        }
-    }
 
-    if (allTilesCached && isIdleTileWarmupAllowed()) {
-        showIdleDetailTileLayer(mapInfo, tileSource, generation);
+        if (allTilesCached && !controller.signal.aborted && isIdleTileWarmupAllowed()) {
+            showIdleDetailTileLayer(mapInfo, tileSource, generation);
+        }
+    } finally {
+        if (idleTileWarmupController === controller) idleTileWarmupController = null;
     }
 }
 
 function scheduleIdleTileWarmup() {
     if (idleDetailTileLayer || !isIdleTileWarmupAllowed()) return;
-    if (idleTileWarmupTimer) clearTimeout(idleTileWarmupTimer);
-    const generation = ++idleTileWarmupGeneration;
+    cancelIdleTileWarmup();
+    const generation = idleTileWarmupGeneration;
     const delayMs = Math.max(250, getPerformanceNumber('idleTileWarmupDelayMs', 1800));
     idleTileWarmupTimer = setTimeout(() => {
         runIdleTileWarmup(generation).catch(() => undefined);
@@ -7366,7 +7383,8 @@ function populatePOIsOnMap(selectedMap) {
                     });
                     if (marker) {
                         marker.poiData = point;
-                        marker.bindPopup(createPopupContent(point, 'poi'), { minWidth: 250 });
+                        // Leaflet evaluates popup content on open; keep map-dependent actions current.
+                        marker.bindPopup(() => createPopupContent(point, 'poi'), { minWidth: 250 });
                         marker.bindTooltip(createPoiTooltipContent(point), getPoiTooltipOptions());
                         if (typeof marker.on === 'function') {
                             marker.on('popupopen', () => {
@@ -7977,12 +7995,9 @@ function addRegionsToMap(mapId) {
             interactive: true // Make regions clickable
         });
 
-        const popupHtml = createPopupContent(region, 'region');
-        if (popupHtml) {
-            polygon.bindPopup(popupHtml, {
-                minWidth: 250 // Set a min-width for consistency
-            });
-        }
+        polygon.bindPopup(() => createPopupContent(region, 'region'), {
+            minWidth: 250 // Set a min-width for consistency
+        });
 
         polygon.regionData = region; // Store data for filtering
         if (typeof polygon.on === 'function') {
@@ -8689,12 +8704,9 @@ function addRoadsToMap(mapId) {
         // Store original opacity for filtering
         polyline.originalOpacity = road.opacity || 0.8;
 
-        const popupHtml = createPopupContent(road, 'line');
-        if (popupHtml) {
-            polyline.bindPopup(popupHtml, { // Use unified creator
-                minWidth: 250
-            });
-        }
+        polyline.bindPopup(() => createPopupContent(road, 'line'), {
+            minWidth: 250
+        });
 
         polyline.roadData = road; // Store data for filtering
         if (typeof polyline.on === 'function') {
