@@ -188,5 +188,18 @@ assert.equal(global.sidebar.inert, true, 'closed mobile Atlas remains inert whil
 assert.equal(global.sidebar.getAttribute('aria-hidden'), 'true');
 assert.equal(global.mapContainerElement.inert, false);
 
+// Width values above the implicit ARIA maximum of 100 need explicit bounds.
+global.container.classList.add('sidebar-collapsed');
+global.container.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1200, height: 800 });
+global.featureDetailCornerResizeHandle = document.createElement('div');
+for (const [requestedWidth, expectedWidth] of [[600, 600], [100, 420], [2000, 1176]]) {
+    applyFloatingFeatureDetailGeometry({ left: 12, top: 12, width: requestedWidth, height: 400 });
+    const handle = global.featureDetailCornerResizeHandle;
+    assert.equal(handle.getAttribute('aria-valuemin'), '420');
+    assert.equal(handle.getAttribute('aria-valuemax'), '1176');
+    assert.equal(handle.getAttribute('aria-valuenow'), String(expectedWidth));
+    assert.equal(handle.getAttribute('aria-valuetext'), `${expectedWidth} by 400 pixels`);
+}
+
 dom.window.close();
 console.log('feature detail sheet behavior checks passed');

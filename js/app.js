@@ -2785,8 +2785,17 @@ function applyFloatingFeatureDetailGeometry(geometry, { persist = false } = {}) 
     featureDetailSheet.style.height = `${Math.round(height)}px`;
     featureDetailSheet.style.transform = 'none';
     syncFeatureDetailSearchVisibility();
-    if (featureDetailCornerResizeHandle) {
-        featureDetailCornerResizeHandle.setAttribute('aria-valuenow', `${Math.round(width)} by ${Math.round(height)}`);
+    const resizeHandle = featureDetailCornerResizeHandle;
+    if (resizeHandle) {
+        const round = Math.round;
+        for (const [name, value] of Object.entries({
+            min: round(minWidth),
+            max: round(maxWidth),
+            now: round(width),
+            text: `${round(width)} by ${round(height)} pixels`
+        })) {
+            resizeHandle.setAttribute(`aria-value${name}`, value);
+        }
     }
     if (persist) safeSetJSON(UX_STORAGE_KEYS.featureDetailGeometry, featureDetailFloatingGeometry);
 }
@@ -9396,36 +9405,26 @@ function handleMultiPointMouseMove(e) {
     const lastFixedPoint = multiPointPath[multiPointPath.length - 1];
     const currentMousePos = e.latlng;
 
-    if (temporaryMouseMoveLine) {
-        measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
-    }
-    temporaryMouseMoveLine = L.polyline([lastFixedPoint, currentMousePos], {
+    const line = temporaryMouseMoveLine || (temporaryMouseMoveLine = L.polyline([], {
         color: 'lime',
         weight: 2,
         dashArray: '3, 3',
         interactive: false
-    }).addTo(measurementLayerGroup);
-
-    if (temporaryMouseMoveTooltip) {
-        map.removeLayer(temporaryMouseMoveTooltip); // Or measurementLayerGroup.removeLayer
-    }
+    }).addTo(measurementLayerGroup));
+    line.setLatLngs([lastFixedPoint, currentMousePos]);
 
     const pixelDistance = map.distance(lastFixedPoint, currentMousePos);
-    let segmentDistanceString = `${pixelDistance.toFixed(0)} px`;
-    if (scalePx && scaleKm) {
-        const kmDistance = (pixelDistance / scalePx) * scaleKm;
-        segmentDistanceString = `${kmDistance.toFixed(2)} km`;
-    }
+    const segmentDistanceString = scalePx && scaleKm
+        ? `${((pixelDistance / scalePx) * scaleKm).toFixed(2)} km`
+        : `${pixelDistance.toFixed(0)} px`;
 
-    temporaryMouseMoveTooltip = L.tooltip({
+    const tooltip = temporaryMouseMoveTooltip || (temporaryMouseMoveTooltip = L.tooltip({
         permanent: true,
         direction: 'top',
         className: 'measure-tooltip',
         offset: L.point(0, -10)
-    })
-        .setLatLng(currentMousePos)
-        .setContent(`Segment: ${segmentDistanceString}`)
-        .addTo(map); // Add to map to follow mouse, or to measurementLayerGroup
+    }));
+    tooltip.setLatLng(currentMousePos).setContent(`Segment: ${segmentDistanceString}`).addTo(map);
 }
 
 function updateMeasurementTooltips() {
@@ -9628,7 +9627,7 @@ function setupKeyboardAndModalLogic() {
             if (featureDetailSheetOpen) {
                 closeFeatureDetailSheet();
             }
-            lastFocus = document.activeElement; // Save focus
+            lastFocus = source === 'mobile_info_card' ? mobileInfoHelpBtn : document.activeElement; // Save focus
             if (typeof aboutModal.setAttribute === 'function') {
                 aboutModal.setAttribute('aria-hidden', 'false');
             }

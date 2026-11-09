@@ -172,6 +172,40 @@ addedListener(evt);
 assert.ok(evt.isPrevented());
 assert.ok(!global.aboutModalVisible);
 
+// The mobile card is hidden and rerendered when its Guide action opens help.
+// Closing help must return to the persistent Info launcher, not the removed action.
+const mobileInfoLauncher = {
+    tagName: 'BUTTON',
+    focus() { document.activeElement = this; }
+};
+const removedGuideAction = { tagName: 'BUTTON', focus() {} };
+global.mobileInfoHelpBtn = mobileInfoLauncher;
+global.Element = class {};
+let blurbClick;
+global.mapBlurbElement = { addEventListener: (_, handler) => { blurbClick = handler; } };
+global.setMapBlurbVisible = () => {};
+global.unlockAdvancedControls = () => { removedGuideAction.isConnected = false; };
+document.activeElement = removedGuideAction;
+const blurbStart = appJs.indexOf("mapBlurbElement.addEventListener('click', (e) => {");
+const blurbEnd = appJs.indexOf('// --- Coordinate Toggle Button Logic ---', blurbStart);
+eval(appJs.slice(blurbStart, blurbEnd));
+const guideTarget = new Element();
+guideTarget.closest = () => removedGuideAction;
+blurbClick({ target: guideTarget, stopPropagation() {} });
+assert.equal(removedGuideAction.isConnected, false);
+addedListener(createEvent('Escape'));
+assert.equal(document.activeElement, mobileInfoLauncher, 'Escape returns focus to the mobile Info launcher');
+
+// Ordinary help openings still restore the focused desktop launcher.
+const desktopHelpLauncher = { tagName: 'BUTTON', focus() { document.activeElement = this; } };
+document.activeElement = desktopHelpLauncher;
+openAboutModal('guide', 'manual');
+document.activeElement = { tagName: 'BUTTON' };
+addedListener(createEvent('Escape'));
+assert.equal(document.activeElement, desktopHelpLauncher);
+global.unlockAdvancedControls = () => {};
+document.activeElement = { tagName: 'BODY' };
+
 // Escape should leave the full-screen map chooser without requiring a selection.
 global.mapChooserElement.hidden = false;
 const galleryShortcutState = () => JSON.stringify({
