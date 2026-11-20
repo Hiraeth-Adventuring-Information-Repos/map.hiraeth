@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
+// The migration baseline includes reviewed border and shoreline corrections in
+// Fair, IceBeach, Southern Thalassia, Arfordir, and Cursed Old Lin. Other imported
+// fields remain unchanged.
 const snapshotPath = path.join('tests', 'fixtures', 'active-map-inline-snapshot.json');
 const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(path.join('maps', 'maps.json'), 'utf8'));
