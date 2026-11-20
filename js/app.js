@@ -18,6 +18,9 @@ let mapData = []; // Will be populated by loadMapData
 let loadingProgressInterval = null;
 let loadingProgress = 0;
 let currentRegionGroup = null;
+let regionHoverOverlay = null;
+let regionHoverStripe = null;
+let hoveredRegion = null;
 let regionsVisible = true; // Overall region visibility toggle
 let currentRoadGroup = null; // Holds currently displayed road layers (and lines)
 const currentJourneyLayers = new Map();
@@ -7974,6 +7977,58 @@ async function loadMap(mapId, updateHash = true, preResolvedMap = null) {
     pushMapHistoryState(requestedMapId, updateHash, selectedMap.name);
 }
 
+// One non-interactive SVG overlay also works when the base regions use Canvas.
+function clearRegionHover() {
+    hoveredRegion = null;
+    if (regionHoverOverlay && map.hasLayer(regionHoverOverlay)) {
+        map.removeLayer(regionHoverOverlay);
+    }
+}
+
+function showRegionHover(polygon, event) {
+    if (event?.originalEvent?.pointerType === 'touch' || !regionsVisible ||
+        !map.hasLayer(polygon) || polygon.options.fill === false || polygon.options.stroke === false) return;
+
+    if (!regionHoverOverlay) {
+        const pane = map.createPane('regionHoverPane');
+        pane.style.zIndex = '450'; // Above region shapes, below markers and popups.
+        pane.style.pointerEvents = 'none';
+        const renderer = L.svg({ pane: 'regionHoverPane' });
+        regionHoverOverlay = L.polygon([], {
+            renderer, pane: 'regionHoverPane', interactive: false,
+            weight: 2, fillOpacity: 1
+        });
+        map.on('movestart zoomstart', clearRegionHover);
+        map.getContainer().addEventListener('mouseleave', clearRegionHover);
+    }
+
+    hoveredRegion = polygon;
+    regionHoverOverlay.setLatLngs(polygon.getLatLngs());
+    regionHoverOverlay.setStyle({ color: polygon.options.color });
+    regionHoverOverlay.addTo(map);
+    const element = regionHoverOverlay.getElement();
+    if (!regionHoverStripe) {
+        const svg = element.ownerSVGElement;
+        const ns = 'http://www.w3.org/2000/svg';
+        const defs = document.createElementNS(ns, 'defs');
+        const pattern = document.createElementNS(ns, 'pattern');
+        pattern.id = 'region-hover-hatch';
+        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+        pattern.setAttribute('width', '10');
+        pattern.setAttribute('height', '10');
+        pattern.setAttribute('patternTransform', 'rotate(45)');
+        regionHoverStripe = document.createElementNS(ns, 'rect');
+        regionHoverStripe.setAttribute('width', '5');
+        regionHoverStripe.setAttribute('height', '10');
+        regionHoverStripe.setAttribute('fill-opacity', '0.3');
+        pattern.appendChild(regionHoverStripe);
+        defs.appendChild(pattern);
+        svg.prepend(defs);
+    }
+    regionHoverStripe.setAttribute('fill', polygon.options.color);
+    element.setAttribute('fill', 'url(#region-hover-hatch)');
+}
+
 // --- Function to add regions to map ---
 function addRegionsToMap(mapId) {
     if (!currentRegionGroup) {
@@ -8010,6 +8065,10 @@ function addRegionsToMap(mapId) {
 
         polygon.regionData = region; // Store data for filtering
         if (typeof polygon.on === 'function') {
+            polygon.on('mouseover', event => showRegionHover(polygon, event));
+            polygon.on('mouseout remove', () => {
+                if (hoveredRegion === polygon) clearRegionHover();
+            });
             polygon.on('popupopen', () => {
                 setSidebarSelectedFeature(region, 'region');
             });
@@ -8028,6 +8087,7 @@ function addRegionsToMap(mapId) {
 
 // --- Update region visibility based on main toggle and filters ---
 function updateVisibleRegions() {
+    clearRegionHover();
     if (!currentRegionGroup) return;
 
     // Check the master toggle state

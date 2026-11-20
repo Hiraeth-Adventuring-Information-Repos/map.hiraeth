@@ -17,6 +17,67 @@ test.describe('built routing payloads', () => {
     });
     test.afterAll(async () => { if (builtServer) await new Promise(resolve => builtServer.close(resolve)); });
 
+    test('region hover stripes preserve clicks and clear with visibility and map changes', async ({ page }) => {
+        await page.goto(`${builtBase}/index.html#main_continent-s=c`);
+        await page.waitForFunction(() => typeof allMapRegions !== 'undefined' && allMapRegions.length > 1);
+        await expect(page.locator('#loading-indicator')).toBeHidden();
+        await page.evaluate(() => {
+            setMapBlurbVisible(false);
+            regionsVisible = true;
+            filterToggleAllCheckbox.checked = true;
+            filterToggleAllCheckbox.indeterminate = false;
+            updateVisibleRegions();
+            const region = allMapRegions[0];
+            map.fitBounds(region.getBounds(), { animate: false });
+        });
+        // Find a real pointer target within the region in both SVG and Canvas renderers.
+        const point = await page.evaluate(() => {
+            const region = allMapRegions[0];
+            const bounds = region.getBounds();
+            const p = map.latLngToContainerPoint(bounds.getCenter());
+            const box = map.getContainer().getBoundingClientRect();
+            return { x: p.x + box.left, y: p.y + box.top };
+        });
+        await page.mouse.move(point.x, point.y);
+        await page.waitForFunction(() => hoveredRegion !== null);
+        const overlay = page.locator('.leaflet-regionHover-pane path');
+        await expect(overlay).toHaveAttribute('fill', 'url(#region-hover-hatch)');
+        const stripe = page.locator('#region-hover-hatch rect');
+        await expect(stripe).toHaveAttribute('width', '5');
+        await expect(stripe).toHaveAttribute('fill-opacity', '0.3');
+        expect(await stripe.getAttribute('fill')).toBe(await page.evaluate(() => hoveredRegion.options.color));
+        expect(await page.locator('.leaflet-regionHover-pane').evaluate(el => getComputedStyle(el).pointerEvents)).toBe('none');
+        await page.mouse.click(point.x, point.y);
+        await expect(page.locator('.leaflet-popup')).toBeVisible();
+        await page.mouse.move(-50, -50);
+        await page.evaluate(() => {
+            map.closePopup();
+            allMapRegions[1].fire('mouseover');
+        });
+        expect(await stripe.getAttribute('fill')).toBe(await page.evaluate(() => allMapRegions[1].options.color));
+        await page.evaluate(() => { regionsVisible = false; updateVisibleRegions(); });
+        await expect(overlay).toHaveCount(0);
+        await page.evaluate(() => allMapRegions[0].fire('mouseover'));
+        await expect(overlay).toHaveCount(0);
+        await page.evaluate(() => {
+            regionsVisible = true;
+            updateVisibleRegions();
+            allMapRegions[0].fire('mouseover');
+            allMapRegions[0].fire('mouseout');
+        });
+        await expect(overlay).toHaveCount(0);
+        await page.evaluate(() => {
+            allMapRegions[0].fire('mouseover');
+            map.panBy([20, 0], { animate: false });
+        });
+        await expect(overlay).toHaveCount(0);
+        await page.evaluate(() => {
+            allMapRegions[0].fire('mouseover');
+            return loadMap('The-Port-City-of-Stomion', false);
+        });
+        await expect(overlay).toHaveCount(0);
+    });
+
     test('group filters support independent checkbox and disclosure keyboard input', async ({ page }) => {
         await page.goto(`${builtBase}/index.html#The-Port-City-of-Stomion-s=c`);
         await page.waitForFunction(() => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === 'The-Port-City-of-Stomion');

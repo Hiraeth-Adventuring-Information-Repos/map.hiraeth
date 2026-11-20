@@ -20,7 +20,7 @@ const requiredPagesFiles = [
 const optimizedAssetBudgets = {
     // Keep a small margin over the 232.1 KiB viewer with accessibility refinements;
     // routing and parcel renderers remain separate.
-    appBytes: 233 * 1024,
+    appBytes: 235 * 1024,
     // Directions cards, route suggestions and the mobile sheet add about 5 KiB.
     styleBytes: 108 * 1024,
     atlasShellBytes: 32 * 1024
