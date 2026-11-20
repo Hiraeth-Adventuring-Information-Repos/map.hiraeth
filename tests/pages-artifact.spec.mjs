@@ -21,6 +21,7 @@ test.describe('built routing payloads', () => {
         await page.goto(`${builtBase}/index.html#main_continent-s=c`);
         await page.waitForFunction(() => typeof allMapRegions !== 'undefined' && allMapRegions.length > 1);
         await expect(page.locator('#loading-indicator')).toBeHidden();
+        await page.waitForFunction(() => !map._animatingZoom && !map._panAnim?._inProgress);
         await page.evaluate(() => {
             setMapBlurbVisible(false);
             regionsVisible = true;
@@ -39,13 +40,14 @@ test.describe('built routing payloads', () => {
             return { x: p.x + box.left, y: p.y + box.top };
         });
         await page.mouse.move(point.x, point.y);
-        await page.waitForFunction(() => hoveredRegion !== null);
+        // Capture the transient hovered color in the same browser evaluation.
+        const hoverColor = await (await page.waitForFunction(() => hoveredRegion?.options.color)).jsonValue();
         const overlay = page.locator('.leaflet-regionHover-pane path');
         await expect(overlay).toHaveAttribute('fill', 'url(#region-hover-hatch)');
         const stripe = page.locator('#region-hover-hatch rect');
         await expect(stripe).toHaveAttribute('width', '5');
         await expect(stripe).toHaveAttribute('fill-opacity', '0.3');
-        expect(await stripe.getAttribute('fill')).toBe(await page.evaluate(() => hoveredRegion.options.color));
+        expect(await stripe.getAttribute('fill')).toBe(hoverColor);
         expect(await page.locator('.leaflet-regionHover-pane').evaluate(el => getComputedStyle(el).pointerEvents)).toBe('none');
         await page.mouse.click(point.x, point.y);
         await expect(page.locator('.leaflet-popup')).toBeVisible();
