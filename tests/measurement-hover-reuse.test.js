@@ -24,16 +24,23 @@ const sandbox = {
     temporaryMouseMoveLine: null,
     temporaryMouseMoveTooltip: null,
     getMapRuntimeData: () => ({ scalePixels: 10, scaleKilometers: 2 }),
-    L: { polyline: points => layer('line', points), tooltip: () => layer('tooltip'), point: (x, y) => [x, y] },
+    L: { Browser: { touch: false }, circleMarker: () => layer('line'), polyline: points => layer('line', points), tooltip: () => layer('tooltip'), point: (x, y) => [x, y] },
     measurementLayerGroup: { layers: groupLayers, removeLayer: value => groupLayers.delete(value), clearLayers: () => groupLayers.clear() },
     map: {
         layers: mapLayers,
+        getCenter: () => center,
         distance: (a, b) => Math.hypot(b.lat - a.lat, b.lng - a.lng),
         removeLayer: value => mapLayers.delete(value),
         off() {}, doubleClickZoom: { enable() {} }
     },
     document: { removeEventListener() {} },
-    mapElement: { classList },
+    mapElement: { classList, removeAttribute() {} },
+    measurementControls: { contains: () => false },
+    measurementUndoBtn: {},
+    measurementFinishBtn: {},
+    isMobileLayoutActive: false,
+    lastMeasurementMousePoint: null,
+    measurementMouseDoubleClick: false,
     measureToolBtn: { classList, setAttribute() {} },
     mobileMeasureBtn: null,
     measurementDoubleClickZoomWasEnabled: false,
@@ -41,18 +48,20 @@ const sandbox = {
     multiPointTotalTooltip: null,
     multiPointVertexMarkers: [],
     cachedMultiPointPixelDistance: 0,
-    handleMultiPointMeasureClick() {},
+    shouldIgnoreMapPointerEvent: () => false,
     updateMeasurementTooltips() {}
 };
+let center = { lat: 0, lng: 0 };
 vm.createContext(sandbox);
 for (const [name, next] of [
+    ['handleMultiPointMeasureClick', 'handleMultiPointMouseMove'],
     ['handleMultiPointMouseMove', 'updateMeasurementTooltips'],
     ['finalizeMultiPointMeasure', 'handleMeasureKeyDown']
 ]) {
     vm.runInContext(source.slice(source.indexOf(`function ${name}(`), source.indexOf(`function ${next}(`)), sandbox);
 }
 const keyStart = source.indexOf('function handleMeasureKeyDown(');
-vm.runInContext(source.slice(keyStart, source.indexOf("measureToolBtn.addEventListener('click'", keyStart)), sandbox);
+vm.runInContext(source.slice(keyStart, source.indexOf("measurementUndoBtn.addEventListener('click'", keyStart)), sandbox);
 
 sandbox.handleMultiPointMouseMove({ latlng: { lat: 3, lng: 4 } });
 const line = sandbox.temporaryMouseMoveLine;
@@ -90,7 +99,7 @@ for (const permanent of [true, false]) {
     sandbox.handleMultiPointMouseMove({ latlng: { lat: 0, lng: 5 } });
 }
 // Undoing the only vertex also clears the preview; subsequent moves cannot revive it.
-sandbox.handleMeasureKeyDown({ key: 'Backspace', preventDefault() {} });
+sandbox.handleMeasureKeyDown({ key: 'Backspace', target: sandbox.mapElement, preventDefault() {} });
 assert.equal(sandbox.temporaryMouseMoveLine, null);
 assert.equal(sandbox.temporaryMouseMoveTooltip, null);
 assert.equal(groupLayers.size, 0);
@@ -98,4 +107,58 @@ assert.equal(mapLayers.size, 0);
 const beforeEmptyMove = { ...counts };
 sandbox.handleMultiPointMouseMove({ latlng: { lat: 0, lng: 10 } });
 assert.deepEqual(counts, beforeEmptyMove);
-console.log('Measurement hover reuse and cleanup checks passed');
+// Keyboard placement samples the map center after panning and preserves button activation.
+function press(key, target = sandbox.mapElement, repeat = false) {
+    let prevented = false;
+    sandbox.handleMeasureKeyDown({ key, target, repeat, preventDefault() { prevented = true; } });
+    return prevented;
+}
+assert.equal(press('ArrowRight'), false);
+assert.equal(press(' '), true);
+assert.equal(press(' ', sandbox.mapElement, true), true);
+assert.equal(sandbox.multiPointPath.length, 1);
+assert.equal(sandbox.measurementFinishBtn.disabled, true);
+assert.equal(press('Enter'), true);
+assert.equal(sandbox.isMeasuringMultiPoint, true);
+assert.equal(press('Enter', sandbox.measurementFinishBtn), false);
+center = { lat: 0, lng: 20 };
+assert.equal(press(' '), true);
+assert.equal(sandbox.multiPointPath[1], center);
+assert.equal(sandbox.measurementFinishBtn.disabled, false);
+assert.equal(press('Backspace'), true);
+assert.equal(sandbox.multiPointPath.length, 1);
+
+// Simulated touch double-clicks and distinct mouse clicks both keep the path open.
+function click(lng, detail, pointerType) {
+    sandbox.handleMultiPointMeasureClick({
+        latlng: { lat: 0, lng },
+        containerPoint: { x: lng, distanceTo: other => Math.abs(lng - other.x) },
+        originalEvent: { detail, pointerType }
+    });
+}
+click(30, 1, 'touch');
+click(31, 2, 'touch');
+sandbox.handleMeasurementDoubleClick({ originalEvent: { _simulated: true } });
+assert.equal(sandbox.multiPointPath.length, 3);
+assert.equal(sandbox.isMeasuringMultiPoint, true);
+click(40, 1, 'mouse');
+click(60, 2, 'mouse');
+sandbox.handleMeasurementDoubleClick({ originalEvent: {} });
+assert.equal(sandbox.multiPointPath.length, 5);
+assert.equal(sandbox.isMeasuringMultiPoint, true);
+
+// Nearby mouse double-clicks preserve the desktop shortcut and add one vertex.
+const finalize = sandbox.finalizeMultiPointMeasure;
+let finished = false;
+sandbox.finalizeMultiPointMeasure = () => { finished = true; };
+click(70, 1, 'mouse');
+click(71, 2, 'mouse');
+sandbox.handleMeasurementDoubleClick({ originalEvent: {} });
+assert.equal(sandbox.multiPointPath.length, 6);
+assert.equal(finished, true);
+finished = false;
+assert.equal(press('Enter'), true);
+assert.equal(finished, true);
+sandbox.finalizeMultiPointMeasure = finalize;
+
+console.log('Measurement hover, cleanup, keyboard and pointer checks passed');

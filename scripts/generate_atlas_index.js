@@ -188,8 +188,12 @@ function addSearchEntry(context, entry) {
     context.searchEntries.push(entry);
 }
 
-function buildSearchEntriesForMap(context, item) {
-    if (!item || item.status === 'coming-soon' || !item.id || !item.name) return;
+function buildSearchEntriesForMap(context, item, ancestors) {
+    const width = Number(item.width);
+    const height = Number(item.height);
+    if (item.status === 'coming-soon' || !String(item.id || '').trim() || !item.name ||
+        !Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0 ||
+        !String(item.imageUrl || '').trim()) return;
 
     addSearchEntry(context, {
         kind: 'map',
@@ -197,6 +201,7 @@ function buildSearchEntriesForMap(context, item) {
         mapId: item.id,
         mapName: item.name,
         name: item.name,
+        mapPath: [...ancestors, item.name].join(' › '),
         summary: stripHtml(item.selectorDescription || item.summary || item.description || item.blurb || ''),
         description: stripHtml(item.description || ''),
         typeLabel: 'Map',
@@ -377,7 +382,7 @@ function resolveMapSource(context, item, origin, writeGenerated = true) {
     };
 }
 
-function toManifestItem(context, item, origin) {
+function toManifestItem(context, item, origin, ancestors = []) {
     const { sourceItem, dataUrl } = resolveMapSource(context, item, origin);
     const manifestItem = {};
     const keysToCopy = [
@@ -429,17 +434,18 @@ function toManifestItem(context, item, origin) {
     }
 
     if (Array.isArray(sourceItem.children) && sourceItem.children.length > 0) {
+        const childAncestors = [...ancestors, sourceItem.name || sourceItem.id].filter(Boolean);
         manifestItem.children = sourceItem.children.map((child) => {
             if (typeof child === 'string') {
                 const childPath = `maps/${child}.json`;
                 const childData = readJsonFile(path.join(context.repoRoot, childPath));
-                return toManifestItem(context, childData, { kind: 'file', path: childPath });
+                return toManifestItem(context, childData, { kind: 'file', path: childPath }, childAncestors);
             }
-            return toManifestItem(context, child, { kind: 'inline' });
+            return toManifestItem(context, child, { kind: 'inline' }, childAncestors);
         });
     }
 
-    buildSearchEntriesForMap(context, sourceItem);
+    buildSearchEntriesForMap(context, sourceItem, ancestors);
     return manifestItem;
 }
 

@@ -23,7 +23,7 @@ function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinitio
         mapData: Object.values(entries), currentlyLoadedMapId: loaded ? 'a' : null,
         currentImageLayer: loaded ? layer() : null, currentMapPreviewLayer: null,
         currentMapUnderlay: layer(), currentMapBaseLayerMode: 'image', currentBounds: [[0, 0], [100, 100]],
-        currentSidebarState: 'c', loadRequestToken: 5, loadingMapId: null,
+        currentSidebarState: 'c', loadRequestToken: 5, loadingMapId: null, mapRasterLoad: null,
         loadingIndicator: { style: { display: 'none' } }, loadingProgressInterval: null, loadingProgress: 0,
         measurements: [{ distance: 25 }], poiSearchInput: { value: 'tavern' },
         window: { location }, prefetchedImageUrls: new Set(), isMobileLayoutActive: false,
@@ -61,7 +61,11 @@ function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinitio
         renderMapFeatures: selected => calls.rendered.push(selected.id),
         finalizeMapUI(id) { context.currentlyLoadedMapId = id; context.loadingMapId = null; },
         applySearchParamsToCurrentMap: params => calls.focused.push(params.toString()),
-        finalizeMapLoadState(id) { calls.completed.push(id); context.loadingIndicator.style.display = 'none'; },
+        finalizeMapLoadState(id) {
+            calls.completed.push(id);
+            context.loadingIndicator.style.display = 'none';
+            context.mapRasterLoad?.finish();
+        },
         removeBootstrapMapPreview() {}, removeMapPreviewLayer() {}, setLoadingProgressValue() {}, withAssetVersion: url => url,
         getConfigValue: (_key, fallback) => fallback, closeMobileSheet() {}
     };
@@ -87,6 +91,7 @@ test('reselecting the active map preserves layers, search, and measurements with
     assert.equal(context.loadRequestToken, 5);
     assert.equal(calls.reset, 0);
     assert.deepEqual(calls.definitions, []);
+    assert.deepEqual(calls.focused, []);
     assert.deepEqual(calls.analytics, []);
     assert.deepEqual(calls.push, []);
     assert.deepEqual(calls.replace, []);
@@ -110,7 +115,7 @@ test('same-map navigation clears transient URL focus and pushes a single history
     assert.equal(context.window.location.search, '?embed=true');
     assert.equal(calls.push.length, 1);
     assert.equal(calls.replace.length, 0);
-    assert.deepEqual(calls.focused, ['embed=true']);
+    assert.deepEqual(calls.focused, []);
     assert.equal(calls.reset, 0);
 });
 
@@ -189,4 +194,18 @@ test('an unavailable map is still rejected even if its ID matches stale active s
     assert.equal(context.failure.reason, 'unavailable');
     assert.equal(calls.reset, 1);
     assert.deepEqual(calls.definitions, []);
+});
+
+test('raster waiters settle when a new map supersedes the pending map', async () => {
+    const { context, calls, preloads } = createHarness({ loaded: false });
+    const waiting = context.loadMap('a', false, null, { waitForRaster: true });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(calls.rendered, ['a']);
+    assert.deepEqual(calls.completed, []);
+    await context.loadMap('b', false);
+    await waiting;
+    preloads[0].onload();
+    assert.deepEqual(calls.completed, []);
+    preloads[1].onload();
+    assert.deepEqual(calls.completed, ['b']);
 });

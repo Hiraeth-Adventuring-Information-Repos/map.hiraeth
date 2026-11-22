@@ -54,6 +54,8 @@ global.showShareRelayPrompt = (context) => {
 };
 
 global.currentBounds = null;
+let zoomFloorOptions;
+global.syncMapZoomFloor = options => { zoomFloorOptions = options; };
 
 // eslint-disable-next-line no-eval
 eval(functionSource);
@@ -69,6 +71,7 @@ function resetMocks() {
     getShareContextFromParamsReturnValue = null;
     showShareRelayPromptArgs = null;
     global.currentBounds = null;
+    zoomFloorOptions = null;
 }
 
 // Test case 1: When params have 'poi'/'region'/'line' and checkAndFocusFeature returns true
@@ -130,5 +133,17 @@ global.currentBounds = [[-10, -10], [10, 10]];
 result = applySearchParamsToCurrentMap(params);
 assert.equal(result, false, 'Should return false when fitting bounds');
 assert.deepEqual(mapFitBoundsArgs, [[-10, -10], [10, 10]], 'Should call map.fitBounds with currentBounds');
+assert.deepEqual(zoomFloorOptions, { explicitZoom: null });
+
+resetMocks();
+params = new URLSearchParams('view=3072,4096,-4.5');
+resolveInitialMapViewportReturnValue = {
+    mode: 'explicit-view',
+    view: { lat: 3072, lng: 4096, zoom: -4.5 },
+    rawView: '3072,4096,-4.5'
+};
+applySearchParamsToCurrentMap(params);
+assert.deepEqual(zoomFloorOptions, { explicitZoom: -4.5 });
+assert.equal(mapSetViewArgs.zoom, -4.5);
 
 console.log('applySearchParamsToCurrentMap checks passed');

@@ -278,6 +278,33 @@ test('source bootstrap loads unversioned config offline using only the active re
     await missing.lifetime;
 });
 
+test('only Pages shells omit the standalone app config from the precache', async () => {
+    const script = 'js/app-config.js';
+    const versionedScript = script + '?v=' + VERSION;
+    const versionedApp = 'js/app.js?v=' + VERSION;
+    const pages = { assets: { serviceWorker: { appConfigInShell: true } } };
+    const configuredPages = { assets: { serviceWorker: {
+        appConfigInShell: true,
+        versionedShellAssets: [script, 'js/app.js'],
+        staticShellAssets: ['index.html', './' + script]
+    } } };
+    for (const [options, precachesScript] of [
+        [{}, true],
+        [{ config: pages, failConfigOnce: true }, true],
+        [{ config: pages }, false],
+        [{ config: configuredPages }, false]
+    ]) {
+        const worker = createWorker({ basePath: '/maps/', ...options });
+        await worker.lifecycle('install');
+        const shell = worker.stores.get('hag-shell-' + VERSION);
+        assert.equal(shell.has(worker.keyFor('index.html')), true);
+        assert.equal(shell.has(worker.keyFor(versionedApp)), true);
+        assert.equal(shell.has(worker.keyFor(versionedScript)), precachesScript);
+        assert.equal(worker.fetchCalls.includes(worker.keyFor(versionedScript)), precachesScript);
+        assert.equal(worker.fetchCalls.includes(worker.keyFor(script)), false);
+    }
+});
+
 test('configured JSON assets share runtime data storage and runtime writes extend fetch lifetime', async () => {
     const worker = createWorker({ config: { assets: { serviceWorker: {
         versionedShellAssets: ['maps/custom.json', 'site.config.json', 'js/app.js'],

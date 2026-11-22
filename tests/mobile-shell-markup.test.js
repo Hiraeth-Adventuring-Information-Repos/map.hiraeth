@@ -76,7 +76,7 @@ assert.match(styleSource, /html\.mobile-layout-v2\.is-mobile-layout #feature-det
 assert.doesNotMatch(appSource, /if \(selectedSidebarFeature && isMobileLayoutActive\) \{[\s\S]*mode: MOBILE_SURFACE_MODE_ATLAS,/m);
 assert.doesNotMatch(appSource, /requestAnimationFrame\(\(\) => poiSearchInput\.focus/);
 assert.match(appSource, /poiSearchInput\.focus\(\{ preventScroll: true \}\)/);
-assert.match(appSource, /function selectSearchResult\(index = activeSearchResultIndex\) \{[\s\S]*closeMobileSheet\(\{ restoreFocus: false \}\);[\s\S]*updateActiveFilterChips\(\);/m);
+assert.match(appSource, /function selectSearchResult\([^)]*\) \{[\s\S]*closeMobileSheet\(\{ restoreFocus: false \}\);[\s\S]*updateActiveFilterChips\(\);/m);
 assert.match(appSource, /function openSelectedFeatureDetails\(\) \{[\s\S]*closeMobileSheet\(\{ restoreFocus: false \}\);/m);
 
 console.log('mobile shell markup checks passed');

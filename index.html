@@ -36,7 +36,7 @@
         }
     </style>
     <script>
-        window.APP_ASSET_VERSION = "0.1.91";
+        window.APP_ASSET_VERSION = "0.1.92";
         window.__markAppStylesReady = function markAppStylesReady() {
             document.documentElement.classList.remove("app-booting");
             if (window.__APP_STYLE_READY_TIMEOUT__) {
@@ -158,21 +158,21 @@
         }
     </style>
 
-    <link rel="stylesheet" href="css/leaflet.css?v=0.1.91" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/style.css?v=0.1.91" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/stars.css?v=0.1.91" data-app-stylesheet="true">
-    <link rel="stylesheet" href="css/Control.MiniMap.min.css?v=0.1.91" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/leaflet.css?v=0.1.92" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/style.css?v=0.1.92" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/stars.css?v=0.1.92" data-app-stylesheet="true">
+    <link rel="stylesheet" href="css/Control.MiniMap.min.css?v=0.1.92" data-app-stylesheet="true">
     <script>window.__markAppStylesReady && window.__markAppStylesReady();</script>
-    <link rel="preload" href="js/libs/leaflet.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/Control.MiniMap.min.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/lucide.min.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="js/libs/purify.min.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="js/starfield.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="js/shared-utils.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="js/app.js?v=0.1.91" as="script" data-app-preload="true">
-    <link rel="preload" href="maps/atlas-index.json?v=0.1.91" as="fetch" type="application/json" crossorigin="anonymous" data-app-preload="true">
+    <link rel="preload" href="js/libs/leaflet.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/Control.MiniMap.min.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/lucide.min.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="js/libs/purify.min.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="js/starfield.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="js/shared-utils.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="js/app.js?v=0.1.92" as="script" data-app-preload="true">
+    <link rel="preload" href="maps/atlas-index.json?v=0.1.92" as="fetch" type="application/json" crossorigin="anonymous" data-app-preload="true">
 
-    <script src="js/app-config.js?v=0.1.91"></script>
+    <script src="js/app-config.js?v=0.1.92"></script>
     <script>
         window.APP_ASSET_VERSION = window.AppConfig ? window.AppConfig.get("assets.version", "0") : "0";
         window.THEME_STORAGE_KEYS = {
@@ -427,6 +427,16 @@
                 <div id="star-field">
                     <canvas id="star-canvas" aria-hidden="true"></canvas>
                 </div>
+                <div id="measurement-target" aria-hidden="true"></div>
+            </div>
+
+            <div id="measurement-controls" role="group" aria-label="Measure distance" hidden>
+                <p id="measurement-instructions">Click or tap the map to add points. With the map focused, pan with the arrow keys and press Space to add a point at the center. Enter finishes, Backspace undoes, and Esc cancels.</p>
+                <div class="measurement-actions">
+                    <button id="measurement-undo" type="button" disabled>Undo</button>
+                    <button id="measurement-cancel" type="button">Cancel</button>
+                    <button id="measurement-finish" type="button" disabled>Finish</button>
+                </div>
             </div>
 
             <div id="wip-popup" role="status">
@@ -436,6 +446,7 @@
 
             <div id="map-blurb"></div>
             <div id="info-controls-container">
+                <span id="current-map-name" hidden></span>
                 <button id="toggle-blurb-btn" class="map-control-button leaflet-control" title="Toggle Map Info" aria-label="Toggle Map Info" aria-expanded="false">
                     <i class="ui-icon" data-lucide="info" aria-hidden="true"></i>
                 </button>
@@ -677,7 +688,7 @@
       Your browser does not support the audio element.
     </audio>
 
-    <script src="js/libs/purify.min.js?v=0.1.91"></script>
+    <script src="js/libs/purify.min.js?v=0.1.92"></script>
 
     <script>
         (function loadVersionedLocalScripts() {

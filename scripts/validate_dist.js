@@ -18,11 +18,9 @@ const requiredPagesFiles = [
     'tile/manifest.json'
 ];
 const optimizedAssetBudgets = {
-    // Keep a small margin over the 232.1 KiB viewer with accessibility refinements;
-    // routing and parcel renderers remain separate.
-    appBytes: 235 * 1024,
-    // Directions cards, route suggestions and the mobile sheet add about 5 KiB.
-    styleBytes: 108 * 1024,
+    // Allow for keyboard measurement, viewport fitting and atlas search navigation.
+    appBytes: 241 * 1024,
+    styleBytes: 109 * 1024,
     atlasShellBytes: 32 * 1024
 };
 

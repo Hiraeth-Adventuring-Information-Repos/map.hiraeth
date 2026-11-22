@@ -65,19 +65,22 @@ async function loadShellAssetConfig() {
         if (!response.ok) throw new Error(`Config returned ${response.status}`);
         const cacheResponse = response.clone();
         const config = await response.json();
+        const serviceWorker = config?.assets?.serviceWorker;
         return {
-            versioned: Array.isArray(config?.assets?.serviceWorker?.versionedShellAssets)
-                ? config.assets.serviceWorker.versionedShellAssets
+            versioned: Array.isArray(serviceWorker?.versionedShellAssets)
+                ? serviceWorker.versionedShellAssets
                 : DEFAULT_VERSIONED_SHELL_ASSETS,
-            static: Array.isArray(config?.assets?.serviceWorker?.staticShellAssets)
-                ? config.assets.serviceWorker.staticShellAssets
+            static: Array.isArray(serviceWorker?.staticShellAssets)
+                ? serviceWorker.staticShellAssets
                 : DEFAULT_STATIC_SHELL_ASSETS,
+            appConfigInShell: serviceWorker?.appConfigInShell === true,
             configAsset: { url: configUrl, response: cacheResponse }
         };
     } catch (error) {
         return {
             versioned: DEFAULT_VERSIONED_SHELL_ASSETS,
             static: DEFAULT_STATIC_SHELL_ASSETS,
+            appConfigInShell: false,
             configAsset: null
         };
     }
@@ -89,9 +92,14 @@ self.addEventListener('install', (event) => {
         const versionedShellAssets = configuredAssets.versioned
             .filter((asset) => !configuredAssets.configAsset || asset !== 'site.config.json')
             .map(versionAsset);
+        // The Pages HTML already contains the bootstrap. Keep caching the standalone
+        // script for source builds and whenever the config could not be read.
+        const appConfigUrl = new URL('js/app-config.js', self.location.href);
         const assetsByCache = new Map();
         for (const asset of [...configuredAssets.static, ...versionedShellAssets]) {
             const url = new URL(asset, self.location.href);
+            if (configuredAssets.appConfigInShell &&
+                url.origin === appConfigUrl.origin && url.pathname === appConfigUrl.pathname) continue;
             const cacheName = url.pathname.endsWith('.json') ? DATA_CACHE
                 : isVersionedTileRequest(url) ? TILE_CACHE
                 : isMediaRequest(url) ? ASSET_CACHE

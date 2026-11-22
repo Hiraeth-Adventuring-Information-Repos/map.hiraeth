@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const {
     applyTileCacheVersionToMap,
@@ -83,13 +84,34 @@ assert.equal(
     'Pages bundles should keep the preview visible instead of requesting omitted full images when all tiles fail'
 );
 
-const embeddedIndex = embedPagesSiteConfig(
-    '<!doctype html><script src="js/app-config.js?v=1"></script>',
-    { copy: { html: '</script><script>alert(1)</script>' } }
+assert.equal(pagesSiteConfig.assets.serviceWorker.appConfigInShell, true);
+assert.equal(sourceSiteConfig.assets.serviceWorker?.appConfigInShell, undefined);
+const configuredPrecache = { assets: { serviceWorker: { versionedShellAssets: ['js/app-config.js', 'js/app.js'] } } };
+const pagesPrecache = createPagesSiteConfig(configuredPrecache).assets.serviceWorker;
+assert.deepEqual(pagesPrecache, { ...configuredPrecache.assets.serviceWorker, appConfigInShell: true });
+pagesPrecache.versionedShellAssets.pop();
+assert.deepEqual(configuredPrecache.assets.serviceWorker, { versionedShellAssets: ['js/app-config.js', 'js/app.js'] });
+
+const sourceIndex = '<!doctype html><script src="js/app-config.js?v=1"></script>';
+const scriptLikeCopy = '</script><script>alert(1)</script>$&$$$1';
+const appConfigSource = minifyPagesRuntimeSource(
+    'window.result = [window.__SITE_CONFIG__.copy.html, window.__SITE_CONFIG_EMBEDDED__, "</ScRiPt>$&$$$1"];',
+    { loader: 'js', target: 'es2020' }
 );
+const embeddedIndex = embedPagesSiteConfig(sourceIndex, { copy: { html: scriptLikeCopy } }, appConfigSource);
 assert.match(embeddedIndex, /window\.__SITE_CONFIG_EMBEDDED__=true/);
 assert.match(embeddedIndex, /\\u003c\/script>/);
 assert.doesNotMatch(embeddedIndex, /<script>alert\(1\)<\/script>/);
+assert.doesNotMatch(embeddedIndex, /src="js\/app-config\.js/);
+const context = vm.createContext({ window: {} });
+const inlineScripts = [...embeddedIndex.matchAll(/<script>(.*?)<\/script>/gs)];
+assert.equal(inlineScripts.length, 2);
+inlineScripts.forEach(([, script]) => vm.runInContext(script, context));
+assert.deepEqual(Array.from(context.window.result), [scriptLikeCopy, true, '</ScRiPt>$&$$$1']);
+assert.throws(
+    () => embedPagesSiteConfig(sourceIndex, {}, 'window.result = "<!--<script>";'),
+    /unsafe in an inline script/
+);
 
 const pagesAtlasPayloads = createPagesAtlasPayloads({
     generatedAt: '2026-07-09T00:00:00.000Z',

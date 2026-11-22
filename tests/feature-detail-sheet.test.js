@@ -51,6 +51,7 @@ global.workspaceMapResizeFrame = null;
 global.featureDetailSearchVisibilityTimer = null;
 global.featureDetailSearchTargetObscured = false;
 global.lastFeatureDetailTrigger = null;
+global.desktopSearchResultPopup = null;
 global.isMobileLayoutActive = false;
 global.mobileSurfaceMode = null;
 global.MOBILE_SURFACE_MODE_ATLAS = 'atlas';

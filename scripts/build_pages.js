@@ -10,6 +10,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const outputDir = path.join(repoRoot, 'dist');
 const defaultTileCachePath = path.join(repoRoot, '.cache', 'pages-tiles');
 const maxPagesBundleBytes = 225 * 1024 * 1024;
+const appConfigPath = 'js/app-config.js';
 
 const runtimeFiles = [
     'index.html',
@@ -30,7 +31,7 @@ const runtimeAssetFiles = [
     'css/images/marker-icon.png',
     'css/images/marker-icon-2x.png',
     'css/images/marker-shadow.png',
-    'js/app-config.js',
+    appConfigPath,
     'js/shared-utils.js',
     'js/campaign-journeys.js',
     'js/travel-network.js',
@@ -87,7 +88,7 @@ const pagesRuntimeMinifyFiles = [
     { relativePath: 'css/city-addresses.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
     { relativePath: 'css/style.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
     { relativePath: 'css/stars.css', loader: 'css', target: ['chrome100', 'firefox100', 'safari15.4'] },
-    { relativePath: 'js/app-config.js', loader: 'js', target: 'es2020' },
+    { relativePath: appConfigPath, loader: 'js', target: 'es2020' },
     { relativePath: 'js/app.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/campaign-journeys.js', loader: 'js', target: 'es2020' },
     { relativePath: 'js/city-addresses.js', loader: 'js', target: 'es2020' },
@@ -133,6 +134,13 @@ function createPagesSiteConfig(sourceConfig) {
         tileAssetRoot: 'tile',
         tileFullImageFallback: false
     };
+    pagesConfig.assets = {
+        ...pagesConfig.assets,
+        serviceWorker: {
+            ...pagesConfig.assets?.serviceWorker,
+            appConfigInShell: true
+        }
+    };
     return pagesConfig;
 }
 
@@ -155,19 +163,23 @@ function serializeInlineJson(value) {
         .replace(/\u2029/g, '\\u2029');
 }
 
-function embedPagesSiteConfig(indexHtml, pagesConfig) {
-    const appConfigScriptPattern = /(<script src="js\/app-config\.js\?v=[^"]+"><\/script>)/;
+function embedPagesSiteConfig(indexHtml, pagesConfig, appConfigScript) {
+    const appConfigScriptPattern = /<script src="js\/app-config\.js\?v=[^"]+"><\/script>/;
     if (!appConfigScriptPattern.test(indexHtml)) {
         throw new Error('Could not locate the app config script in index.html.');
     }
     const inlineConfig = `<script>window.__SITE_CONFIG__=${serializeInlineJson(pagesConfig)};window.__SITE_CONFIG_EMBEDDED__=true;</script>`;
-    return indexHtml.replace(appConfigScriptPattern, `${inlineConfig}\n    $1`);
+    if (/<\/script|<!--/i.test(appConfigScript)) {
+        throw new Error('App config contains markup that is unsafe in an inline script.');
+    }
+    return indexHtml.replace(appConfigScriptPattern, () => `${inlineConfig}\n    <script>${appConfigScript}</script>`);
 }
 
 function embedPagesConfigInIndex(pagesConfig) {
     const destinationPath = resolveOutputPath('index.html');
     const indexHtml = fs.readFileSync(destinationPath, 'utf8');
-    fs.writeFileSync(destinationPath, embedPagesSiteConfig(indexHtml, pagesConfig));
+    const appConfigScript = fs.readFileSync(resolveOutputPath(appConfigPath), 'utf8');
+    fs.writeFileSync(destinationPath, embedPagesSiteConfig(indexHtml, pagesConfig, appConfigScript));
 }
 
 function createPagesAtlasPayloads(atlasIndex) {
@@ -684,7 +696,6 @@ function buildPagesBundle() {
 
     runtimeFiles.forEach(copyFile);
     const pagesConfig = copyPagesSiteConfig();
-    embedPagesConfigInIndex(pagesConfig);
     runtimeAssetFiles.forEach(copyFile);
     const lucideSubset = writePagesLucideSubset();
     runtimeDirectories.forEach(copyDirectory);
@@ -699,6 +710,7 @@ function buildPagesBundle() {
     splitPagesRoutingData();
     const atlasSearchSplit = splitPagesAtlasSearchIndex();
     const runtimeOptimization = optimizePagesRuntimeAssets();
+    embedPagesConfigInIndex(pagesConfig);
     const jsonOptimization = compactPagesJsonAssets();
 
     fs.writeFileSync(path.join(outputDir, '.nojekyll'), '');

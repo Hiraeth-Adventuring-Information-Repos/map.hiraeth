@@ -44,3 +44,19 @@ test('replacement feature objects get fresh cached geometry text', () => {
     assert.equal(search.computeGeometrySearchMatch('silver', layer, {}, 'Road', () => 'silver mine').matched, true);
     assert.equal(search.computeGeometrySearchMatch('silver', layer, {}, 'River', () => 'water').matched, false);
 });
+
+test('long detail phrases match together while short searches remain fuzzy', () => {
+    const search = createSearch();
+    const details = 'The breads from today and the older dregs can still be found in the green cellar.';
+    assert.equal(search.computeSearchMatch('breads and dregs', 'Cellar', details).matched, false);
+    assert.equal(search.computeSearchMatch('breads and dregs', 'Cellar', 'Breads and Dregs serves meals.').matchedByContent, true);
+    assert.equal(search.computeSearchMatch('grn', 'Cellar', details).matchedByContent, true);
+});
+
+test('detail phrases can cross paragraph boundaries in the Astrousia description', () => {
+    const search = createSearch();
+    const astrousia = require('../maps/Astrousia.json');
+    const house = astrousia.pointsOfInterest.find(feature => feature.description?.includes('CMC remains unresolved.'));
+    const term = search.normalizeSearchValue('Remains unresolved.   The House combines');
+    assert.equal(search.computeSearchMatch(term, house.name, house.description).matchedByContent, true);
+});

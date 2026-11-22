@@ -17,6 +17,46 @@ test.describe('built routing payloads', () => {
     });
     test.afterAll(async () => { if (builtServer) await new Promise(resolve => builtServer.close(resolve)); });
 
+    test('map overview refits across viewport sizes and shared views retain their center and zoom', async ({ page }) => {
+        const mapId = 'The-Port-City-of-Stomion';
+        const openMap = async (search = '') => {
+            await page.goto(`${builtBase}/index.html${search}#${mapId}-s=c`);
+            await page.waitForFunction(id => typeof currentlyLoadedMapId !== 'undefined' && currentlyLoadedMapId === id, mapId);
+            await expect(page.locator('#loading-indicator')).toBeHidden();
+        };
+        const readView = () => page.evaluate(() => {
+            const bounds = L.latLngBounds(currentBounds);
+            const size = map.getSize();
+            const { clientWidth, clientHeight } = map.getContainer();
+            const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
+            const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
+            const projectedCenter = map.latLngToContainerPoint(bounds.getCenter());
+            return {
+                size: [size.x, size.y],
+                sizeMatchesElement: size.x === clientWidth && size.y === clientHeight,
+                fits: topLeft.x >= -1 && topLeft.y >= -1 && bottomRight.x <= size.x + 1 && bottomRight.y <= size.y + 1,
+                centered: projectedCenter.distanceTo(size.divideBy(2)) <= 2,
+                zoom: map.getZoom(),
+            };
+        });
+
+        await page.setViewportSize({ width: 1300, height: 900 });
+        await openMap();
+        await page.setViewportSize({ width: 360, height: 640 });
+        await expect.poll(readView).toMatchObject({ size: [360, 640], sizeMatchesElement: true, fits: true, centered: true });
+        const narrowZoom = (await readView()).zoom;
+        await page.setViewportSize({ width: 1200, height: 900 });
+        await expect.poll(readView).toMatchObject({ size: [1200, 900], sizeMatchesElement: true, fits: true, centered: true });
+        expect((await readView()).zoom).toBeGreaterThan(narrowZoom);
+
+        await openMap('?view=1536,2048,-5');
+        await expect.poll(readView).toMatchObject({ zoom: -5, centered: true });
+        await page.setViewportSize({ width: 360, height: 640 });
+        await expect.poll(readView).toMatchObject({ size: [360, 640], sizeMatchesElement: true, zoom: -5, centered: true });
+        await page.setViewportSize({ width: 1200, height: 900 });
+        await expect.poll(readView).toMatchObject({ size: [1200, 900], sizeMatchesElement: true, zoom: -5, centered: true });
+    });
+
     test('region hover stripes preserve clicks and clear with visibility and map changes', async ({ page }) => {
         await page.goto(`${builtBase}/index.html#main_continent-s=c`);
         await page.waitForFunction(() => typeof allMapRegions !== 'undefined' && allMapRegions.length > 1);
@@ -285,6 +325,20 @@ test.describe('built routing payloads', () => {
             map.eachLayer(layer => { if (layer.options?.className === 'travel-result-line') count++; });
             return count;
         })).toBe(expected.legs.length);
+    });
+
+    test('turning measurement off in mobile Tools returns keyboard focus to its launcher', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto(`${builtBase}/index.html#The-Port-City-of-Stomion-s=c`);
+        const tools = page.locator('#mobile-tools-launcher-btn');
+        const measure = page.locator('#mobile-measure-btn');
+        await tools.click();
+        await measure.press('Enter');
+        await expect(page.locator('#measurement-controls')).toBeVisible();
+        await tools.click();
+        await measure.press('Enter');
+        await expect(page.locator('#measurement-controls')).toBeHidden();
+        await expect(tools).toBeFocused();
     });
 
     test('failed optional geometry shows Retry and succeeds without a partial planner', async ({ page }) => {

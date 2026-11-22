@@ -69,6 +69,13 @@ assertShortPlainText(irlOldMaps.selectorDescription || irlOldMaps.summary || irl
 const mapSearchEntry = atlas.searchIndex.find((entry) => entry.kind === 'map' && entry.mapId === 'main_continent');
 assert.ok(mapSearchEntry);
 assert.equal(mapSearchEntry.name, 'Fair');
+assert.equal(mapSearchEntry.mapPath, 'Fair');
+const archivedFairSearchEntry = atlas.searchIndex.find(entry => entry.kind === 'map' && entry.mapId === 'OLD-Fair');
+assert.equal(archivedFairSearchEntry.mapPath, 'Development & Archive Maps › Fair');
+assert.ok(!atlas.searchIndex.some(entry => entry.mapId === 'IRL Old Maps'));
+const castgateSearchEntry = atlas.searchIndex.find(entry => entry.kind === 'map' && entry.mapId === 'castgate');
+assert.equal(castgateSearchEntry.mapPath, 'Fair › IceBeach › Castgate');
+assert.ok(atlas.searchIndex.some(entry => entry.kind === 'map' && entry.mapId === 'IceBeach'));
 assertShortPlainText(mapSearchEntry.summary || mapSearchEntry.description || '', 'main_continent search summary');
 
 const stomionPoiEntry = atlas.searchIndex.find((entry) => entry.kind === 'poi' && entry.mapId === 'The-Port-City-of-Stomion');

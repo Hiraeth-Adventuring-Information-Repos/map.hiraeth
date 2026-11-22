@@ -42,10 +42,13 @@ class MockElement {
     constructor() {
         this.classList = new MockClassList();
         this.attributes = new Map();
-        this.title = "";
+        this.focused = false;
     }
     setAttribute(name, value) {
         this.attributes.set(name, value);
+    }
+    focus() {
+        this.focused = true;
     }
     getAttribute(name) {
         return this.attributes.get(name);
@@ -62,6 +65,8 @@ global.measurementPath = null;
 global.measureToolBtn = new MockElement();
 global.mapElement = new MockElement();
 global.mobileMeasureBtn = new MockElement();
+global.measurementControls = { hidden: true };
+global.syncMeasurementActions = function() {};
 
 global.mapEvents = {};
 global.map = {
@@ -112,6 +117,7 @@ global.toggleFilterPanel = function() {
 
 global.handleMultiPointMeasureClick = function() {};
 global.handleMultiPointMouseMove = function() {};
+global.handleMeasurementDoubleClick = function() {};
 global.finalizeMultiPointMeasureCalled = false;
 global.finalizeMultiPointMeasure = function(permanent) {
     global.finalizeMultiPointMeasureCalled = true;
@@ -152,11 +158,13 @@ assert.equal(global.isMeasuringMultiPoint, true);
 assert.equal(global.measureToolBtn.classList.has('active'), true);
 assert.equal(global.measureToolBtn.getAttribute('aria-pressed'), true);
 assert.equal(global.mapElement.classList.has('measuring-cursor'), true);
-assert.equal(global.measureToolBtn.title, "Click to add points. Double-click or Enter to finish. Backspace undoes a point. Esc cancels.");
+assert.equal(global.measurementControls.hidden, false);
+assert.equal(global.mapElement.focused, true);
+assert.equal(global.mapElement.getAttribute('aria-describedby'), 'measurement-instructions');
 
 assert.equal(global.mapEvents['click'], global.handleMultiPointMeasureClick);
 assert.equal(global.mapEvents['mousemove'], global.handleMultiPointMouseMove);
-assert.equal(global.mapEvents['dblclick'], global.finalizeMultiPointMeasure);
+assert.equal(global.mapEvents['dblclick'], global.handleMeasurementDoubleClick);
 assert.equal(global.documentEvents['keydown'], global.handleMeasureKeyDown);
 
 assert.equal(global.measurementLayerGroup.cleared, true);
@@ -192,7 +200,6 @@ assert.equal(global.isMeasuringMultiPoint, false);
 assert.equal(global.measureToolBtn.classList.has('active'), false);
 assert.equal(global.measureToolBtn.getAttribute('aria-pressed'), false);
 assert.equal(global.mapElement.classList.has('measuring-cursor'), false);
-assert.equal(global.measureToolBtn.title, "Measure Distance");
 
 assert.equal(global.finalizeMultiPointMeasureCalled, true);
 assert.equal(global.finalizeMultiPointMeasurePermanentArg, false);

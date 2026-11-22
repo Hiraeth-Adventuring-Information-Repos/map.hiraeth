@@ -117,6 +117,76 @@ test('mobile atlas search keeps visible focus through a delayed map load', async
     await expect(page.locator(':focus')).toBeVisible();
 });
 
+test('desktop Atlas keyboard focus waits for the destination raster to open its popup', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openMap(page, 'Astrousia');
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    const destinationRaster = /\/(?:tile\/The-Port-City-of-Stomion\/|maps\/The-Port-City-of-Stomion\.webp)/;
+    await page.route(destinationRaster, async route => {
+        await gate;
+        await route.continue();
+    });
+
+    const search = page.locator('#poi-search-input');
+    const details = page.getByRole('button', { name: 'Open details for Breads and Dregs', exact: true });
+    try {
+        await page.mouse.move(0, 0);
+        await search.fill('Breads and Dregs');
+        const broaden = page.getByRole('button', { name: 'Search the Atlas', exact: true });
+        await expect(page.getByText('No matches on this map.')).toBeVisible();
+        await broaden.focus();
+        await broaden.press('Enter');
+        await expect(page.getByRole('option')).toHaveText(/Breads and Dregs/);
+        await search.press('Enter');
+        await page.waitForFunction(() => currentlyLoadedMapId === 'The-Port-City-of-Stomion');
+        await expect(page.locator('#loading-indicator')).toBeVisible();
+        await expect(details).toHaveCount(0);
+    } finally {
+        release();
+    }
+    await expect(details).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(details).toHaveCount(0);
+    await expect(search).toBeFocused();
+});
+
+test('local search temporarily reveals just the selected marker when markers are hidden', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openMap(page);
+    const toggle = page.locator('#toggle-markers-btn');
+    const search = page.locator('#poi-search-input');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-label', 'Show Markers & Regions');
+    await search.fill('Breads and Dregs');
+    await expect(page.getByRole('option')).toHaveText(/Breads and Dregs/);
+    await search.press('Enter');
+    await expect(page.getByRole('button', { name: 'Open details for Breads and Dregs', exact: true })).toBeFocused();
+    expect(await page.evaluate(() => currentMarkerGroup.getLayers().map(layer => layer.poiData.name))).toEqual(['Breads and Dregs']);
+    await page.keyboard.press('Escape');
+    await expect(search).toBeFocused();
+    await expect(toggle).toHaveAttribute('aria-label', 'Show Markers & Regions');
+    expect(await page.evaluate(() => currentMarkerGroup.getLayers().length)).toBe(0);
+});
+
+test('Atlas navigation expands every ancestor of a selected nested folder map', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openMap(page, 'Astrousia');
+    const search = page.locator('#poi-search-input');
+    await page.locator('#search-scope-atlas-btn').click();
+    await page.mouse.move(0, 0);
+    await search.fill('IceBeach');
+    await expect(page.getByRole('option').first()).toHaveText(/Fair › IceBeach/);
+    const selected = page.locator('#map-list .folder-header[data-map-id="IceBeach"]');
+    const fair = page.locator('#map-list .folder-header[data-map-id="main_continent"]');
+    await expect(fair.locator('.folder-main-action')).toHaveAttribute('aria-expanded', 'false');
+    await search.press('Enter');
+    await page.waitForFunction(() => currentlyLoadedMapId === 'IceBeach');
+    await expect(selected).toHaveClass(/active/);
+    await expect(fair.locator('.folder-main-action')).toHaveAttribute('aria-expanded', 'true');
+    await expect(selected.locator('.folder-main-action')).toHaveAttribute('aria-expanded', 'true');
+});
+
 for (const width of [1440, 390]) {
     test(`skip link reaches search without changing the map URL at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 844 });

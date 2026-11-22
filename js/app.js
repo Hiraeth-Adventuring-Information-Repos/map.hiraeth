@@ -69,6 +69,7 @@ const mapDefinitionCache = new Map();
 const mapDefinitionPromiseCache = new Map();
 let currentMapData = null;
 let loadRequestToken = 0;
+let mapRasterLoad = null;
 const prefetchedJsonUrls = new Set();
 const prefetchedImageUrls = new Set();
 let prefetchImageQueue = [];
@@ -200,6 +201,7 @@ function stepSmoothWheelZoom() {
     if (!map || smoothWheelTargetZoom === null || !smoothWheelAnchorPoint) return;
 
     const currentZoom = map.getZoom();
+    smoothWheelTargetZoom = clampZoomLevel(smoothWheelTargetZoom);
     const remainingZoom = smoothWheelTargetZoom - currentZoom;
     const nextZoom = Math.abs(remainingZoom) <= SMOOTH_WHEEL_SETTLE_DELTA
         ? smoothWheelTargetZoom
@@ -329,6 +331,8 @@ let cachedMultiPointPixelDistance = 0; // Cached total distance of fixed segment
 let temporaryMouseMoveLine = null; // L.Polyline for the line from last point to cursor
 let temporaryMouseMoveTooltip = null; // L.Tooltip for the temporary line's length
 let measurementDoubleClickZoomWasEnabled = false;
+let lastMeasurementMousePoint = null;
+let measurementMouseDoubleClick = false;
 
 // --- Map Feature State ---
 let gmContentVisible = false;
@@ -689,12 +693,14 @@ function resolveInitialMapViewport(params) {
 }
 
 function applySearchParamsToCurrentMap(params = new URLSearchParams(window.location.search)) {
+    const initialViewport = resolveInitialMapViewport(params);
+    syncMapZoomFloor({ explicitZoom: initialViewport.view?.zoom ?? null });
+
     let featureFocused = false;
     if (params.has('poi') || params.has('region') || params.has('line')) {
         featureFocused = checkAndFocusFeature();
     }
     if (!featureFocused) {
-        const initialViewport = resolveInitialMapViewport(params);
         if (initialViewport.mode === 'explicit-view' && initialViewport.view) {
             map.setView(
                 [initialViewport.view.lat, initialViewport.view.lng],
@@ -707,7 +713,7 @@ function applySearchParamsToCurrentMap(params = new URLSearchParams(window.locat
                 showShareRelayPrompt(shareContext);
             }
         } else if (currentBounds) {
-            map.fitBounds(currentBounds);
+            map.fitBounds(currentBounds, { animate: false });
         }
     }
 
@@ -1002,6 +1008,49 @@ let allMapLines = []; // Holds *all* lines for the loaded map
 let allMapLinesById = new Map(); // Bolt: O(1) lookups for lines
 let allMapLinesByName = new Map(); // Bolt: O(1) lookups for lines
 let currentBounds = null;
+let currentOverviewZoom = null;
+let sharedViewZoom = null;
+
+function syncMapZoomFloor({ newSize, explicitZoom } = {}) {
+    if (!currentBounds) return;
+    if (explicitZoom !== undefined) {
+        // A shared view can sit below this viewport's floor. Keep at least one pixel of the image.
+        const minimumSharedZoom = -Math.log2(Math.max(...currentBounds[1]));
+        sharedViewZoom = Number.isFinite(explicitZoom) && explicitZoom >= minimumSharedZoom ? explicitZoom : null;
+    }
+    const size = newSize || map.getSize();
+    if (!size.x || !size.y) return;
+
+    const bounds = L.latLngBounds(currentBounds);
+    const imageSize = map.project(bounds.getSouthEast(), 0).subtract(map.project(bounds.getNorthWest(), 0));
+    const fitZoom = map.getScaleZoom(Math.min(size.x / imageSize.x, size.y / imageSize.y), 0);
+    if (!Number.isFinite(fitZoom)) return;
+
+    const nextOverviewZoom = Math.min(mapOptions.maxZoom, L.Browser.any3d ? fitZoom : Math.floor(fitZoom));
+    const center = bounds.getCenter();
+    const previousOverviewZoom = currentOverviewZoom;
+    const currentZoom = map.getZoom();
+    const wasOverview = newSize && sharedViewZoom === null && previousOverviewZoom !== null &&
+        Math.abs(currentZoom - previousOverviewZoom) < 1e-6 &&
+        map.latLngToContainerPoint(center).distanceTo(newSize.divideBy(2)) <= 2;
+    // Keep an intentional zoom when its old viewport permitted a lower floor.
+    const retainedZoom = newSize && !wasOverview && currentZoom >= map.getMinZoom() ? currentZoom : Infinity;
+
+    currentOverviewZoom = nextOverviewZoom;
+    const minimumZoom = Math.min(mapOptions.minZoom, currentOverviewZoom, sharedViewZoom ?? Infinity, retainedZoom);
+    // Raise the floor after refitting to avoid Leaflet starting a competing zoom animation.
+    if (minimumZoom < map.getMinZoom()) map.setMinZoom(minimumZoom);
+    if (wasOverview && nextOverviewZoom !== previousOverviewZoom) {
+        map.setView(center, nextOverviewZoom, { animate: false });
+    }
+    map.setMinZoom(minimumZoom);
+}
+
+map.on('resize', syncMapZoomFloor);
+if (typeof ResizeObserver === 'function') {
+    // The map element can resize after the window event or during a sidebar transition.
+    new ResizeObserver(() => map.invalidateSize({ debounceMoveend: true })).observe(map.getContainer());
+}
 let currentlyLoadedMapId = null;
 let currentSidebarState = 'o';
 let markersVisible = true; // <--- THIS SHOULD BE TRUE FOR VISIBLE BY DEFAULT
@@ -1128,6 +1177,7 @@ const toggleBlurbBtn = document.getElementById('toggle-blurb-btn');
 const toggleGMPanelBtn = null;
 const toggleToolkitPanelBtn = null;
 const mapBlurbElement = document.getElementById('map-blurb');
+const currentMapName = document.getElementById('current-map-name');
 const toggleMarkersBtn = document.getElementById('toggle-markers-btn');
 const searchControlContainer = document.getElementById('search-control-container');
 const dynamicFiltersContainer = document.getElementById('dynamic-filters-container');
@@ -1212,6 +1262,9 @@ if (poiFilterContainer) {
 const filterToggleAllCheckbox = document.getElementById('filter-toggle-all');
 const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
 const measureToolBtn = document.getElementById('measure-tool-btn');
+const measurementControls = document.getElementById('measurement-controls');
+const measurementUndoBtn = document.getElementById('measurement-undo');
+const measurementFinishBtn = document.getElementById('measurement-finish');
 const directionsBtn = document.getElementById('directions-btn');
 const loadingIndicator = document.getElementById('loading-indicator');
 const loadingRetryBtn = document.getElementById('loading-retry-btn');
@@ -2320,12 +2373,12 @@ function markControlTouch(event) {
     lastControlTouchAt = Date.now();
 }
 
-function shouldIgnoreMapPointerEvent(event) {
+function shouldIgnoreMapPointerEvent(event, { ignoreRecentControlTouch = true } = {}) {
     const target = event?.originalEvent?.target;
     if (target instanceof Element && target.closest('.leaflet-control, .map-control-button, #toggle-sidebar-btn, #mobile-info-help-btn, #mobile-tools-launcher-btn, #mobile-dock, #mobile-search-card, #mobile-tools-card, #sidebar, #feature-detail-sheet, #map-blurb, #travel-panel, .modal-overlay, .modal-content')) {
         return true;
     }
-    if (isMobileLayoutActive && (Date.now() - lastControlTouchAt) < 150) {
+    if (ignoreRecentControlTouch && isMobileLayoutActive && (Date.now() - lastControlTouchAt) < 150) {
         return true;
     }
     return false;
@@ -2632,8 +2685,8 @@ function renderSidebarFeaturePanel() {
 
 function refreshMapAfterFeatureDetailLayoutChange() {
     if (!map || typeof map.invalidateSize !== 'function') return;
-    requestAnimationFrame(() => map.invalidateSize({ pan: false }));
-    setTimeout(() => map.invalidateSize({ pan: false }), transitionDuration + 20);
+    requestAnimationFrame(() => map.invalidateSize({ debounceMoveend: true }));
+    setTimeout(() => map.invalidateSize({ debounceMoveend: true }), transitionDuration + 20);
 }
 
 function syncFeatureDetailSearchVisibility() {
@@ -2698,7 +2751,7 @@ function scheduleWorkspaceMapResize() {
     workspaceMapResizeFrame = scheduleFrame(() => {
         workspaceMapResizeFrame = null;
         if (map && typeof map.invalidateSize === 'function') {
-            map.invalidateSize({ pan: false });
+            map.invalidateSize({ debounceMoveend: true });
         }
     });
 }
@@ -3050,7 +3103,10 @@ function syncFeatureDetailSheetState() {
 function openSelectedFeatureDetails() {
     if (!selectedSidebarFeature || !featureDetailSheet) return false;
     const activeElement = document.activeElement;
-    lastFeatureDetailTrigger = activeElement instanceof HTMLElement ? activeElement : null;
+    const searchPopupOwnedFocus = desktopSearchResultPopup?.contains(activeElement);
+    if (searchPopupOwnedFocus) cancelDesktopSearchPopupFocus?.();
+    lastFeatureDetailTrigger = searchPopupOwnedFocus ? poiSearchInput
+        : activeElement instanceof HTMLElement ? activeElement : null;
     featureDetailSheetOpen = true;
     featureDetailSheetExpanded = false;
     if (isMobileLayoutActive && hasOpenMobileSurface()) {
@@ -3313,7 +3369,8 @@ function createSimpleCrsTileLayer(urlTemplate, options) {
             return L.TileLayer.prototype.getTileUrl.call(this, normalizedCoords);
         }
     });
-    return new SimpleCrsTileLayer(urlTemplate, options);
+    // The map owns the zoom floor. Both layers can scale down their lowest native tiles.
+    return new SimpleCrsTileLayer(urlTemplate, { ...options, minZoom: -Infinity });
 }
 
 function buildGeneratedTileUrl(tileSource, coords) {
@@ -3482,7 +3539,6 @@ function showIdleDetailTileLayer(mapInfo, tileSource, generation) {
         : tileSource.urlTemplate;
     const detailLayer = createSimpleCrsTileLayer(urlTemplate, {
         tileSize: tileSource.tileSize,
-        minZoom: mapOptions.minZoom,
         maxZoom: mapOptions.maxZoom,
         minNativeZoom: tileSource.leafletNativeZoom,
         maxNativeZoom: tileSource.leafletNativeZoom,
@@ -3754,7 +3810,6 @@ function createMapBaseLayer(selectedMap, mapImageUrl, bounds) {
             mode: 'tile',
             layer: createSimpleCrsTileLayer(urlTemplate, {
                 tileSize: tileSource.tileSize,
-                minZoom: mapOptions.minZoom,
                 maxZoom: mapOptions.maxZoom,
                 minNativeZoom: tileSource.minNativeZoom,
                 maxNativeZoom: tileSource.maxNativeZoom,
@@ -4647,8 +4702,13 @@ function getSearchScopeLabel(scope = currentSearchScope) {
 
 function prepareAtlasSearchIndex(entries) {
     const preparedEntries = Array.isArray(entries) ? entries : [];
+    const mapPaths = new Map();
+    for (const entry of preparedEntries) {
+        if (entry.kind === 'map' && entry.mapPath) mapPaths.set(entry.mapId, entry.mapPath);
+    }
     for (let index = 0; index < preparedEntries.length; index += 1) {
         const entry = preparedEntries[index];
+        entry._mapPath = mapPaths.get(entry.mapId) || entry.mapName || entry.mapId;
         entry._normalizedName = normalizeSearchValue(entry.name);
         entry._normalizedSearchContent = normalizeSearchValue(`${entry.mapName || ''} ${entry.typeLabel || ''} ${entry.summary || ''} ${entry.description || ''} ${entry.searchText || ''}`);
     }
@@ -4760,7 +4820,7 @@ function closeSearchResults({ clearMeta = true, preserveScope = false } = {}) {
 }
 
 function normalizeSearchValue(value) {
-    return String(value || '').trim().toLowerCase();
+    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 function getSecondarySearchMatchCache(searchContext, normalizedText) {
@@ -4843,9 +4903,13 @@ function checkSecondarySearchMatch(term, normalizedSecondary, searchContext = nu
         return emptyTermMatch;
     }
 
-    const fuzzySecondaryScore = getFuzzyMatchScore(term, normalizedSecondary);
+    const containsTerm = normalizedSecondary.includes(term);
+    // Long phrases in prose need a contiguous match. Short terms still support fuzzy lookup.
+    const fuzzySecondaryScore = containsTerm ? 160
+        : term.length >= 12 && term.includes(' ') ? -1
+            : getFuzzyMatchScore(term, normalizedSecondary);
     if (fuzzySecondaryScore >= 0) {
-        const secondaryMatch = fuzzySecondaryScore === 160 || normalizedSecondary.includes(term)
+        const secondaryMatch = fuzzySecondaryScore === 160
             ? { matched: true, score: 180, matchedByContent: true }
             : { matched: true, score: Math.max(80, fuzzySecondaryScore - 40), matchedByContent: true };
         rememberSecondarySearchMatch(searchCache, term, secondaryMatch);
@@ -5074,7 +5138,7 @@ function setSidebarState(state, updateHash = true) {
 
         // Invalidate map size after CSS transition completes
         setTimeout(() => {
-            map.invalidateSize({ animate: true });
+            map.invalidateSize({ debounceMoveend: true });
             syncFeatureDetailLayoutGeometry();
         }, transitionDuration);
 
@@ -5607,6 +5671,34 @@ function moveSearchResultSelection(direction) {
 }
 
 let cancelPendingSearchResultFocus = null;
+let desktopSearchResultPopup = null;
+let cancelDesktopSearchPopupFocus = null;
+
+function restoreDesktopSearchFocusOnPopupClose(popup, popupElement) {
+    cancelDesktopSearchPopupFocus?.();
+    desktopSearchResultPopup = popupElement;
+    const clearIfOutside = (event) => {
+        if (!popupElement.contains(event.target)) clear();
+    };
+    const restore = (event) => {
+        if (event.popup !== popup) return;
+        clear();
+        if (!isMobileLayoutActive && isSearchResultFocusTarget(poiSearchInput)) {
+            poiSearchInput.focus({ preventScroll: true });
+        }
+    };
+    const clear = () => {
+        map.off('popupclose', restore);
+        document.removeEventListener('pointerdown', clearIfOutside, true);
+        document.removeEventListener('focusin', clearIfOutside, true);
+        desktopSearchResultPopup = null;
+        cancelDesktopSearchPopupFocus = null;
+    };
+    cancelDesktopSearchPopupFocus = clear;
+    map.on('popupclose', restore);
+    document.addEventListener('pointerdown', clearIfOutside, true);
+    document.addEventListener('focusin', clearIfOutside, true);
+}
 
 function isSearchResultFocusTarget(element) {
     if (!element?.isConnected || typeof element.focus !== 'function' || element.matches(':disabled')) return false;
@@ -5618,13 +5710,19 @@ function isSearchResultFocusTarget(element) {
     return element.getClientRects().length > 0;
 }
 
-function beginSearchResultFocusHandoff() {
+function beginSearchResultFocusHandoff({ keyboard = false } = {}) {
     cancelPendingSearchResultFocus?.();
-    if (!isMobileLayoutActive || !isMobileSurfaceMode(MOBILE_SURFACE_MODE_SEARCH)) return null;
+    cancelDesktopSearchPopupFocus?.();
+    const mobileSelection = isMobileLayoutActive;
     const previousActiveElement = document.activeElement;
-    if (previousActiveElement !== document.body &&
-        !mobileSearchPanel?.contains(previousActiveElement) &&
-        !searchResultsContainer.contains(previousActiveElement)) return null;
+    if (mobileSelection) {
+        if (!isMobileSurfaceMode(MOBILE_SURFACE_MODE_SEARCH)) return null;
+        if (previousActiveElement !== document.body && !mobileSearchPanel?.contains(previousActiveElement) &&
+            !searchResultsContainer.contains(previousActiveElement)) return null;
+    } else if (!keyboard || (previousActiveElement !== poiSearchInput &&
+        !searchResultsContainer.contains(previousActiveElement))) {
+        return null;
+    }
 
     let cancelled = false;
     const intentEvents = ['pointerdown', 'keydown', 'focusin'];
@@ -5638,14 +5736,16 @@ function beginSearchResultFocusHandoff() {
 
     return (selection, requestToken = loadRequestToken, selectedUrl = window.location.href) => {
         const finish = (layer) => {
-            const stillOwnsFocus = !cancelled && isMobileLayoutActive && !hasOpenMobileSurface() &&
-                requestToken === loadRequestToken && selectedUrl === window.location.href &&
+            const stillOwnsFocus = !cancelled && isMobileLayoutActive === mobileSelection &&
+                (!mobileSelection || !hasOpenMobileSurface()) && requestToken === loadRequestToken && selectedUrl === window.location.href &&
                 (document.activeElement === previousActiveElement || document.activeElement === document.body);
             cancel();
             if (!stillOwnsFocus) return;
-            const popup = layer?.getPopup?.()?.getElement?.();
+            const popup = layer?.getPopup?.();
+            const popupElement = popup?.getElement?.();
             const targets = [
-                popup?.querySelector('[data-popup-action="open-details"]'),
+                popupElement?.querySelector('[data-popup-action="open-details"]'),
+                !mobileSelection && popupElement?.querySelector('.leaflet-popup-close-button'),
                 layer?.getElement?.(),
                 mapElement,
                 mobileSearchLauncherBtn
@@ -5653,7 +5753,12 @@ function beginSearchResultFocusHandoff() {
             for (const target of targets) {
                 if (!isSearchResultFocusTarget(target)) continue;
                 target.focus({ preventScroll: true });
-                if (document.activeElement === target) break;
+                if (document.activeElement === target) {
+                    if (!mobileSelection && popupElement?.contains(target)) {
+                        restoreDesktopSearchFocusOnPopupClose(popup, popupElement);
+                    }
+                    break;
+                }
             }
         };
         if (selection && typeof selection.then === 'function') {
@@ -5665,10 +5770,10 @@ function beginSearchResultFocusHandoff() {
     };
 }
 
-function selectSearchResult(index = activeSearchResultIndex) {
+function selectSearchResult(index = activeSearchResultIndex, options) {
     const result = renderedSearchResults[index];
     if (!result || typeof result.onSelect !== 'function') return;
-    const handoffFocus = beginSearchResultFocusHandoff();
+    const handoffFocus = beginSearchResultFocusHandoff(options);
     poiSearchInput.value = '';
     setSearchScope(SEARCH_SCOPE_MAP);
     closeSearchResults();
@@ -5721,7 +5826,7 @@ function openAtlasSearchResult(entry) {
         nextUrl
     );
     setSearchScope(SEARCH_SCOPE_MAP);
-    const selection = loadMap(entry.mapId, false, targetMap);
+    const selection = loadMap(entry.mapId, false, targetMap, { waitForRaster: true });
     trackAnalytics('search_result_opened', {
         scope: SEARCH_SCOPE_ATLAS,
         kind: entry.kind,
@@ -5764,7 +5869,19 @@ function renderSearchResults(term, results) {
 
         const emptyState = document.createElement('div');
         emptyState.className = 'search-results-empty';
-        emptyState.textContent = `No ${getSearchScopeLabel().toLowerCase()} results match this search.`;
+        const searchingThisMap = currentSearchScope === SEARCH_SCOPE_MAP;
+        emptyState.textContent = searchingThisMap ? 'No matches on this map.' : 'No matches in the atlas.';
+        if (searchingThisMap && searchScopeAtlasBtn && getAtlasSearchEntryCount()) {
+            const searchAtlasBtn = document.createElement('button');
+            searchAtlasBtn.type = 'button';
+            searchAtlasBtn.className = 'search-broaden-scope';
+            searchAtlasBtn.textContent = `Search the ${getSearchScopeLabel(SEARCH_SCOPE_ATLAS)}`;
+            searchAtlasBtn.addEventListener('click', () => {
+                poiSearchInput.focus();
+                searchScopeAtlasBtn.click();
+            });
+            emptyState.append(' ', searchAtlasBtn);
+        }
         searchResultsContainer.appendChild(emptyState);
     } else {
         searchResultsContainer.setAttribute('role', 'listbox');
@@ -5819,7 +5936,7 @@ function renderSearchResults(term, results) {
             resultItem.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    selectSearchResult(index);
+                    selectSearchResult(index, { keyboard: true });
                 }
             });
 
@@ -5922,6 +6039,13 @@ function searchMapMarkers(searchTerm, results, allPoiGroupsChecked, activeSpecif
                 subtitle: match.matchedByContent ? `Matched in ${poiGroup.toLowerCase()} details` : poiGroup,
                 score: match.score,
                 onSelect: () => {
+                    if (!currentMarkerGroup.hasLayer(marker)) {
+                        const group = currentMarkerGroup;
+                        group.addLayer(marker);
+                        marker.once('popupclose', () => {
+                            if (currentMarkerGroup === group && !markersVisible) group.removeLayer(marker);
+                        });
+                    }
                     map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 1), getZoomAnimationOptions());
                     marker.openPopup();
                     return marker;
@@ -6067,9 +6191,11 @@ function searchAtlasIndex(searchTerm, results) {
                 group: entry.kind,
                 badge: entry.kind === 'map' ? 'Map' : (entry.typeLabel || entry.kind),
                 title: entry.name,
-                subtitle: entry.mapId === currentlyLoadedMapId
-                    ? `${entry.mapName || 'Current map'}${match.matchedByContent ? ' • matched in details' : ''}`
-                    : `${entry.mapName || entry.mapId}${match.matchedByContent ? ' • matched in details' : ''}`,
+                subtitle: [
+                    entry._mapPath || entry.mapName || entry.mapId,
+                    entry.mapId === currentlyLoadedMapId ? 'Current map' : '',
+                    match.matchedByContent ? 'matched in details' : ''
+                ].filter(Boolean).join(' • '),
                 score: match.score + (entry.kind === 'map' ? 10 : 0),
                 onSelect: () => openAtlasSearchResult(entry)
             });
@@ -7359,6 +7485,13 @@ function resetMapState() {
     if (currentRegionGroup) map.removeLayer(currentRegionGroup);
     if (currentRoadGroup) map.removeLayer(currentRoadGroup);
 
+    currentBounds = null;
+    currentOverviewZoom = null;
+    sharedViewZoom = null;
+    if (currentMapName) {
+        currentMapName.textContent = '';
+        currentMapName.hidden = true;
+    }
     currentImageLayer = null;
     currentMapBaseLayerMode = 'image';
     currentMapPreviewLayer = null;
@@ -7437,6 +7570,10 @@ function populatePOIsOnMap(selectedMap) {
 }
 
 function finalizeMapUI(requestedMapId, selectedMap) {
+    if (currentMapName) {
+        currentMapName.textContent = selectedMap.name || '';
+        currentMapName.hidden = !selectedMap.name;
+    }
     toggleMarkersBtn.classList.toggle('markers-hidden', !markersVisible);
     toggleMarkersBtn.title = markersVisible ? 'Hide Markers & Regions' : 'Show Markers & Regions';
     toggleMarkersBtn.setAttribute('aria-label', toggleMarkersBtn.title);
@@ -7456,23 +7593,16 @@ function finalizeMapUI(requestedMapId, selectedMap) {
     }
     const activeMapItem = document.querySelector(`#map-list .map-item[data-map-id="${requestedMapId}"]`);
     const activeFolderHeader = document.querySelector(`#map-list .folder-header[data-map-id="${requestedMapId}"]`);
-    if (activeMapItem) {
-        activeMapItem.classList.add('active');
-        let parent = activeMapItem.closest('.nested-list');
-        while (parent) {
-            const folderLi = parent.closest('.folder');
-            if (folderLi && folderLi.classList.contains('closed')) {
-                folderLi.classList.remove('closed');
-                syncFolderExpandedAria(folderLi);
+    const activeEntry = activeMapItem || activeFolderHeader;
+    if (activeEntry) {
+        activeEntry.classList.add('active');
+        let folder = activeEntry.closest('.folder');
+        while (folder) {
+            if (folder.classList.contains('closed')) {
+                folder.classList.remove('closed');
+                syncFolderExpandedAria(folder);
             }
-            parent = folderLi?.parentElement.closest('.nested-list');
-        }
-    } else if (activeFolderHeader) {
-        activeFolderHeader.classList.add('active');
-        const folderLi = activeFolderHeader.closest('.folder');
-        if (folderLi && folderLi.classList.contains('closed')) {
-            folderLi.classList.remove('closed');
-            syncFolderExpandedAria(folderLi);
+            folder = folder.parentElement.closest('.folder');
         }
     }
 
@@ -7501,6 +7631,7 @@ function abortMapLoad(options = {}) {
     loadingProgressInterval = null;
     currentlyLoadedMapId = null;
     currentMapData = null;
+    if (currentMapName) currentMapName.hidden = true;
     syncSidebarPanels();
     setMapAtmosphere(null);
     toggleMarkersBtn.style.display = 'none';
@@ -7529,6 +7660,7 @@ function abortMapLoad(options = {}) {
         pushMapHistoryState(null, updateHash);
     }
 
+    mapRasterLoad?.finish();
     trackAnalytics('map_load_failed', { mapId: requestedMapId, reason: reason });
 }
 
@@ -7635,6 +7767,7 @@ function finalizeMapLoadState(requestedMapId, selectedMap, usingAlternateMobileI
     }
 
     applySearchParamsToCurrentMap(new URLSearchParams(window.location.search));
+    mapRasterLoad?.finish();
 
     syncMiniMapControl();
 
@@ -7654,6 +7787,7 @@ function initMapLoadContext(mapId, preResolvedMap) {
     hideShareRelayPrompt('map_loading');
     const requestedMapId = String(mapId || '').trim();
     const requestToken = ++loadRequestToken;
+    mapRasterLoad?.finish();
     const manifestEntry = preResolvedMap || findMapRecursive(mapData, requestedMapId);
 
     if (requestedMapId && manifestEntry && manifestEntry.status !== 'coming-soon') {
@@ -7692,7 +7826,10 @@ function handleRedundantLoad(requestedMapId, updateHash) {
         hideShareRelayPrompt('map_loading');
         setMapChooserVisible(false);
         replaceMapHistoryState(requestedMapId, updateHash);
-        applySearchParamsToCurrentMap(new URLSearchParams(window.location.search));
+        const params = new URLSearchParams(window.location.search);
+        if (['view', 'poi', 'region', 'line'].some(key => params.has(key))) {
+            applySearchParamsToCurrentMap(params);
+        }
         return true;
     }
     return false;
@@ -7725,6 +7862,9 @@ function setupMapLayers(selectedMap, requestedMapId, mapImageUrl, updateHash) {
     }
 
     currentBounds = [[0, 0], [mapHeight, mapWidth]];
+    syncMapZoomFloor();
+    // Feature layers such as city addresses project points while they mount.
+    map.fitBounds(currentBounds, { animate: false });
     currentMapUnderlay = L.rectangle(currentBounds, {
         stroke: false,
         fill: true,
@@ -7935,21 +8075,23 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
         setTimeout(updateTileLoadingProgress, 0);
         setTimeout(updateTileLoadingProgress, 250);
         setTimeout(updateTileLoadingProgress, 1000);
-        map.fitBounds(currentBounds, { animate: false });
         return;
     }
 
     attachImageFallback();
 }
 
-async function loadMap(mapId, updateHash = true, preResolvedMap = null) {
+async function loadMap(mapId, updateHash = true, preResolvedMap = null, { waitForRaster = false } = {}) {
     const loadStartedAt = performance.now();
     const requestedMapId = String(mapId || '').trim();
     const manifestEntry = preResolvedMap || findMapRecursive(mapData, requestedMapId);
 
     // Preserve the active layers and their pending image callbacks when reselecting
     // this map. Starting a new context would invalidate their request token.
-    if (manifestEntry && manifestEntry.status !== 'coming-soon' && handleRedundantLoad(requestedMapId, updateHash)) return;
+    if (manifestEntry && manifestEntry.status !== 'coming-soon' && handleRedundantLoad(requestedMapId, updateHash)) {
+        if (waitForRaster) await mapRasterLoad?.ready;
+        return;
+    }
 
     const { requestToken } = initMapLoadContext(requestedMapId, manifestEntry);
 
@@ -7970,11 +8112,21 @@ async function loadMap(mapId, updateHash = true, preResolvedMap = null) {
 
     if (!setupMapLayers(selectedMap, requestedMapId, mapImageUrl, updateHash)) return;
 
-    setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingAlternateMobileImage, loadStartedAt, updateHash, requestToken });
-
+    let finishRasterLoad;
+    const rasterReady = new Promise(resolve => { finishRasterLoad = resolve; });
+    mapRasterLoad = {
+        ready: rasterReady,
+        finish() {
+            mapRasterLoad = null;
+            finishRasterLoad();
+        }
+    };
+    // Some raster fallbacks finish synchronously. Apply their URL target after features exist.
     renderMapFeatures(selectedMap, requestedMapId);
     finalizeMapUI(requestedMapId, selectedMap);
+    setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingAlternateMobileImage, loadStartedAt, updateHash, requestToken });
     pushMapHistoryState(requestedMapId, updateHash, selectedMap.name);
+    if (waitForRaster) await rasterReady;
 }
 
 // One non-interactive SVG overlay also works when the base regions use Canvas.
@@ -9024,6 +9176,7 @@ if (mobileMeasureBtn) {
         event.stopPropagation();
         if (mobileMeasureBtn.hidden || mobileMeasureBtn.disabled) return;
         unlockAdvancedControls('mobile_measure_toggle');
+        closeMobileSheet({ restoreFocus: isMeasuringMultiPoint });
         toggleMeasurementTool();
     });
 }
@@ -9228,7 +9381,7 @@ poiSearchInput.addEventListener('keydown', (event) => {
     }
     if (event.key === 'Enter' && activeSearchResultIndex >= 0) {
         event.preventDefault();
-        selectSearchResult(activeSearchResultIndex);
+        selectSearchResult(activeSearchResultIndex, { keyboard: true });
         return;
     }
     if (event.key === 'Escape') {
@@ -9382,14 +9535,13 @@ function toggleMeasurementTool() {
     mapElement.classList.toggle('measuring-cursor', isMeasuringMultiPoint);
 
     if (isMeasuringMultiPoint) {
-        measureToolBtn.title = "Click to add points. Double-click or Enter to finish. Backspace undoes a point. Esc cancels.";
         map.closePopup();
         measurementDoubleClickZoomWasEnabled = map.doubleClickZoom.enabled();
         map.doubleClickZoom.disable();
         map.on('click', handleMultiPointMeasureClick);
         map.on('mousemove', handleMultiPointMouseMove);
-        map.on('dblclick', finalizeMultiPointMeasure); // Add dblclick listener
-        document.addEventListener('keydown', handleMeasureKeyDown); // For Esc key
+        map.on('dblclick', handleMeasurementDoubleClick);
+        document.addEventListener('keydown', handleMeasureKeyDown);
 
         // Clear previous measurement layers (if any)
         measurementLayerGroup.clearLayers();
@@ -9400,12 +9552,13 @@ function toggleMeasurementTool() {
         multiPointPolyline = null;
         if (multiPointTotalTooltip) map.removeLayer(multiPointTotalTooltip);
         multiPointTotalTooltip = null;
-        // Clear other related layers/tooltips if you add them
-
+        measurementControls.hidden = false;
+        syncMeasurementActions();
         if (filtersPanelVisible) toggleFilterPanel();
+        mapElement.setAttribute('aria-describedby', 'measurement-instructions');
+        mapElement.focus({ preventScroll: true });
     } else {
-        measureToolBtn.title = "Measure Distance";
-        finalizeMultiPointMeasure(false); // Clean up without making permanent
+        finalizeMultiPointMeasure(false);
     }
 
     if (mobileMeasureBtn) {
@@ -9417,11 +9570,34 @@ function toggleMeasurementTool() {
 
 function handleMultiPointMeasureClick(e) {
     if (!isMeasuringMultiPoint || !currentlyLoadedMapId) return;
-    if (shouldIgnoreMapPointerEvent(e)) return;
-    // The first click of a double-click already placed the finishing point.
-    if (e.originalEvent?.detail > 1) return;
+    if (shouldIgnoreMapPointerEvent(e, { ignoreRecentControlTouch: false })) return;
 
-    const clickPoint = e.latlng;
+    const event = e.originalEvent;
+    const isMouse = event?.pointerType === 'mouse'
+        || (!event?.pointerType && (event?.sourceCapabilities?.firesTouchEvents
+            ?? (L.Browser.touch || isMobileLayoutActive)) === false);
+    measurementMouseDoubleClick = Boolean(isMouse && event?.detail === 2
+        && lastMeasurementMousePoint?.distanceTo(e.containerPoint) <= 4);
+    lastMeasurementMousePoint = isMouse ? e.containerPoint : null;
+    // A nearby second mouse click completes the same point. Touch taps always place points.
+    if (!measurementMouseDoubleClick) addMeasurementPoint(e.latlng);
+}
+
+function handleMeasurementDoubleClick(e) {
+    if (measurementMouseDoubleClick && !e.originalEvent?._simulated
+        && !shouldIgnoreMapPointerEvent(e, { ignoreRecentControlTouch: false })
+        && multiPointPath.length >= 2) {
+        finalizeMultiPointMeasure();
+    }
+    measurementMouseDoubleClick = false;
+}
+
+function syncMeasurementActions() {
+    measurementUndoBtn.disabled = multiPointPath.length === 0;
+    measurementFinishBtn.disabled = multiPointPath.length < 2;
+}
+
+function addMeasurementPoint(clickPoint) {
     multiPointPath.push(clickPoint);
 
     if (multiPointPath.length >= 2) {
@@ -9452,7 +9628,8 @@ function handleMultiPointMeasureClick(e) {
         }).addTo(measurementLayerGroup);
     }
 
-    updateMeasurementTooltips(); // New function to handle tooltips
+    updateMeasurementTooltips();
+    syncMeasurementActions();
 }
 
 function handleMultiPointMouseMove(e) {
@@ -9577,7 +9754,7 @@ function finalizeMultiPointMeasure(makePermanent = true) {
     isMeasuringMultiPoint = false;
     map.off('click', handleMultiPointMeasureClick);
     map.off('mousemove', handleMultiPointMouseMove);
-    map.off('dblclick', finalizeMultiPointMeasure);
+    map.off('dblclick', handleMeasurementDoubleClick);
     document.removeEventListener('keydown', handleMeasureKeyDown);
     mapElement.classList.remove('measuring-cursor');
     measureToolBtn.classList.remove('active');
@@ -9588,8 +9765,14 @@ function finalizeMultiPointMeasure(makePermanent = true) {
     }
     if (measurementDoubleClickZoomWasEnabled) map.doubleClickZoom.enable();
     measurementDoubleClickZoomWasEnabled = false;
-    measureToolBtn.title = "Measure Distance";
-
+    measurementMouseDoubleClick = false;
+    lastMeasurementMousePoint = null;
+    if (document.activeElement === mapElement || measurementControls.contains(document.activeElement)) {
+        const trigger = isMobileLayoutActive ? mobileToolsLauncherBtn : measureToolBtn;
+        trigger?.focus({ preventScroll: true });
+    }
+    measurementControls.hidden = true;
+    mapElement.removeAttribute('aria-describedby');
 
     if (temporaryMouseMoveLine) {
         measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
@@ -9634,31 +9817,44 @@ function finalizeMultiPointMeasure(makePermanent = true) {
 }
 
 function handleMeasureKeyDown(e) {
-    if (!isMeasuringMultiPoint || e.target?.closest?.('input, textarea, select, [contenteditable="true"]')) return;
-    if (e.key === 'Escape') {
+    if (!isMeasuringMultiPoint || e.target !== mapElement || e.defaultPrevented
+        || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === ' ') {
         e.preventDefault();
-        finalizeMultiPointMeasure(false); // Cancel measurement
+        if (!e.repeat && currentlyLoadedMapId) addMeasurementPoint(map.getCenter());
     } else if (e.key === 'Enter') {
         e.preventDefault();
-        finalizeMultiPointMeasure(true);
+        if (multiPointPath.length >= 2) finalizeMultiPointMeasure();
     } else if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
-        const removed = multiPointPath.pop();
-        if (!removed) return;
-        if (multiPointPath.length) {
-            cachedMultiPointPixelDistance = Math.max(0, cachedMultiPointPixelDistance - map.distance(multiPointPath[multiPointPath.length - 1], removed));
-        } else {
-            cachedMultiPointPixelDistance = 0;
-        }
-        measurementLayerGroup.removeLayer(multiPointVertexMarkers.pop());
-        if (multiPointPolyline) multiPointPolyline.setLatLngs(multiPointPath);
-        if (temporaryMouseMoveLine) measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
-        if (temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
-        temporaryMouseMoveLine = null;
-        temporaryMouseMoveTooltip = null;
-        updateMeasurementTooltips();
+        undoMeasurementPoint();
     }
 }
+
+function undoMeasurementPoint() {
+    const removed = multiPointPath.pop();
+    if (!removed) return;
+    if (multiPointPath.length) {
+        cachedMultiPointPixelDistance = Math.max(0, cachedMultiPointPixelDistance - map.distance(multiPointPath[multiPointPath.length - 1], removed));
+    } else {
+        cachedMultiPointPixelDistance = 0;
+    }
+    measurementLayerGroup.removeLayer(multiPointVertexMarkers.pop());
+    if (multiPointPolyline) multiPointPolyline.setLatLngs(multiPointPath);
+    if (temporaryMouseMoveLine) measurementLayerGroup.removeLayer(temporaryMouseMoveLine);
+    if (temporaryMouseMoveTooltip) map.removeLayer(temporaryMouseMoveTooltip);
+    temporaryMouseMoveLine = null;
+    temporaryMouseMoveTooltip = null;
+    updateMeasurementTooltips();
+    syncMeasurementActions();
+}
+
+measurementUndoBtn.addEventListener('click', () => {
+    mapElement.focus({ preventScroll: true });
+    undoMeasurementPoint();
+});
+document.getElementById('measurement-cancel').addEventListener('click', () => finalizeMultiPointMeasure(false));
+measurementFinishBtn.addEventListener('click', () => finalizeMultiPointMeasure());
 
 measureToolBtn.addEventListener('click', (e) => {
     unlockAdvancedControls('measure_toggle');

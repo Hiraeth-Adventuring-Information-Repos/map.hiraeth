@@ -24,8 +24,13 @@ function harness(t, { mobile = true } = {}) {
         return element;
     };
     const byId = id => rendered(document.getElementById(id));
+    const popupEvents = new Map();
     const context = {
         window: dom.window, document, URLSearchParams,
+        map: {
+            on(type, handler) { popupEvents.set(type, handler); },
+            off(type, handler) { if (popupEvents.get(type) === handler) popupEvents.delete(type); }
+        },
         isMobileLayoutActive: mobile, mobileSurfaceMode: 'search', MOBILE_SURFACE_MODE_SEARCH: 'search',
         SEARCH_SCOPE_MAP: 'map', SEARCH_SCOPE_ATLAS: 'atlas', loadRequestToken: 5,
         currentSidebarState: 'c', currentlyLoadedMapId: 'a', mapData: [],
@@ -51,7 +56,11 @@ function harness(t, { mobile = true } = {}) {
         allMapLinesById: new Map(), allMapLinesByName: new Map()
     };
     vm.createContext(context);
-    vm.runInContext('let cancelPendingSearchResultFocus = null;\n' + [
+    vm.runInContext(`let cancelPendingSearchResultFocus = null;
+        let desktopSearchResultPopup = null;
+        let cancelDesktopSearchPopupFocus = null;
+    ` + [
+        'restoreDesktopSearchFocusOnPopupClose',
         'isSearchResultFocusTarget', 'beginSearchResultFocusHandoff', 'selectSearchResult',
         'buildScopedSearchParams', 'openAtlasSearchResult'
     ].map(functionSource).join('\n'), context);
@@ -63,8 +72,14 @@ function harness(t, { mobile = true } = {}) {
         popupElement.innerHTML = '<button data-popup-action="open-details">Details</button>';
         const details = rendered(popupElement.firstElementChild);
         if (popup) context.mapElement.append(popupElement);
+        const popupLayer = { getElement: () => popupElement };
         return { marker, popupElement, details,
-            getElement: () => marker, getPopup: () => popup ? { getElement: () => popupElement } : null };
+            getElement: () => marker, getPopup: () => popup ? popupLayer : null,
+            dismiss() {
+                popupElement.remove();
+                popupEvents.get('popupclose')?.({ popup: popupLayer });
+            }
+        };
     }
     context.poiSearchInput.focus();
     return { context, document, dom, layer, byId };
@@ -95,12 +110,35 @@ test('pointer selection from body hands focus to a visible marker when it has no
     assert.equal(document.activeElement, selected.marker);
 });
 
-test('desktop selection preserves focus', t => {
+test('desktop pointer selection preserves focus', t => {
     const { context, document, layer } = harness(t, { mobile: false });
     context.closeMobileSheet = () => {};
     context.renderedSearchResults = [{ onSelect: () => layer() }];
     context.selectSearchResult();
     assert.equal(document.activeElement, context.poiSearchInput);
+});
+
+test('desktop keyboard selection hands focus to Details and returns it after dismissal', t => {
+    const { context, document, layer } = harness(t, { mobile: false });
+    context.closeMobileSheet = () => {};
+    const selected = layer();
+    context.renderedSearchResults = [{ onSelect: () => selected }];
+    context.selectSearchResult(0, { keyboard: true });
+    assert.equal(document.activeElement, selected.details);
+    selected.dismiss();
+    assert.equal(document.activeElement, context.poiSearchInput);
+});
+
+test('desktop popup dismissal preserves focus after the user clicks elsewhere', t => {
+    const { context, document, dom, layer } = harness(t, { mobile: false });
+    context.closeMobileSheet = () => {};
+    const selected = layer();
+    context.renderedSearchResults = [{ onSelect: () => selected }];
+    context.selectSearchResult(0, { keyboard: true });
+    assert.equal(document.activeElement, selected.details);
+    document.body.dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true }));
+    selected.dismiss();
+    assert.equal(document.activeElement, document.body);
 });
 
 for (const hiddenState of ['hidden', 'inert', 'aria-hidden', 'display', 'visibility', 'disabled', 'detached']) {
