@@ -10,9 +10,13 @@ function functionSource(name) {
     return source.slice(start, source.indexOf('\n}', start) + 2);
 }
 
-function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinition } = {}) {
+function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinition, onImageSource, enqueue = queueMicrotask } = {}) {
     const calls = { reset: 0, definitions: [], rendered: [], completed: [], focused: [], push: [], replace: [], analytics: [] };
-    const entries = { a: { id: 'a', name: 'Map A' }, b: { id: 'b', name: 'Map B' }, soon: { id: 'soon', status: 'coming-soon' } };
+    const entries = {
+        a: { id: 'a', name: 'Map A', width: 100, height: 100, imageUrl: 'a.webp' },
+        b: { id: 'b', name: 'Map B', width: 100, height: 100, imageUrl: 'b.webp' },
+        soon: { id: 'soon', status: 'coming-soon' }
+    };
     const preloads = [];
     const location = new URL(`https://example.test/maps/${search}${hash}`);
     function layer() {
@@ -28,7 +32,13 @@ function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinitio
         measurements: [{ distance: 25 }], poiSearchInput: { value: 'tavern' },
         window: { location }, prefetchedImageUrls: new Set(), isMobileLayoutActive: false,
         map: { removeLayer() {}, fitBounds() {} }, L: { imageOverlay: layer },
-        Image: class { constructor() { preloads.push(this); } },
+        allMapMarkersById: new Map(), allMapMarkersByName: new Map(),
+        SEARCH_SCOPE_MAP: 'map', SEARCH_SCOPE_ATLAS: 'atlas', setSearchScope() {},
+        Image: class {
+            constructor() { preloads.push(this); }
+            set src(value) { onImageSource?.(this, value, context, calls); }
+        },
+        queueMicrotask: enqueue,
         setTimeout: () => 1, clearTimeout() {}, clearInterval() {},
         findMapRecursive: (_data, id) => entries[id],
         hideShareRelayPrompt() {}, mountBootstrapMapPreview() {}, setMapAtmosphere() {},
@@ -54,6 +64,8 @@ function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinitio
         abortMapLoad(options) {
             context.currentlyLoadedMapId = null;
             context.currentMapData = null;
+            context.loadingMapId = options.isUnavailable ? null : options.requestedMapId;
+            context.mapRasterLoad?.finish();
             context.failure = options;
         },
         getPreferredMapImageUrl: selected => selected.imageUrl,
@@ -73,7 +85,8 @@ function createHarness({ loaded = true, search = '', hash = '#a-c', getDefinitio
     vm.runInContext([
         'pushMapHistoryState', 'replaceMapHistoryState', 'initMapLoadContext', 'handleMapUnavailable',
         'handleRedundantLoad', 'fetchMapDefinitionOrAbort', 'setupMapImageLoading', 'loadMap',
-        'clearTransientMapSearchParams', 'navigateToMap'
+        'clearTransientMapSearchParams', 'navigateToMap',
+        'isRenderableMapEntry', 'buildScopedSearchParams', 'openAtlasSearchResult'
     ].map(functionSource).join('\n'), context);
     return { context, calls, entries, preloads };
 }
@@ -205,6 +218,55 @@ test('raster waiters settle when a new map supersedes the pending map', async ()
     await context.loadMap('b', false);
     await waiting;
     preloads[0].onload();
+    assert.deepEqual(calls.completed, []);
+    preloads[1].onload();
+    assert.deepEqual(calls.completed, ['b']);
+});
+
+test('atlas search starts the raster before rendering and waits for a synchronous load to finish once', async () => {
+    const marker = { id: 'inn' };
+    const { context, calls } = createHarness({
+        onImageSource(image, source, context, calls) {
+            assert.equal(source, 'b.webp');
+            assert.deepEqual(calls.rendered, []);
+            assert.equal(context.currentlyLoadedMapId, 'a');
+            image.onload();
+            image.onload();
+            assert.deepEqual(calls.completed, []);
+        }
+    });
+    context.allMapMarkersById.set('inn', marker);
+    const selection = await context.openAtlasSearchResult({ kind: 'poi', mapId: 'b', itemId: 'inn' });
+    assert.equal(selection, marker);
+    assert.deepEqual(calls.rendered, ['b']);
+    assert.deepEqual(calls.completed, ['b']);
+    assert.equal(context.window.location.search, '?poi=inn');
+});
+
+test('synchronous raster failure clears the map after mounting and leaves it retryable', async () => {
+    const { context, calls } = createHarness({
+        loaded: false,
+        onImageSource(image) { image.onerror(); }
+    });
+    await context.loadMap('a', false, null, { waitForRaster: true });
+    assert.deepEqual(calls.rendered, ['a']);
+    assert.deepEqual(calls.completed, []);
+    assert.equal(context.currentlyLoadedMapId, null);
+    assert.equal(context.loadingMapId, 'a');
+    assert.equal(context.failure.reason, 'image_error');
+});
+
+test('queued synchronous raster completion cannot finish a superseding map', async () => {
+    const completions = [];
+    const { context, calls, preloads } = createHarness({
+        loaded: false,
+        enqueue: completion => completions.push(completion),
+        onImageSource(image, source) { if (source === 'a.webp') image.onload(); }
+    });
+    await context.loadMap('a', false);
+    assert.equal(completions.length, 1);
+    await context.loadMap('b', false);
+    completions.shift()();
     assert.deepEqual(calls.completed, []);
     preloads[1].onload();
     assert.deepEqual(calls.completed, ['b']);

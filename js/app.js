@@ -7653,6 +7653,7 @@ function abortMapLoad(options = {}) {
             }, 1400);
         }
     } else {
+        loadingMapId = requestedMapId;
         setLoadingMessage(message, { showSpinner: false, showProgress: false, showRetry: showRetry });
     }
 
@@ -7891,9 +7892,17 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
     let previewReadyTimeout = null;
     let fallbackStarted = false;
     let tileLoadFailures = 0;
+    let attachingRaster = true;
 
     function isActiveMapLoad() {
         return requestToken === loadRequestToken;
+    }
+
+    function deferSynchronousCompletion(callback) {
+        if (!attachingRaster) return false;
+        // Finish after the current load mounts features and commits the map UI.
+        queueMicrotask(callback);
+        return true;
     }
 
     function clearLoadingTimers() {
@@ -7914,6 +7923,7 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
 
     function finishDetailLoading() {
         if (!isActiveMapLoad() || detailLoadingComplete) return;
+        if (deferSynchronousCompletion(finishDetailLoading)) return;
         detailLoadingComplete = true;
         clearLoadingTimers();
         const hadPreviewLayer = !!currentMapPreviewLayer;
@@ -7968,6 +7978,7 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
 
     function finishWithPreviewFallback() {
         if (!isActiveMapLoad() || detailLoadingComplete || !currentMapPreviewLayer) return;
+        if (deferSynchronousCompletion(finishWithPreviewFallback)) return;
         detailLoadingComplete = true;
         clearLoadingTimers();
         removeBootstrapMapPreview();
@@ -7984,6 +7995,7 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
 
     function abortImageLoad() {
         if (!isActiveMapLoad() || detailLoadingComplete) return;
+        if (deferSynchronousCompletion(abortImageLoad)) return;
         detailLoadingComplete = true;
         clearLoadingTimers();
         console.error('Image overlay failed to load:', mapImageUrl);
@@ -8075,10 +8087,10 @@ function setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingA
         setTimeout(updateTileLoadingProgress, 0);
         setTimeout(updateTileLoadingProgress, 250);
         setTimeout(updateTileLoadingProgress, 1000);
-        return;
+    } else {
+        attachImageFallback();
     }
-
-    attachImageFallback();
+    attachingRaster = false;
 }
 
 async function loadMap(mapId, updateHash = true, preResolvedMap = null, { waitForRaster = false } = {}) {
@@ -8121,10 +8133,9 @@ async function loadMap(mapId, updateHash = true, preResolvedMap = null, { waitFo
             finishRasterLoad();
         }
     };
-    // Some raster fallbacks finish synchronously. Apply their URL target after features exist.
+    setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingAlternateMobileImage, loadStartedAt, updateHash, requestToken });
     renderMapFeatures(selectedMap, requestedMapId);
     finalizeMapUI(requestedMapId, selectedMap);
-    setupMapImageLoading({ requestedMapId, selectedMap, mapImageUrl, usingAlternateMobileImage, loadStartedAt, updateHash, requestToken });
     pushMapHistoryState(requestedMapId, updateHash, selectedMap.name);
     if (waitForRaster) await rasterReady;
 }
